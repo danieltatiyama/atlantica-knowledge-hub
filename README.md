@@ -1,3 +1,5 @@
+# Warning: this project is currently on its very beginning and is being used as a study project.
+
 # Atlantica Knowledge Hub
 
 An open-source, multilingual knowledge hub for **Atlantica Online**, built by the community, for the community.
