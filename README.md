@@ -1,43 +1,86 @@
-# Astro Starter Kit: Minimal
+# Atlantica Knowledge Hub
 
-```sh
-npm create astro@latest -- --template minimal
-```
+An open-source, multilingual knowledge hub for **Atlantica Online**, built by the community, for the community.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+The goal of this project is to provide a centralized place for game guides, useful information, and interactive tools to help players explore Atlantica Online.
 
-## 🚀 Project Structure
+## Features
 
-Inside of your Astro project, you'll see the following folders and files:
+**Currently available**
+- Responsive website with a dark theme.
+- Game guides organized by categories.
+- Markdown-based articles.
+- Automatically generated article pages.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+**Planned**
+- Multilingual support.
+- Search and filtering.
+- Nation Dungeon calendar.
+- Interactive calculators and tools.
+- Community content management through a CMS.
+- Nation management features in future releases.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Technology used on this project
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+- **Astro** — Website framework and static site generation.
+- **TypeScript** — Application logic.
+- **Markdown** — Guides and articles.
+- **GitHub** — Source control and collaboration.
+- **Cloudflare** — Planned hosting and deployment.
+- **Pages CMS** — Planned visual content management.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Getting Started
 
-## 🧞 Commands
+### Requirements
 
-All commands are run from the root of the project, from a terminal:
+- Node.js
+- npm
+- Git
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+### Installation
 
-## 👀 Want to learn more?
+Clone the repository:
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+`git clone https://github.com/danieltatiyama/atlantica-knowledge-hub.git`
+
+Navigate to the project directory:
+
+`cd atlantica-knowledge-hub`
+
+Install dependencies:
+
+`npm install`
+
+Start the development server:
+
+`npm run dev`
+
+Open **http://localhost:4321/** in your browser.
+
+### Production Build
+
+Generate the production website:
+
+`npm run build`
+
+Preview the production build locally:
+
+`npm run preview`
+
+## Contributing
+
+Contributions maybe will be accepted in the future.
+
+A detailed contribution guide will be added as the project evolves.
+
+## Project Status
+
+🚧 **Under active development**
+
+The project is in its early stages. Features, content, and structure may change as development progresses.
+
+## Disclaimer
+
+Atlantica Knowledge Hub is an unofficial community project and is not affiliated with or endorsed by the publishers or developers of Atlantica Online.
+
+Atlantica Online and related trademarks belong to their respective owners.
