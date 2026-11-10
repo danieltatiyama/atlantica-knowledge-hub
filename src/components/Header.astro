@@ -1,0 +1,68 @@
+
+---
+const siteName = "Atlantica Online Knowledge Hub";
+---
+
+<header>
+  <div class="container header-content">
+    <span class="brand">{siteName}</span>
+    <nav aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/guides/">Guides</a>
+        <a href="/#topics">Explore</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+    .container {
+    width: min(var(--content-width), 90%);
+    margin: 0 auto;
+    }
+
+    header {
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-header);
+    }
+
+    .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    }
+
+    .brand {
+    color: var(--color-accent);
+    font-weight: 700;
+    }
+    
+    nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    }
+
+    nav a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    }
+
+    nav a:hover,
+    nav a:focus-visible {
+    color: var(--color-accent);
+    }
+
+    @media (max-width: 600px) {
+    .header-content {
+        flex-wrap: wrap;
+    }
+
+    nav {
+        gap: 16px;
+    }
+    }
+
+</style>

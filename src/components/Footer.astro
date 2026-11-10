@@ -1,0 +1,29 @@
+
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer>
+  <p>
+    Atlantica Knowledge Hub — Community Project
+  </p>
+  <p class="copyright">
+    © {currentYear} Atlantica Knowledge Hub.
+    Unofficial community resource.
+  </p>
+</footer>
+
+
+<style>
+  footer {
+    padding: 25px;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  .copyright {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+</style>
