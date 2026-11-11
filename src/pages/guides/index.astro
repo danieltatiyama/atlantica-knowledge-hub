@@ -66,9 +66,32 @@ const guides = allGuides
     <section class="latest-guides" aria-labelledby="latest-guides-title">
         <h2 id="latest-guides-title">Latest Guides</h2>
 
-        <div class="guide-list">
-            {guides.map((guide) => (
-            <article class="card">
+        <div class="guide-filters" role="group" aria-label="Filter guides by category">
+          <button class="filter-button is-active" type="button"
+            data-guide-filter="all" aria-pressed="true" aria-controls="guide-list">
+            All Guides
+          </button>
+
+          <button class="filter-button" type="button"
+            data-guide-filter="nation-dungeons" aria-pressed="false" aria-controls="guide-list">
+            Nation Dungeons
+          </button>
+
+          <button class="filter-button" type="button"
+            data-guide-filter="mercenaries" aria-pressed="false" aria-controls="guide-list">
+            Mercenaries
+          </button>
+
+          <button class="filter-button" type="button"
+            data-guide-filter="game-systems" aria-pressed="false" aria-controls="guide-list">
+            Game Systems
+          </button>
+        </div>
+
+
+        <div class="guide-list" id="guide-list">
+          {guides.map((guide) => (
+            <article class="card" data-guide-category={guide.data.category}>
                 <p class="eyebrow">
                 {guide.data.category.replaceAll("-", " ")}
                 </p>
@@ -85,8 +108,11 @@ const guides = allGuides
                 Updated: {guide.data.updatedAt.toISOString().slice(0, 10)}
                 </span>
             </article>
-            ))}
+          ))}
         </div>
+        <p id="no-guides" class="no-guides" role="status" hidden>
+          No guides available in this category yet.
+        </p>
     </section>
 
     <section class="categories" aria-labelledby="categories-title">
@@ -315,4 +341,138 @@ const guides = allGuides
     }
   }
 
+  /* Atlantica Classic - Category Filters */
+
+  .guide-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 18px 0 26px;
+  }
+
+  .filter-button {
+    padding: 9px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-family: var(--font-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .filter-button:hover,
+  .filter-button:focus-visible {
+    color: var(--color-gold-light);
+    border-color: var(--color-accent);
+  }
+
+  .filter-button.is-active {
+    background: rgba(210, 164, 91, 0.12);
+    border-color: var(--color-accent);
+    color: var(--color-gold-light);
+  }
+
+  .filter-button:focus-visible {
+    outline: 2px solid var(--color-gold-light);
+    outline-offset: 3px;
+  }
+
+  .guide-list .card[hidden],
+  .no-guides[hidden] {
+    display: none;
+  }
+
+  .no-guides {
+    padding: 30px;
+    text-align: center;
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-border);
+    border-radius: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .filter-button {
+      transition: none;
+    }
+  }
+
+
 </style>
+
+<script>
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>(
+      "[data-guide-filter]"
+    )
+  );
+
+  const cards = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      "[data-guide-category]"
+    )
+  );
+
+  const emptyMessage = document.querySelector<HTMLElement>(
+    "#no-guides"
+  );
+
+  function applyFilter(category: string) {
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const visible =
+        category === "all" ||
+        card.dataset.guideCategory === category;
+
+      card.hidden = !visible;
+
+      if (visible) {
+        visibleCount++;
+      }
+    });
+
+    buttons.forEach((button) => {
+      const active = button.dataset.guideFilter === category;
+
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+
+    if (emptyMessage) {
+      emptyMessage.hidden = visibleCount > 0;
+    }
+  }
+
+  // Restore the filter when opening a shared URL.
+  const requestedCategory =
+    new URLSearchParams(window.location.search).get("category") ?? "all";
+
+  const initialCategory = buttons.some(
+    (button) => button.dataset.guideFilter === requestedCategory
+  ) ? requestedCategory : "all";
+
+  applyFilter(initialCategory);
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const category = button.dataset.guideFilter ?? "all";
+
+      applyFilter(category);
+
+      const url = new URL(window.location.href);
+
+      if (category === "all") {
+        url.searchParams.delete("category");
+      } else {
+        url.searchParams.set("category", category);
+      }
+
+      window.history.replaceState({}, "", url);
+    });
+  });
+</script>
