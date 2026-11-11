@@ -1,5 +1,8 @@
-
 ---
+
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
 const siteName = "Atlantica Knowledge Hub";
 const pathname = Astro.url.pathname;
 const lang = getLangFromUrl(Astro.url);
@@ -24,6 +27,65 @@ const navigation = [
     active: false,
   },
 ];
+
+
+type SupportedLang = "en" | "pt-br";
+
+const publishedGuides = await getCollection(
+  "guides",
+  ({ data }) =>
+    !data.draft &&
+    (data.lang === "en" || data.lang === "pt-br")
+);
+
+function getGuideUrl(guide: CollectionEntry<"guides">): string {
+  const prefix = guide.data.lang === "en"
+    ? ""
+    : `/${guide.data.lang}`;
+
+  const slug = guide.id.replace(/^[^/]+\//, "");
+
+  return `${prefix}/guides/${slug}/`;
+}
+
+const normalizedPath = pathname.endsWith("/")
+  ? pathname
+  : `${pathname}/`;
+
+const currentGuide = publishedGuides.find(
+  (guide) => getGuideUrl(guide) === normalizedPath
+);
+
+function getLanguageTarget(targetLang: SupportedLang): string {
+  const prefix = targetLang === "en"
+    ? ""
+    : `/${targetLang}`;
+
+  // Article: find the corresponding translation.
+  if (currentGuide) {
+    const translation = publishedGuides.find(
+      (guide) =>
+        guide.data.lang === targetLang &&
+        guide.data.translationKey ===
+          currentGuide.data.translationKey
+    );
+
+    return translation
+      ? getGuideUrl(translation)
+      : `${prefix}/guides/`;
+  }
+
+  // Guides listing: preserve the page type.
+  if (
+    normalizedPath === "/guides/" ||
+    normalizedPath === "/pt-br/guides/"
+  ) {
+    return `${prefix}/guides/`;
+  }
+
+  // Home or other pages.
+  return `${prefix}/`;
+}
 
 
 import {
@@ -70,12 +132,14 @@ import {
       <label for="site-language" class="language-label">
         Language
       </label>
+        <select
+          id="site-language"
+          class="language-select"
+          aria-label="Select language"
+          data-target-en={getLanguageTarget("en")}
+          data-target-pt-br={getLanguageTarget("pt-br")}
+        >
 
-      <select
-        id="site-language"
-        class="language-select"
-        aria-label="Select language"
-      >
         <option value="en" selected={lang === "en"}>
           English
         </option>
@@ -381,7 +445,6 @@ import {
 
 </style>
 
-
 <script>
   const languageSelect =
     document.querySelector<HTMLSelectElement>(
@@ -398,31 +461,44 @@ import {
       return;
     }
 
-    // Save the visitor's explicit preference.
+    const destination = selectedLanguage === "en"
+      ? languageSelect.dataset.targetEn
+      : languageSelect.dataset.targetPtBr;
+
+    if (!destination) {
+      return;
+    }
+
+    // Persist explicit language preference.
     try {
       localStorage.setItem(
         "atlantica.language",
         selectedLanguage
       );
     } catch {
-      // Navigation still works if storage is unavailable.
+      // Navigation still works without localStorage.
     }
-
-    // For now, both languages have a translated Home.
-    const destination =
-      selectedLanguage === "pt-br"
-        ? "/pt-br/"
-        : "/";
 
     const currentPath = window.location.pathname;
 
     const isHome =
       currentPath === "/" ||
-      currentPath === "/pt-br/" ||
-      currentPath === "/pt-br";
+      currentPath === "/pt-br/";
 
-    const hash = isHome ? window.location.hash : "";
+    const isGuideListing =
+      currentPath === "/guides/" ||
+      currentPath === "/pt-br/guides/";
 
-    window.location.assign(destination + hash);
+    // Preserve category filters on listings.
+    const query = isGuideListing
+      ? window.location.search
+      : "";
+
+    // Preserve anchors on Home.
+    const hash = isHome
+      ? window.location.hash
+      : "";
+
+    window.location.assign(destination + query + hash);
   });
 </script>
