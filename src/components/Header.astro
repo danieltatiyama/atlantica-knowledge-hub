@@ -1,68 +1,280 @@
 
 ---
-const siteName = "Atlantica Online Knowledge Hub";
+const siteName = "Atlantica Knowledge Hub";
+
+const pathname = Astro.url.pathname;
+
+const navigation = [
+  {
+    label: "Home",
+    href: "/",
+    active: pathname === "/",
+  },
+  {
+    label: "Guides",
+    href: "/guides/",
+    active: pathname.startsWith("/guides"),
+  },
+  {
+    label: "Explore",
+    href: "/#topics",
+    active: false,
+  },
+];
 ---
 
-<header>
-  <div class="container header-content">
-    <span class="brand">{siteName}</span>
-    <nav aria-label="Main navigation">
-        <a href="/">Home</a>
-        <a href="/guides/">Guides</a>
-        <a href="/#topics">Explore</a>
+<header class="site-header">
+  <div class="header-content">
+    <a class="brand" href="/" aria-label={`${siteName} - Home`}>
+        <img
+            class="brand-logo"
+            src="/images/atlantica/branding/logo-prateado.png"
+            alt="Atlantica Online"
+            width="200"
+            height="60"
+            decoding="async"
+        />
+        <span class="brand-subtitle">
+            Knowledge Hub
+        </span>
+    </a>
+
+
+    <nav class="main-nav" aria-label="Main navigation">
+      {navigation.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            "nav-link",
+            { active: item.active },
+          ]}
+          aria-current={item.active ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      ))}
     </nav>
   </div>
 </header>
 
 <style>
-    .container {
-    width: min(var(--content-width), 90%);
-    margin: 0 auto;
-    }
-
-    header {
+  .site-header {
+    position: relative;
+    background:
+      linear-gradient(
+        180deg,
+        #25272b 0%,
+        var(--color-header) 100%
+      );
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-header);
-    }
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  }
 
-    .header-content {
+  .site-header::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-bronze) 30%,
+      var(--color-gold-light) 50%,
+      var(--color-bronze) 70%,
+      transparent 100%
+    );
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
+  .header-content {
+    width: min(var(--content-width), 90%);
+    min-height: 112px;
+    margin: 0 auto;
+
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    padding: 20px 0;
-    }
+    gap: 24px;
+  }
 
-    .brand {
-    color: var(--color-accent);
-    font-weight: 700;
-    }
-    
-    nav {
+  /* Brand */
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 13px;
+    text-decoration: none;
+    min-width: 0;
+  }
+
+  .brand-emblem {
     display: flex;
     align-items: center;
-    gap: 24px;
-    }
+    justify-content: center;
 
-    nav a {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+
+    font-family: var(--font-heading);
+    font-size: 27px;
+    color: var(--color-gold-light);
+
+    border: 1px solid var(--color-bronze);
+    border-radius: 5px;
+
+    background:
+      radial-gradient(
+        circle at center,
+        #363024,
+        #171819
+      );
+
+    box-shadow:
+      inset 0 0 10px rgba(210, 164, 91, 0.12),
+      0 0 8px rgba(0, 0, 0, 0.35);
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .brand-title {
+    font-family: var(--font-heading);
+    font-size: 23px;
+    color: var(--color-gold-light);
+    letter-spacing: 0.03em;
+  }
+
+  .brand-subtitle {
+    margin-top: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.19em;
+    color: var(--color-text-muted);
+  }
+
+  /* Navigation */
+
+  .main-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-link {
+    position: relative;
+    padding: 12px 17px;
+
     color: var(--color-text-muted);
     text-decoration: none;
-    transition: color 0.2s ease;
-    }
+    font-size: 14px;
+    font-weight: 600;
 
-    nav a:hover,
-    nav a:focus-visible {
-    color: var(--color-accent);
-    }
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
 
-    @media (max-width: 600px) {
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 17px;
+    right: 17px;
+    bottom: 5px;
+    height: 1px;
+
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible,
+  .nav-link.active {
+    color: var(--color-gold-light);
+    background: rgba(210, 164, 91, 0.05);
+  }
+
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after,
+  .nav-link.active::after {
+    transform: scaleX(1);
+  }
+
+  .brand:focus-visible,
+  .nav-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* Responsive */
+
+  @media (max-width: 700px) {
     .header-content {
-        flex-wrap: wrap;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 14px 0;
+      gap: 12px;
     }
 
-    nav {
-        gap: 16px;
+    .main-nav {
+      justify-content: center;
+      flex-wrap: wrap;
     }
+
+    .nav-link {
+      padding: 9px 12px;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link,
+    .nav-link::after {
+      transition: none;
+    }
+  }
+
+  .brand {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+  }
+  
+  .brand-logo {
+    display: block;
+    width: clamp(145px, 13vw, 170px);
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .brand-subtitle {
+    margin-top: -2px;
+    color: var(--color-gold-light);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+
+  @media (max-width: 700px) {
+    .brand {
+        align-items: center;
+    }
+
+    .brand-logo {
+        object-position: center;
+    }
+  }
 
 </style>

@@ -4,21 +4,31 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 import { getCollection } from "astro:content";
 
+
 const categories = [
   {
     title: "Nation Dungeons",
     description:
       "Dungeon mechanics, strategies, cooldowns, and rewards.",
+    image: "/images/atlantica/backgrounds/dungeon-temple.webp",
+    imageAlt: "Ancient dungeon environment",
+    imageFit: "cover",
   },
   {
     title: "Mercenaries & Builds",
     description:
       "Mercenary information, skills, formations, and builds.",
+    image: "/images/atlantica/categories/mercenaries-archer.png",
+    imageAlt: "Atlantica Online mercenary artwork",
+    imageFit: "cover",
   },
   {
     title: "Game Systems",
     description:
       "Crafting, equipment, enhancement, and other systems.",
+    image: "/images/atlantica/backgrounds/Antilla12.jpg",
+    imageAlt: "Atlantica Online artwork",
+    imageFit: "contain",
   },
 ];
 
@@ -84,10 +94,24 @@ const guides = allGuides
 
       <div class="grid">
         {categories.map((category) => (
-          <article class="card">
-            <h3>{category.title}</h3>
-            <p>{category.description}</p>
-            <span>Coming soon</span>
+          <article class="card category-card">
+            <div class="category-art">
+              <img
+                src={category.image}
+                alt={category.imageAlt}
+                class:list={{
+                  contain: category.imageFit === "fit",
+                }}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+
+            <div class="category-content">
+              <h3>{category.title}</h3>
+              <p>{category.description}</p>
+              <span>Coming soon</span>
+            </div>
           </article>
         ))}
       </div>
@@ -208,5 +232,87 @@ const guides = allGuides
     color: var(--color-accent);
     text-decoration: underline;
     }
+    
+  /* Atlantica Classic - Guide Categories */
+
+  .categories .category-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    transition:
+      border-color 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  .category-art {
+    position: relative;
+    height: 140px;
+    background: #171b20;
+    overflow: hidden;
+  }
+
+  .category-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .category-art img.contain {
+    object-fit: contain;
+    padding: 10px;
+  }
+
+  .category-art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 55%,
+      var(--color-surface) 100%
+    );
+    pointer-events: none;
+  }
+
+  .category-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 20px 24px 24px;
+  }
+
+  .category-content h3 {
+    margin: 0 0 12px;
+    color: var(--color-gold-light);
+    font-size: 1.25rem;
+  }
+
+  .category-content p {
+    margin: 0 0 18px;
+    line-height: 1.6;
+  }
+
+  .category-content span {
+    margin-top: auto;
+  }
+
+  .categories .category-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-3px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .categories .category-card {
+      transition: none;
+    }
+
+    .categories .category-card:hover {
+      transform: none;
+    }
+  }
 
 </style>

@@ -5,29 +5,37 @@
    ========================================== */
 
 :root {
-  /* Backgrounds */
-  --color-background: #0c1220;
-  --color-header: #111b2c;
-  --color-surface: #152135;
+  /* Atlantica Classic - Backgrounds */
+  --color-background: #101318;
+  --color-header: #171819;
+  --color-surface: #1d2229;
 
-  /* Text */
-  --color-text: #edf2fa;
-  --color-text-muted: #a9b7cb;
+  /* Typography */
+  --color-text: #efe7d8;
+  --color-text-muted: #b7b3a8;
 
-  /* Accent */
-  --color-accent: #d8b675;
-  --color-on-accent: #101827;
+  /* Imperial Gold */
+  --color-accent: #d2a45b;
+  --color-on-accent: #211608;
 
-  /* Borders */
-  --color-border: #253247;
-  --color-card-border: #2b3a50;
+  /* Metallic Borders */
+  --color-border: #53432e;
+  --color-card-border: #645032;
+
+  /* Additional Theme Colors */
+  --color-bronze: #906d40;
+  --color-gold-light: #e3bf7f;
+  --color-steel: #465261;
+  --color-parchment: #c6b8a2;
 
   /* Layout */
   --content-width: 1280px;
 
-  /* Typography */
-  --font-primary: system-ui, sans-serif;
+  /* Fonts */
+  --font-primary: "Source Sans 3", Arial, sans-serif;
+  --font-heading: "Marcellus", Georgia, serif;
 }
+
 
 /* Global Reset */
 
@@ -45,7 +53,13 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--color-background);
+  background:
+    radial-gradient(
+      ellipse at 50% -20%,
+      rgba(143, 101, 52, 0.14),
+      transparent 60%
+    ),
+    var(--color-background);
   color: var(--color-text);
   font-family: var(--font-primary);
   line-height: 1.6;
@@ -57,4 +71,15 @@ body > main {
 
 a {
   color: inherit;
+}
+
+
+/* Atlantica Classic - Typography */
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.015em;
 }
