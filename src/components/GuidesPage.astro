@@ -45,6 +45,13 @@ const guides = allGuides
       b.data.updatedAt.getTime() -
       a.data.updatedAt.getTime()
   );
+  
+const categoryLabels: Record<string, string> = {
+  "nation-dungeons": t("guides.categoryNationDungeons"),
+  "mercenaries": t("guides.categoryMercenaries"),
+  "game-systems": t("guides.categoryGameSystems"),
+};
+
 ---
 
 <BaseLayout
@@ -97,7 +104,7 @@ const guides = allGuides
           {guides.map((guide) => (
             <article class="card" data-guide-category={guide.data.category}>
                 <p class="eyebrow">
-                {guide.data.category.replaceAll("-", " ")}
+                {categoryLabels[guide.data.category] ?? guide.data.category}
                 </p>
 
                 <h3>
@@ -114,9 +121,18 @@ const guides = allGuides
             </article>
           ))}
         </div>
-        <p id="no-guides" class="no-guides" role="status" hidden>
-          No guides available in this category yet.
+        
+        <p
+          id="no-guides"
+          class="no-guides"
+          role="status"
+          hidden={guides.length > 0}
+          data-empty-all={t("guides.noArticles")}
+          data-empty-filter={t("guides.empty")}
+        >
+          {t("guides.noArticles")}
         </p>
+
     </section>
 
     <section class="categories" aria-labelledby="categories-title">
@@ -130,7 +146,7 @@ const guides = allGuides
                 src={category.image}
                 alt={category.imageAlt}
                 class:list={{
-                  contain: category.imageFit === "fit",
+                  contain: category.imageFit === "contain",
                 }}
                 loading="lazy"
                 decoding="async"
@@ -449,7 +465,13 @@ const guides = allGuides
 
     if (emptyMessage) {
       emptyMessage.hidden = visibleCount > 0;
+
+      emptyMessage.textContent =
+        cards.length === 0
+          ? emptyMessage.dataset.emptyAll ?? ""
+          : emptyMessage.dataset.emptyFilter ?? "";
     }
+
   }
 
   // Restore the filter when opening a shared URL.
