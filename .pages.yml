@@ -1,0 +1,88 @@
+
+# Atlantica Knowledge Hub - Pages CMS
+
+media:
+  input: public/images
+  output: /images
+
+content:
+  - name: guides-en
+    label: Guides (English)
+    type: collection
+    path: src/content/guides/en
+    format: yaml-frontmatter
+
+    filename: "{translationKey}.md"
+
+    operations:
+      rename: false
+
+    view:
+      primary: title
+      fields:
+        - title
+        - category
+        - updatedAt
+        - draft
+      sort:
+        - updatedAt
+        - title
+      default:
+        sort: updatedAt
+        order: desc
+
+    fields:
+      - name: title
+        label: Article Title
+        type: string
+        required: true
+
+      - name: description
+        label: Description
+        type: text
+        required: true
+
+      - name: translationKey
+        label: Translation Key
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+        description: "Unique article ID shared by translations."
+
+      - name: lang
+        label: Language
+        type: select
+        required: true
+        default: en
+        options:
+          values:
+            - en
+
+      - name: category
+        label: Category
+        type: select
+        required: true
+        options:
+          values:
+            - name: nation-dungeons
+              label: Nation Dungeons
+            - name: mercenaries
+              label: Mercenaries
+            - name: game-systems
+              label: Game Systems
+
+      - name: updatedAt
+        label: Last Updated
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+
+      - name: draft
+        label: Draft
+        type: boolean
+        default: true
+
+      - name: body
+        label: Article Content
+        type: rich-text
