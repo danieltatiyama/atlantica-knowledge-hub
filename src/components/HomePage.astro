@@ -12,37 +12,30 @@ const t = useTranslations(lang);
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const siteName = "Atlantica Knowledge Hub";
+
 const sections = [
   {
     title: t("home.gameGuides"),
     description: t("home.gameGuidesDesc"),
-    image:
-      "/images/atlantica/categories/mercenaries-archer.png",
-    imageAlt: t("home.gameGuidesAlt"),
-    imageFit: "cover",
+    symbol: "⚔",
+    theme: "guides",
     href: lang === "en" ? "/guides/" : `/${lang}/guides/`,
   },
   {
     title: t("home.nationDungeons"),
     description: t("home.nationDungeonsDesc"),
-    image:
-      "/images/atlantica/backgrounds/dungeon-temple.webp",
-    imageAlt: t("home.nationDungeonsAlt"),
-    imageFit: "cover",
+    symbol: "✦",
+    theme: "dungeons",
     href: null,
   },
   {
     title: t("home.tools"),
     description: t("home.toolsDesc"),
-    image:
-      "/images/atlantica/backgrounds/Antilla12.jpg",
-    imageAlt: t("home.toolsAlt"),
-    imageFit: "contain",
+    symbol: "⚙",
+    theme: "tools",
     href: null,
   },
 ];
-
-
 
 ---
 <BaseLayout title={siteName} lang={lang} alternatePaths={{en: "/", "pt-br": "/pt-br/",}}>
@@ -68,22 +61,11 @@ const sections = [
       <div class="grid">
         {sections.map((section) => (
           <article class="card">
-            <div
-              class:list={[
-                "card-media",
-                {
-                  "card-media--contain": section.imageFit === "fit",
-                },
-              ]}
-            >
-              <img
-                src={section.image}
-                alt={section.imageAlt}
-                loading="lazy"
-                decoding="async"
-              />
+            <div class={`card-media card-media--${section.theme}`}>
+              <div class="card-symbol" aria-hidden="true">
+                {section.symbol}
+              </div>
             </div>
-
             <div class="card-body">
               <h3>
                 {section.href ? (
@@ -131,15 +113,16 @@ const sections = [
   border-radius: 6px;
 
   background:
-    linear-gradient(
-      90deg,
-      rgba(12, 15, 20, 0.97) 0%,
-      rgba(12, 15, 20, 0.91) 35%,
-      rgba(12, 15, 20, 0.55) 72%,
-      rgba(12, 15, 20, 0.25) 100%
+    radial-gradient(
+      ellipse at 80% 45%,
+      rgba(166, 123, 62, 0.16),
+      transparent 52%
     ),
-    url("/images/atlantica/backgrounds/hero-atlantica.webp")
-      center / cover no-repeat;
+    linear-gradient(
+      110deg,
+      rgba(12, 15, 20, 0.98),
+      rgba(32, 30, 27, 0.88)
+    );
 
   box-shadow:
     inset 0 0 0 1px rgba(227, 191, 127, 0.12),
@@ -254,20 +237,22 @@ const sections = [
   height: max(750px, 100vh);
 
   background-image:
+    radial-gradient(
+      ellipse at 78% 20%,
+      rgba(170, 116, 51, 0.20),
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 20% 55%,
+      rgba(72, 83, 95, 0.13),
+      transparent 55%
+    ),
     linear-gradient(
       180deg,
-      rgba(16, 19, 24, 0.35) 0%,
-      rgba(16, 19, 24, 0.45) 35%,
-      rgba(16, 19, 24, 0.85) 75%,
+      #171b21 0%,
+      #1a1c1e 45%,
       var(--color-background) 100%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(16, 19, 24, 0.78) 0%,
-      rgba(16, 19, 24, 0.30) 65%,
-      rgba(16, 19, 24, 0.20) 100%
-    ),
-    url("/images/atlantica/backgrounds/hero-atlantica.webp");
+    );
 
   background-position: center top;
   background-size: cover;
@@ -276,194 +261,262 @@ const sections = [
   pointer-events: none;
 }
 
-/* Remove the previous hero frame */
+  /* Remove the previous hero frame */
 
-.home-main .hero {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.home-main .hero::before {
-  display: none;
-}
-
-/* Avoid horizontal overflow */
-
-:global(body) {
-  overflow-x: clip;
-}
-
-@media (max-width: 700px) {
-  .home-main::before {
-    background-position: 60% top;
+  .home-main .hero {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
-}
+
+  .home-main .hero::before {
+    display: none;
+  }
+
+  /* Avoid horizontal overflow */
+
+  :global(body) {
+    overflow-x: clip;
+  }
+
+  @media (max-width: 700px) {
+    .home-main::before {
+      background-position: 60% top;
+    }
+  }
 
 
-/* ==========================================
-   Atlantica Classic - Illustrated Cards
-   ========================================== */
+  /* ==========================================
+    Atlantica Classic - Illustrated Cards
+    ========================================== */
 
-.grid .card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  .grid .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 
-  padding: 0;
-  border: 1px solid var(--color-card-border);
-  border-radius: 6px;
+    padding: 0;
+    border: 1px solid var(--color-card-border);
+    border-radius: 6px;
 
-  background: var(--color-surface);
+    background: var(--color-surface);
 
-  transition:
-    transform 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
-}
+    transition:
+      transform 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
 
-/* Image area */
+  /* Image area */
 
-.card-media {
-  position: relative;
-  height: 155px;
-  overflow: hidden;
-
-  background:
-    radial-gradient(
-      ellipse at center,
-      rgba(144, 109, 64, 0.28),
-      transparent 75%
-    ),
-    #141820;
-}
-
-.card-media img {
-  display: block;
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-  object-position: center;
-
-  transition: transform 0.4s ease;
-}
-
-/* Preserve transparent character/item artwork */
-
-.card-media--contain img {
-  object-fit: contain;
-  padding: 12px;
-}
-
-/* Smooth transition into the card body */
-
-.card-media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-
-  background: linear-gradient(
-    180deg,
-    transparent 65%,
-    var(--color-surface) 100%
-  );
-
-  pointer-events: none;
-}
-
-/* Content */
-
-.card-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-
-  padding: 22px 24px 24px;
-}
-
-.card-body h3 {
-  margin: 0 0 12px;
-
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  color: var(--color-gold-light);
-}
-
-.card-body p {
-  margin: 0 0 18px;
-
-  color: var(--color-text-muted);
-  line-height: 1.6;
-}
-
-.card-status {
-  display: inline-block;
-  margin-top: auto;
-
-  color: var(--color-accent);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-/* Link covers the available card */
-
-.card-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.card-link::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-}
-
-/* Hover effects */
-
-.grid .card:hover {
-  transform: translateY(-4px);
-
-  border-color: var(--color-accent);
-
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.35),
-    inset 0 0 12px rgba(210, 164, 91, 0.08);
-}
-
-.grid .card:hover img {
-  transform: scale(1.05);
-}
-
-.grid .card:focus-within {
-  outline: 2px solid var(--color-gold-light);
-  outline-offset: 3px;
-}
-
-.card-link:focus-visible {
-  outline: none;
-}
-
-/* Responsive */
-
-@media (max-width: 700px) {
   .card-media {
-    height: 180px;
-  }
-}
+    position: relative;
+    height: 155px;
+    overflow: hidden;
 
-@media (prefers-reduced-motion: reduce) {
-  .grid .card,
+    background:
+      radial-gradient(
+        ellipse at center,
+        rgba(144, 109, 64, 0.28),
+        transparent 75%
+      ),
+      #141820;
+  }
+
   .card-media img {
-    transition: none;
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    transition: transform 0.4s ease;
   }
 
-  .grid .card:hover,
-  .grid .card:hover img {
-    transform: none;
+  /* Preserve transparent character/item artwork */
+
+  .card-media--contain img {
+    object-fit: contain;
+    padding: 12px;
   }
-}
+
+  /* Smooth transition into the card body */
+
+  .card-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+      180deg,
+      transparent 65%,
+      var(--color-surface) 100%
+    );
+
+    pointer-events: none;
+  }
+
+  /* Content */
+
+  .card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    padding: 22px 24px 24px;
+  }
+
+  .card-body h3 {
+    margin: 0 0 12px;
+
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: var(--color-gold-light);
+  }
+
+  .card-body p {
+    margin: 0 0 18px;
+
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  .card-status {
+    display: inline-block;
+    margin-top: auto;
+
+    color: var(--color-accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  /* Link covers the available card */
+
+  .card-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Hover effects */
+
+  .grid .card:hover {
+    transform: translateY(-4px);
+
+    border-color: var(--color-accent);
+
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.35),
+      inset 0 0 12px rgba(210, 164, 91, 0.08);
+  }
+
+  .grid .card:hover img {
+    transform: scale(1.05);
+  }
+
+  .grid .card:focus-within {
+    outline: 2px solid var(--color-gold-light);
+    outline-offset: 3px;
+  }
+
+  .card-link:focus-visible {
+    outline: none;
+  }
+
+  /* Responsive */
+
+  @media (max-width: 700px) {
+    .card-media {
+      height: 180px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid .card,
+    .card-media img {
+      transition: none;
+    }
+
+    .grid .card:hover,
+    .grid .card:hover img {
+      transform: none;
+    }
+  }
+
+  /* Original fantasy artwork for Home cards */
+
+  .card-media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    isolation: isolate;
+  }
+
+  .card-media--guides {
+    background:
+      radial-gradient(circle, rgba(100, 119, 135, 0.24), transparent 70%),
+      linear-gradient(135deg, #252b32, #111418);
+  }
+
+  .card-media--dungeons {
+    background:
+      radial-gradient(circle, rgba(210, 164, 91, 0.20), transparent 70%),
+      linear-gradient(135deg, #24272a, #111418);
+  }
+
+  .card-media--tools {
+    background:
+      radial-gradient(circle, rgba(137, 103, 58, 0.25), transparent 70%),
+      linear-gradient(135deg, #29241c, #111418);
+  }
+
+  .card-symbol {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 92px;
+    height: 92px;
+
+    border: 1px solid var(--color-bronze);
+    border-radius: 50%;
+
+    background: rgba(15, 17, 20, 0.68);
+    color: var(--color-gold-light);
+
+    font-size: 44px;
+
+    box-shadow:
+      0 0 35px rgba(210, 164, 91, 0.12),
+      inset 0 0 15px rgba(210, 164, 91, 0.1);
+
+    transition: transform 0.25s ease;
+  }
+
+  .grid .card:hover .card-symbol {
+    transform: scale(1.08);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-symbol {
+      transition: none;
+    }
+
+    .grid .card:hover .card-symbol {
+      transform: none;
+    }
+  }
+
 
 </style>
