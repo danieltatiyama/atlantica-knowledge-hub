@@ -1,0 +1,136 @@
+
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { useTranslations } from "../../../i18n/utils";
+
+const t = useTranslations("pt-br");
+
+const guides = (await getCollection("guides"))
+  .filter((guide) =>
+    guide.data.lang === "pt-br" &&
+    !guide.data.draft
+  )
+  .sort(
+    (a, b) =>
+      b.data.updatedAt.getTime() -
+      a.data.updatedAt.getTime()
+  );
+---
+
+<BaseLayout title={t("guides.title")} lang="pt-br">
+  <main class="guides-page">
+    <nav class="breadcrumbs" aria-label="Navegação">
+      <a href="/pt-br/">Início</a>
+      <span>/</span>
+      <span>Guias</span>
+    </nav>
+
+    <header class="page-intro">
+      <p class="eyebrow">BASE DE CONHECIMENTO</p>
+      <h1>{t("guides.title")}</h1>
+      <p>
+        Explore guias, estratégias e informações sobre
+        Atlantica Online.
+      </p>
+    </header>
+
+    <section aria-labelledby="latest-guides">
+      <h2 id="latest-guides">{t("guides.latest")}</h2>
+
+      {guides.length === 0 ? (
+        <div class="empty-state">
+          <p>Ainda não temos guias publicados em português.</p>
+          <a href="/guides/">Ver guias disponíveis em inglês →</a>
+        </div>
+      ) : (
+        <div class="guide-list">
+          {guides.map((guide) => (
+            <article class="guide-card">
+              <h3>{guide.data.title}</h3>
+              <p>{guide.data.description}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .guides-page {
+    width: min(1100px, 90%);
+    margin: 0 auto;
+    padding: 32px 0 100px;
+    min-height: 65vh;
+  }
+
+  .breadcrumbs {
+    display: flex;
+    gap: 12px;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .breadcrumbs a,
+  .empty-state a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .page-intro {
+    margin: 60px 0;
+  }
+
+  .eyebrow {
+    color: var(--color-accent);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: var(--color-text);
+  }
+
+  .page-intro > p:last-child {
+    color: var(--color-text-muted);
+  }
+
+  h2 {
+    color: var(--color-gold-light);
+  }
+
+  .empty-state,
+  .guide-card {
+    padding: 26px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+  }
+
+  .empty-state p,
+  .guide-card p {
+    color: var(--color-text-muted);
+  }
+
+  .guide-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .guide-card h3 {
+    color: var(--color-gold-light);
+  }
+
+  @media (max-width: 700px) {
+    .page-intro {
+      margin: 40px 0;
+    }
+
+    .guide-list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

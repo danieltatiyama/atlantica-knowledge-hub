@@ -34,6 +34,55 @@ const {
     />
     <meta name="description" content={description} />
     <title>{title}</title>
+
+    {Astro.url.pathname === "/" && (
+      <script is:inline>
+        (() => {
+          const storageKey = "atlantica.language";
+
+          let savedLanguage = null;
+
+          try {
+            savedLanguage = localStorage.getItem(storageKey);
+          } catch {
+            // Continue using the browser preference.
+          }
+
+          // Explicit user preference always wins.
+          if (savedLanguage === "en") {
+            return;
+          }
+
+          if (savedLanguage === "pt-br") {
+            window.location.replace(
+              "/pt-br/" + window.location.search + window.location.hash
+            );
+            return;
+          }
+
+          // No saved preference: inspect browser languages.
+          const browserLanguages =
+            navigator.languages?.length
+              ? navigator.languages
+              : [navigator.language];
+
+          const preferredLanguage = browserLanguages
+            .map((language) =>
+              language.toLowerCase().split("-")[0]
+            )
+            .find((language) =>
+              language === "en" || language === "pt"
+            );
+
+          if (preferredLanguage === "pt") {
+            window.location.replace(
+              "/pt-br/" + window.location.search + window.location.hash
+            );
+          }
+        })();
+      </script>
+    )}
+
   </head>
 
   <body>
