@@ -86,8 +86,7 @@ content:
       - name: body
         label: Article Content
         type: rich-text
-
-      - name: guides-en-test
+  - name: guides-en-test
         label: Guides (Diagnostic)
         type: collection
         path: src/content/guides/en
