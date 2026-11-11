@@ -108,7 +108,8 @@ const categoryLabels: Record<string, string> = {
                 </p>
 
                 <h3>
-                    <a class="guide-link" href={`/guides/${guide.id.replace(/^en\//, "")}/`}>
+                    <a class="guide-link" href={`${lang === "en" ? "" : `/${lang}`}/guides/${guide.id.replace(/^[^/]+\//, "")}/`}
+>
                         {guide.data.title}
                     </a>
                 </h3>
