@@ -99,14 +99,14 @@ import {
 <header class="site-header">
   <div class="header-content">
     <a class="brand" href={homeHref} aria-label={`${siteName} - Home`}>
-        <img
-            class="brand-logo"
-            src="/images/atlantica/branding/logo-prateado.png"
-            alt="Atlantica Online"
-            width="200"
-            height="60"
-            decoding="async"
-        />
+        <div class="brand-wordmark" aria-hidden="true">
+          <span class="brand-ornament">✦</span>
+          <span class="brand-name">
+            ATLANTICA
+            <span class="brand-name-small"> KNOWLEDGE HUB</span>
+          </span>
+          <span class="brand-ornament">✦</span>
+        </div>
         <span class="brand-subtitle">
             Community Knowledge Hub
         </span>
@@ -194,6 +194,46 @@ import {
     justify-content: space-between;
     gap: 24px;
   }
+
+    
+  /* Original typography-based branding */
+
+  .brand-wordmark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-gold-light);
+  }
+
+  .brand-ornament {
+    color: var(--color-bronze);
+    font-size: 15px;
+  }
+
+  .brand-name {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-size: clamp(17px, 2vw, 24px);
+    letter-spacing: 0.13em;
+    line-height: 1.2;
+    text-shadow: 0 2px 12px rgba(210, 164, 91, 0.2);
+  }
+
+  .brand-name-small {
+    margin-top: 5px;
+    color: var(--color-accent);
+    font-family: var(--font-primary);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+  }
+
+  .brand .brand-subtitle {
+    display: none;
+  }
+
 
   /* Brand */
 
