@@ -86,13 +86,3 @@ content:
       - name: body
         label: Article Content
         type: rich-text
-  - name: guides-en-test
-    label: Guides (Diagnostic)
-    type: collection
-    path: src/content/guides/en
-    format: yaml-frontmatter
-    fields:
-      - name: title
-        type: string
-      - name: body
-        type: rich-text
