@@ -1,0 +1,469 @@
+---
+import { useTranslations } from "../i18n/utils";
+import type { Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const siteName = "Atlantica Knowledge Hub";
+const sections = [
+  {
+    title: t("home.gameGuides"),
+    description: t("home.gameGuidesDesc"),
+    image:
+      "/images/atlantica/categories/mercenaries-archer.png",
+    imageAlt: t("home.gameGuidesAlt"),
+    imageFit: "cover",
+    href: lang === "en" ? "/guides/" : `/${lang}/guides/`,
+  },
+  {
+    title: t("home.nationDungeons"),
+    description: t("home.nationDungeonsDesc"),
+    image:
+      "/images/atlantica/backgrounds/dungeon-temple.webp",
+    imageAlt: t("home.nationDungeonsAlt"),
+    imageFit: "cover",
+    href: null,
+  },
+  {
+    title: t("home.tools"),
+    description: t("home.toolsDesc"),
+    image:
+      "/images/atlantica/backgrounds/Antilla12.jpg",
+    imageAlt: t("home.toolsAlt"),
+    imageFit: "contain",
+    href: null,
+  },
+];
+
+
+
+---
+<BaseLayout title={siteName} lang={lang} alternatePaths={{en: "/", "pt-br": "/pt-br/",}}>
+  <main class="container home-main">
+    <section class="hero">
+    
+      <p class="eyebrow">{t("home.eyebrow")}</p>
+
+      <h1>{t("home.title")}</h1>
+
+      <p class="subtitle">
+        {t("home.description")}
+      </p>
+
+      <a class="button" href="#topics">
+        {t("home.explore")}
+      </a>
+
+    </section>
+
+    <section id="topics">
+      <h2>{t("home.discover")}</h2>
+      <div class="grid">
+        {sections.map((section) => (
+          <article class="card">
+            <div
+              class:list={[
+                "card-media",
+                {
+                  "card-media--contain": section.imageFit === "fit",
+                },
+              ]}
+            >
+              <img
+                src={section.image}
+                alt={section.imageAlt}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+
+            <div class="card-body">
+              <h3>
+                {section.href ? (
+                  <a class="card-link" href={section.href}>
+                    {section.title}
+                  </a>
+                ) : (
+                  section.title
+                )}
+              </h3>
+
+              <p>{section.description}</p>
+
+              <span class="card-status">
+                {section.href
+                  ? t("home.openGuides")
+                  : t("shared.comingSoon")}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .container {
+    width: min(var(--content-width), 90%);
+    margin: 0 auto;
+  }
+
+
+.hero {
+  position: relative;
+  isolation: isolate;
+
+  max-width: none;
+  min-height: 380px;
+
+  margin: 28px 0 40px;
+  padding: clamp(40px, 5vw, 72px);
+
+  border: 1px solid var(--color-bronze);
+  border-radius: 6px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(12, 15, 20, 0.97) 0%,
+      rgba(12, 15, 20, 0.91) 35%,
+      rgba(12, 15, 20, 0.55) 72%,
+      rgba(12, 15, 20, 0.25) 100%
+    ),
+    url("/images/atlantica/backgrounds/hero-atlantica.webp")
+      center / cover no-repeat;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(227, 191, 127, 0.12),
+    0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+  .hero > h1,
+  .hero > .subtitle {
+    max-width: 720px;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 9px;
+    border: 1px solid rgba(210, 164, 91, 0.20);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    color: var(--color-accent);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4.2rem);
+    line-height: 1.15;
+    margin: 12px 0 18px;
+  }
+
+  .subtitle, .card p {
+    color: var(--color-text-muted);
+  }
+
+  .button {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    background: #d8b675;
+    color: var(--color-on-accent);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  #topics {
+    padding-bottom: clamp(36px, 4vh, 64px);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    padding: 28px;
+    border: 1px solid var(--color-card-border);
+    border-radius: 12px;
+    background: var(--color-surface);
+  }
+
+  .card h3 {
+    margin-top: 0;
+  }
+
+  .card span {
+    color: #d8b675;
+    font-size: 0.85rem;
+  }
+
+  footer {
+    padding: 25px;
+    border-top: 1px solid #253247;
+    text-align: center;
+    color: #a9b7cb;
+  }
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero {
+    min-height: 0;
+    margin: 20px 0 32px;
+    padding: 42px 24px;
+
+    background-position: center, 60% center;
+  }
+}
+
+
+/* Full-width Atlantica background */
+
+.home-main {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-main::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 100vw;
+  height: max(750px, 100vh);
+
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(16, 19, 24, 0.35) 0%,
+      rgba(16, 19, 24, 0.45) 35%,
+      rgba(16, 19, 24, 0.85) 75%,
+      var(--color-background) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(16, 19, 24, 0.78) 0%,
+      rgba(16, 19, 24, 0.30) 65%,
+      rgba(16, 19, 24, 0.20) 100%
+    ),
+    url("/images/atlantica/backgrounds/hero-atlantica.webp");
+
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  pointer-events: none;
+}
+
+/* Remove the previous hero frame */
+
+.home-main .hero {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.home-main .hero::before {
+  display: none;
+}
+
+/* Avoid horizontal overflow */
+
+:global(body) {
+  overflow-x: clip;
+}
+
+@media (max-width: 700px) {
+  .home-main::before {
+    background-position: 60% top;
+  }
+}
+
+
+/* ==========================================
+   Atlantica Classic - Illustrated Cards
+   ========================================== */
+
+.grid .card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  padding: 0;
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+
+  background: var(--color-surface);
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Image area */
+
+.card-media {
+  position: relative;
+  height: 155px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(144, 109, 64, 0.28),
+      transparent 75%
+    ),
+    #141820;
+}
+
+.card-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+
+  transition: transform 0.4s ease;
+}
+
+/* Preserve transparent character/item artwork */
+
+.card-media--contain img {
+  object-fit: contain;
+  padding: 12px;
+}
+
+/* Smooth transition into the card body */
+
+.card-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    180deg,
+    transparent 65%,
+    var(--color-surface) 100%
+  );
+
+  pointer-events: none;
+}
+
+/* Content */
+
+.card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  padding: 22px 24px 24px;
+}
+
+.card-body h3 {
+  margin: 0 0 12px;
+
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  color: var(--color-gold-light);
+}
+
+.card-body p {
+  margin: 0 0 18px;
+
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.card-status {
+  display: inline-block;
+  margin-top: auto;
+
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Link covers the available card */
+
+.card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* Hover effects */
+
+.grid .card:hover {
+  transform: translateY(-4px);
+
+  border-color: var(--color-accent);
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 0 12px rgba(210, 164, 91, 0.08);
+}
+
+.grid .card:hover img {
+  transform: scale(1.05);
+}
+
+.grid .card:focus-within {
+  outline: 2px solid var(--color-gold-light);
+  outline-offset: 3px;
+}
+
+.card-link:focus-visible {
+  outline: none;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .card-media {
+    height: 180px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid .card,
+  .card-media img {
+    transition: none;
+  }
+
+  .grid .card:hover,
+  .grid .card:hover img {
+    transform: none;
+  }
+}
+
+</style>

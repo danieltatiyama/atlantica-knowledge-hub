@@ -86,3 +86,84 @@ content:
       - name: body
         label: Article Content
         type: rich-text
+
+  - name: guides-pt-br
+    label: Guias (Português)
+    type: collection
+    path: src/content/guides/pt-br
+    format: yaml-frontmatter
+
+    filename: "{translationKey}.md"
+
+    operations:
+      rename: false
+
+    view:
+      primary: title
+      fields:
+        - title
+        - category
+        - updatedAt
+        - draft
+      sort:
+        - updatedAt
+        - title
+      default:
+        sort: updatedAt
+        order: desc
+
+    fields:
+      - name: title
+        label: Título do Artigo
+        type: string
+        required: true
+
+      - name: description
+        label: Descrição
+        type: text
+        required: true
+
+      - name: translationKey
+        label: Chave de Tradução
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+        description: "Identificador compartilhado entre as traduções do artigo."
+
+      - name: lang
+        label: Idioma
+        type: select
+        required: true
+        default: pt-br
+        options:
+          values:
+            - pt-br
+
+      - name: category
+        label: Categoria
+        type: select
+        required: true
+        options:
+          values:
+            - name: nation-dungeons
+              label: Dungeons da Nação
+            - name: mercenaries
+              label: Mercenários
+            - name: game-systems
+              label: Sistemas do Jogo
+
+      - name: updatedAt
+        label: Última Atualização
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+
+      - name: draft
+        label: Rascunho
+        type: boolean
+        default: true
+
+      - name: body
+        label: Conteúdo do Artigo
+        type: rich-text

@@ -1,68 +1,504 @@
-
----
-const siteName = "Atlantica Online Knowledge Hub";
 ---
 
-<header>
-  <div class="container header-content">
-    <span class="brand">{siteName}</span>
-    <nav aria-label="Main navigation">
-        <a href="/">Home</a>
-        <a href="/guides/">Guides</a>
-        <a href="/#topics">Explore</a>
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+const siteName = "Atlantica Knowledge Hub";
+const pathname = Astro.url.pathname;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const homeHref = lang === "en" ? "/" : `/${lang}/`;
+const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
+
+const navigation = [
+  {
+    label: t("nav.home"),
+    href: homeHref,
+    active: pathname === homeHref,
+  },
+  {
+    label: t("nav.guides"),
+    href: guidesHref,
+    active: pathname.startsWith(guidesHref),
+  },
+  {
+    label: t("nav.explore"),
+    href: `${homeHref}#topics`,
+    active: false,
+  },
+];
+
+
+type SupportedLang = "en" | "pt-br";
+
+const publishedGuides = await getCollection(
+  "guides",
+  ({ data }) =>
+    !data.draft &&
+    (data.lang === "en" || data.lang === "pt-br")
+);
+
+function getGuideUrl(guide: CollectionEntry<"guides">): string {
+  const prefix = guide.data.lang === "en"
+    ? ""
+    : `/${guide.data.lang}`;
+
+  const slug = guide.id.replace(/^[^/]+\//, "");
+
+  return `${prefix}/guides/${slug}/`;
+}
+
+const normalizedPath = pathname.endsWith("/")
+  ? pathname
+  : `${pathname}/`;
+
+const currentGuide = publishedGuides.find(
+  (guide) => getGuideUrl(guide) === normalizedPath
+);
+
+function getLanguageTarget(targetLang: SupportedLang): string {
+  const prefix = targetLang === "en"
+    ? ""
+    : `/${targetLang}`;
+
+  // Article: find the corresponding translation.
+  if (currentGuide) {
+    const translation = publishedGuides.find(
+      (guide) =>
+        guide.data.lang === targetLang &&
+        guide.data.translationKey ===
+          currentGuide.data.translationKey
+    );
+
+    return translation
+      ? getGuideUrl(translation)
+      : `${prefix}/guides/`;
+  }
+
+  // Guides listing: preserve the page type.
+  if (
+    normalizedPath === "/guides/" ||
+    normalizedPath === "/pt-br/guides/"
+  ) {
+    return `${prefix}/guides/`;
+  }
+
+  // Home or other pages.
+  return `${prefix}/`;
+}
+
+
+import {
+  getLangFromUrl,
+  useTranslations,
+} from "../i18n/utils";
+
+
+---
+
+<header class="site-header">
+  <div class="header-content">
+    <a class="brand" href={homeHref} aria-label={`${siteName} - Home`}>
+        <img
+            class="brand-logo"
+            src="/images/atlantica/branding/logo-prateado.png"
+            alt="Atlantica Online"
+            width="200"
+            height="60"
+            decoding="async"
+        />
+        <span class="brand-subtitle">
+            Community Knowledge Hub
+        </span>
+    </a>
+
+
+    <nav class="main-nav" aria-label="Main navigation">
+      {navigation.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            "nav-link",
+            { active: item.active },
+          ]}
+          aria-current={item.active ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      ))}
     </nav>
+
+    <div class="language-switcher">
+      <label for="site-language" class="language-label">
+        Language
+      </label>
+        <select
+          id="site-language"
+          class="language-select"
+          aria-label="Select language"
+          data-target-en={getLanguageTarget("en")}
+          data-target-pt-br={getLanguageTarget("pt-br")}
+        >
+
+        <option value="en" selected={lang === "en"}>
+          English
+        </option>
+
+        <option value="pt-br" selected={lang === "pt-br"}>
+          Português (Brasil)
+        </option>
+      </select>
+    </div>
   </div>
 </header>
 
 <style>
-    .container {
-    width: min(var(--content-width), 90%);
-    margin: 0 auto;
-    }
-
-    header {
+  .site-header {
+    position: relative;
+    background:
+      linear-gradient(
+        180deg,
+        #25272b 0%,
+        var(--color-header) 100%
+      );
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-header);
-    }
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  }
 
-    .header-content {
+  .site-header::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-bronze) 30%,
+      var(--color-gold-light) 50%,
+      var(--color-bronze) 70%,
+      transparent 100%
+    );
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
+  .header-content {
+    width: min(var(--content-width), 90%);
+    min-height: 112px;
+    margin: 0 auto;
+
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    padding: 20px 0;
-    }
+    gap: 24px;
+  }
 
-    .brand {
-    color: var(--color-accent);
-    font-weight: 700;
-    }
-    
-    nav {
+  /* Brand */
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 13px;
+    text-decoration: none;
+    min-width: 0;
+  }
+
+  .brand-emblem {
     display: flex;
     align-items: center;
-    gap: 24px;
-    }
+    justify-content: center;
 
-    nav a {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+
+    font-family: var(--font-heading);
+    font-size: 27px;
+    color: var(--color-gold-light);
+
+    border: 1px solid var(--color-bronze);
+    border-radius: 5px;
+
+    background:
+      radial-gradient(
+        circle at center,
+        #363024,
+        #171819
+      );
+
+    box-shadow:
+      inset 0 0 10px rgba(210, 164, 91, 0.12),
+      0 0 8px rgba(0, 0, 0, 0.35);
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .brand-title {
+    font-family: var(--font-heading);
+    font-size: 23px;
+    color: var(--color-gold-light);
+    letter-spacing: 0.03em;
+  }
+
+  .brand-subtitle {
+    margin-top: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.19em;
+    color: var(--color-text-muted);
+  }
+
+  /* Navigation */
+
+  .main-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-link {
+    position: relative;
+    padding: 12px 17px;
+
     color: var(--color-text-muted);
     text-decoration: none;
-    transition: color 0.2s ease;
-    }
+    font-size: 14px;
+    font-weight: 600;
 
-    nav a:hover,
-    nav a:focus-visible {
-    color: var(--color-accent);
-    }
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
 
-    @media (max-width: 600px) {
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 17px;
+    right: 17px;
+    bottom: 5px;
+    height: 1px;
+
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible,
+  .nav-link.active {
+    color: var(--color-gold-light);
+    background: rgba(210, 164, 91, 0.05);
+  }
+
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after,
+  .nav-link.active::after {
+    transform: scaleX(1);
+  }
+
+  .brand:focus-visible,
+  .nav-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* Responsive */
+
+  @media (max-width: 700px) {
     .header-content {
-        flex-wrap: wrap;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 14px 0;
+      gap: 12px;
     }
 
-    nav {
-        gap: 16px;
+    .main-nav {
+      justify-content: center;
+      flex-wrap: wrap;
     }
+
+    .nav-link {
+      padding: 9px 12px;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link,
+    .nav-link::after {
+      transition: none;
+    }
+  }
+
+  .brand {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+  }
+  
+  .brand-logo {
+    display: block;
+    width: clamp(145px, 13vw, 170px);
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .brand-subtitle {
+    margin-top: -2px;
+    color: var(--color-gold-light);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+
+  @media (max-width: 700px) {
+    .brand {
+        align-items: center;
+    }
+
+    .brand-logo {
+        object-position: center;
+    }
+  }
+    
+  /* Atlantica Classic - Language Selector */
+
+  .main-nav {
+    margin-left: auto;
+  }
+
+  .language-switcher {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .language-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .language-select {
+    min-width: 160px;
+    padding: 10px 14px;
+
+    color: var(--color-gold-light);
+    background: var(--color-surface);
+
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+
+    font-family: var(--font-primary);
+    font-size: 0.85rem;
+
+    cursor: pointer;
+  }
+
+  .language-select option {
+    color: var(--color-text);
+    background: var(--color-surface);
+  }
+
+  .language-select:hover {
+    border-color: var(--color-accent);
+  }
+
+  .language-select:focus-visible {
+    outline: 2px solid var(--color-gold-light);
+    outline-offset: 3px;
+  }
+
+  /* Mobile */
+
+  @media (max-width: 700px) {
+    .main-nav {
+      margin-left: 0;
+    }
+
+    .language-switcher {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .language-select {
+      width: min(260px, 100%);
+    }
+  }
 
 </style>
+
+<script>
+  const languageSelect =
+    document.querySelector<HTMLSelectElement>(
+      "#site-language"
+    );
+
+  languageSelect?.addEventListener("change", () => {
+    const selectedLanguage = languageSelect.value;
+
+    if (
+      selectedLanguage !== "en" &&
+      selectedLanguage !== "pt-br"
+    ) {
+      return;
+    }
+
+    const destination = selectedLanguage === "en"
+      ? languageSelect.dataset.targetEn
+      : languageSelect.dataset.targetPtBr;
+
+    if (!destination) {
+      return;
+    }
+
+    // Persist explicit language preference.
+    try {
+      localStorage.setItem(
+        "atlantica.language",
+        selectedLanguage
+      );
+    } catch {
+      // Navigation still works without localStorage.
+    }
+
+    const currentPath = window.location.pathname;
+
+    const isHome =
+      currentPath === "/" ||
+      currentPath === "/pt-br/";
+
+    const isGuideListing =
+      currentPath === "/guides/" ||
+      currentPath === "/pt-br/guides/";
+
+    // Preserve category filters on listings.
+    const query = isGuideListing
+      ? window.location.search
+      : "";
+
+    // Preserve anchors on Home.
+    const hash = isHome
+      ? window.location.hash
+      : "";
+
+    window.location.assign(destination + query + hash);
+  });
+</script>

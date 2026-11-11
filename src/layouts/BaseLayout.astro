@@ -1,5 +1,11 @@
 
 ---
+import "@fontsource/marcellus/400.css";
+
+import "@fontsource/source-sans-3/400.css";
+import "@fontsource/source-sans-3/600.css";
+import "@fontsource/source-sans-3/700.css";
+
 import "../styles/global.css";
 
 import Header from "../components/Header.astro";
@@ -9,13 +15,35 @@ interface Props {
   title: string;
   description?: string;
   lang?: string;
+  alternatePaths?: Partial<Record<"en" | "pt-br", string>>;
 }
+
 
 const {
   title,
   description = "A community knowledge hub for Atlantica Online.",
   lang = "en",
+  alternatePaths,
 } = Astro.props;
+
+const siteUrl = Astro.site;
+
+if (!siteUrl) {
+  throw new Error("Configure 'site' in astro.config.mjs");
+}
+
+const canonicalUrl = new URL(
+  Astro.url.pathname,
+  siteUrl
+).href;
+
+const alternateLinks = Object.entries(alternatePaths ?? {})
+  .filter(([, path]) => Boolean(path))
+  .map(([locale, path]) => ({
+    hreflang: locale === "pt-br" ? "pt-BR" : locale,
+    href: new URL(path, siteUrl).href,
+  }));
+
 ---
 
 <!doctype html>
@@ -28,6 +56,65 @@ const {
     />
     <meta name="description" content={description} />
     <title>{title}</title>
+
+    <link rel="canonical" href={canonicalUrl} />
+
+    {alternateLinks.map((alternate) => (
+      <link
+        rel="alternate"
+        hreflang={alternate.hreflang}
+        href={alternate.href}
+      />
+    ))}
+
+    {Astro.url.pathname === "/" && (
+      <script is:inline>
+        (() => {
+          const storageKey = "atlantica.language";
+
+          let savedLanguage = null;
+
+          try {
+            savedLanguage = localStorage.getItem(storageKey);
+          } catch {
+            // Continue using the browser preference.
+          }
+
+          // Explicit user preference always wins.
+          if (savedLanguage === "en") {
+            return;
+          }
+
+          if (savedLanguage === "pt-br") {
+            window.location.replace(
+              "/pt-br/" + window.location.search + window.location.hash
+            );
+            return;
+          }
+
+          // No saved preference: inspect browser languages.
+          const browserLanguages =
+            navigator.languages?.length
+              ? navigator.languages
+              : [navigator.language];
+
+          const preferredLanguage = browserLanguages
+            .map((language) =>
+              language.toLowerCase().split("-")[0]
+            )
+            .find((language) =>
+              language === "en" || language === "pt"
+            );
+
+          if (preferredLanguage === "pt") {
+            window.location.replace(
+              "/pt-br/" + window.location.search + window.location.hash
+            );
+          }
+        })();
+      </script>
+    )}
+
   </head>
 
   <body>
