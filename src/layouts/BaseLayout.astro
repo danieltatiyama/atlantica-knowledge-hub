@@ -15,13 +15,35 @@ interface Props {
   title: string;
   description?: string;
   lang?: string;
+  alternatePaths?: Partial<Record<"en" | "pt-br", string>>;
 }
+
 
 const {
   title,
   description = "A community knowledge hub for Atlantica Online.",
   lang = "en",
+  alternatePaths,
 } = Astro.props;
+
+const siteUrl = Astro.site;
+
+if (!siteUrl) {
+  throw new Error("Configure 'site' in astro.config.mjs");
+}
+
+const canonicalUrl = new URL(
+  Astro.url.pathname,
+  siteUrl
+).href;
+
+const alternateLinks = Object.entries(alternatePaths ?? {})
+  .filter(([, path]) => Boolean(path))
+  .map(([locale, path]) => ({
+    hreflang: locale === "pt-br" ? "pt-BR" : locale,
+    href: new URL(path, siteUrl).href,
+  }));
+
 ---
 
 <!doctype html>
@@ -34,6 +56,16 @@ const {
     />
     <meta name="description" content={description} />
     <title>{title}</title>
+
+    <link rel="canonical" href={canonicalUrl} />
+
+    {alternateLinks.map((alternate) => (
+      <link
+        rel="alternate"
+        hreflang={alternate.hreflang}
+        href={alternate.href}
+      />
+    ))}
 
     {Astro.url.pathname === "/" && (
       <script is:inline>
