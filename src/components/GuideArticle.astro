@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { render } from "astro:content";
+import { getCollection, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import type { Lang } from "../i18n/ui";
 import { useTranslations } from "../i18n/utils";
@@ -37,13 +37,47 @@ const categoryLabels: Record<string, string> = {
   "mercenaries": t("guides.categoryMercenaries"),
   "game-systems": t("guides.categoryGameSystems"),
 };
+
+
+const translations = await getCollection(
+  "guides",
+  ({ data }) =>
+    !data.draft &&
+    data.translationKey === guide.data.translationKey &&
+    (data.lang === "en" || data.lang === "pt-br")
+);
+
+const alternatePaths: Partial<Record<Lang, string>> = {};
+
+if (translations.length > 1) {
+  for (const translation of translations) {
+    const translationLang = translation.data.lang;
+
+    if (
+      translationLang !== "en" &&
+      translationLang !== "pt-br"
+    ) {
+      continue;
+    }
+
+    const slug = translation.id.replace(/^[^/]+\//, "");
+
+    const prefix =
+      translationLang === "en"
+        ? ""
+        : `/${translationLang}`;
+
+    alternatePaths[translationLang] =
+      `${prefix}/guides/${slug}/`;
+  }
+}
+
 ---
-
-
 <BaseLayout
   title={`${guide.data.title} | Atlantica Knowledge Hub`}
   description={guide.data.description}
   lang={lang}
+  alternatePaths={alternatePaths}
 >
   <main class="container">
     <nav class="breadcrumbs" aria-label="Breadcrumb">
