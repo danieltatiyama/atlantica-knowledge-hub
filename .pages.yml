@@ -1,9 +1,15 @@
-
 # Atlantica Knowledge Hub - Pages CMS
 
 media:
   input: public/images
   output: /images
+  rename: safe
+  extensions:
+    - png
+    - jpg
+    - jpeg
+    - webp
+    - gif
 
 content:
   - name: guides-en
