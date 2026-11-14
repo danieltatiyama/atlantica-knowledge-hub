@@ -92,6 +92,16 @@ content:
       - name: body
         label: Article Content
         type: rich-text
+        options:
+          format: markdown
+          switcher: true
+          path: public/images/guides
+          extensions:
+            - png
+            - jpg
+            - jpeg
+            - webp
+            - gif
 
   - name: guides-pt-br
     label: Guias (Português)
@@ -173,3 +183,13 @@ content:
       - name: body
         label: Conteúdo do Artigo
         type: rich-text
+        options:
+          format: markdown
+          switcher: true
+          path: public/images/guides
+          extensions:
+            - png
+            - jpg
+            - jpeg
+            - webp
+            - gif
