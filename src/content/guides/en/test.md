@@ -8,3 +8,8 @@ updatedAt: 2026-11-10
 draft: true
 ---
 Ohohoho
+
+
+
+![](/images/guides/atlantica5f1uhxonxc.gif)
+
