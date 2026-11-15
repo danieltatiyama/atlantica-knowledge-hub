@@ -10,6 +10,5 @@ draft: true
 Ohohoho
 
 
-
-![](/images/guides/atlantica5f1uhxonxc.gif)
+![GIF de teste | size=medium | align=center](/images/guides/atlantica5f1uhxonxc.gif)
 
