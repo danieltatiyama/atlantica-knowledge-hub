@@ -630,6 +630,125 @@ if (translations.length > 1) {
     margin-right: 0;
   }
 
+  /* Image and GIF captions */
+
+  :global(.article-body .article-figure) {
+    width: fit-content;
+    max-width: 100%;
+    margin: 28px auto;
+  }
+
+  :global(.article-body .article-figure > img) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0;
+  }
+
+  :global(.article-body .article-figure figcaption) {
+    margin-top: 8px;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  /* Figure sizing */
+
+  :global(.article-body .article-figure--small) {
+    width: min(240px, 100%);
+  }
+
+  :global(.article-body .article-figure--medium) {
+    width: min(420px, 100%);
+  }
+
+  :global(.article-body .article-figure--large) {
+    width: min(680px, 100%);
+  }
+
+  :global(.article-body .article-figure--full) {
+    width: 100%;
+  }
+
+  /* Figure alignment */
+
+  :global(.article-body .article-figure--left) {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  :global(.article-body .article-figure--center) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  :global(.article-body .article-figure--right) {
+    margin-left: auto;
+    margin-right: 0;
+  }
+    
+  /* Video captions */
+
+  :global(.article-body .article-video-figure) {
+    width: min(800px, 100%);
+    max-width: 100%;
+    margin: 32px auto;
+  }
+
+  :global(.article-body .article-video-figure .article-video) {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  :global(.article-body .article-video-figure figcaption) {
+    margin-top: 8px;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  /* Captioned video sizes */
+
+  :global(.article-body .article-video-figure--small) {
+    width: min(320px, 100%);
+  }
+
+  :global(.article-body .article-video-figure--medium) {
+    width: min(480px, 100%);
+  }
+
+  :global(.article-body .article-video-figure--large) {
+    width: min(680px, 100%);
+  }
+
+  :global(.article-body .article-video-figure--full) {
+    width: 100%;
+  }
+
+  /* Captioned video alignment */
+
+  :global(.article-body .article-video-figure--left) {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  :global(.article-body .article-video-figure--center) {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  :global(.article-body .article-video-figure--right) {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+
 </style>
 
 <script>

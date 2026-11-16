@@ -141,28 +141,38 @@ export default {
         "center",
         "right",
       ]);
-
+      
       let provider = null;
       let size = null;
       let align = null;
+      let caption = null;
 
       for (const option of options) {
-        const match = /^(embed|size|align)\s*=\s*([a-z]+)$/i.exec(option);
+        const match =
+          /^(embed|size|align|caption)\s*=\s*(.+)$/i.exec(option);
 
         if (!match) return;
 
         const key = match[1].toLowerCase();
-        const value = match[2].toLowerCase();
+        const value = match[2].trim();
+        const normalized = value.toLowerCase();
 
         if (key === "embed") {
-          if (provider || !["youtube", "vimeo"].includes(value)) return;
-          provider = value;
+          if (
+            provider ||
+            !["youtube", "vimeo"].includes(normalized)
+          ) return;
+
+          provider = normalized;
         } else if (key === "size") {
-          if (size || !validSizes.has(value)) return;
-          size = value;
+          if (size || !validSizes.has(normalized)) return;
+          size = normalized;
         } else if (key === "align") {
-          if (align || !validAlignments.has(value)) return;
-          align = value;
+          if (align || !validAlignments.has(normalized)) return;
+          align = normalized;
+        } else if (key === "caption") {
+          if (caption !== null || !value) return;
+          caption = value;
         }
       }
 
@@ -183,7 +193,7 @@ export default {
 
       if (!embedUrl) return;
 
-      ctx.replaceNode(node, {
+      const videoNode = {
         type: "element",
         tagName: "div",
         properties: {
@@ -208,7 +218,40 @@ export default {
             children: [],
           },
         ],
+      };
+
+      // Preserve the existing output when there is no caption.
+      if (!caption) {
+        ctx.replaceNode(node, videoNode);
+        return;
+      }
+
+      ctx.replaceNode(node, {
+        type: "element",
+        tagName: "figure",
+        properties: {
+          className: [
+            "article-video-figure",
+            ...(size ? [`article-video-figure--${size}`] : []),
+            ...(align ? [`article-video-figure--${align}`] : []),
+          ],
+        },
+        children: [
+          videoNode,
+          {
+            type: "element",
+            tagName: "figcaption",
+            properties: {},
+            children: [
+              {
+                type: "text",
+                value: caption,
+              },
+            ],
+          },
+        ],
       });
+
     },
   },
 };
