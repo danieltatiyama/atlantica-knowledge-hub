@@ -83,6 +83,8 @@ const en = {
   "guides.resultsOne": "guide found",
   "guides.resultsMany": "guides found",
 
+  "article.relatedGuides": "Related Guides",
+
 } as const;
 
 const ptBr = {
@@ -161,6 +163,8 @@ const ptBr = {
   "guides.noSearchResults": "Nenhum guia corresponde à sua pesquisa.",
   "guides.resultsOne": "guia encontrado",
   "guides.resultsMany": "guias encontrados",
+
+  "article.relatedGuides": "Guias Relacionados",
 
 } satisfies Record<keyof typeof en, string>;
 

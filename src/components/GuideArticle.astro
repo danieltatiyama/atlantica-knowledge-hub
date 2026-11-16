@@ -72,6 +72,24 @@ if (translations.length > 1) {
   }
 }
 
+const relatedGuides = (
+  await getCollection(
+    "guides",
+    ({ data }) =>
+      !data.draft &&
+      data.lang === lang &&
+      data.category === guide.data.category
+  )
+)
+  .filter((entry) => entry.id !== guide.id)
+  .sort(
+    (a, b) =>
+      b.data.updatedAt.getTime() -
+      a.data.updatedAt.getTime()
+  )
+  .slice(0, 3);
+
+
 ---
 <BaseLayout
   title={`${guide.data.title} | Atlantica Knowledge Hub`}
@@ -132,6 +150,42 @@ if (translations.length > 1) {
           </aside>
         )}
       </div>
+
+      {relatedGuides.length > 0 && (
+        <section
+          class="related-guides"
+          aria-labelledby="related-guides-title"
+        >
+          <h2 id="related-guides-title">
+            {t("article.relatedGuides")}
+          </h2>
+
+          <div class="related-guides-grid">
+            {relatedGuides.map((related) => {
+              const slug = related.id.replace(/^[^/]+\//, "");
+              const href = `${lang === "en" ? "" : `/${lang}`}/guides/${slug}/`;
+
+              return (
+                <article class="related-guide">
+                  <p class="related-guide-category">
+                    {categoryLabels[related.data.category]}
+                  </p>
+
+                  <h3>
+                    <a href={href}>
+                      {related.data.title}
+                    </a>
+                  </h3>
+
+                  <p class="related-guide-description">
+                    {related.data.description}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <a href={guidesHref} class="back-link">
         ← {t("guides.back")}
@@ -748,6 +802,65 @@ if (translations.length > 1) {
     margin-right: 0;
   }
 
+  /* Related guides */
+
+  .related-guides {
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .related-guides > h2 {
+    margin: 0 0 20px;
+    color: var(--color-gold-light);
+    font-size: 1.5rem;
+  }
+
+  .related-guides-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 16px;
+  }
+
+  .related-guide {
+    padding: 22px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+  }
+
+  .related-guide-category {
+    margin: 0 0 12px;
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .related-guide h3 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    line-height: 1.4;
+  }
+
+  .related-guide h3 a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .related-guide h3 a:hover,
+  .related-guide h3 a:focus-visible {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+
+  .related-guide-description {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
 
 </style>
 
