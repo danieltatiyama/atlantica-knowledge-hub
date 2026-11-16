@@ -77,6 +77,12 @@ const en = {
     "No guides have been published in this language yet.",
   "guides.browseEnglish": "Browse English guides",
 
+  "guides.searchLabel": "Search guides",
+  "guides.searchPlaceholder": "Search by title or description...",
+  "guides.noSearchResults": "No guides match your search.",
+  "guides.resultsOne": "guide found",
+  "guides.resultsMany": "guides found",
+
 } as const;
 
 const ptBr = {
@@ -149,6 +155,12 @@ const ptBr = {
   "guides.noArticles":
     "Ainda não há guias publicados neste idioma.",
   "guides.browseEnglish": "Consultar guias em inglês",
+
+  "guides.searchLabel": "Pesquisar guias",
+  "guides.searchPlaceholder": "Pesquisar por título ou descrição...",
+  "guides.noSearchResults": "Nenhum guia corresponde à sua pesquisa.",
+  "guides.resultsOne": "guia encontrado",
+  "guides.resultsMany": "guias encontrados",
 
 } satisfies Record<keyof typeof en, string>;
 
