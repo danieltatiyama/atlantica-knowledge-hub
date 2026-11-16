@@ -4,6 +4,7 @@ import sitemap from "@astrojs/sitemap";
 
 import { satteri } from "@astrojs/markdown-satteri";
 import articleImages from "./src/plugins/article-images.mjs";
+import articleVideos from "./src/plugins/article-videos.mjs";
 
 export default defineConfig({
   site: "https://atlantica-knowledge-hub.aocodex.workers.dev",
@@ -23,7 +24,7 @@ export default defineConfig({
 
   markdown: {
     processor: satteri({
-      hastPlugins: [articleImages],
+      hastPlugins: [articleImages, articleVideos],
     }),
   },
 });
