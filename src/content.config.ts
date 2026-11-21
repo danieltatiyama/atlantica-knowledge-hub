@@ -37,7 +37,7 @@ const guides = defineCollection({
 
     updatedAt: z.coerce.date(),
 
-    draft: z.boolean().default(false),
+    draft: z.boolean().default(true),
   }).superRefine((data, ctx) => {
     if (
       data.subcategory &&
