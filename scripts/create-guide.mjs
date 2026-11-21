@@ -1,6 +1,11 @@
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 
-import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { execFileSync } from "node:child_process";
 
 const templates = {
   "nation-dungeon": {
@@ -55,6 +60,11 @@ try {
   const description = input.description?.trim();
   const translationKey = input["translation-key"];
   const subcategory = input.subcategory?.trim();
+  const mode = input.mode ?? "dry-run";
+
+  if (!["dry-run", "write"].includes(mode)) {
+    throw new Error(`Invalid mode: ${mode}`);
+  }
 
   if (!["en", "pt-br"].includes(lang)) {
     throw new Error(
@@ -159,12 +169,49 @@ try {
     "",
   ].join("\n");
 
-  console.log("[IC] Mode: DRY RUN");
+  console.log("[IC] Mode:", mode.toUpperCase());
   console.log("[IC] Target:", outputPath);
   console.log("[IC] Template:", templateName);
-  console.log("[IC] No files written.");
-  console.log("\n========== MARKDOWN PREVIEW ==========\n");
-  console.log(markdown);
+
+  if (mode === "write") {
+    // Only the development branch may create files.
+    const branch = execFileSync(
+      "git",
+      ["branch", "--show-current"],
+      { encoding: "utf8" }
+    ).trim();
+
+    if (branch !== "dev/i18n") {
+      throw new Error(
+        `WRITE is only allowed on dev/i18n. Current: ${branch || "detached"}`
+      );
+    }
+
+    // Additional protection inside GitHub Actions.
+    if (
+      process.env.GITHUB_ACTIONS === "true" &&
+      process.env.GITHUB_REF !== "refs/heads/dev/i18n"
+    ) {
+      throw new Error(
+        "WRITE is blocked outside the dev/i18n workflow ref."
+      );
+    }
+
+    // Atomic creation: never overwrite existing files.
+    writeFileSync(outputPath, markdown, {
+      encoding: "utf8",
+      flag: "wx",
+    });
+
+    console.log("[IC] Draft created successfully.");
+    console.log("[IC] No Git commit or push performed.");
+  } else {
+    console.log("[IC] No files written.");
+    console.log(
+      "\n========== MARKDOWN PREVIEW ==========\n"
+    );
+    console.log(markdown);
+  }
 } catch (error) {
   console.error("[IC] ERROR:", error.message);
   process.exitCode = 1;
