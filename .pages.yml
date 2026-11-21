@@ -28,6 +28,7 @@ content:
       fields:
         - title
         - category
+        - subcategory
         - updatedAt
         - draft
       sort:
@@ -37,16 +38,19 @@ content:
         sort: updatedAt
         order: desc
 
+
     fields:
       - name: title
         label: Article Title
         type: string
         required: true
+        description: "Clear and descriptive article title."
 
       - name: description
         label: Description
         type: text
         required: true
+        description: "Short summary displayed in guide listings and search results."
 
       - name: translationKey
         label: Translation Key
@@ -76,6 +80,7 @@ content:
               label: Mercenaries
             - name: game-systems
               label: Game Systems
+        description: "Main category used to organize and filter articles."
 
       - name: subcategory
         label: Subcategory
@@ -110,11 +115,13 @@ content:
         required: true
         options:
           format: yyyy-MM-dd
+        description: "Date when the article content was last reviewed or updated."
 
       - name: draft
         label: Draft
         type: boolean
         default: true
+        description: "Indicates if the article is a draft and not yet ready for publication."
 
       - name: body
         label: Article Content
@@ -146,6 +153,7 @@ content:
       fields:
         - title
         - category
+        - subcategory
         - updatedAt
         - draft
       sort:
@@ -155,16 +163,19 @@ content:
         sort: updatedAt
         order: desc
 
+
     fields:
       - name: title
         label: Título do Artigo
         type: string
         required: true
+        description: "Título claro e descritivo do artigo."
 
       - name: description
         label: Descrição
         type: text
         required: true
+        description: "Resumo exibido nas listagens e nos resultados de pesquisa."
 
       - name: translationKey
         label: Chave de Tradução
@@ -194,6 +205,7 @@ content:
               label: Mercenários
             - name: game-systems
               label: Sistemas do Jogo
+        description: "Categoria principal usada para organizar e filtrar os artigos."
 
       - name: subcategory
         label: Subcategoria
@@ -228,11 +240,13 @@ content:
         required: true
         options:
           format: yyyy-MM-dd
+        description: "Data da última revisão ou atualização do conteúdo do artigo."
 
       - name: draft
         label: Rascunho
         type: boolean
         default: true
+        description: "Indica se o artigo é um rascunho e ainda não está pronto para publicação."
 
       - name: body
         label: Conteúdo do Artigo
