@@ -31,6 +31,8 @@ const updatedAt = guide.data.updatedAt.toLocaleDateString(
 
 const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
+const categoryHref =
+  `${guidesHref}?category=${encodeURIComponent(guide.data.category)}`;
 
 const categoryLabels: Record<string, string> = {
   "nation-dungeons": t("guides.categoryNationDungeons"),
@@ -72,22 +74,54 @@ if (translations.length > 1) {
   }
 }
 
-const relatedGuides = (
-  await getCollection(
-    "guides",
-    ({ data }) =>
-      !data.draft &&
-      data.lang === lang &&
-      data.category === guide.data.category
+
+const categoryGuides = await getCollection(
+  "guides",
+  ({ data }) =>
+    !data.draft &&
+    data.lang === lang &&
+    data.category === guide.data.category
+);
+
+// Alphabetical navigation within the same language and category.
+const navigableGuides = [...categoryGuides].sort(
+  (a, b) =>
+    a.data.title.localeCompare(
+      b.data.title,
+      lang === "pt-br" ? "pt-BR" : "en"
+    ) || a.id.localeCompare(b.id)
+);
+
+const currentGuideIndex = navigableGuides.findIndex(
+  (entry) => entry.id === guide.id
+);
+
+const previousGuide =
+  currentGuideIndex > 0
+    ? navigableGuides[currentGuideIndex - 1]
+    : null;
+
+const nextGuide =
+  currentGuideIndex >= 0 &&
+  currentGuideIndex < navigableGuides.length - 1
+    ? navigableGuides[currentGuideIndex + 1]
+    : null;
+
+// Related guides remain sorted by most recently updated.
+const relatedGuides = categoryGuides
+  .filter(
+    (entry) =>
+      entry.id !== guide.id &&
+      entry.id !== previousGuide?.id &&
+      entry.id !== nextGuide?.id
   )
-)
-  .filter((entry) => entry.id !== guide.id)
   .sort(
     (a, b) =>
       b.data.updatedAt.getTime() -
       a.data.updatedAt.getTime()
   )
   .slice(0, 3);
+
 
 
 ---
@@ -103,13 +137,19 @@ const relatedGuides = (
       <span>/</span>
       <a href={guidesHref}>{t("nav.guides")}</a>
       <span>/</span>
+      <a href={categoryHref}>
+        {categoryLabels[guide.data.category] ?? guide.data.category}
+      </a>
+      <span>/</span>
       <span aria-current="page">{guide.data.title}</span>
     </nav>
 
     <article class="article">
       <header class="article-header">
         <p class="eyebrow">
-          {categoryLabels[guide.data.category] ?? guide.data.category}
+          <a href={categoryHref}>
+            {categoryLabels[guide.data.category] ?? guide.data.category}
+          </a>
         </p>
 
         <h1>{guide.data.title}</h1>
@@ -150,6 +190,38 @@ const relatedGuides = (
           </aside>
         )}
       </div>
+
+      {(previousGuide || nextGuide) && (
+        <nav
+          class="article-navigation"
+          aria-label={t("article.navigation")}
+        >
+          {previousGuide && (
+            <a
+              class="article-nav-link article-nav-link--previous"
+              href={`${guidesHref}${previousGuide.id.replace(/^[^/]+\//, "")}/`}
+            >
+              <span class="article-nav-label">
+                ← {t("article.previousGuide")}
+              </span>
+              <strong>{previousGuide.data.title}</strong>
+            </a>
+          )}
+
+          {nextGuide && (
+            <a
+              class="article-nav-link article-nav-link--next"
+              href={`${guidesHref}${nextGuide.id.replace(/^[^/]+\//, "")}/`}
+            >
+              <span class="article-nav-label">
+                {t("article.nextGuide")} →
+              </span>
+              <strong>{nextGuide.data.title}</strong>
+            </a>
+          )}
+        </nav>
+      )}
+
 
       {relatedGuides.length > 0 && (
         <section
@@ -860,6 +932,78 @@ const relatedGuides = (
     color: var(--color-text-muted);
     font-size: 0.9rem;
     line-height: 1.6;
+  }
+
+  .eyebrow a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .eyebrow a:hover,
+  .eyebrow a:focus-visible {
+    text-decoration: underline;
+  }
+
+  /* Previous and next guide navigation */
+
+  .article-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  .article-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 20px 24px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-decoration: none;
+
+    transition: border-color 0.2s ease;
+  }
+
+  .article-nav-link:hover,
+  .article-nav-link:focus-visible {
+    border-color: var(--color-accent);
+  }
+
+  .article-nav-link--next {
+    grid-column: 2;
+    text-align: right;
+  }
+
+  .article-nav-label {
+    color: var(--color-accent);
+    font-size: 0.8rem;
+  }
+
+  .article-nav-link strong {
+    font-size: 1rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 600px) {
+    .article-navigation {
+      grid-template-columns: 1fr;
+    }
+
+    .article-nav-link--next {
+      grid-column: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-nav-link {
+      transition: none;
+    }
   }
 
 </style>
