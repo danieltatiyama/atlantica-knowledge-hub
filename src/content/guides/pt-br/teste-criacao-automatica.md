@@ -1,14 +1,13 @@
 ---
-title: "Teste de Criação Automática"
-description: "Artigo experimental para validar a criação de rascunhos."
-translationKey: "teste-criacao-automatica"
-lang: "pt-br"
-category: "nation-dungeons"
-subcategory: "avalon"
-updatedAt: "2026-11-21"
+title: Teste de Criação Automática
+description: Artigo experimental para validar a criação de rascunhos.
+translationKey: teste-criacao-automatica
+lang: pt-br
+category: nation-dungeons
+subcategory: avalon
+updatedAt: 2026-11-21
 draft: true
 ---
-
 ## Visão Geral
 
 Apresente brevemente a dungeon, seus objetivos e sua
@@ -16,8 +15,9 @@ importância dentro do Atlantica Online.
 
 ## Informações da Dungeon
 
+
 | Propriedade | Valor |
-| --- | --- |
+| -------------------------- | ----------- |
 | Nome da Dungeon | A verificar |
 | Nível Mínimo | A verificar |
 | Localização | A verificar |
@@ -25,6 +25,7 @@ importância dentro do Atlantica Online.
 | Limite de Tempo | A verificar |
 | Requisitos de Entrada | A verificar |
 | Jogadores Recomendados | A verificar |
+
 
 ## Requisitos de Acesso
 
@@ -75,9 +76,11 @@ Inclua recomendações de formação quando aplicável.
 
 ## Recompensas
 
+
 | Recompensa | Quantidade | Condições |
-| --- | --- | --- |
+| ----------- | ---------- | --------- |
 | A verificar | — | — |
+
 
 Documente se as recompensas são garantidas, aleatórias
 ou dependem da participação dos jogadores.
@@ -103,3 +106,7 @@ Registre a origem das informações.
 
 Inclua comunicados oficiais, arquivos do cliente do jogo
 ou testes realizados no jogo, quando disponíveis.
+
+
+
+yes
