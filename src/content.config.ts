@@ -43,21 +43,34 @@ const guides = defineCollection({
       "in-review",
       "approved",
     ]).optional(),
-  }).superRefine((data, ctx) => {
-    if (
-      data.subcategory &&
-      GUIDE_SUBCATEGORIES[data.subcategory].category !==
-        data.category
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["subcategory"],
-        message:
-          `Subcategory "${data.subcategory}" does not belong ` +
-          `to category "${data.category}".`,
-      });
-    }
-  }),
+    }).superRefine((data, ctx) => {
+      if (
+        data.subcategory &&
+        GUIDE_SUBCATEGORIES[data.subcategory].category !==
+          data.category
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["subcategory"],
+          message:
+            `Subcategory "${data.subcategory}" does not belong ` +
+            `to category "${data.category}".`,
+        });
+      }
+
+      // Published guides require editorial approval.
+      if (
+        data.draft === false &&
+        data.reviewStatus !== "approved"
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["reviewStatus"],
+          message:
+            "Published guides must have reviewStatus: approved.",
+        });
+      }
+    }),
 });
 
 export const collections = {

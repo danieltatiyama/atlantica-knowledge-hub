@@ -267,7 +267,7 @@ content:
         label: Draft
         type: boolean
         default: true
-        description: "Indicates if the article is a draft and not yet ready for publication."
+        description: "Only disable Draft when Editorial Status is Approved. Otherwise, the site build will fail."
 
       - name: reviewStatus
         label: Editorial Status
@@ -427,7 +427,7 @@ content:
         label: Rascunho
         type: boolean
         default: true
-        description: "Indica se o artigo é um rascunho e ainda não está pronto para publicação."
+        description: "Desative Rascunho apenas quando o Status Editorial estiver como Aprovado. Caso contrário, o build falhará."
 
       - name: reviewStatus
         label: Status Editorial
