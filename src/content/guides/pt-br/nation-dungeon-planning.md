@@ -5,6 +5,7 @@ translationKey: "nation-dungeon-planning"
 lang: "pt-br"
 category: "nation-dungeons"
 updatedAt: "2026-11-11"
+reviewStatus: approved
 draft: false
 ---
 
