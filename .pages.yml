@@ -77,6 +77,33 @@ content:
             - name: game-systems
               label: Game Systems
 
+      - name: subcategory
+        label: Subcategory
+        type: select
+        required: false
+        description: "Optional. Choose a subcategory matching the main category."
+        options:
+          placeholder: "No subcategory"
+          values:
+            - name: avalon
+              label: "Nation Dungeons - Avalon"
+            - name: babel
+              label: "Nation Dungeons - Babel"
+            - name: yggdrasil
+              label: "Nation Dungeons - Yggdrasil"
+            - name: alcatraz
+              label: "Nation Dungeons - Alcatraz"
+            - name: pirate
+              label: "Nation Dungeons - Pirate"
+            - name: skills
+              label: "Mercenaries - Skills"
+            - name: builds-formations
+              label: "Mercenaries - Builds & Formations"
+            - name: crafting
+              label: "Game Systems - Crafting"
+            - name: equipment-enhancement
+              label: "Game Systems - Equipment & Enhancement"
+
       - name: updatedAt
         label: Last Updated
         type: date
@@ -167,6 +194,33 @@ content:
               label: Mercenários
             - name: game-systems
               label: Sistemas do Jogo
+
+      - name: subcategory
+        label: Subcategoria
+        type: select
+        required: false
+        description: "Opcional. Selecione uma subcategoria da categoria principal."
+        options:
+          placeholder: "Sem subcategoria"
+          values:
+            - name: avalon
+              label: "Dungeons da Nação - Avalon"
+            - name: babel
+              label: "Dungeons da Nação - Babel"
+            - name: yggdrasil
+              label: "Dungeons da Nação - Yggdrasil"
+            - name: alcatraz
+              label: "Dungeons da Nação - Alcatraz"
+            - name: pirate
+              label: "Dungeons da Nação - Pirate"
+            - name: skills
+              label: "Mercenários - Habilidades"
+            - name: builds-formations
+              label: "Mercenários - Builds e Formações"
+            - name: crafting
+              label: "Sistemas do Jogo - Fabricação"
+            - name: equipment-enhancement
+              label: "Sistemas do Jogo - Equipamentos e Aprimoramento"
 
       - name: updatedAt
         label: Última Atualização

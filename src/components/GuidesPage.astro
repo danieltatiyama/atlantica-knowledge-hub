@@ -1,4 +1,3 @@
-
 ---
 import type { Lang } from "../i18n/ui";
 import { useTranslations } from "../i18n/utils";
@@ -13,21 +12,25 @@ const t = useTranslations(lang);
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 
+import { SUBCATEGORY_IDS, GUIDE_SUBCATEGORIES, } from "../data/guide-taxonomy";
 
 const categories = [
   {
+    slug: "nation-dungeons",
     title: t("guides.categoryNationDungeons"),
     description: t("guides.nationDungeonsDesc"),
     symbol: "✦",
     theme: "dungeons",
   },
   {
+    slug: "mercenaries",
     title: t("guides.categoryMercenaries"),
     description: t("guides.mercenariesDesc"),
     symbol: "⚔",
     theme: "mercenaries",
   },
   {
+    slug: "game-systems",
     title: t("guides.categoryGameSystems"),
     description: t("guides.gameSystemsDesc"),
     symbol: "⚙",
@@ -43,13 +46,18 @@ const guides = allGuides
       b.data.updatedAt.getTime() -
       a.data.updatedAt.getTime()
   );
-  
+
 const categoryLabels: Record<string, string> = {
   "nation-dungeons": t("guides.categoryNationDungeons"),
   "mercenaries": t("guides.categoryMercenaries"),
   "game-systems": t("guides.categoryGameSystems"),
 };
 
+const subcategories = SUBCATEGORY_IDS.map((id) => ({
+  id,
+  category: GUIDE_SUBCATEGORIES[id].category,
+  label: GUIDE_SUBCATEGORIES[id].labels[lang],
+}));
 ---
 
 <BaseLayout
@@ -115,8 +123,35 @@ const categoryLabels: Record<string, string> = {
           </button>
         </div>
 
-        <p
-          id="guide-results-count"
+        <div class="guide-subcategory"
+          id="guide-subcategory-group"
+          hidden
+        >
+          <label for="guide-subcategory">
+            {t("guides.subcategory")}
+          </label>
+
+          <select
+            id="guide-subcategory"
+            aria-controls="guide-list"
+          >
+            <option value="">
+              {t("guides.allSubcategories")}
+            </option>
+
+            {subcategories.map((subcategory) => (
+              <option
+                value={subcategory.id}
+                data-parent-category={subcategory.category}
+              >
+                {subcategory.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+
+        <p id="guide-results-count"
           class="guide-results-count"
           role="status"
           aria-live="polite"
@@ -133,14 +168,16 @@ const categoryLabels: Record<string, string> = {
 
         <div class="guide-list" id="guide-list">
           {guides.map((guide) => (
-            <article class="card" data-guide-category={guide.data.category} data-guide-search={`${guide.data.title} ${guide.data.description}`}>
+            <article class="card"
+              data-guide-subcategory={guide.data.subcategory ?? ""}
+              data-guide-category={guide.data.category}
+              data-guide-search={`${guide.data.title} ${guide.data.description}`}>
                 <p class="eyebrow">
                 {categoryLabels[guide.data.category] ?? guide.data.category}
                 </p>
 
                 <h3>
-                    <a class="guide-link" href={`${lang === "en" ? "" : `/${lang}`}/guides/${guide.id.replace(/^[^/]+\//, "")}/`}
->
+                    <a class="guide-link" href={`${lang === "en" ? "" : `/${lang}`}/guides/${guide.id.replace(/^[^/]+\//, "")}/`}>
                         {guide.data.title}
                     </a>
                 </h3>
@@ -153,7 +190,7 @@ const categoryLabels: Record<string, string> = {
             </article>
           ))}
         </div>
-        
+
         <p
           id="no-guides"
           class="no-guides"
@@ -172,21 +209,37 @@ const categoryLabels: Record<string, string> = {
       <h2 id="categories-title">{t("guides.categories")}</h2>
 
       <div class="grid">
-        {categories.map((category) => (
-          <article class="card category-card">
-            <div class={`category-art category-art--${category.theme}`}>
-              <div class="category-symbol" aria-hidden="true">
-                {category.symbol}
-              </div>
-            </div>
+        {categories.map((category) => {
+          const count = guides.filter(
+            (guide) => guide.data.category === category.slug
+          ).length;
 
-            <div class="category-content">
-              <h3>{category.title}</h3>
-              <p>{category.description}</p>
-              <span>{t("shared.comingSoon")}</span>
-            </div>
-          </article>
-        ))}
+          const href =
+            `${lang === "en" ? "" : `/${lang}`}/guides/?category=${category.slug}`;
+
+          return (
+            <a class="card category-card" href={href}>
+              <div class={`category-art category-art--${category.theme}`}>
+                <div class="category-symbol" aria-hidden="true">
+                  {category.symbol}
+                </div>
+              </div>
+
+              <div class="category-content">
+                <h3>{category.title}</h3>
+                <p>{category.description}</p>
+
+                <span>
+                  {count} {
+                    count === 1
+                      ? t("guides.categoryCountOne")
+                      : t("guides.categoryCountMany")
+                  }
+                </span>
+              </div>
+            </a>
+          );
+        })}
       </div>
     </section>
   </main>
@@ -305,7 +358,7 @@ const categoryLabels: Record<string, string> = {
     color: var(--color-accent);
     text-decoration: underline;
     }
-    
+
   /* Atlantica Classic - Guide Categories */
 
   .categories .category-card {
@@ -560,7 +613,64 @@ const categoryLabels: Record<string, string> = {
     }
   }
 
+  /* Clickable category cards */
+
+  .categories .category-card {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .categories .category-card:focus-visible {
+    outline: 2px solid var(--color-gold-light);
+    outline-offset: 3px;
+  }
+
+  .categories .category-card:hover h3,
+  .categories .category-card:focus-visible h3 {
+    color: var(--color-accent);
+  }
+
+  /* Guide subcategory filter */
+
+  .guide-subcategory {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 520px;
+    margin: 0 0 24px;
+  }
+
+  .guide-subcategory[hidden] {
+    display: none;
+  }
+
+  .guide-subcategory label {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .guide-subcategory select {
+    width: 100%;
+    min-width: 0;
+    padding: 12px 16px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+
+    background: var(--color-surface);
+    color: var(--color-text);
+
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  .guide-subcategory select:focus-visible {
+    outline: 2px solid var(--color-gold-light);
+    outline-offset: 2px;
+  }
+
 </style>
+
 
 
 <script>
@@ -579,13 +689,23 @@ const categoryLabels: Record<string, string> = {
   const searchInput =
     document.querySelector<HTMLInputElement>("#guide-search");
 
+  const subcategorySelect =
+    document.querySelector<HTMLSelectElement>(
+      "#guide-subcategory"
+    );
+
+  const subcategoryGroup =
+    document.querySelector<HTMLElement>(
+      "#guide-subcategory-group"
+    );
+
   const emptyMessage =
     document.querySelector<HTMLElement>("#no-guides");
-    
+
   const resultsCount =
-  document.querySelector<HTMLElement>(
-    "#guide-results-count"
-  );
+    document.querySelector<HTMLElement>(
+      "#guide-results-count"
+    );
 
   let activeCategory = "all";
 
@@ -597,14 +717,58 @@ const categoryLabels: Record<string, string> = {
       .trim();
   }
 
+  function syncSubcategoryOptions() {
+    if (!subcategorySelect) return;
+
+    const selectedValue = subcategorySelect.value;
+    const options = Array.from(subcategorySelect.options);
+
+    let hasOptions = false;
+
+    options.forEach((option) => {
+      if (!option.value) return;
+
+      const allowed =
+        option.dataset.parentCategory === activeCategory;
+
+      option.disabled = !allowed;
+      option.hidden = !allowed;
+
+      if (allowed) hasOptions = true;
+    });
+
+    if (subcategoryGroup) {
+      subcategoryGroup.hidden = !hasOptions;
+    }
+
+    const selectionIsValid = options.some(
+      (option) =>
+        option.value === selectedValue &&
+        !option.disabled
+    );
+
+    if (!selectionIsValid) {
+      subcategorySelect.value = "";
+    }
+  }
+
   function applyFilters() {
+    syncSubcategoryOptions();
+
     const query = normalizeText(searchInput?.value ?? "");
+    const selectedSubcategory =
+      subcategorySelect?.value ?? "";
+
     let visibleCount = 0;
 
     cards.forEach((card) => {
       const matchesCategory =
         activeCategory === "all" ||
         card.dataset.guideCategory === activeCategory;
+
+      const matchesSubcategory =
+        !selectedSubcategory ||
+        card.dataset.guideSubcategory === selectedSubcategory;
 
       const searchText = normalizeText(
         card.dataset.guideSearch ?? ""
@@ -613,7 +777,10 @@ const categoryLabels: Record<string, string> = {
       const matchesSearch =
         !query || searchText.includes(query);
 
-      const visible = matchesCategory && matchesSearch;
+      const visible =
+        matchesCategory &&
+        matchesSubcategory &&
+        matchesSearch;
 
       card.hidden = !visible;
 
@@ -654,11 +821,18 @@ const categoryLabels: Record<string, string> = {
   function updateUrl() {
     const url = new URL(window.location.href);
     const query = searchInput?.value.trim() ?? "";
+    const subcategory = subcategorySelect?.value ?? "";
 
     if (activeCategory === "all") {
       url.searchParams.delete("category");
     } else {
       url.searchParams.set("category", activeCategory);
+    }
+
+    if (subcategory) {
+      url.searchParams.set("subcategory", subcategory);
+    } else {
+      url.searchParams.delete("subcategory");
     }
 
     if (query) {
@@ -689,7 +863,33 @@ const categoryLabels: Record<string, string> = {
       searchInput.value = params.get("q") ?? "";
     }
 
+    syncSubcategoryOptions();
+
+    const requestedSubcategory =
+      params.get("subcategory") ?? "";
+
+    if (subcategorySelect) {
+      const validOption = Array.from(
+        subcategorySelect.options
+      ).find(
+        (option) =>
+          option.value === requestedSubcategory &&
+          !option.disabled
+      );
+
+      subcategorySelect.value =
+        validOption ? requestedSubcategory : "";
+    }
+
     applyFilters();
+
+    // Remove invalid category/subcategory combinations.
+    if (
+      requestedSubcategory &&
+      subcategorySelect?.value !== requestedSubcategory
+    ) {
+      updateUrl();
+    }
   }
 
   buttons.forEach((button) => {
@@ -703,6 +903,11 @@ const categoryLabels: Record<string, string> = {
   });
 
   searchInput?.addEventListener("input", () => {
+    applyFilters();
+    updateUrl();
+  });
+
+  subcategorySelect?.addEventListener("change", () => {
     applyFilters();
     updateUrl();
   });

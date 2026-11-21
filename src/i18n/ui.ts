@@ -88,6 +88,10 @@ const en = {
   "article.previousGuide": "Previous Guide",
   "article.nextGuide": "Next Guide",
 
+  "guides.categoryCountOne": "guide",
+  "guides.categoryCountMany": "guides",
+  "guides.subcategory": "Subcategory",
+  "guides.allSubcategories": "All subcategories",
 } as const;
 
 const ptBr = {
@@ -171,6 +175,11 @@ const ptBr = {
   "article.navigation": "Navegação entre guias",
   "article.previousGuide": "Guia anterior",
   "article.nextGuide": "Próximo guia",
+
+  "guides.categoryCountOne": "guia",
+  "guides.categoryCountMany": "guias",
+  "guides.subcategory": "Subcategoria",
+  "guides.allSubcategories": "Todas as subcategorias",
 
 } satisfies Record<keyof typeof en, string>;
 

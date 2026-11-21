@@ -4,6 +4,7 @@ import { getCollection, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import type { Lang } from "../i18n/ui";
 import { useTranslations } from "../i18n/utils";
+import { GUIDE_SUBCATEGORIES } from "../data/guide-taxonomy";
 
 interface Props {
   guide: CollectionEntry<"guides">;
@@ -33,6 +34,17 @@ const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
 const categoryHref =
   `${guidesHref}?category=${encodeURIComponent(guide.data.category)}`;
+
+
+const subcategoryInfo = guide.data.subcategory
+  ? GUIDE_SUBCATEGORIES[guide.data.subcategory]
+  : null;
+
+const subcategoryHref =
+  guide.data.subcategory
+    ? `${categoryHref}&subcategory=${encodeURIComponent(guide.data.subcategory)}`
+    : null;
+
 
 const categoryLabels: Record<string, string> = {
   "nation-dungeons": t("guides.categoryNationDungeons"),
@@ -141,6 +153,14 @@ const relatedGuides = categoryGuides
         {categoryLabels[guide.data.category] ?? guide.data.category}
       </a>
       <span>/</span>
+      {subcategoryInfo && subcategoryHref && (
+        <>
+          <a href={subcategoryHref}>
+            {subcategoryInfo.labels[lang]}
+          </a>
+          <span>/</span>
+        </>
+      )}
       <span aria-current="page">{guide.data.title}</span>
     </nav>
 
@@ -151,6 +171,14 @@ const relatedGuides = categoryGuides
             {categoryLabels[guide.data.category] ?? guide.data.category}
           </a>
         </p>
+
+        {subcategoryInfo && subcategoryHref && (
+          <p class="article-subcategory">
+            <a href={subcategoryHref}>
+              {subcategoryInfo.labels[lang]}
+            </a>
+          </p>
+        )}
 
         <h1>{guide.data.title}</h1>
 
@@ -1004,6 +1032,23 @@ const relatedGuides = categoryGuides
     .article-nav-link {
       transition: none;
     }
+  }
+
+  /* Article subcategory */
+
+  .article-subcategory {
+    margin: 6px 0 18px;
+    font-size: 0.9rem;
+  }
+
+  .article-subcategory a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .article-subcategory a:hover,
+  .article-subcategory a:focus-visible {
+    text-decoration: underline;
   }
 
 </style>
