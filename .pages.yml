@@ -40,8 +40,6 @@ actions:
         type: select
         required: false
         options:
-          - label: No subcategory
-            value: ""
           - label: "Nation Dungeons - Avalon"
             value: avalon
           - label: "Nation Dungeons - Babel"
