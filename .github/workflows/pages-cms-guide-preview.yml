@@ -1,0 +1,74 @@
+
+name: Preview Pages CMS Guide Creation
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: "Pages CMS JSON payload"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate guide information
+        env:
+          CMS_PAYLOAD: ${{ inputs.payload }}
+        run: |
+          node <<'NODE'
+          const payload = JSON.parse(process.env.CMS_PAYLOAD);
+          const input = payload.inputs ?? {};
+
+          const languages = ["en", "pt-br"];
+          const templates = [
+            "nation-dungeon",
+            "mercenaries",
+            "game-systems"
+          ];
+
+          if (
+            payload.source !== "pages-cms" ||
+            payload.action?.name !== "create-guide-preview"
+          ) {
+            throw new Error("Invalid Pages CMS action payload.");
+          }
+
+          if (!languages.includes(input.language)) {
+            throw new Error("Invalid language.");
+          }
+
+          if (!templates.includes(input.template)) {
+            throw new Error("Invalid template.");
+          }
+
+          if (
+            typeof input.title !== "string" ||
+            !input.title.trim()
+          ) {
+            throw new Error("Article title is required.");
+          }
+
+          if (
+            typeof input.translationKey !== "string" ||
+            !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
+              input.translationKey
+            )
+          ) {
+            throw new Error(
+              "Article identifier must use lowercase letters, numbers and hyphens."
+            );
+          }
+
+          console.log("[IC] CMS guide form validated.");
+          console.log("[IC] Language:", input.language);
+          console.log("[IC] Template:", input.template);
+          console.log("[IC] Title:", input.title);
+          console.log("[IC] Article ID:", input.translationKey);
+          console.log("[IC] No files created.");
+          NODE
