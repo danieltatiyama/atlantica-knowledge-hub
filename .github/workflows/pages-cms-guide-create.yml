@@ -1,0 +1,177 @@
+
+name: Create Pages CMS Draft Guide
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: "Pages CMS JSON payload"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlantica-create-draft-dev-i18n
+  queue: max
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify target branch
+        shell: bash
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/dev/i18n" ]; then
+            echo "::error::Draft creation is allowed only on dev/i18n."
+            exit 1
+          fi
+
+      - name: Checkout development branch
+        uses: actions/checkout@v7
+        with:
+          ref: dev/i18n
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Validate and create draft
+        env:
+          CMS_PAYLOAD: ${{ inputs.payload }}
+        run: |
+          node <<'NODE'
+          const { execFileSync } = require("node:child_process");
+          const { readFileSync } = require("node:fs");
+
+          const git = (args) =>
+            execFileSync("git", args, {
+              encoding: "utf8",
+            }).trim();
+
+          const run = (command, args) =>
+            execFileSync(command, args, {
+              stdio: "inherit",
+            });
+
+          const payload = JSON.parse(process.env.CMS_PAYLOAD);
+          const input = payload.inputs ?? {};
+
+          if (
+            process.env.GITHUB_REF !== "refs/heads/dev/i18n" ||
+            process.env.GITHUB_ACTIONS !== "true" ||
+            git(["branch", "--show-current"]) !== "dev/i18n"
+          ) {
+            throw new Error("Unauthorized target branch.");
+          }
+
+          if (
+            payload.source !== "pages-cms" ||
+            payload.action?.name !== "create-guide-draft"
+          ) {
+            throw new Error("Invalid Pages CMS action payload.");
+          }
+
+          const required = [
+            "language",
+            "template",
+            "title",
+            "description",
+            "translationKey",
+          ];
+
+          for (const field of required) {
+            if (
+              typeof input[field] !== "string" ||
+              !input[field].trim()
+            ) {
+              throw new Error(`Invalid field: ${field}`);
+            }
+          }
+
+          if (
+            input.subcategory != null &&
+            typeof input.subcategory !== "string"
+          ) {
+            throw new Error("Invalid subcategory.");
+          }
+
+          if (git(["status", "--porcelain"])) {
+            throw new Error("Working directory is not clean.");
+          }
+
+          const args = [
+            "scripts/create-guide.mjs",
+            "--mode", "write",
+            "--lang", input.language,
+            "--template", input.template,
+            "--title", input.title,
+            "--description", input.description,
+            "--translation-key", input.translationKey,
+          ];
+
+          if (input.subcategory?.trim()) {
+            args.push("--subcategory", input.subcategory);
+          }
+
+          console.log("[IC] Creating draft article.");
+          run(process.execPath, args);
+
+          const articlePath =
+            `src/content/guides/${input.language}/` +
+            `${input.translationKey}.md`;
+
+          const markdown = readFileSync(articlePath, "utf8");
+
+          if (
+            !markdown.startsWith("---\n") ||
+            !/^draft: true$/m.test(markdown)
+          ) {
+            throw new Error("Draft verification failed.");
+          }
+
+          run("git", ["add", "--", articlePath]);
+
+          const staged = git([
+            "diff", "--cached", "--name-status",
+          ]);
+
+          if (staged !== `A\t${articlePath}`) {
+            throw new Error(
+              "Unexpected staged changes: " + staged
+            );
+          }
+
+          run("git", [
+            "config", "user.name", "github-actions[bot]",
+          ]);
+
+          run("git", [
+            "config",
+            "user.email",
+            "41898282+github-actions[bot]@users.noreply.github.com",
+          ]);
+
+          run("git", [
+            "commit",
+            "-m",
+            `docs: create draft ${input.translationKey} (${input.language})`,
+          ]);
+
+          // Normal push: never force-update the branch.
+          run("git", [
+            "push",
+            "origin",
+            "HEAD:refs/heads/dev/i18n",
+          ]);
+
+          console.log("[IC] Draft committed successfully.");
+          console.log("[IC] Branch: dev/i18n");
+          console.log("[IC] Article:", articlePath);
+          NODE
