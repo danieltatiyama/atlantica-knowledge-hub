@@ -35,6 +35,32 @@ actions:
           - label: Game System
             value: game-systems
 
+      - name: subcategory
+        label: Subcategory (optional)
+        type: select
+        required: false
+        options:
+          - label: No subcategory
+            value: ""
+          - label: "Nation Dungeons - Avalon"
+            value: avalon
+          - label: "Nation Dungeons - Babel"
+            value: babel
+          - label: "Nation Dungeons - Yggdrasil"
+            value: yggdrasil
+          - label: "Nation Dungeons - Alcatraz"
+            value: alcatraz
+          - label: "Nation Dungeons - Pirate"
+            value: pirate
+          - label: "Mercenaries - Skills"
+            value: skills
+          - label: "Mercenaries - Builds & Formations"
+            value: builds-formations
+          - label: "Game Systems - Crafting"
+            value: crafting
+          - label: "Game Systems - Equipment & Enhancement"
+            value: equipment-enhancement
+
       - name: title
         label: Article title
         type: text
