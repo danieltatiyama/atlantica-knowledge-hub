@@ -84,6 +84,9 @@ const en = {
   "guides.resultsMany": "guides found",
 
   "article.relatedGuides": "Related Guides",
+  "article.navigation": "Guide navigation",
+  "article.previousGuide": "Previous Guide",
+  "article.nextGuide": "Next Guide",
 
 } as const;
 
@@ -165,6 +168,9 @@ const ptBr = {
   "guides.resultsMany": "guias encontrados",
 
   "article.relatedGuides": "Guias Relacionados",
+  "article.navigation": "Navegação entre guias",
+  "article.previousGuide": "Guia anterior",
+  "article.nextGuide": "Próximo guia",
 
 } satisfies Record<keyof typeof en, string>;
 
