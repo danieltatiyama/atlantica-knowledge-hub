@@ -126,6 +126,26 @@ content:
       - name: body
         label: Article Content
         type: rich-text
+        default: |
+          ## Overview
+
+          Briefly introduce the subject of this guide.
+
+          ## Requirements
+
+          List any prerequisites or conditions.
+
+          ## How It Works
+
+          Explain the relevant mechanics or procedures.
+
+          ## Tips and Recommendations
+
+          Add useful advice for players.
+
+          ## Sources and Verification
+
+          Document the sources used to verify this information.
         options:
           format: markdown
           switcher: true
@@ -251,6 +271,26 @@ content:
       - name: body
         label: Conteúdo do Artigo
         type: rich-text
+        default: |
+          ## Visão Geral
+
+          Introduza brevemente o assunto deste guia.
+
+          ## Requisitos
+
+          Liste quaisquer pré-requisitos ou condições.
+
+          ## Como Funciona
+
+          Explique os mecanismos ou procedimentos relevantes.
+
+          ## Dicas e Recomendações
+
+          Adicione conselhos úteis para os jogadores.
+
+          ## Fontes e Verificação
+
+          Documente as fontes utilizadas para verificar esta informação.
         options:
           format: markdown
           switcher: true
