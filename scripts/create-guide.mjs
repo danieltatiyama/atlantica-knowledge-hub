@@ -157,6 +157,7 @@ try {
   }
 
   frontmatter.push(
+    "reviewStatus: draft",
     `updatedAt: ${JSON.stringify(updatedAt)}`,
     "draft: true",
     "---"

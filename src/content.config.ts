@@ -38,6 +38,11 @@ const guides = defineCollection({
     updatedAt: z.coerce.date(),
 
     draft: z.boolean().default(true),
+    reviewStatus: z.enum([
+      "draft",
+      "in-review",
+      "approved",
+    ]).optional(),
   }).superRefine((data, ctx) => {
     if (
       data.subcategory &&
