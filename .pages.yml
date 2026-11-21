@@ -1,5 +1,50 @@
 # Atlantica Knowledge Hub - Pages CMS
 
+
+actions:
+  - name: create-guide-preview
+    label: "Create guide from template (TEST)"
+    workflow: pages-cms-guide-preview.yml
+    ref: current
+    confirm:
+      title: "Validate new guide?"
+      message: "This test validates the inputs without creating any files."
+      button: "Validate"
+    fields:
+      - name: language
+        label: Language
+        type: select
+        required: true
+        default: en
+        options:
+          - label: English
+            value: en
+          - label: Português
+            value: pt-br
+
+      - name: template
+        label: Guide template
+        type: select
+        required: true
+        default: nation-dungeon
+        options:
+          - label: Nation Dungeon
+            value: nation-dungeon
+          - label: Mercenary
+            value: mercenaries
+          - label: Game System
+            value: game-systems
+
+      - name: title
+        label: Article title
+        type: text
+        required: true
+
+      - name: translationKey
+        label: Article identifier
+        type: text
+        required: true
+
 media:
   input: public/images
   output: /images
