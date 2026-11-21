@@ -40,6 +40,11 @@ actions:
         type: text
         required: true
 
+      - name: description
+        label: Short description
+        type: text
+        required: true
+
       - name: translationKey
         label: Article identifier
         type: text

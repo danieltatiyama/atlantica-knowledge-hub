@@ -1,4 +1,3 @@
-
 name: Preview Pages CMS Guide Creation
 
 on:
@@ -17,20 +16,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate guide information
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Validate and preview guide
         env:
           CMS_PAYLOAD: ${{ inputs.payload }}
         run: |
           node <<'NODE'
+          const { execFileSync } = require("node:child_process");
+
           const payload = JSON.parse(process.env.CMS_PAYLOAD);
           const input = payload.inputs ?? {};
-
-          const languages = ["en", "pt-br"];
-          const templates = [
-            "nation-dungeon",
-            "mercenaries",
-            "game-systems"
-          ];
 
           if (
             payload.source !== "pages-cms" ||
@@ -39,36 +41,46 @@ jobs:
             throw new Error("Invalid Pages CMS action payload.");
           }
 
-          if (!languages.includes(input.language)) {
-            throw new Error("Invalid language.");
+          const required = [
+            "language",
+            "template",
+            "title",
+            "description",
+            "translationKey"
+          ];
+
+          for (const field of required) {
+            if (
+              typeof input[field] !== "string" ||
+              !input[field].trim()
+            ) {
+              throw new Error(`Missing or invalid field: ${field}`);
+            }
           }
 
-          if (!templates.includes(input.template)) {
-            throw new Error("Invalid template.");
-          }
+          const args = [
+            "scripts/create-guide.mjs",
+            "--lang", input.language,
+            "--template", input.template,
+            "--title", input.title,
+            "--description", input.description,
+            "--translation-key", input.translationKey
+          ];
 
           if (
-            typeof input.title !== "string" ||
-            !input.title.trim()
+            typeof input.subcategory === "string" &&
+            input.subcategory.trim()
           ) {
-            throw new Error("Article title is required.");
+            args.push("--subcategory", input.subcategory);
           }
 
-          if (
-            typeof input.translationKey !== "string" ||
-            !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(
-              input.translationKey
-            )
-          ) {
-            throw new Error(
-              "Article identifier must use lowercase letters, numbers and hyphens."
-            );
-          }
+          console.log("[IC] Starting guide generator.");
+          console.log("[IC] Mode: DRY RUN");
 
-          console.log("[IC] CMS guide form validated.");
-          console.log("[IC] Language:", input.language);
-          console.log("[IC] Template:", input.template);
-          console.log("[IC] Title:", input.title);
-          console.log("[IC] Article ID:", input.translationKey);
-          console.log("[IC] No files created.");
+          execFileSync(process.execPath, args, {
+            stdio: "inherit"
+          });
+
+          console.log("[IC] Preview completed successfully.");
+          console.log("[IC] No files committed.");
           NODE
