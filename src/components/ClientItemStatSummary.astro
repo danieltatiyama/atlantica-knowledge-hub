@@ -1,0 +1,149 @@
+---
+import type {ClientItemAttributes} from "../data/client-item-attributes";
+import {CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT} from "../data/client-item-attributes";
+import {summarizeClientRawFields,buildHistoricalClientProjection,labelForClientField}
+  from "../data/client-item-stat-summary.mjs";
+
+interface Props {
+  lang:"en"|"pt-br";
+  data?:ClientItemAttributes;
+  showHistoricalProjection?:boolean;
+}
+const {lang,data,showHistoricalProjection=true}=Astro.props;
+const pt=lang==="pt-br";
+const summary=data?summarizeClientRawFields(data):null;
+const preview=data&&showHistoricalProjection?buildHistoricalClientProjection(data):null;
+const number=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const format=value=>typeof value==="number"?number.format(value):value;
+const heading={
+  attack:pt?"Poder de ataque":"Attack power",
+  defense:pt?"Defesa e resistência":"Defense and resistance",
+  attributes:pt?"Atributos básicos":"Base attributes",
+  other:pt?"Outros bônus do cliente":"Other client bonuses",
+};
+const progressionFields=preview?.fields??[];
+---
+{data && summary && <section class="source-summary" aria-label={pt?"Resumo dos atributos extraídos":"Client attribute summary"}>
+  <div class="summary-heading">
+    <div>
+      <p class="eyebrow">{pt?"ARQUIVOS DO CLIENTE":"CLIENT SOURCE FILES"}</p>
+      <h2>{pt?"Atributos básicos do equipamento":"Equipment base attributes"}</h2>
+    </div>
+    <span class="snapshot">{pt?"Snapshot":"Snapshot"} {CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT}</span>
+  </div>
+  <p class="provenance">{pt
+    ?"Valores brutos extraídos de Items.csv. Uma correspondência de nome e ID confirma a origem do registro, não o valor exibido pelo servidor ou a possibilidade de aprimoramento."
+    :"Raw values extracted from Items.csv. A matching source item name and ID confirms provenance, not live-server tooltip stats or enhancement eligibility."}</p>
+  <div class="stat-groups">
+    {summary.visibleGroups.map(group=><div class="stat-group">
+      <h3>{heading[group.group]}</h3>
+      <dl>
+        {group.fields.map(field=><div class="stat-item">
+          <dt>{pt?field.pt:field.en}</dt>
+          <dd>{field.status==="conflict"
+            ? <span class="different">{pt?"Divergente":"Different values"}</span>
+            : <strong>{field.value}</strong>}
+            {field.status==="partial" &&
+              <small>{pt?"Em":"In"} {field.observedIn}/{field.sourceCount} {pt?"fontes":"sources"}</small>}
+          </dd>
+        </div>)}
+      </dl>
+    </div>)}
+  </div>
+  {summary.visibleGroups.length===0&&<p class="provenance">{pt
+    ?"Nenhum valor diferente de zero nos campos básicos revisados. A tabela de origem abaixo preserva todos os zeros e campos adicionais."
+    :"No nonzero values in the reviewed key fields. The raw source table below retains all zeroes and additional fields."}</p>}
+  <p class="source-status">{summary.sourceCount} {pt?"registro(s) originais de Items.csv":"original Items.csv source record(s)"}
+    · {summary.conflictCount===0
+      ? (pt?"Atributos em comum sem divergências":"Shared attributes agree")
+      : (pt?`${summary.conflictCount} campo(s) com valores diferentes`:`${summary.conflictCount} conflicting field(s)`)}
+    {summary.partialCount>0&&<> · {pt?"Alguns campos só existem em parte dos arquivos":"Some fields exist in only some source records"}</>}
+  </p>
+  {summary.conflictCount>0&&<div class="diff-panel">
+    <h3>{pt?"Valores que precisam de revisão":"Values needing source review"}</h3>
+    {summary.fields.filter(field=>field.status==="conflict").map(field=>
+      <p><strong>{labelForClientField(field.key,pt)}</strong>: {data.sourceRows
+        .filter(row=>field.key in row.fieldsRaw)
+        .map(row=>`#${row.sourceRowNumber}: ${row.fieldsRaw[field.key]}`).join(" · ")}</p>)}
+  </div>}
+  {preview&&preview.rows.length>0&&
+    <details class="historical">
+      <summary>{pt?"Simular progressão histórica (+0 a +10)":"Preview historical enhancement progression (+0 to +10)"}</summary>
+      <div class="historical-inner">
+        <p class="historical-warning">{pt
+          ?"SIMULAÇÃO, NÃO DADOS DO SERVIDOR. O nível +0 abaixo usa os valores brutos extraídos do cliente; de +1 a +10 aplica multiplicadores históricos de outras tabelas comunitárias. Não confirma que este item possa ser aprimorado. Não calcula L, MagicDef, EV, crítico nem habilidades."
+          :"MODEL ONLY, NOT SERVER FACTS. +0 below is the raw extracted client baseline; +1 to +10 uses historical multipliers from other community tables. This does not prove the item can be enhanced. No L, MagicDef, EV, critical or skill effects are calculated."}</p>
+        {preview.excluded.length>0&&<p class="historical-warning">{pt
+          ?"Campos excluídos da simulação por conflitos ou valores fracionários:"
+          :"Fields omitted from preview due to conflicts or fractional values:"}
+          {" "}{preview.excluded.join(", ")}
+        </p>}
+        <div class="table-scroll">
+          <table class="progression">
+            <thead><tr>
+              <th scope="col">{pt?"Grau":"Grade"}</th>
+              {progressionFields.map(field=><th scope="col">{labelForClientField(field,pt)}</th>)}
+              <th scope="col">{pt?"Natureza do valor":"Basis"}</th>
+            </tr></thead>
+            <tbody>{preview.rows.map(row=><tr class={row.grade===0?"baseline":undefined}>
+              <th scope="row">+{row.grade}</th>
+              {progressionFields.map(field=><td>{format(row.values[field])}</td>)}
+              <td class={row.status==="historical-estimate"?"estimated":undefined}>
+                {row.status==="client-raw-baseline"
+                  ?(pt?"Extraído do cliente":"Client raw baseline")
+                  :(pt?"Estimativa histórica":"Historical estimate")}
+              </td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+        <p class="model-footer">{pt
+          ?"Modelo: ×1,0; ×1,2; ×1,4; ×1,6; ×1,8; ×2,1; ×2,4; ×2,8; ×3,2; ×3,6; ×4,0. Arredondamento para baixo sobre inteiros. L exige evidência independente e não é inferido."
+          :"Model: ×1.0, ×1.2, ×1.4, ×1.6, ×1.8, ×2.1, ×2.4, ×2.8, ×3.2, ×3.6, ×4.0. Floor rounding for integers. L requires independent evidence and is never inferred."}</p>
+      </div>
+    </details>}
+  <p class="see-raw">{pt?"Referências e campos completos na seção":"See original source rows and every field in"}
+    {" "}<a href="#client-attributes">{pt?"Atributos brutos extraídos":"Raw extracted attributes"}</a>.</p>
+</section>}
+<style>
+  .source-summary{border:1px solid var(--color-border);background:var(--color-surface);
+    border-radius:6px;padding:20px 22px;margin:24px 0 32px}
+  .summary-heading{display:flex;justify-content:space-between;align-items:start;gap:18px;flex-wrap:wrap}
+  .eyebrow{font-size:.76rem;letter-spacing:.13em;color:var(--color-accent);margin:0 0 5px}
+  h2{font-size:1.45rem;margin:0;color:var(--color-gold-light)}
+  .snapshot{font-size:.8rem;color:var(--color-text-muted);white-space:nowrap}
+  .provenance,.source-status,.see-raw{font-size:.87rem;line-height:1.6;color:var(--color-text-muted)}
+  .provenance{margin:10px 0 17px}
+  .stat-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+  .stat-group{border:1px solid var(--color-border);border-radius:4px;min-width:0}
+  .stat-group h3{font-size:.89rem;margin:0;padding:11px 13px;color:var(--color-gold-light);
+    border-bottom:1px solid var(--color-border)}
+  .stat-group dl{margin:0;padding:4px 12px}
+  .stat-item{display:flex;gap:12px;align-items:baseline;justify-content:space-between;
+    padding:7px 0;border-bottom:1px solid var(--color-border);font-size:.88rem}
+  .stat-item:last-child{border-bottom:0}
+  dt{color:var(--color-text-muted)}
+  dd{margin:0;text-align:right}
+  dd strong{color:var(--color-text);font-weight:600}
+  dd small{display:block;color:var(--color-text-muted);font-size:.72rem}
+  .different{color:var(--color-gold-light)}
+  .source-status{margin:16px 0 2px}
+  .diff-panel{border-left:3px solid var(--color-bronze);padding:5px 15px;margin:18px 0}
+  .diff-panel h3{font-size:1rem;margin:6px 0}
+  .diff-panel p{overflow-wrap:anywhere;font-size:.88rem}
+  .historical{margin-top:20px;border:1px solid var(--color-border);border-radius:4px;overflow:hidden}
+  .historical>summary{padding:12px 14px;cursor:pointer;font-weight:600;color:var(--color-gold-light)}
+  .historical>summary:hover,.historical>summary:focus-visible{background:var(--color-background)}
+  .historical-inner{padding:4px 14px 14px;border-top:1px solid var(--color-border)}
+  .historical-warning{color:var(--color-text-muted);font-size:.86rem;line-height:1.55}
+  .table-scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:.85rem}
+  th,td{padding:8px 12px;border-bottom:1px solid var(--color-border);text-align:right}
+  th:first-child{text-align:left}
+  thead th{color:var(--color-gold-light);font-weight:600}
+  td.estimated{color:var(--color-text-muted)}
+  tr.baseline th,tr.baseline td{font-weight:600}
+  .model-footer{font-size:.8rem;line-height:1.55;color:var(--color-text-muted)}
+  .see-raw{margin:14px 0 0}
+  .see-raw a{color:var(--color-accent)}
+  @media(max-width:600px){.source-summary{padding:16px 13px}}
+</style>

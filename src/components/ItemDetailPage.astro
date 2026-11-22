@@ -8,6 +8,7 @@ import {getClientEquipmentFacts} from "../data/client-equipment-facts";
 import ClientEquipmentFactsSection from "./ClientEquipmentFactsSection.astro";
 import {getClientItemAttributes} from "../data/client-item-attributes";
 import ClientItemAttributesSection from "./ClientItemAttributesSection.astro";
+import ClientItemStatSummary from "./ClientItemStatSummary.astro";
 
 interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
 const { lang, item } = Astro.props;
@@ -51,6 +52,7 @@ const clientFields = curatedFields ? [
         {sourceFacts && <a href="#client-facts">{pt ? "Arquivos do jogo" : "Game files"}</a>}
         {sourceAttributes && <a href="#client-attributes">{pt ? "Atributos brutos" : "Raw attributes"}</a>}
       </nav>
+      <ClientItemStatSummary lang={lang} data={sourceAttributes} showHistoricalProjection={!profile?.stats.length} />
       <ItemKnowledgeSections lang={lang} profile={profile} section="overview" />
       <ItemKnowledgeSections lang={lang} profile={profile} section="stats" />
       <section id="item-sources">
