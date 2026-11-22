@@ -39,6 +39,12 @@ const statsKeys=[
 ];
 const baselineKeys=["attackMin","attackMax","strength","intelligence","vitality"];
 
+// Named research pages without a verified numeric item ID are not an open
+// namespace: every such identity requires explicit editorial registration.
+const REVIEWED_NAME_ONLY_IDENTITIES=Object.freeze({
+  "dell-artes-ambition":"Dell'arte's Ambition",
+});
+
 function attackComposition(item) {
   const base=item.baseHistorical;
   const mod=item.socketedModifiers;
@@ -80,6 +86,9 @@ export function validateExtendedEquipmentFacts(payload, nameRegistry) {
       fail(label+" has invalid identity or grade");continue;
     }
     seenSlugs.add(item.slug);
+    if(item.itemId===null && REVIEWED_NAME_ONLY_IDENTITIES[item.slug]!==item.nameEn){
+      fail(label+" does not match a manually reviewed named research identity");
+    }
     if(item.itemId!==null) {
       if (typeof item.itemId!=="string" || !/^[1-9][0-9]*$/.test(item.itemId) ||
           nameRegistry[item.itemId]!==item.nameEn || seenIds.has(item.itemId)) {
