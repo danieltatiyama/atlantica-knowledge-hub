@@ -331,6 +331,8 @@ def run(queue: dict, html_dir: Path | None, fetch: bool, max_pages: int,
     rows = validate_queue(queue)
     if start < 0 or max_pages < 1 or max_pages > 20 or delay < 3:
         raise ValueError("Batch limits: max 20 pages, >=3 seconds between HTTP requests")
+    if not fetch and html_dir is None:
+        raise ValueError("Offline audit requires a local HTML directory")
     candidates = [r for r in rows if not (
         r.get("completeness", {}).get("overview") and
         r.get("completeness", {}).get("enchantStats") and
