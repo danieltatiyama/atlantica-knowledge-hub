@@ -2,12 +2,15 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
+import { getCapturedEquipmentPool, decodedEnhancementCandidate } from "../data/equipment-box-captured-pools";
 interface Props { lang: "en"|"pt-br"; box: CollectionEntry<"boxes">; }
 const {lang,box}=Astro.props;
 const pt=lang==="pt-br";
 const base=(pt?"/pt-br":"")+"/items/boxes/";
 const {Content}=await render(box);
 const d=box.data;
+const captured=d.itemUniqueId ? getCapturedEquipmentPool(d.itemUniqueId) : undefined;
+const previewGrades=captured?.gradeCodes.map(code=>decodedEnhancementCandidate(code));
 const hasRates=d.oddsStatus==="regional-published";
 const rate=(n:number|undefined)=>n===undefined?"—":n.toLocaleString(pt?"pt-BR":"en-US",{maximumFractionDigits:4})+"%";
 const source=d.probabilitySourceUrl||d.verificationUrl;
@@ -30,6 +33,12 @@ const contentsLabel=captured
           <span>{pt?"Região":"Region"}: {d.region.toUpperCase()}</span>
           <span>{pt?"Modelo de sorteio":"Roll model"}: {d.rollModel}</span>
         </div>
+        {captured && <p class="evidence">
+          <strong>{pt?"Graus prováveis na prévia":"Likely preview enhancement grades"}:</strong>
+          {" "}{previewGrades?.map(grade=>grade===undefined?"?":"+"+grade).join(", ")}
+          {" "}({pt?"códigos":"codes"} {captured.gradeCodes.join(", ")}).
+          {" "}{pt?"Derivado de captura; não representa chances de drop.":"Derived from captured messages; not drop-rate information."}
+        </p>}
         <p class="caution">
           {hasRates
             ? (pt
