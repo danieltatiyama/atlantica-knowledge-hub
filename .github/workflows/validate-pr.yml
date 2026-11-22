@@ -35,6 +35,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate curated-only public equipment metadata
+        run: |
+          node scripts/check-curated-equipment.mjs
+          node --test tests/curated-equipment-gate.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
