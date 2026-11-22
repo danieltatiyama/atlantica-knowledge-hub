@@ -54,6 +54,12 @@ def classify_records(rows: list[dict]) -> tuple[str, dict[str, bool]]:
     # Broad source categories may repeat specialized items. Category overlap
     # remains a candidate ONLY if the base-layer original names agree.
     base_orig = {name_key(r["original_name"]) for r in base_rows}
+    base_names = {name_key(r["name"]) for r in base_rows}
+    has_stable_base_identity = (
+        bool(base_rows) and len(base_orig) == 1 and len(base_names) == 1
+        and all(isinstance(value, str) and bool(value.strip())
+                for value in base_orig | base_names)
+    )
     same_partition_original_name_conflict = False
     for region in regions:
         partition_rows = [r for r in rows if r["region"] == region]
@@ -66,7 +72,7 @@ def classify_records(rows: list[dict]) -> tuple[str, dict[str, bool]]:
     semantic_keys = ("category", "name", "original_name", "grade", "level", "unit",
                      "work", "material", "recipe_state", "recipe")
     exact_same = len({tuple(r[f] for f in semantic_keys) for r in rows}) == 1
-    if category_conflict and len(base_orig) > 1:
+    if category_conflict and not has_stable_base_identity:
         state = "cross-category-name-conflict"
     elif category_conflict:
         state = "cross-category-overlap-candidate"
