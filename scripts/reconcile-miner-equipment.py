@@ -123,7 +123,14 @@ def summarize_one(item_id: str, reviewed_name: str,
         state = "base-name-conflict"
     elif len(original_names) > 1:
         state = "base-original-name-conflict"
-    elif any(field != "category" for field in core_diff):
+    elif any(field not in ("category", "recipe", "recipe_state") for field in core_diff):
+        state = "base-item-field-conflict"
+    elif ("recipe" in core_diff or "recipe_state" in core_diff) and (
+        "category" not in core_diff or
+        # Broad type tables may carry only unsupported/null parsed recipes
+        # while a specialized table parses the same unchanged materialRaw.
+        any(row["recipe_state"] not in ("valid", "unsupported", "none") for row in base)
+    ):
         state = "base-item-field-conflict"
     elif "category" in core_diff:
         state = "cross-category-overlap-candidate"
