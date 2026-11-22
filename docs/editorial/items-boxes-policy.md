@@ -52,7 +52,7 @@ A single passive capture (`equipment_boxes_filtered.pcapng`, kept private) yield
 - **763 box-to-distinct-item associations** across the 30 previews.
 - **1,390 preview positions**, including item+grade combinations; **1,386 distinct (item, grade code) pairs**.
 - **30/30 observed result pairs** appear in the matching preceding preview's item+grade pairs.
-- Three standard boxes still lack captures: Asura's, Dark Knight's, Osiris'.
+- These three are selection, not random boxes. The capture contains 11 selectable item IDs for Asura's (ID 20907) and Osiris' (ID 20917) in 0x2139 messages; Dark Knight's selection choices remain unparsed.
 
 `src/data/equipment-box-captured-pools.ts` is a curated, non-sensitive source file containing the 30 item-ID lists, preview grade-code sets and one observed outcome per box. It contains no raw network payloads.
 
@@ -65,6 +65,21 @@ For the known Judgment standard box, code `5` corresponded to +0 user-observed e
 - Enchanted Dark Pegasus excludes items `431` and `3772` relative to Dark Pegasus and repeats some exact item+grade pairs.
 
 A preview does not demonstrate equipability, exact probability, or the complete server RNG policy. Preview repetition is not a drop weight. Names without validated localization should be displayed by Unique ID only.
+
+## Item name localization and pending source files
+
+Game item Unique IDs are not localization indexes. Join item definition tables first:
+
+`ItemTypeWeapon.ndt` / `ItemTypeDefence.ndt` (and other `ItemType*.ndt`):
+`Unique -> NameTextNum`.
+
+Then resolve `NameTextNum` through `LANG/ENG/TextMgr/TextMgr_Item_ENG.ntx`.
+`TextMgr_ItemHelper_ENG.ntx` is supplementary descriptive text, not the principal English name table.
+
+The complete ENG NTX files were **not part of the private Stage 17 packet export**,
+so names not already verified remain **Unique ID only** until extracted.
+Use the separately delivered private `Export_Atlantica_Item_Names.ps1` helper to
+gather the sources locally. Do not upload raw game asset files to the public repo.
 
 ## Regional chances
 
