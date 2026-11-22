@@ -34,11 +34,31 @@ const fixture={
   }],
 };
 
-test("empty source layer is valid and no unprovided client stats are invented",()=>{
+test("four prior Miner source-sample items are now populated with source-specific data",()=>{
   const r=validateClientEquipmentFacts(client,EQUIPMENT_ITEM_NAMES_EN);
   assert.equal(r.ok,true,r.errors.join("; "));
-  assert.equal(r.records.length,0);
-  assert.equal(client.snapshotId,null);
+  assert.equal(r.records.length,4);
+  assert.equal(client.snapshotId,1);
+  assert.deepEqual(r.records.map(x=>x.id),["1","192","650","1211"]);
+  const sword=r.records[0];
+  assert.equal(sword.sourceDefinitions.length,2);
+  assert.deepEqual(sword.sourceDefinitions[1].ingredients,[
+    {itemId:"5100",quantity:5},{itemId:"6080",quantity:4}]);
+  const twilight=r.records[1];
+  assert.equal(twilight.sourceDefinitions[0].levelRaw,"165");
+  assert.equal(twilight.sourceDefinitions[0].workRaw,550000000);
+  assert.equal(twilight.sourceDefinitions[0].ingredients.length,6);
+  const greaves=r.records[3];
+  assert.equal(greaves.sourceDefinitions[1].category,"Pants");
+  assert.equal(greaves.sourceDefinitions[1].ingredients.length,10);
+  assert.ok(!JSON.stringify(client).includes("SECRET_PRIVATE_KOREAN"));
+  assert.ok(!JSON.stringify(client).includes("5100(5)"));
+});
+
+test("a future empty client source layer remains schema-valid",()=>{
+  const empty={schemaVersion:"1.0",dataset:"client-equipment-facts",snapshotId:null,records:[]};
+  const checked=validateClientEquipmentFacts(empty,EQUIPMENT_ITEM_NAMES_EN);
+  assert.equal(checked.ok,true,checked.errors.join("; "));
 });
 
 test("general and specific source facts remain separate under ONE reviewed item page",()=>{
