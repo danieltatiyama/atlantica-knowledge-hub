@@ -84,16 +84,28 @@ Outputs:
   This is an extracted-facts candidate, not a gameplay confirmation.
 
 Unlike the full private inventory, the candidate is schema validated
-by `src/data/client-equipment-facts-gate.mjs`. The initial tracked
-`src/data/client-equipment-facts.json` is **intentionally empty**
-until a real local source export is performed. The site currently
-cannot access the user's D: drive or auto-populate it from GitHub.
+by `src/data/client-equipment-facts-gate.mjs`. The tracked `src/data/client-equipment-facts.json` is **already seeded with four source-attested items** from the user's prior `Miner_Sample_20_4.json` (snapshot 1): Spirit Sword #1, Twilight Instrument #192, Red Soul Robe #650, and Conqueror's Greaves #1211. Each sample explicitly reports its source rows are not truncated. All facts are labeled client-extracted, not verified gameplay. The full 551-ID overlay still requires the local read-only export.
+
+## Already available from previous uploaded client source sample
+
+| Existing ID | Item | Recorded source files | Fact coverage |
+| --- | --- | --- | --- |
+| 1 | Spirit Sword | ItemTypeWeapon.ndt, ItemTypeSword.ndt | Raw Lv.1, work 450, 2 material references |
+| 192 | Twilight Instrument | ItemTypeWeapon.ndt | Raw Lv.165, work 550,000,000, 6 material references |
+| 650 | Red Soul Robe | ItemTypeDefence.ndt, ItemTypeArmor.ndt | Raw Lv.15, work 2,200, 5 material references |
+| 1211 | Conqueror's Greaves | ItemTypeDefence.ndt, ItemTypePants.ndt | Raw Lv.97, work 6,000,000, 10 material references |
+
+These are **four client item pages, seven original source file rows**,
+not seven distinct pieces of equipment. Different source-file records
+remain separate definitions, not automatically different playable
+variants. No screenshot stats, private paths, Korean original names
+or raw source expressions were published.
 
 ## Wiki item page behavior
 
 `ClientEquipmentFactsSection.astro` is integrated with existing
-numeric item pages and will display client-defined facts once the
-candidate is staged:
+numeric item pages and displays these four sourced items already and will expand when the
+complete local source candidate is staged:
 - file, source role and category;
 - extracted level, grade, unit and workload (all labeled RAW);
 - structured ingredient ID/quantity lists; names only where another
