@@ -61,9 +61,11 @@ Integer output uses exact `BigInt` arithmetic with truncation toward
 zero for nonnegative bases, avoiding binary floating-point errors.
 
 The original fractional source field `Mag = 292.5` for Abyssal Orb
-#363 is still shown intact in the raw/client summary, but is NOT
-projected beyond +0 because the integer-only historical rule cannot
-justify the fractional rounding convention.
+#363 is preserved **in the +0 row itself** (labeled `+0`-only)
+and in the full raw client source section. The +1..+10 cells stay
+**blank / —** for that field because the integer-only historical rule
+cannot justify fractional rounding. Negative original values, if
+introduced by future reviewed sources, are treated the same way.
 
 Raw fields like `HitRate`, `CriticalPlus`, `MagicSkillPlus`, job
 bonus fields and special effects are **NOT multiplied**. This does
@@ -132,6 +134,44 @@ automatically publish other private client fields.
 L / +11 is NOT appended to arbitrary items. The separate user-approved
 47-name historical Legendary candidate list remains reference-only and
 does not automatically authorize an L row.
+
+## Catalog exploration and bulk CSV
+
+The catalog at `/items/` and `/pt-br/items/` now shows these
+original NA client source fields for all 551 reviewed items:
+
+- **source category**: prefer a unique category from specific
+  `ItemType*.ndt` definitions (e.g. Sword, Guitar, Boots). If only
+  general Weapon or Defence source rows exist, keep those original
+  names instead of inventing a type;
+- **raw level**: shown exactly as extracted, never as verified
+  character level requirement;
+- **+0 base attack min/max** and **physical AC** when applicable;
+- associated captured Equipment Boxes (unchanged).
+
+The new category dropdown, raw minimum level filter and sort controls
+(name, level, attack, AC) work entirely on the generated static
+catalog page. Zero/unavailable attack or armor is abbreviated `—`
+for browsing; original raw zero remains available on the item page.
+No source-file categories are rewritten to guessed gameplay classes.
+
+A new deterministic build-time generator,
+`scripts/generate-client-grade-csv.mjs`, emits:
+
+`public/data/client-equipment-grades.csv`
+
+with **551 × 11 = 6,061** data rows. The CSV includes item ID,
+original reviewed English name, source snapshot, source row IDs,
+grade +0..+10, scalable stats, original unchanged MagicDef/EV/MoveSpeed
+and explicit `scalable_values_origin` and `projection_model`
+columns. Missing values are empty, not zeros; fractional Mag 292.5
+appears only at +0. The CSV NEVER includes L.
+
+The export runs as `npm prebuild` before Astro's production build,
+so static deployments contain the downloadable CSV without committing
+generated output or requiring a backend. Both catalog and item
+detail pages link to this downloadable file. It is a historical-model
+dataset, **not a list of observed combat values**.
 
 ## Test coverage
 
