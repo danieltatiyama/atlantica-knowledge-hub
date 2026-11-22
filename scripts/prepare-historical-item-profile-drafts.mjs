@@ -62,6 +62,9 @@ export function makeHistoricalDraft(existing, audit, approvals, names) {
     const source = sources.get(approval.itemId);
     if (!source || source.status !== "historical-draft" ||
         source.titleMatches !== true ||
+        (source.sourceScope !== undefined &&
+          (source.sourceScope !== "category-index" ||
+           source.itemNameMatchedInIndex !== true)) ||
         source.reviewedNameEn !== names[approval.itemId] ||
         source.sourceUrl !== approval.sourceUrl ||
         source.sourceKind !== "historical-community" ||
