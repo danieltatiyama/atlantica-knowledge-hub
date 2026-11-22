@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "items",
+  "snapshot": {
+    "id": "curated-pilot-empty",
+    "game": "Atlantica Online Global",
+    "minerVersion": "not-applicable",
+    "exportedAt": "2026-11-22T19:35:00Z"
+  },
+  "records": []
+}
