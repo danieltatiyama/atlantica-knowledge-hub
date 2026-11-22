@@ -11,6 +11,7 @@ const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
 const eventsHref = lang === "en" ? "/events/" : `/${lang}/events/`;
 const mercenariesHref = lang === "en" ? "/mercenaries/" : `/${lang}/mercenaries/`;
+const boxesHref = lang === "en" ? "/items/boxes/" : `/${lang}/items/boxes/`;
 
 const navigation = [
   {
@@ -32,6 +33,11 @@ const navigation = [
     label: lang === "pt-br" ? "Mercenários" : "Mercenaries",
     href: mercenariesHref,
     active: pathname.startsWith(mercenariesHref),
+  },
+  {
+    label: lang === "pt-br" ? "Itens" : "Items",
+    href: boxesHref,
+    active: pathname.startsWith(lang === "en" ? "/items/" : `/${lang}/items/`),
   },
   {
     label: t("nav.explore"),
@@ -101,6 +107,9 @@ function getLanguageTarget(targetLang: SupportedLang): string {
   }
   if (normalizedPath.startsWith("/mercenaries/") || normalizedPath.startsWith("/pt-br/mercenaries/")) {
     return `${prefix}/mercenaries/`;
+  }
+  if (normalizedPath.startsWith("/items/") || normalizedPath.startsWith("/pt-br/items/")) {
+    return `${prefix}/items/boxes/`;
   }
   // Home or other pages.
   return `${prefix}/`;
