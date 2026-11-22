@@ -24,6 +24,10 @@ $source=(Resolve-Path -LiteralPath $Database -ErrorAction Stop).Path
 $private=Join-Path $root 'Miner_ClientFacts_Private_20_23.json'
 $report=Join-Path $root 'Miner_ClientFacts_Report_20_23.json'
 $candidate=Join-Path $root 'Miner_ClientFacts_PublicCandidate_20_23.json'
+$attributesPrivate=Join-Path $root 'Miner_ClientAttributes_Private_20_25.json'
+$attributesReport=Join-Path $root 'Miner_ClientAttributes_Report_20_25.json'
+$attributesCandidate=Join-Path $root 'Miner_ClientAttributes_PublicCandidate_20_25.json'
+$attributesTarget=Join-Path $root 'src\data\client-item-attributes.json'
 $legendaryReport=Join-Path $root 'Miner_Legendary_Client_20_24.json'
 $referenceFields=Join-Path $root 'Miner_ReferenceFields_20_24.json'
 $target=Join-Path $root 'src\data\client-equipment-facts.json'
@@ -50,6 +54,12 @@ try{
   & py (Join-Path $root 'scripts\profile-miner-reference-fields.py') $source --output $referenceFields
   Assert-Command 'Descoberta dos campos disponíveis em todos os datasets de referência'
 
+  & py (Join-Path $root 'scripts\export-client-item-attributes.py') $source --snapshot $Snapshot --registry $registry --private-output $attributesPrivate --report $attributesReport --public-output $attributesCandidate
+  Assert-Command 'Extração de MinDamage, MaxDamage, AC, MagicDef e atributos brutos de Items.csv'
+
+  & node (Join-Path $root 'scripts\check-client-item-attributes.mjs') $attributesCandidate
+  Assert-Command 'Validação de atributos brutos com identidade e referência de origem'
+
   & node (Join-Path $root 'scripts\check-client-equipment-facts.mjs') $candidate
   Assert-Command 'Validação de dados extraídos para publicação'
 
@@ -58,6 +68,9 @@ try{
   Write-Host '[IC] Candidato público, ainda NÃO integrado:' $candidate
   Write-Host '[IC] Correspondências lendárias privadas:' $legendaryReport
   Write-Host '[IC] Campos identificados nos dados completos do Miner:' $referenceFields
+  Write-Host '[IC] Inventário privado de todos os campos de atributos:' $attributesPrivate
+  Write-Host '[IC] Relatório agregado dos atributos:' $attributesReport
+  Write-Host '[IC] Candidato público de atributos brutos:' $attributesCandidate
 
   if(-not $PreparePublic){
     Write-Host '[IC] DRY RUN. Nenhuma fonte do site foi alterada.'
@@ -66,12 +79,16 @@ try{
   }
 
   Copy-Item -LiteralPath $candidate -Destination $target
+  Copy-Item -LiteralPath $attributesCandidate -Destination $attributesTarget
   & node (Join-Path $root 'scripts\check-client-equipment-facts.mjs')
   Assert-Command 'Validação do dataset público preparado'
 
+  & node (Join-Path $root 'scripts\check-client-item-attributes.mjs')
+  Assert-Command 'Validação dos atributos públicos preparados'
+
   & npm run build
   Assert-Command 'Astro build'
-  & git diff -- 'src/data/client-equipment-facts.json'
+  & git diff -- 'src/data/client-equipment-facts.json' 'src/data/client-item-attributes.json'
   Assert-Command 'Inspeção do diff gerado'
 
   Write-Host '[IC] Apenas a branch local foi alterada. Não houve commit, push ou deploy.'
