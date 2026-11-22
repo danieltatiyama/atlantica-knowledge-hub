@@ -22,6 +22,7 @@ const heading={
   other:pt?"Outros bônus do cliente":"Other client bonuses",
 };
 const progressionFields=preview?.fields??[];
+const baselineOnlyFields=preview?.baselineOnlyFields??[];
 const fixedFields=preview?.fixedFields??[];
 ---
 {data && summary && <section class="source-summary" aria-label={pt?"Resumo dos atributos extraídos":"Client attribute summary"}>
@@ -93,6 +94,9 @@ const fixedFields=preview?.fixedFields??[];
               {progressionFields.map(field=><th scope="col">
                 {labelForClientField(field,pt)} <small class="multiplier-mark">×</small>
               </th>)}
+              {baselineOnlyFields.map(field=><th scope="col" class="baseline-only-header" title={
+                pt?"Valor original em +0; sem projeção de grau":"Original +0 value; no grade projection available"
+              }>{labelForClientField(field,pt)} <small>+0</small></th>)}
               {fixedFields.map(field=><th scope="col" class="fixed-header" title={
                 pt?"Valor bruto fixo do cliente, não multiplicado":"Unchanged raw client source value, never multiplied"
               }>{labelForClientField(field.key,pt)} <small class="fixed-mark">=</small>
@@ -103,6 +107,9 @@ const fixedFields=preview?.fixedFields??[];
             <tbody>{preview.rows.map(row=><tr class={row.grade===0?"baseline":undefined}>
               <th scope="row">+{row.grade}</th>
               {progressionFields.map(field=><td>{format(row.values[field])}</td>)}
+              {baselineOnlyFields.map(field=><td class="baseline-only-value">
+                {row.values[field]===undefined?"—":format(row.values[field])}
+              </td>)}
               {fixedFields.map(field=><td class="fixed-value">{row.values[field.key]}</td>)}
               <td class={row.status==="historical-estimate"?"estimated":undefined}>
                 {row.status==="client-raw-baseline"
@@ -151,6 +158,8 @@ const fixedFields=preview?.fixedFields??[];
   .historical>summary:hover,.historical>summary:focus-visible{background:var(--color-background)}
   .historical-inner{padding:4px 14px 14px;border-top:1px solid var(--color-border)}
   .historical-warning{color:var(--color-text-muted);font-size:.86rem;line-height:1.55}
+  .baseline-only-header{background:rgba(133,99,54,.14);min-width:110px}
+  .baseline-only-value{background:rgba(133,99,54,.06);color:var(--color-text-muted)}
   .fixed-header{background:rgba(90,104,120,.14);min-width:110px}
   .fixed-header .partial-source{display:block;color:var(--color-text-muted);font-size:.68rem}
   .multiplier-mark,.fixed-mark{font-size:.72rem;opacity:.83}
