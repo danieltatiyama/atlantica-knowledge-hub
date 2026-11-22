@@ -8,7 +8,7 @@ Pipeline:
 
 `Game Client → Data Miner → SQLite → staging JSON → validation → curated public JSON → Astro`.
 
-Stage 9.1 implements **only the validator and the proposed contract**. It does not read the Miner's SQLite database, convert its v0.7 outputs, or publish a dataset. We must inspect a real v0.7 sample before writing an adapter.
+Stage 9.1 originally implemented **only the validator and proposed contract**. Later Stage 20.0–20.4 work inspected the real Miner SQLite schema and a small source sample, and added read-only local staging/indexing scripts. No full database or unreviewed dataset is committed or published. The actual producer version still needs independent confirmation; a directory containing `v0.2` does not establish the running miner version.
 
 ## Contract v1.0
 
@@ -62,7 +62,19 @@ node .\scripts\validate-game-dataset.mjs .\tests\fixtures\game-data-synthetic.js
 
 The fixture is synthetic and is **not** Atlantica game data. No script writes, publishes, or modifies the repository.
 
-## Planned next stages
+## Implemented integration milestones (2026-11-22)
+
+- **20.0** — privacy-safe SQLite schema discovery (8 tables).
+- **20.1** — conservative staging export: 18,728 unique IDs (duplicated IDs withheld).
+- **20.2 / 20.3** — aggregate diagnostic review of 4,858 duplicated IDs and
+  private local triage queue.
+- **20.4** — source-aware **private** identity index covering all valid item
+  IDs, including every conflicting source reference, without silently
+  deduplicating, trusting localization labels, or passing the public gate.
+- The inspected real sample includes names and recipe differences; it remains
+  **private** and is not a public data fixture.
+
+## Previously planned next stages
 
 - **9.2:** inspect a genuine v0.7 export and write a deterministic adapter for the first dataset (`items` is the proposed pilot).
 - **9.3:** validate source identifiers, translations, relationships, provenance and data completeness.
