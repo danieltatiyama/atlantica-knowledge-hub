@@ -70,3 +70,4 @@ Miner_Item_Article_Queue_*.json
 # Private historical Wikidot audits, explicit approvals and derived local drafts
 Miner_Wikidot_*.json
 Wikidot_HTML/
+Wikidot_Index_HTML/
