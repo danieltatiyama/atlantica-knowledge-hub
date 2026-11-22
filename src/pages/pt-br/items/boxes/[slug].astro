@@ -10,9 +10,9 @@ export async function getStaticPaths() {
   const published=await getCollection("boxes",({data})=>
     data.lang==="pt-br" && !data.draft && data.reviewStatus==="approved" &&
     data.evidenceStatus!=="client-config");
-  const slugs=new Set(published.map(box=>box.id.replace(/^pt-br\//,"")));
+  const slugs=new Set(published.map(box=>box.id.split("/").slice(1).join("/")));
   return [
-    ...published.map(box=>({params:{slug:box.id.replace(/^pt-br\//,"")},props:{box}})),
+    ...published.map(box=>({params:{slug:box.id.split("/").slice(1).join("/")},props:{box}})),
     ...EQUIPMENT_BOXES.filter(entry=>!slugs.has(entry.slug))
       .map(entry=>({params:{slug:entry.slug},props:{entry}})),
   ];
