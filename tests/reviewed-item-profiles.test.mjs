@@ -143,3 +143,78 @@ test("public profile JSON does not embed image assets, Miner records or local pa
     assert.equal(payload.includes(forbidden), false);
   }
 });
+
+
+test("four Wikidot-sourced complete articles reproduce independently checked historical +0..+10 rows",()=>{
+  const multipliers=[10,12,14,16,18,21,24,28,32,36,40];
+  const samples=[
+    {id:"100",name:"Spirit Spear",kind:"Spear",level:1,work:450,skill:1,
+      source:"item:spirit-spear",
+      base:{attackMin:80,attackMax:110,strength:11,vitality:3},
+      final:{attackMin:320,attackMax:440,strength:44,vitality:12},
+      materialCount:2,classes:["Spearman","Trainee Chueh Shui"]},
+    {id:"264",name:"Evil Staff",kind:"Staff",level:130,work:160000000,skill:110,
+      source:"item:evil-staff",
+      base:{attackMin:988,attackMax:1326,intelligence:392,vitality:148},
+      final:{attackMin:3952,attackMax:5304,intelligence:1568,vitality:592},
+      materialCount:10,classes:["Monk","Trainee Ching Ya"]},
+    {id:"1420",name:"Phoenix's Instrument",kind:"Instrument",level:113,
+      work:60000000,skill:85,source:"item:phoenix-s-instrument",
+      base:{attackMin:634,attackMax:850,intelligence:252,vitality:95},
+      final:{attackMin:2536,attackMax:3400,intelligence:1008,vitality:380},
+      materialCount:9,classes:["Maestro","Trainee Chiu Hong"]},
+    {id:"11245",name:"Pegasus Shield",kind:"Shield",level:140,
+      work:60000000,skill:110,source:"item:pegasus-shield",
+      base:{defense:9812,vitality:182},
+      final:{defense:39248,vitality:728},
+      materialCount:9,classes:["Swordsman","Knight (Merc)"]},
+  ];
+  let numericChecks=0;
+  for(const entry of samples){
+    const article=profiles.records.find(x=>x.id===entry.id);
+    assert.ok(article);
+    assert.equal(article.nameEn,names[entry.id]);
+    assert.equal(article.nameEn,entry.name);
+    assert.equal(article.overview.typeEn,entry.kind);
+    assert.equal(article.overview.minimumLevel,entry.level);
+    assert.equal(article.crafting.requiredWorkload,entry.work);
+    assert.deepEqual(article.crafting.requiredSkill,{nameEn:entry.kind,level:entry.skill});
+    assert.equal(article.crafting.materials.length,entry.materialCount);
+    assert.equal(article.stats.length,11);
+    assert.deepEqual(article.stats.map(x=>x.enchantLevel),[0,1,2,3,4,5,6,7,8,9,10]);
+    assert.deepEqual(article.stats[0],{enchantLevel:0,...entry.base});
+    assert.deepEqual(article.stats[10],{enchantLevel:10,...entry.final});
+    for(const cls of entry.classes){
+      assert.ok(article.overview.eligibleClasses.includes(cls),entry.name+" "+cls);
+    }
+    assert.equal(article.enchantmentProjectionModel,null); // Source rows, not extrapolated.
+    assert.equal(article.legendaryEligible,false);
+    assert.equal(article.legendaryProjectionModel,null);
+    assert.equal(article.evidence.projections,"not-provided");
+    assert.equal(article.evidence.legendary,"not-provided");
+    for(const key of ["overview","stats","crafting","materials"]){
+      assert.equal(article.evidence[key],"community-reference");
+    }
+    assert.equal(article.evidence.references.length,1);
+    assert.equal(article.evidence.references[0].kind,"community-reference");
+    assert.ok(article.evidence.references[0].url.endsWith(entry.source));
+    for(const row of article.stats){
+      for(const [stat,value] of Object.entries(row)){
+        if(stat==="enchantLevel")continue;
+        const expected=Math.floor(entry.base[stat]*multipliers[row.enchantLevel]/10);
+        assert.equal(value,expected,entry.name+" +"+row.enchantLevel+" "+stat);
+        numericChecks++;
+      }
+    }
+  }
+  assert.ok(numericChecks>=150,"broad numeric cross-check coverage across 4 item types");
+});
+
+test("historical Shield fixed Magic Defense and evasion are not invented as enchantment-scaled stats",()=>{
+  const shield=profiles.records.find(x=>x.id==="11245");
+  assert.ok(shield);
+  assert.ok(shield.stats.every(row=>row.magicDefense===undefined));
+  assert.ok(shield.stats.every(row=>row.attackMin===undefined));
+  assert.ok(shield.stats.every(row=>row.attackMax===undefined));
+  assert.equal(shield.legendaryEligible,false);
+});
