@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "extended-equipment-facts",
+  "records": [
+    {
+      "slug": "dell-artes-ambition",
+      "itemId": null,
+      "nameEn": "Dell'arte's Ambition",
+      "typeEn": "Sword",
+      "grade": "L",
+      "minimumLevel": 180,
+      "eligibleClasses": [
+        "Swordsman",
+        "Exorcist",
+        "Lady Knight",
+        "Pirate",
+        "Valkyrie",
+        "Knight",
+        "Champion",
+        "Warlord",
+        "Atlantian Blademaster",
+        "Clown",
+        "Mo Chien Lang",
+        "Nightshade",
+        "Empress Tianmo",
+        "Ching Yue",
+        "Kim Choon Sam",
+        "Knight",
+        "Sage King Arthur",
+        "Dark King Arthur",
+        "Gladiator",
+        "Natasha",
+        "Ari"
+      ],
+      "observedTooltip": {
+        "attackMin": 26300,
+        "attackMax": 32985,
+        "strength": 1715,
+        "intelligence": 1715,
+        "vitality": 1715,
+        "critical": 9,
+        "multiHitRate": 6,
+        "actionPowerMod": 3,
+        "magicSkillLevelBonus": 48
+      },
+      "baseHistorical": {
+        "attackMin": 4705,
+        "attackMax": 5901,
+        "strength": 399,
+        "vitality": 399
+      },
+      "socketedModifiers": {
+        "itemName": "Star Stone: Gold Eagle [VI]",
+        "count": 3,
+        "perStone": {
+          "criticalRate": 3,
+          "multiHitRate": 2,
+          "action": 1,
+          "attackEnhancePercent": 10,
+          "displayedAttackBonusMin": 2023,
+          "displayedAttackBonusMax": 2537
+        }
+      },
+      "specialEffects": [
+        {
+          "kind": "legendary-debuff",
+          "valuePercent": 10,
+          "descriptionEn": "Legendary attacks apply a debuff that increases damage taken by 10%.",
+          "descriptionPt": "Ataques lendários aplicam um debuff que aumenta em 10% o dano recebido."
+        },
+        {
+          "kind": "class-conditional-critical",
+          "className": "Harlequin",
+          "valuePercent": 54,
+          "descriptionEn": "When equipped by Harlequin: 54.0% extra critical damage.",
+          "descriptionPt": "Quando equipado pelo Harlequin: 54,0% de dano crítico adicional."
+        }
+      ],
+      "craftingStatus": "historical-not-craftable",
+      "evidence": {
+        "tooltip": {
+          "kind": "user-supplied-ingame-screenshot",
+          "label": "Dell'arte's Ambition L tooltip with three Gold Eagle [VI] Star Stones, supplied 2026-11-22"
+        },
+        "baseline": {
+          "kind": "historical-community",
+          "label": "Dell'arte's Ambition — historic +0 stats",
+          "url": "https://atlantica.fandom.com/wiki/Dell%27arte%27s_Ambition"
+        },
+        "crafting": {
+          "kind": "historical-community",
+          "label": "Dell'arte's Ambition — Craftable: No (historic source)",
+          "url": "https://atlantica.fandom.com/wiki/Dell%27arte%27s_Ambition"
+        }
+      }
+    }
+  ]
+}
