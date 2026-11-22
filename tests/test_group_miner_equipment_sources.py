@@ -186,6 +186,7 @@ class SourceGroupingTests(unittest.TestCase):
                 con.execute("CREATE TABLE snapshots(id INTEGER PRIMARY KEY)")
                 con.execute("INSERT INTO snapshots VALUES (1)")
                 con.execute("CREATE TABLE catalog_items(item_id INTEGER)")
+            registry.write_text('const ITEM_NAMES_TSV = "1|Spirit Sword";\n', encoding="utf-8")
             with self.assertRaises(ValueError):
                 module.report_source_groups(db, registry, 1)
 
