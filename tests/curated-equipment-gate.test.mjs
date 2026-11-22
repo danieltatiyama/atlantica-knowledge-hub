@@ -129,7 +129,17 @@ test("append-only merge forbids silent field changes, snapshot swaps and empty p
   assert.throws(()=>mergeCuratedEquipment(old, dataset([{
     ...approved(), fields: { clientCategory:"Weapon" },
   }]),registry), /manual PR/);
-  assert.throws(()=>mergeCuratedEquipment(old, dataset([approved()], 2),registry), /snapshot differs/);
+  const secondSnapshot = dataset([{
+    ...approved(),
+    evidence: {
+      ...approved().evidence,
+      sources: [
+        "reviewed:src/data/equipment-item-names-en.ts",
+        "catalog_items:snapshot=2:record=112473",
+      ],
+    },
+  }], 2);
+  assert.throws(()=>mergeCuratedEquipment(old, secondSnapshot,registry), /snapshot differs/);
   assert.throws(()=>mergeCuratedEquipment(old, dataset([]),registry));
   assert.throws(()=>mergeCuratedEquipment(old, {...dataset(), records:[approved("3890", "Ring")]},registry));
 });
