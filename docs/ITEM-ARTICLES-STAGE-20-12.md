@@ -16,7 +16,7 @@ The public dataset lives in `src/data/reviewed-equipment-profiles.json`.
 Its source policy is separate from the read-only private Miner and its
 approved metadata gates. Do not publish raw source files or uploaded
 screenshots. The current 551 item-ID/name catalog remains unchanged;
-only the Spirit Sword has a populated editorial profile so far.
+three source-backed examples now have profiles: Spirit Sword (current screenshot), plus Spirit Bow and Spirit Instrument (historical Wikidot only).
 
 ### Spirit Sword
 
@@ -30,6 +30,26 @@ From supplied screenshots, the +0 item has:
 Crafting materials Copper Flakes ×5 and Maple ×4 are documented via
 a community reference instead of the screenshot; they are separately
 labeled in the article.
+
+## Additional community-sourced equipment profiles
+
+The user also proposed researching the predictable ~item:<slug>~
+Wikidot URL namespace. After matching the public 551-name registry, two
+additional complete historical examples are included, without claiming
+that their values have been reverified in the current Atlantica Global:
+
+- Spirit Bow — Wiki ID 400; +0 attack 50–100, Dexterity +8, level 1.
+  Historical Crafting: Bow Skill Lv1, Workload 450, Coral ×5, Maple ×4.
+  Source: https://atlantica-online.wikidot.com/item:spirit-bow
+- Spirit Instrument — Wiki ID 1400; +0 attack 40–50,
+  Intelligence +16, Vitality +6, level 1.
+  Historical Crafting: Instrument Skill Lv1, Workload 450,
+  Coral ×5, Maple ×4.
+  Source: https://atlantica-online.wikidot.com/item:spirit-instrument
+
+Both profiles label +0 as HISTORICAL COMMUNITY TABLE, not observed
+in-game, and label +1..+10 as estimated. Spirit Sword instead labels
++0 as OBSERVED IN-GAME. Each page links its underlying community source.
 
 ## Historical enchantment scaling hypothesis
 
@@ -80,11 +100,11 @@ The test `tests/equipment-enchant-projection.test.mjs` confirms numerical
 agreement across >100 historical values, spanning weapons, armor and
 shields. The current screenshot-backed Spirit Sword is projected from:
 
-- +0 (observed): attack 60–90, STR +5, VIT +5
+- +0 (observed in-game): attack 60–90, STR +5, VIT +5
 - +5 (estimated): attack 126–189, STR +10, VIT +10
 - +10 (estimated): attack 240–360, STR +20, VIT +20
 
-All +1..+10 rows are clearly labeled CALCULATED / ESTIMATED and cite
+All projected +1..+10 rows are clearly labeled CALCULATED / ESTIMATED and cite
 the community-based calibration. They are NOT validated measurements
 from the current Atlantica Global client.
 
@@ -113,6 +133,18 @@ The historic Wikidot pages generally use
 `https://atlantica-online.wikidot.com/item:<slug>`.
 Examples: `item:evil-sword`, `item:spirit-bow`,
 `item:phoenix-s-light-armor`, `item:dark-knight-s-shield`.
+
+The helper ~scripts/suggest-wikidot-item-pages.mjs~ lists candidates for
+the public name dictionary, with NO network access and NO existence
+verification. Example:
+
+~~~powershell
+node scripts/suggest-wikidot-item-pages.mjs "Spirit"
+node scripts/suggest-wikidot-item-pages.mjs --all
+~~~
+
+Every URL is a candidate only. The historical site may be missing or
+have renamed some pages.
 
 A candidate slug is lowercased, with punctuation and spaces reduced
 to hyphens. Not all names or historical pages necessarily have a
