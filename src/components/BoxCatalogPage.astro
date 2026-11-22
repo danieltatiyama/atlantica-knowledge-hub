@@ -93,9 +93,11 @@ const boxTypes = ["random","selection","fixed","unknown"];
             : box.contentsEvidence === "official-published"
               ? (pt?"Lista oficial de recompensas":"Official reward list")
               : (pt?"Lista ainda não capturada":"List not yet captured")} · {box.capturedItemCount} {pt?"itens":"items"}</span>
-          <p class="rate-note">{box.oddsStatus === "regional-published"
-            ? (pt?"Taxas regionais publicadas":"Published regional rates")
-            : (pt?"Probabilidades desconhecidas":"Unknown drop rates")}</p>
+          <p class="rate-note">{box.boxType === "selection"
+            ? (pt?"Seleção de item — não é sorteio":"Player choice — not a random draw")
+            : box.oddsStatus === "regional-published"
+              ? (pt?"Taxas regionais publicadas":"Published regional rates")
+              : (pt?"Probabilidades desconhecidas":"Unknown drop rates")}</p>
         </article>
       ))}
     </div>
