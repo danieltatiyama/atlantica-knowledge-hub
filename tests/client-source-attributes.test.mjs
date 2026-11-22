@@ -61,11 +61,58 @@ const sample={
   ]
 };
 
-test("raw client attributes are absent until actual local Items.csv export",()=>{
+test("551 reviewed equipment IDs are now backed by actual client source stats",()=>{
   const valid=validateClientItemAttributes(attrs,EQUIPMENT_ITEM_NAMES_EN);
   assert.equal(valid.ok,true,valid.errors.join("; "));
-  assert.equal(valid.records.length,0);
-  assert.equal(attrs.snapshotId,null);
+  assert.equal(attrs.snapshotId,1);
+  assert.equal(valid.records.length,551);
+  assert.equal(valid.records.reduce((n,item)=>n+item.sourceRows.length,0),1031);
+  assert.equal(valid.records.filter(item=>item.sourceRows.length===2).length,480);
+  assert.equal(valid.records.filter(item=>item.sourceRows.length===1).length,71);
+  assert.deepEqual(new Set(valid.records.map(item=>item.id)),
+    new Set(Object.keys(EQUIPMENT_ITEM_NAMES_EN)));
+
+  const counts=new Map();
+  const allRowNums=new Set();
+  let conflictingSharedFields=0;
+  for(const item of valid.records){
+    const shared=item.sourceRows.reduce((keys,r)=>
+      new Set([...keys].filter(key=>key in r.fieldsRaw)),
+      new Set(Object.keys(item.sourceRows[0].fieldsRaw)));
+    if([...shared].some(key=>
+      new Set(item.sourceRows.map(r=>r.fieldsRaw[key])).size>1)){
+      conflictingSharedFields++;
+    }
+    for(const r of item.sourceRows){
+      assert.equal(allRowNums.has(r.sourceRowNumber),false);
+      allRowNums.add(r.sourceRowNumber);
+      for(const field of Object.keys(r.fieldsRaw)){
+        counts.set(field,(counts.get(field)??0)+1);
+      }
+    }
+  }
+  assert.equal(conflictingSharedFields,0);
+  assert.equal(counts.size,19);
+  assert.equal(counts.get("Mag"),1031);
+  assert.equal(counts.get("MagicDef"),1031);
+  assert.equal(counts.get("MinDamage"),748);
+  assert.equal(counts.get("MaxDamage"),748);
+  assert.equal(counts.get("AC"),891);
+  assert.equal(counts.get("EV"),612);
+  assert.equal(counts.get("CriticalPlus"),329);
+  assert.equal([...counts.values()].reduce((a,b)=>a+b,0),11793);
+
+  const spirit=valid.records.find(item=>item.id==="1");
+  assert.equal(spirit?.nameEn,"Spirit Sword");
+  assert.equal(spirit?.sourceRows[0]?.fieldsRaw.MinDamage,"60");
+  assert.equal(spirit?.sourceRows[0]?.fieldsRaw.MaxDamage,"90");
+  assert.equal(spirit?.sourceRows[0]?.fieldsRaw.Mag,"0");
+  const shield=valid.records.find(item=>item.id==="196");
+  assert.equal(shield?.sourceRows[0]?.fieldsRaw.AC,"15570");
+  assert.equal(shield?.sourceRows[0]?.fieldsRaw.MagicDef,"198");
+  assert.equal(shield?.sourceRows[0]?.fieldsRaw.EV,"85");
+  assert.equal(valid.records.find(item=>item.id==="363")?.sourceRows[0]?.fieldsRaw.Mag,"292.5");
+  assert.equal(valid.records.filter(item=>item.sourceRows.some(r=>r.fieldsRaw.Mag!=="0")).length,169);
 });
 
 test("source-row schema preserves only official raw numeric fields",()=>{
