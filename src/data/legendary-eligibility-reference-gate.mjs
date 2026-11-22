@@ -46,7 +46,7 @@ export function validateLegendaryEligibility(payload){
   if(new Set(payload.items.map(x=>x.category)).size!==12){
     errors.push("Expected 12 source category groups");
   }
-  return {ok:errors.length===0,errors,records:errors.length?payload.items:[]};
+  return {ok:errors.length===0,errors,records:errors.length?[]:payload.items};
 }
 
 export function normalizedLegendaryName(name){
