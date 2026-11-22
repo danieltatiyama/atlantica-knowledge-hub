@@ -69,7 +69,7 @@ const description=selection
               <thead><tr><th>#</th><th>{pt?"ID do item selecionável":"Selectable item ID"}</th><th>{pt?"Nome":"Name"}</th></tr></thead>
               <tbody>{selection.itemUniqueIds.map((id,i)=><tr>
                 <td>{i+1}</td><td><code>{id}</code></td>
-                <td>{getEquipmentItemEnglishName(id) ?? (pt?"Nome pendente":"Name pending")}</td>
+                <td>{getEquipmentItemEnglishName(id) ? <a href={(pt?"/pt-br":"")+"/items/"+id+"/"}>{getEquipmentItemEnglishName(id)}</a> : (pt?"Nome pendente":"Name pending")}</td>
               </tr>)}</tbody>
             </table></div>
             <p class="soft">{pt
@@ -112,7 +112,7 @@ const description=selection
               <tbody>
                 {captured.itemUniqueIds.map((id,index)=><tr>
                   <td>{index+1}</td>
-                  <td><strong>{getEquipmentItemEnglishName(id) ?? (pt?"Nome pendente":"Name pending")}</strong><span class="item-id"> ID {id}</span></td>
+                  <td><strong>{getEquipmentItemEnglishName(id) ? <a href={(pt?"/pt-br":"")+"/items/"+id+"/"}>{getEquipmentItemEnglishName(id)}</a> : (pt?"Nome pendente":"Name pending")}</strong><span class="item-id"> ID {id}</span></td>
                   <td>{grades.map(g=>g.enhancement===undefined?"?":"+"+g.enhancement).join(", ")}</td>
                   <td>—</td>
                 </tr>)}
