@@ -67,3 +67,6 @@ Miner_Equipment_Approved_*.json
 Miner_Source_Groups_Private_*.json
 # Local-only all-item article review queue (never publish)
 Miner_Item_Article_Queue_*.json
+# Private historical Wikidot audits, explicit approvals and derived local drafts
+Miner_Wikidot_*.json
+Wikidot_HTML/
