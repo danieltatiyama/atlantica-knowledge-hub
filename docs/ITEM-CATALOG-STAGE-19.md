@@ -35,7 +35,10 @@ This pilot carries no network payloads, local paths, secrets or client files.
 
 ## Next stage
 
-A real v0.7 Data Miner export remains required to implement the item dataset
-adapter described by docs/GAME-DATA-INTEGRATION.md (Stage 9.2).
+Stage 20.0–20.8 inspected the real Miner schema and a bounded source sample,
+built private read-only indexing, and added a reviewed-only public metadata
+bridge. The new public metadata manifest is initially empty; no client
+attributes are published without explicit source/field approval.
+See docs/MINER-CURATED-EQUIPMENT-STAGES-20-6-20-8.md.
 The catalog's type and routes are intentionally compatible with future
 expansion without making a client-only fact into a gameplay-verified claim.

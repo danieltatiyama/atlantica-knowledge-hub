@@ -9,7 +9,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "validate:curated": "node scripts/check-curated-equipment.mjs",
+    "test:curated": "node --test tests/curated-equipment-gate.test.mjs tests/offline-review-workbench.test.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.10",

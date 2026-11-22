@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { EQUIPMENT_ITEM_CATALOG } from "../data/equipment-item-catalog";
+import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_METADATA_COUNT } from "../data/curated-equipment-metadata";
 
 interface Props { lang: "en" | "pt-br"; }
 const { lang } = Astro.props;
@@ -41,6 +42,8 @@ const description = pt
             <th>{pt ? "Nome (inglês oficial)" : "Official English name"}</th>
             <th>{pt ? "ID do item" : "Item ID"}</th>
             <th>{pt ? "Boxes associadas" : "Associated boxes"}</th>
+            {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
+              <th>{pt ? "Metadados do cliente" : "Client metadata"}</th>}
           </tr></thead>
           <tbody>
             {items.map((item) => (
@@ -48,6 +51,10 @@ const description = pt
                 <td><a href={prefix + "/items/" + item.id + "/"}>{item.nameEn}</a></td>
                 <td><code>{item.id}</code></td>
                 <td>{item.boxReferences.length}</td>
+                {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
+                  <td>{getCuratedEquipmentMetadata(item.id)
+                    ? (pt ? "Extraído · Revisado" : "Extracted · Reviewed")
+                    : (pt ? "Pendente" : "Pending")}</td>}
               </tr>
             ))}
           </tbody>
