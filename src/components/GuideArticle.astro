@@ -319,13 +319,14 @@ const relatedGuides = categoryGuides
 
 
   .article {
-    max-width: 1100px;
+    width: 100%;
+    max-width: var(--content-width);
     margin: 0 auto;
     padding: 50px 0 80px;
   }
 
   .article-header {
-    max-width: 800px;
+    max-width: 960px;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 28px;
     margin-bottom: 35px;
@@ -408,8 +409,8 @@ const relatedGuides = categoryGuides
 
   .article-layout {
     display: grid;
-    grid-template-columns: minmax(0, 800px) minmax(180px, 220px);
-    gap: 48px;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+    gap: clamp(24px, 3vw, 40px);
     align-items: start;
   }
 
