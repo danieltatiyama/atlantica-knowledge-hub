@@ -18,7 +18,7 @@ const description=pt
   ? "Box identificada no jogo. A relação completa de equipamentos e as probabilidades ainda não foram confirmadas por captura desta box."
   : "In-game box identification is verified. The complete equipment pool and probabilities have not yet been verified by capturing this box.";
 ---
-<BaseLayout lang={lang} title={entry.name+" | Atlantica Knowledge Hub"} description={description}>
+<BaseLayout lang={lang} title={entry.name+" | Atlantica Knowledge Hub"} description={description} alternatePaths={{en:"/items/boxes/"+entry.slug+"/", "pt-br":"/pt-br/items/boxes/"+entry.slug+"/"}}>
   <main class="container">
     <nav class="crumb"><a href={base}>{pt?"← Voltar às boxes":"← Back to boxes"}</a></nav>
     <article class="article">
