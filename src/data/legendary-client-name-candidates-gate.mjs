@@ -7,7 +7,7 @@ const obj=x=>x!==null&&typeof x==="object"&&!Array.isArray(x);
 const shape=(v,keys)=>obj(v)&&Object.keys(v).length===keys.length&&
   Object.keys(v).every(k=>keys.includes(k));
 const id=v=>typeof v==="string"&&/^[1-9]\d{0,12}$/.test(v);
-const safeName=v=>typeof v==="string"&&v.trim()===v&&v.length>0&&v.length<=120;
+const safeName=v=>typeof v==="string"&&v.trim()===v&&v.length>0&&v.length<=170;
 const statuses=["one-exact-source-name","ambiguous-client-identity","not-found-in-miner"];
 const sourceURL="https://atlantica.fandom.com/wiki/Legendary_Weapons";
 
@@ -43,8 +43,9 @@ export function checkLegendaryClientCandidates(payload,legendary){
       if(!shape(cand,["itemId","recordIds","clientLevelRaw","clientGradeRaw"])||
           !id(cand.itemId)||usedIds.has(cand.itemId)||
           !/^[0-9]{1,4}$/.test(cand.clientLevelRaw)||
-          !/^[A-Z_]{3,32}$/.test(cand.clientGradeRaw)||
+          !["NORMAL","RARE","LUXURY"].includes(cand.clientGradeRaw)||
           !Array.isArray(cand.recordIds)||cand.recordIds.length<1||cand.recordIds.length>20||
+          new Set(cand.recordIds).size!==cand.recordIds.length||
           cand.recordIds.some(n=>!Number.isSafeInteger(n)||n<=0||usedRecords.has(n))){
         errors.push("Invalid client source candidate "+(index+1));continue;
       }
