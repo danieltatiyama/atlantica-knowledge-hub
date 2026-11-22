@@ -47,6 +47,37 @@ independently reviewed for public display.
   duplicate IDs, invented names, field tampering, and public
   contract compatibility. GitHub CI runs them before the Astro build.
 
+## Stage 20.10 — streamlined Windows PowerShell workflow
+
+For normal use, the detailed commands below can be replaced by **two
+script entry points**. Both already contain the configured local SQLite
+path; override with `-Database` if the Miner database moves.
+
+```powershell
+# Generate the private review queue and open the browser workbench.
+.\scripts\Start-EquipmentReview.ps1
+
+# After selecting source rows/fields and exporting the approval JSON,
+# validate everything end to end, but modify no public data:
+.\scripts\Finalize-EquipmentReview.ps1
+
+# Only after examining the proposed approval output:
+.\scripts\Finalize-EquipmentReview.ps1 -WriteCurated
+```
+
+The second script re-runs the Stage 20.5 source match, the Stage 20.9
+read-only SQLite attestation, both public schema gates, and a dry-run
+merge. `-WriteCurated` additionally updates **only** the tracked
+approved-only JSON, runs the Astro build and shows the git diff.
+**It never commits, pushes, merges or deploys.** The user must review
+the diff and open a PR manually. Both PowerShell wrappers are syntax
+checked in GitHub CI, without needing the user's database.
+
+The review HTML uses locally selected input files and has no network
+requests; it intentionally does not store decisions across page reloads.
+Do not run these scripts while the Miner is updating SQLite; stop it or
+use a consistent offline copy.
+
 ## Complete operator workflow (all private files remain local)
 
 From the Wiki repository root after merging:
