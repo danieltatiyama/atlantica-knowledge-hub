@@ -1,5 +1,6 @@
 ---
 import type { ItemArticleProfile, ItemArticleStatRow } from "../data/reviewed-equipment-profiles";
+import { getEnchantStatRows } from "../data/equipment-enchant-projection.mjs";
 
 interface Props {
   lang: "en" | "pt-br";
@@ -9,7 +10,11 @@ interface Props {
 
 const { lang, section, profile } = Astro.props;
 const pt = lang === "pt-br";
-const rows = [...(profile?.stats ?? [])].sort((a,b) => a.enchantLevel - b.enchantLevel);
+const rows = getEnchantStatRows(
+  profile?.stats ?? [],
+  profile?.enchantmentProjectionModel ?? null
+) as (ItemArticleStatRow & { origin: "observed" | "estimated" })[];
+const hasEstimated = rows.some((row) => row.origin === "estimated");
 const number = new Intl.NumberFormat(pt ? "pt-BR" : "en-US");
 const format = (value: number | undefined) => value === undefined ? "—" : number.format(value);
 const possibleStats: { key: keyof ItemArticleStatRow; en: string; pt: string }[] = [
@@ -59,14 +64,19 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
     {rows.length > 0 ? (
       <>
         <p class="subtle">{pt
-          ? "Valores por nível de encantamento. Somente níveis com evidência revisada aparecem na tabela."
-          : "Statistics by enchantment level. Only reviewed and source-backed levels appear here."}</p>
+          ? (hasEstimated
+            ? "O +0 foi observado no jogo; os demais valores são projeções baseadas em tabelas históricas de equipamentos. Cada linha identifica sua origem."
+            : "Valores por nível de encantamento, provenientes de fontes revisadas.")
+          : (hasEstimated
+            ? "+0 was observed in-game; other values are predictions derived from historical equipment tables. Every row identifies its origin."
+            : "Enchantment statistics from reviewed sources.")}</p>
         <div class="table-scroll">
           <table class="item-table">
             <thead><tr>
               <th>{pt ? "Encantamento" : "Enchant level"}</th>
               {hasAttack && <th>{pt ? "Poder de ataque" : "Attack power"}</th>}
               {present.map((column) => <th>{pt ? column.pt : column.en}</th>)}
+              <th>{pt ? "Origem" : "Basis"}</th>
             </tr></thead>
             <tbody>{rows.map((row) => <tr>
               <th scope="row">+{row.enchantLevel}</th>
@@ -74,12 +84,20 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
                 ? format(row.attackMin) + " – " + format(row.attackMax) : "—"}</td>}
               {present.map((column) => <td>{row[column.key] === undefined
                 ? "—" : "+" + format(row[column.key])}</td>)}
+              <td class={row.origin === "estimated" ? "estimated" : "observed"}>
+                {row.origin === "observed"
+                  ? (pt ? "Observado no jogo" : "Observed in-game")
+                  : (pt ? "Calculado · modelo histórico" : "Calculated · historical model")}
+              </td>
             </tr>)}</tbody>
           </table>
         </div>
+        {hasEstimated && <p class="model-note">{pt
+          ? "Modelo estimado: +1–+10 aplicam multiplicadores históricos com arredondamento para baixo apenas a ataque e atributos básicos. Não são valores confirmados no Atlantica Global atual. Durabilidade, custos de Atlas, Magic Defense fixa, efeitos e habilidades NÃO são calculados."
+          : "Estimate: +1–+10 use historical multipliers with rounding down for attack and basic stats only. These values are not confirmed for the current Atlantica Global. Durability, Atlas costs, fixed Magic Defense, effects and skills are NOT calculated."}</p>}
         {rows.length < 11 && <p class="source-note">{pt
-          ? "Demais níveis de encantamento aguardam confirmação; nenhum valor foi extrapolado."
-          : "Other enchantment levels are pending verification; no values have been extrapolated."}</p>}
+          ? "Outros níveis de encantamento ainda aguardam dados; os valores ausentes não foram inventados."
+          : "Other enchantment levels still need data; missing values were not invented."}</p>}
       </>
     ) : <p class="subtle">{pt
       ? "Nenhum atributo confirmado para este item ainda."
@@ -158,6 +176,10 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
   .class-chip{border:1px solid var(--color-steel);border-radius:3px;
     background:rgba(55,69,88,.3);padding:3px 9px;font-size:.84rem}
   .source-note{font-size:.85rem;color:var(--color-text-muted);margin:14px 0 0}
+  .model-note{font-size:.89rem;color:var(--color-gold-light);border-left:3px solid var(--color-bronze);
+    padding:11px 13px;margin:16px 0;background:var(--color-surface);line-height:1.6}
+  .estimated{color:var(--color-text-muted)!important;font-style:italic;font-size:.84rem;white-space:nowrap}
+  .observed{color:var(--color-gold-light)!important;font-weight:600;font-size:.84rem;white-space:nowrap}
   .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
   .item-table{width:100%;min-width:390px;border-collapse:collapse;font-variant-numeric:tabular-nums}
   .item-table th,.item-table td{padding:12px 16px;text-align:left;
