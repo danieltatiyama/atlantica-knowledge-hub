@@ -28,7 +28,9 @@ The third area's Field Info screenshot showed no monsters in the list. **An empt
 
 The game's Field Info screen lists the following monsters for the entrance area:
 
-| Monster | Level displayed |
+**Level scaling:** According to the player's observation, Avalon adjusts enemy levels relative to the main character's level. The numbers below are **levels displayed in one set of screenshots**, not fixed monster levels or a scaling formula. Two monsters appeared at level 175 while others appeared at 200; the reason for this difference has not been established.
+
+| Monster | Level in screenshot (variable) |
 | --- | ---: |
 | Evil Dark Knight | 200 |
 | Evil Sylph | 200 |
@@ -43,9 +45,9 @@ These are **Field Info listings**, not a verified count of spawns or an exhausti
 
 ## Hall of Respite — second area
 
-The second area's Field Info screen lists:
+The second area's Field Info screen lists (levels shown are specific to these screenshots, not universal):
 
-| Monster | Level displayed |
+| Monster | Level in screenshot (variable) |
 | --- | ---: |
 | Evil Dark Knight | 200 |
 | Evil Sylph | 200 |
@@ -78,7 +80,8 @@ The third area is named **Heart of Avalon**. Its map is visible in Field Info, b
 | Claim | Evidence | Status |
 | --- | --- | --- |
 | Three named Avalon areas | In-game Field Info screenshots | Observed in interface |
-| Monster names and levels in the first two areas | In-game Field Info screenshots | Observed in interface |
+| Monster names and displayed levels in the first two areas | In-game Field Info screenshots | Observed for this character; levels vary |
+| Enemy levels scale relative to the main character | Player observation | Scaling behavior reported; exact rule not verified |
 | Conditional encounter involving “innocent” monsters | Player report | Not independently reproduced |
 | Exact spawn conditions, counts, and timing | Not established | Open |
 | Third-area encounter composition | Not established | Open |
