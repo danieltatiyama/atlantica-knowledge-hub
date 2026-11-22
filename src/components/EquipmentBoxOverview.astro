@@ -1,0 +1,82 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getEquipmentBoxBySlug } from "../data/equipment-box-registry";
+import type { EquipmentBoxEntry } from "../data/equipment-box-registry";
+
+interface Props { lang: "en" | "pt-br"; entry: EquipmentBoxEntry; }
+const {lang,entry}=Astro.props;
+const pt=lang==="pt-br";
+const base=(pt?"/pt-br":"")+"/items/boxes/";
+const parent=entry.baseSlug ? getEquipmentBoxBySlug(entry.baseSlug) : undefined;
+const grade=entry.enhancementMin!==undefined && entry.enhancementMax!==undefined
+  ? "+"+entry.enhancementMin+" to +"+entry.enhancementMax
+  : null;
+const gradeLocal=entry.enhancementMin!==undefined && entry.enhancementMax!==undefined
+  ? "+"+entry.enhancementMin+" a +"+entry.enhancementMax
+  : null;
+const description=pt
+  ? "Box identificada no jogo. A relação completa de equipamentos e as probabilidades ainda não foram confirmadas por captura desta box."
+  : "In-game box identification is verified. The complete equipment pool and probabilities have not yet been verified by capturing this box.";
+---
+<BaseLayout lang={lang} title={entry.name+" | Atlantica Knowledge Hub"} description={description}>
+  <main class="container">
+    <nav class="crumb"><a href={base}>{pt?"← Voltar às boxes":"← Back to boxes"}</a></nav>
+    <article class="article">
+      <header>
+        <p class="eyebrow">{pt?"CATÁLOGO DE EQUIPMENT BOXES":"EQUIPMENT BOX CATALOG"} · GLOBAL</p>
+        <h1>{entry.name}</h1>
+        <p class="intro">{description}</p>
+        <div class="meta">
+          <span>{pt?"ID do item":"Item ID"}: {entry.itemUniqueId}</span>
+          <span>{pt?"ID de texto":"Text ID"}: {entry.nameTextId}</span>
+          <span>{entry.group==="variant" ? (pt?"Variante":"Variant") : (pt?"Box padrão":"Standard box")}</span>
+        </div>
+      </header>
+
+      {entry.group==="variant" && parent ? (
+        <section>
+          <h2>{pt?"Conjunto compartilhado":"Shared equipment pool"}</h2>
+          <p>
+            {pt?"Segundo a observação do jogador, esta variante utiliza o mesmo conjunto de equipamentos da box base: ":"According to in-game player observation, this variant uses the same equipment pool as: "}
+            <a href={base+parent.slug+"/"}>{parent.name}</a>.
+          </p>
+          <p class="enhance">{pt?"Grau de aprimoramento informado":"Reported enhancement range"}: <strong>{pt?gradeLocal:grade}</strong></p>
+          <p class="notice">{pt
+            ?"A faixa de aprimoramento é uma observação fornecida pelo jogador. A distribuição de resultados e de graus dentro dessa faixa é desconhecida."
+            :"The enhancement range is player-reported. The distribution of rewards and enhancement grades within this range is unknown."}</p>
+          <p>{pt?"Consulte a página da box base para conferir quais itens já foram identificados.":"Check the base box page to see which items have been identified."}</p>
+        </section>
+      ) : (
+        <section>
+          <h2>{pt?"Recompensas da box":"Box rewards"}</h2>
+          {entry.setName ? (
+            <p>{pt?"Família de equipamentos associada":"Associated equipment family"}: <strong>{entry.setName}</strong>
+              {entry.setLevel ? " ("+(pt?"nível ":"level ")+entry.setLevel+")" : ""}.
+            </p>
+          ) : null}
+          <p class="notice">
+            {pt
+              ?"Ainda não temos uma lista de itens transmitida pelo servidor para esta box. A correspondência por nome de conjunto, quando existir, não comprova sozinha todos os drops possíveis."
+              :"No game-transmitted item list has been captured for this box yet. Matching an equipment set by name alone does not verify every possible drop."}
+          </p>
+          <p>{pt?"Probabilidades: não verificadas.":"Drop chances: unverified."}</p>
+        </section>
+      )}
+      <p class="source-note">{pt
+        ?"Escopo confirmado por capturas de tela no jogo em 22/11/2026; IDs cruzados com o catálogo de itens do cliente. Caixas exclusivas de classes foram excluídas."
+        :"Scope checked against in-game screenshots on Nov 22, 2026; item IDs matched to the client item catalog. Class-specific boxes are excluded."}</p>
+    </article>
+  </main>
+</BaseLayout>
+<style>
+.container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
+.crumb{padding:24px 0}.crumb a,.article a{color:var(--color-accent);text-decoration:none}
+.article{max-width:1000px;margin:0 auto}.eyebrow{color:var(--color-accent);font-size:.8rem;letter-spacing:.1em}
+h1{font-size:clamp(2rem,4vw,3rem);margin:9px 0 16px}
+.intro,.source-note{color:var(--color-text-muted)}
+.meta{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 28px}
+.meta span{padding:6px 10px;background:var(--color-surface);border:1px solid var(--color-border);font-size:.85rem}
+section{padding:24px 0;border-top:1px solid var(--color-border);line-height:1.8}
+h2{font-size:1.6rem}.notice{padding:13px 18px;border-left:3px solid var(--color-bronze);background:var(--color-surface)}
+.enhance{font-size:1.1rem}.source-note{font-size:.86rem;border-top:1px solid var(--color-border);padding-top:18px}
+</style>
