@@ -53,11 +53,18 @@ export function withClientMovementSpeed(validatedRecords, snapshotId) {
     sourceRows:item.sourceRows.map(row=>{
       const value=sourceByRow.get(row.sourceRowNumber);
       if(value===undefined)return row;
-      if(used.has(row.sourceRowNumber)||"MoveSpeed" in row.fieldsRaw){
-        throw new Error("Source record duplicated or MoveSpeed already present");
+      if(used.has(row.sourceRowNumber)){
+        throw new Error("Duplicate Items.csv source row");
+      }
+      if("MoveSpeed" in row.fieldsRaw && row.fieldsRaw.MoveSpeed!==value){
+        throw new Error("MoveSpeed differs from original snapshot 1 source row");
       }
       used.add(row.sourceRowNumber);
-      return {...row,fieldsRaw:{...row.fieldsRaw,MoveSpeed:value}};
+      // A future full export may already include this key. Accept only
+      // exact equality; never double-attach a different source fact.
+      return "MoveSpeed" in row.fieldsRaw
+        ? row
+        : {...row,fieldsRaw:{...row.fieldsRaw,MoveSpeed:value}};
     }),
   }));
   if(used.size!==sourceByRow.size) {
