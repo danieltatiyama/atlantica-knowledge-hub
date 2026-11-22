@@ -2,6 +2,7 @@
 import type {ClientEquipmentFacts,ClientSourceDefinition} from "../data/client-equipment-facts";
 import {CLIENT_EQUIPMENT_SOURCE_SNAPSHOT} from "../data/client-equipment-facts";
 import {EQUIPMENT_ITEM_NAMES_EN} from "../data/equipment-item-names-en";
+import {getClientMaterialName} from "../data/client-material-names-en.mjs";
 
 interface Props {lang:"en"|"pt-br"; item?:ClientEquipmentFacts;}
 const {lang,item}=Astro.props;
@@ -46,7 +47,7 @@ const formatValue=(x:string|number|null)=>x===null||x===""?"—":
       {record.ingredients.length?(
         <div class="materials">
           {record.ingredients.map(material=><span class="material">
-            {EQUIPMENT_ITEM_NAMES_EN[material.itemId]??("Item #"+material.itemId)}
+            {getClientMaterialName(material.itemId)??EQUIPMENT_ITEM_NAMES_EN[material.itemId]??("Item #"+material.itemId)}
             {" ×"}{fmt.format(material.quantity)}
           </span>)}
         </div>
