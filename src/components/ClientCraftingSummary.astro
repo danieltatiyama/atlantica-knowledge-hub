@@ -67,12 +67,12 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
     :(pt?"Nenhuma lista estruturada de materiais foi encontrada. Isso não comprova que o item seja impossível de fabricar."
       :"No structured material list was found. This is not proof the item cannot be crafted.")}</p>}
   {source.missingMaterialNames>0&&<p class="warning">{pt
-    ?\`\${source.missingMaterialNames} referência(s) de material permanecem sem nome inglês validado.\`
-    :\`\${source.missingMaterialNames} material references lack a reviewed English name.\`}</p>}
+    ?`${source.missingMaterialNames} referência(s) de material permanecem sem nome inglês validado.`
+    :`${source.missingMaterialNames} material references lack a reviewed English name.`}</p>}
   {Object.entries(source.fields).some(([key,value])=>value.status==="conflict")&&<details class="conflicts">
     <summary>{pt?"Revisar valores divergentes nos metadados":"Inspect conflicting source metadata"}</summary>
     {Object.entries(source.fields).filter(([key,field])=>field.status==="conflict").map(([key,field])=>
-      <p><strong>{key}</strong>: {field.observations.map(o=>\`#\${o.recordId}: \${o.value}\`).join(" · ")}</p>)}
+      <p><strong>{key}</strong>: {field.observations.map(o=>`#${o.recordId}: ${o.value}`).join(" · ")}</p>)}
   </details>}
   <p class="note footer">{pt
     ?"Os nomes dos materiais foram associados a seus IDs oficiais em inglês na mesma extração do cliente; não são traduções próprias. Classes permitidas e habilidade de fabricação exigem análise de campos distintos."
