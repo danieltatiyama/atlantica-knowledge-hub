@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import { getCapturedEquipmentPool, decodedEnhancementCandidate } from "../data/equipment-box-captured-pools";
+import { getEquipmentItemEnglishName } from "../data/equipment-item-names-en";
 interface Props { lang: "en"|"pt-br"; box: CollectionEntry<"boxes">; }
 const {lang,box}=Astro.props;
 const pt=lang==="pt-br";
@@ -61,7 +62,7 @@ const contentsLabel=captured
         </tr></thead>
           <tbody>
             {d.outcomes.map(row=><tr>
-              <td>{row.itemName}</td>
+              <td>{(row.itemUniqueId && getEquipmentItemEnglishName(row.itemUniqueId)) || row.itemName}</td>
               <td>{row.itemUniqueId ?? "—"}</td>
               <td>{row.quantityVerified ? row.quantity.toLocaleString(pt?"pt-BR":"en-US") : "—"}</td>
               <td>{row.observedCount ? row.observedCount : "—"}</td>
