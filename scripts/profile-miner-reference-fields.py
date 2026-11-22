@@ -18,7 +18,7 @@ import sys
 
 SAFE_NAME=re.compile(r"^[A-Za-z][A-Za-z0-9_ .:-]{0,70}$")
 DATASET_NAME=re.compile(r"^[A-Za-z][A-Za-z0-9_ .-]{0,100}$")
-CANDIDATE=re.compile(r"(?i)attack|damage|defen|armor|magic|strength|dexterity|vitality|intelligence|critical|multihit|evasion|work|recipe|item|quantity|skill|level|source|drop")
+CANDIDATE=re.compile(r"(?i)attack|damage|defen|armor|magic|strength|dexterity|vitality|intelligence|critical|multihit|evasion|work|recipe|item|quantity|skill|level|source|drop|rate")
 MAX_ROWS=1_000_000
 MAX_FIELDS=10000
 
