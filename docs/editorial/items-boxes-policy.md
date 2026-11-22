@@ -24,6 +24,27 @@ A box can have a usable list of related items even when no odds are known.
 - In the November 22, 2026 capture, Judgment `13583` and Abyssal `16812` each transmitted a 27-item list; 9 observed reward identifiers belonged to those lists (5 Judgment, 4 Abyssal). No percentages or guaranteed pool completeness are established.
 - The local 113-box family crosswalk is for private editorial review only and is not automatically committed or published.
 
+## Scope: general Equipment Boxes (in-game screenshots, 2026-11-22)
+
+The public equipment box registry currently has **26 standard boxes** plus **7 graded variants**.
+Explicitly exclude Melee, Ranged and Magic class-specific boxes, JP event duplicates,
+no-trade variants and +7 special boxes unless separately confirmed in future.
+
+User-reported variant rules:
+- Supreme Evil and Enchanted variants: same equipment item pool as their standard/base box; observed enhancement range +0 to +3.
+- Infused variants: same base pool; reported enhancement range +4 to +6.
+- Do not imply that all grades are equally likely or that these rules establish probability.
+- The standard-box enhancement grade is **not assumed** across all boxes. Five observed Judgment outputs were +0.
+
+ItemTypePack.ndt contains two separate records named `Infused Pegasus Equipment Box`:
+`Unique=13404` (standard variant) and `Unique=13605` (identified as JP/event in its Korean name).
+The screenshots do not by themselves identify the latter, so the registry uses 13404 only.
+
+The curated public routes expose the documented **box existence and family grouping**,
+and use the game-captured 27-item lists only for Judgment and Abyssal.
+All other box pages explicitly state that their complete reward list is not yet confirmed.
+The older 113-box source-name candidate crosswalk remains a separate private review tool.
+
 ## Regional chances
 
 Rates can appear in an approved article only with:
