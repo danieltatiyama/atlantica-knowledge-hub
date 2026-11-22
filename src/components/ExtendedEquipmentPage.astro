@@ -1,0 +1,199 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import facts from "../data/extended-equipment-facts.json";
+import { getReviewedExtendedFacts } from "../data/extended-equipment-facts-gate.mjs";
+import { EQUIPMENT_ITEM_NAMES_EN } from "../data/equipment-item-names-en";
+
+interface Props { lang: "en" | "pt-br"; slug: string; }
+const {lang,slug}=Astro.props;
+const pt=lang==="pt-br";
+const prefix=pt?"/pt-br":"";
+const all=getReviewedExtendedFacts(facts,EQUIPMENT_ITEM_NAMES_EN);
+const item=all.find(entry=>entry.slug===slug);
+if(!item)throw new Error("Unreviewed extended equipment slug; cannot render");
+const n=(value:number)=>new Intl.NumberFormat(pt?"pt-BR":"en-US").format(value);
+const base=item.derived.bareL;
+const gems=item.socketedModifiers;
+const observed=item.observedTooltip;
+const derived=item.derived;
+const stats=[
+ {label:pt?"Ataque":"Attack",observed:n(observed.attackMin)+" – "+n(observed.attackMax),
+   base:n(base.attackMin)+" – "+n(base.attackMax),
+   stones:"+"+n(derived.socketAttackTotal.min)+" – +"+n(derived.socketAttackTotal.max)},
+ {label:pt?"Força":"Strength",observed:"+"+n(observed.strength)},
+ {label:pt?"Inteligência":"Intelligence",observed:"+"+n(observed.intelligence)},
+ {label:pt?"Vitalidade":"Vitality",observed:"+"+n(observed.vitality)},
+ {label:"Critical",observed:n(observed.critical),stones:"+"+n(gems.count*gems.perStone.criticalRate)},
+ {label:"Multi-Hit Rate",observed:n(observed.multiHitRate),stones:"+"+n(gems.count*gems.perStone.multiHitRate)},
+ {label:"AP Mod.",observed:n(observed.actionPowerMod),stones:"+"+n(gems.count*gems.perStone.action)},
+ {label:"Magic Skill Lv.",observed:"+"+n(observed.magicSkillLevelBonus)},
+];
+---
+<BaseLayout lang={lang} title={item.nameEn+" — L | Atlantica Knowledge Hub"}
+ description={pt
+   ?"Ficha documentada a partir de screenshot de equipamento lendário, separando atributos e bônus de pedras."
+   :"Screenshot-documented Legendary equipment profile separating intrinsic stats from socket modifiers."}
+ alternatePaths={{
+  en:"/items/legendary/"+slug+"/",
+  "pt-br":"/pt-br/items/legendary/"+slug+"/"
+ }}>
+ <main class="container">
+   <nav class="breadcrumb"><a href={prefix+"/items/legendary/"}>{pt?"← Encantamento L":"← Legendary enhancement"}</a></nav>
+   <article>
+    <header>
+      <p class="eyebrow">{pt?"FICHA DE EQUIPAMENTO • EVIDÊNCIA DO JOGO":"ITEM PROFILE • IN-GAME EVIDENCE"}</p>
+      <h1><span class="legend">L</span> {item.nameEn}</h1>
+      <p class="lead">{pt
+        ?"Uma configuração lendária observada no jogo, com três Star Stones. O ID numérico do item ainda não foi conciliado com o catálogo público."
+        :"An in-game Legendary configuration with three Star Stones. The numeric item ID has not yet been reconciled with the public catalog."}</p>
+      <div class="summary">
+        <div><span>{pt?"Tipo":"Type"}</span><strong>{item.typeEn}</strong></div>
+        <div><span>{pt?"Nível mínimo":"Minimum level"}</span><strong>Lv. {item.minimumLevel}</strong></div>
+        <div><span>{pt?"Grau":"Grade"}</span><strong>{item.grade}</strong></div>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <a href="#stats">{pt?"Atributos":"Stats"}</a>
+      <a href="#sockets">Star Stones</a>
+      <a href="#classes">{pt?"Classes":"Classes"}</a>
+      <a href="#effects">{pt?"Efeitos":"Effects"}</a>
+      <a href="#crafting">{pt?"Fabricação":"Crafting"}</a>
+      <a href="#references">{pt?"Referências":"References"}</a>
+    </nav>
+
+    <section id="stats">
+      <h2>{pt?"Atributos: configuração observada":"Stats: observed configuration"}</h2>
+      <p class="note">{pt
+        ?"A coluna final é a leitura do tooltip do jogo. O valor lendário sem pedras é uma estimativa baseada em +0 × 4,3; as contribuições das pedras vêm do tooltip. Não confundir os três."
+        :"The final column is the in-game tooltip reading. The bare L value is an estimate from +0 × 4.3; the Star Stone contributions come from the tooltip. These are different evidence types."}</p>
+      <div class="table-scroll"><table>
+        <thead><tr>
+          <th>{pt?"Atributo":"Stat"}</th>
+          <th>{pt?"L sem pedras (modelo)":"Bare L (model)"}</th>
+          <th>{pt?"Bônus das pedras":"Stone contributions"}</th>
+          <th>{pt?"L equipado (captura)":"Equipped L (screenshot)"}</th>
+        </tr></thead>
+        <tbody>{stats.map(s=><tr>
+          <th scope="row">{s.label}</th>
+          <td>{s.base??"—"}</td>
+          <td>{s.stones??"—"}</td>
+          <td class="observed-value">{s.observed}</td>
+        </tr>)}</tbody>
+      </table></div>
+      <p class="footnote">{pt
+        ?"Força, Inteligência e Vitalidade +1.715 constam no tooltip, mas não deduzimos automaticamente a origem da Inteligência a partir da tabela comunitária +0. Magic Skill Lv. +48 também é um valor do tooltip."
+        :"Strength, Intelligence and Vitality +1,715 are in the screenshot, but the historic +0 table does not establish the origin of Intelligence. Magic Skill Lv. +48 is likewise a tooltip observation."}</p>
+    </section>
+
+    <section id="sockets">
+      <h2>{pt?"Pedras equipadas (Star Stones)":"Equipped Star Stones"}</h2>
+      <p><strong>{gems.count} × {gems.itemName}</strong></p>
+      <div class="table-scroll"><table>
+        <thead><tr><th>{pt?"Atributo":"Stat"}</th>
+          <th>{pt?"Cada pedra":"Per stone"}</th>
+          <th>{pt?"Três pedras":"All stones"}</th></tr></thead>
+        <tbody>
+          <tr><th>Critical Rate</th><td>+{gems.perStone.criticalRate}</td><td>+{gems.count*gems.perStone.criticalRate}</td></tr>
+          <tr><th>Multi-Hit Rate</th><td>+{gems.perStone.multiHitRate}</td><td>+{gems.count*gems.perStone.multiHitRate}</td></tr>
+          <tr><th>Action</th><td>+{gems.perStone.action}</td><td>+{gems.count*gems.perStone.action}</td></tr>
+          <tr><th>{pt?"Aumento de ataque":"Attack Enhance"}</th>
+            <td>+{gems.perStone.attackEnhancePercent}%<small>
+              (+{n(gems.perStone.displayedAttackBonusMin)} – +{n(gems.perStone.displayedAttackBonusMax)})</small></td>
+            <td>+{n(derived.socketAttackTotal.min)} – +{n(derived.socketAttackTotal.max)}</td>
+          </tr>
+        </tbody>
+      </table></div>
+      <p class="formula">{pt?"Conferência do ataque":"Attack reconciliation"}:
+        {n(base.attackMin)} + {gems.count} × {n(derived.perStoneAttack.min)} = <strong>{n(observed.attackMin)}</strong>
+        {" · "}
+        {n(base.attackMax)} + {gems.count} × {n(derived.perStoneAttack.max)} = <strong>{n(observed.attackMax)}</strong>
+      </p>
+      <p class="footnote">{pt
+        ?"A coincidência exata sustenta a decomposição matemática, mas o valor sem pedras não foi medido isoladamente nesta captura."
+        :"The exact match supports this mathematical decomposition, but the unmodified L attack was not observed separately in this screenshot."}</p>
+    </section>
+
+    <section id="classes">
+      <h2>{pt?"Classes permitidas":"Class restrictions"}</h2>
+      <p class="note">{pt
+        ?"Rótulos preservados conforme a captura, inclusive ocorrências repetidas."
+        :"Labels retained as shown in the screenshot, including repeated class labels."}</p>
+      <div class="class-list">{item.eligibleClasses.map(c=><span>{c}</span>)}</div>
+    </section>
+
+    <section id="effects">
+      <h2>{pt?"Efeitos especiais":"Special effects"}</h2>
+      {item.specialEffects.map(effect=><div class="effect">
+        <strong>{effect.kind==="legendary-debuff"
+          ?(pt?"Debuff de arma lendária":"Legendary weapon debuff")
+          :(pt?"Bônus condicional de classe":"Conditional class bonus")}</strong>
+        <p>{pt?effect.descriptionPt:effect.descriptionEn}</p>
+      </div>)}
+      <p class="footnote">{pt
+        ?"Efeitos especiais não foram derivados da fórmula de encantamento nem somados automaticamente aos atributos físicos."
+        :"Special effects were not derived from enchantment scaling or automatically added to raw attack stats."}</p>
+    </section>
+
+    <section id="crafting">
+      <h2>{pt?"Fabricação e obtenção":"Crafting and acquisition"}</h2>
+      <p class="note">{pt
+        ?"A documentação comunitária histórica indica que não é fabricável. A captura não informa receita, materiais, local de drop ou chance de obtenção; permanecem não verificados para a versão atual."
+        :"Historical community documentation lists this item as not craftable. The screenshot does not establish a recipe, materials, drop location or acquisition chance for the current game."}</p>
+    </section>
+
+    <section id="references">
+      <h2>{pt?"Referências e confiança":"Sources and confidence"}</h2>
+      <dl class="sources">
+        <div><dt>{pt?"Leitura do item e Star Stones":"Equipment and Star Stone tooltip"}</dt>
+          <dd>{item.evidence.tooltip.label} — <strong>{pt?"observado no jogo":"observed in-game"}</strong></dd></div>
+        <div><dt>{pt?"Atributos +0 e projeção L":"Historic +0 stats and modeled L"}</dt>
+          <dd><a href={item.evidence.baseline.url} target="_blank" rel="noopener noreferrer">
+            {item.evidence.baseline.label}</a> — {pt?"modelo histórico":"historical model"}</dd></div>
+        <div><dt>{pt?"Fabricação":"Crafting"}</dt>
+          <dd><a href={item.evidence.crafting.url} target="_blank" rel="noopener noreferrer">
+            {item.evidence.crafting.label}</a> — {pt?"histórico":"historical"}</dd></div>
+      </dl>
+    </section>
+   </article>
+ </main>
+</BaseLayout>
+<style>
+  .container{width:min(var(--content-width),92%);max-width:1140px;margin:auto;padding:0 0 85px}
+  .breadcrumb{padding:24px 0}.breadcrumb a,a{color:var(--color-accent)}
+  article>header{border-bottom:1px solid var(--color-border);padding:10px 0 30px}
+  .eyebrow{color:var(--color-accent);font-size:.82rem;letter-spacing:.12em}
+  h1{font-size:clamp(2rem,4.7vw,3.2rem);margin:12px 0}
+  .legend{display:inline-block;padding:1px 14px;background:#51266b;color:#f2d2ff;
+    border:1px solid #ba84dc;border-radius:4px}
+  .lead,.note,.footnote{color:var(--color-text-muted);line-height:1.7}
+  .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:25px 0 0}
+  .summary>div{background:var(--color-surface);border:1px solid var(--color-border);
+    padding:14px;border-radius:5px}
+  .summary span{display:block;font-size:.85rem;color:var(--color-text-muted)}
+  .summary strong{display:block;font-size:1.16rem;margin-top:4px;color:var(--color-gold-light)}
+  .toc{display:flex;gap:12px;flex-wrap:wrap;padding:19px 0 0}
+  .toc a{text-decoration:none;border:1px solid var(--color-border);
+    padding:7px 11px;border-radius:4px;background:var(--color-surface)}
+  section{margin-top:38px}
+  h2{font-size:1.5rem;color:var(--color-gold-light);margin:0 0 16px}
+  .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
+  table{border-collapse:collapse;min-width:620px;width:100%;font-variant-numeric:tabular-nums}
+  th,td{padding:11px 15px;text-align:left;border-bottom:1px solid var(--color-border)}
+  th{color:var(--color-gold-light)}thead th{background:#29271f}
+  .observed-value{color:#e4b8ff;font-weight:700;background:rgba(117,73,159,.16)}
+  td small{display:block;font-size:.85rem;color:var(--color-text-muted)}
+  .class-list{display:flex;gap:7px;flex-wrap:wrap}
+  .class-list span{border:1px solid var(--color-border);border-radius:3px;
+    background:var(--color-surface);padding:5px 10px;font-size:.9rem}
+  .effect{background:var(--color-surface);border-left:3px solid #9261b1;
+    padding:12px 18px;margin:12px 0}
+  .effect p{margin:6px 0}
+  .footnote{font-size:.89rem}
+  .formula{margin:16px 0;padding:12px;background:var(--color-surface);color:var(--color-gold-light);
+    overflow-wrap:anywhere}
+  .sources>div{padding:12px 0;border-bottom:1px solid var(--color-border)}
+  .sources dt{color:var(--color-text-muted);font-size:.88rem}
+  .sources dd{margin:4px 0}
+  @media(max-width:650px){.summary{grid-template-columns:1fr}.container{width:94%}}
+</style>

@@ -16,7 +16,9 @@
     "test:profiles": "node --test tests/reviewed-item-profiles.test.mjs tests/equipment-enchant-projection.test.mjs tests/wikidot-url-pattern.test.mjs",
     "suggest:wikidot": "node scripts/suggest-wikidot-item-pages.mjs",
     "validate:legendary": "node scripts/check-legendary-research.mjs",
-    "test:legendary": "node --test tests/legendary-enhancement.test.mjs"
+    "test:legendary": "node --test tests/legendary-enhancement.test.mjs",
+    "test:item-facts": "node --test tests/extended-equipment-facts.test.mjs tests/item-article-review-queue.test.mjs",
+    "coverage:items": "node scripts/build-item-article-review-queue.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.10",

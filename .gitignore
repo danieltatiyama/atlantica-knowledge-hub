@@ -65,3 +65,5 @@ Miner_Equipment_Approved_*.json
 
 # Local-only source grouping review (Stage 20.11)
 Miner_Source_Groups_Private_*.json
+# Local-only all-item article review queue (never publish)
+Miner_Item_Article_Queue_*.json
