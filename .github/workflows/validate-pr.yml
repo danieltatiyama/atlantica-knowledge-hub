@@ -38,7 +38,7 @@ jobs:
       - name: Validate curated-only public equipment metadata
         run: |
           node scripts/check-curated-equipment.mjs
-          node --test tests/curated-equipment-gate.test.mjs
+          node --test tests/curated-equipment-gate.test.mjs tests/offline-review-workbench.test.mjs
 
       - name: Validate Astro build
         run: npm run build
