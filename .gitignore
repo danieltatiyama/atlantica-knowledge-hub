@@ -55,3 +55,5 @@ Miner_Staging_*.json
 Miner_Review_*.json
 Miner_Quarantine_*.csv
 Miner_Quarantine_*.json
+Miner_Identity_Index_*.json
+Miner_Sample_*.json
