@@ -173,14 +173,15 @@ class EquipmentBridgeTests(unittest.TestCase):
     def test_bad_registry_or_snapshot_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             database, registry = prepare_files(Path(folder))
+            original_registry = registry.read_text(encoding="utf-8")
             registry.write_text("export const EQUIPMENT_ITEM_NAMES_EN = {};", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "format changed"):
                 module.reconcile(database, registry, 1)
-            db, registry = prepare_files(Path(folder))
+            registry.write_text(original_registry, encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "snapshot not found"):
-                module.reconcile(db, registry, 3)
+                module.reconcile(database, registry, 3)
             with self.assertRaisesRegex(ValueError, "positive"):
-                module.reconcile(db, registry, 0)
+                module.reconcile(database, registry, 0)
 
 
 if __name__ == "__main__":
