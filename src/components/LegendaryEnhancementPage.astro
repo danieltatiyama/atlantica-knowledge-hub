@@ -2,6 +2,10 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import research from "../data/legendary-enhancement-research.json";
 import { getLegendaryResearchRows } from "../data/legendary-enhancement-research.mjs";
+import legendaryReference from "../data/legendary-eligibility-reference.json";
+import {crossReferenceLegendaryNames,LEGENDARY_REFERENCE_URL}
+  from "../data/legendary-eligibility-reference-gate.mjs";
+import {EQUIPMENT_ITEM_NAMES_EN} from "../data/equipment-item-names-en";
 
 interface Props { lang:"en"|"pt-br"; }
 const { lang } = Astro.props;
@@ -9,6 +13,10 @@ const pt=lang==="pt-br";
 const prefix=pt?"/pt-br":"";
 const title=pt?"Encantamento lendário (L)":"Legendary enhancement (L)";
 const examples=getLegendaryResearchRows(research);
+const eligibility=crossReferenceLegendaryNames(legendaryReference,EQUIPMENT_ITEM_NAMES_EN);
+const categoryGroups=[...new Set(eligibility.map(item=>item.category))]
+  .map(category=>({category,items:eligibility.filter(item=>item.category===category)}));
+const matchedLegendary=eligibility.filter(item=>item.identityStatus==="exact-name-candidate").length;
 const format=(n:number)=>new Intl.NumberFormat(pt?"pt-BR":"en-US").format(n);
 const stats=[
  {key:"attackMin",pt:"Ataque mínimo",en:"Min. attack"},
@@ -50,6 +58,37 @@ const stats=[
     <p class="note">{pt
       ?"Bônus especiais, chance de ativação, Magic Defense fixa, evasão, durabilidade, Atlas Ore, habilidades e probabilidades de sucesso não obedecem necessariamente a esta fórmula."
       :"Special bonuses, proc rates, fixed Magic Defense, evasion, durability, Atlas Ore, skills and enhancement success rates are not covered by this formula."}</p>
+  </section>
+  <section id="legendary-eligibility" class="legendary-reference">
+    <h2>{pt?"Lista inicial de equipamentos elegíveis a L":"Initial list of L-eligible equipment"}</h2>
+    <p class="note">{pt
+      ?"47 entradas em 12 categorias, conforme o catálogo comunitário Legendary Weapons do Fandom. É uma lista histórica de referência, não necessariamente completa ou atualizada para o cliente Global. Origem em eventos, fabricação, obtenção e IDs do cliente ainda precisam ser identificados separadamente."
+      :"47 entries across 12 categories from the community Fandom Legendary Weapons reference list. This is a historical starting point, not necessarily exhaustive or current for the Global client. Event origin, craftability, drops and client IDs require independent evidence."}</p>
+    <p class="sources"><a href={LEGENDARY_REFERENCE_URL} target="_blank" rel="noopener noreferrer">
+      {pt?"Fonte: Legendary Weapons — Atlantica Wiki (Fandom)":"Source: Legendary Weapons — Atlantica Wiki (Fandom)"}</a></p>
+    <p class="note">{pt
+      ? `${matchedLegendary} dos 47 nomes com correspondência única nos 551 IDs públicos atuais. Isso não prova ausência no cliente: o catálogo de 551 foi montado a partir de caixas, não de todos os equipamentos.`
+      : `${matchedLegendary} of 47 names matched uniquely in the current 551-ID public catalog. Lack of a match does not imply absence from the game client; the 551-item subset came from box lists.`}</p>
+    <div class="legendary-groups">
+      {categoryGroups.map(group=><details class="legendary-group">
+        <summary>{group.category} <span>({group.items.length})</span></summary>
+        <div class="table-scroll"><table>
+          <thead><tr>
+            <th>{pt?"Equipamento":"Equipment"}</th>
+            <th>{pt?"Nível na fonte":"Listed level"}</th>
+            <th>{pt?"ID verificado":"Verified item ID"}</th>
+          </tr></thead>
+          <tbody>{group.items.map(item=><tr>
+            <td>{item.nameEn}</td>
+            <td>{item.minimumLevel===null?"—":"Lv. "+item.minimumLevel}</td>
+            <td>{item.identityStatus==="exact-name-candidate"
+              ? <span class="candidate">{
+                  pt?"Correspondência de nome — revisar ID":"Name match — review ID"}</span>
+              : <span class="unresolved">{pt?"Ainda não identificado":"Not yet identified"}</span>}</td>
+          </tr>)}</tbody>
+        </table></div>
+      </details>)}
+    </div>
   </section>
   <section id="historical-evidence">
     <h2>{pt?"Equipamentos analisados":"Equipment studied"}</h2>
@@ -189,6 +228,15 @@ const stats=[
   .detail-link a{display:inline-block;border:1px solid #9261b1;color:#e4b8ff;
     background:rgba(117,73,159,.13);text-decoration:none;padding:9px 14px;border-radius:4px}
   .detail-link a:hover{background:rgba(117,73,159,.24)}
+  .legendary-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px;margin:20px 0}
+  .legendary-group{border:1px solid var(--color-border);border-radius:5px;background:var(--color-surface);overflow:hidden}
+  .legendary-group summary{cursor:pointer;padding:14px 17px;color:var(--color-gold-light);font-weight:600}
+  .legendary-group summary span{color:var(--color-text-muted);font-weight:400}
+  .legendary-group[open] summary{border-bottom:1px solid var(--color-border)}
+  .legendary-group table{min-width:330px}
+  .legendary-group th,.legendary-group td{padding:8px 11px;font-size:.87rem}
+  .candidate{color:var(--color-gold-light)}
+  .unresolved{color:var(--color-text-muted)}
   .sources{font-size:.84rem;line-height:1.6}
   .sources a{text-decoration:underline;text-underline-offset:3px}
   form{border:1px solid var(--color-border);border-radius:5px;padding:18px;background:var(--color-surface)}
