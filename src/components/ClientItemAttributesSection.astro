@@ -1,0 +1,50 @@
+---
+import type {ClientItemAttributes} from "../data/client-item-attributes";
+import {CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT} from "../data/client-item-attributes";
+
+interface Props {lang:"en"|"pt-br"; data?:ClientItemAttributes;}
+const {lang,data}=Astro.props;
+const pt=lang==="pt-br";
+---
+{data && <section id="client-attributes">
+  <h2>{pt?"Atributos brutos extraídos do cliente":"Raw attributes extracted from game client"}</h2>
+  <p class="client-note">{pt
+    ?"Estes valores são a transcrição numérica dos campos de Items.csv, preservando o nome original de cada coluna e o número da linha de origem. Eles não representam uma medição de dano real, um tooltip validado, a fórmula de enhancement ou os atributos de um equipamento L."
+    :"These are numeric strings extracted from Items.csv, preserving each original field name and source row number. They are not measured damage, verified live tooltip values, an enhancement formula or stats for an L-grade item."}</p>
+  <p class="client-note">{pt?"Snapshot do Miner":"Miner snapshot"}:
+    <code>{CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT}</code>
+    · {pt?"Origem: Items.csv, nome inglês/ID conciliados":"Source: Items.csv, reviewed English name/ID"}</p>
+  {data.sourceRows.length>1&&<p class="source-conflicts">{pt
+    ?"Este ID tem várias linhas de origem. Valores divergentes são exibidos separadamente, sem seleção automática."
+    :"This ID has multiple source rows. Conflicting values are shown separately, without automatic selection."}</p>}
+  {data.sourceRows.map((row,i)=><details class="client-record" open={data.sourceRows.length===1}>
+    <summary>{pt?"Registro de origem":"Source row"} #{row.sourceRowNumber}
+      <small> · {Object.keys(row.fieldsRaw).length} {pt?"campos":"fields"}</small></summary>
+    <div class="source-table"><table>
+      <thead><tr><th>{pt?"Campo do arquivo":"Client file field"}</th><th>{pt?"Valor bruto":"Raw value"}</th></tr></thead>
+      <tbody>{Object.entries(row.fieldsRaw).map(([field,value])=><tr>
+        <th scope="row"><code>{field}</code></th>
+        <td><code>{value}</code></td>
+      </tr>)}</tbody>
+    </table></div>
+  </details>)}
+  <p class="client-note">{pt
+    ?"Para descobrir a fórmula exata de combate, esses campos ainda precisam ser relacionados aos bônus de enhancement, habilidades, efeitos e às regras do servidor."
+    :"Determining actual combat formulas still requires mapping enhancement, skills, special effects and server behavior to these raw client values."}</p>
+</section>}
+<style>
+  section{margin:34px 0}
+  h2{font-size:1.5rem;color:var(--color-gold-light);margin:0 0 12px}
+  .client-note{color:var(--color-text-muted);font-size:.9rem;line-height:1.65}
+  .source-conflicts{border-left:3px solid var(--color-bronze);
+    background:var(--color-surface);padding:12px 16px;color:var(--color-gold-light)}
+  .client-record{border:1px solid var(--color-border);margin:12px 0;border-radius:5px;overflow:hidden}
+  summary{cursor:pointer;padding:13px 16px;background:var(--color-surface);color:var(--color-gold-light);font-weight:600}
+  summary small{color:var(--color-text-muted);font-weight:400}
+  .source-table{overflow-x:auto}
+  table{width:100%;max-width:760px;border-collapse:collapse}
+  th,td{padding:8px 15px;border-bottom:1px solid var(--color-border);text-align:left}
+  th{color:var(--color-text-muted);font-weight:500}
+  td{color:var(--color-text)}
+  th code,td code{font-size:.85rem;overflow-wrap:anywhere}
+</style>
