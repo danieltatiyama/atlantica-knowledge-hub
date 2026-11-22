@@ -7,23 +7,23 @@ updatedAt: 2026-11-22
 draft: false
 reviewStatus: approved
 evidenceStatus: in-game-verified
-verificationNote: "Five player-observed openings; all five rewards were confirmed as +0 equipment. The 27 IDs were received in box-opening previews."
+verificationNote: "Five player-observed openings confirmed all results as +0; a sixth observed outcome ID was captured later. The 27 IDs were received in box-opening previews."
 itemUniqueId: "13583"
 itemNameTextId: "27597"
 region: global
 boxType: random
 contentsEvidence: server-preview-captured
-contentsNote: "All 27 IDs appeared in the preview messages. Five received items were visually confirmed; individual rates and possible conditional rules remain unknown."
+contentsNote: "All 27 IDs appeared in the preview messages. Five item results were visually confirmed; a sixth matching result ID was captured later; individual rates and possible conditional rules remain unknown."
 oddsStatus: unknown
 rollModel: single-outcome
 probabilityNotes: "Unknown probabilities. A transmitted preview list does not prove equal odds."
 outcomes:
-  - itemName: "Judgment Great Sword"
+  - itemName: "Judgment Sword"
     itemUniqueId: "47"
     quantity: 1
     quantityVerified: false
     observedCount: 0
-  - itemName: "Judgment Long Spear"
+  - itemName: "Judgment Spear"
     itemUniqueId: "136"
     quantity: 1
     quantityVerified: false
@@ -38,7 +38,7 @@ outcomes:
     quantity: 1
     quantityVerified: false
     observedCount: 0
-  - itemName: "Judgment Long Bow"
+  - itemName: "Judgment Bow"
     itemUniqueId: "430"
     quantity: 1
     quantityVerified: false
@@ -63,7 +63,7 @@ outcomes:
     quantity: 1
     quantityVerified: false
     observedCount: 0
-  - itemName: "Judgment Chainsaw"
+  - itemName: "Judgment Power Saw"
     itemUniqueId: "1358"
     quantity: 1
     quantityVerified: false
@@ -108,7 +108,7 @@ outcomes:
     quantity: 1
     quantityVerified: false
     observedCount: 1
-  - itemName: "Judgment Heavy Helmet"
+  - itemName: "Judgment Helmet"
     itemUniqueId: "10197"
     quantity: 1
     quantityVerified: false
@@ -123,12 +123,12 @@ outcomes:
     quantity: 1
     quantityVerified: false
     observedCount: 0
-  - itemName: "Judgment Leggings"
+  - itemName: "Judgment Greaves"
     itemUniqueId: "10413"
     quantity: 1
     quantityVerified: false
     observedCount: 0
-  - itemName: "Judgment Pants"
+  - itemName: "Judgment Leggings"
     itemUniqueId: "10414"
     quantity: 1
     quantityVerified: false
@@ -148,7 +148,7 @@ outcomes:
     quantity: 1
     quantityVerified: false
     observedCount: 0
-  - itemName: "Judgment Knuckles"
+  - itemName: "Judgment Fist"
     itemUniqueId: "3773"
     quantity: 1
     quantityVerified: false
@@ -157,6 +157,6 @@ outcomes:
 
 ## Validation
 
-Five Judgment boxes were opened. All five resulting item IDs matched the transmitted list and the observed equipment was **+0**. The `[+5] Judgment Weapon Selection Box` (ID `16207`) and `[+5] Judgment Armor Selection Box` (ID `16208`) are different items and are not represented by this table.
+Five Judgment boxes were opened in the initial confirmed test, and a further result ID was captured later. All six item IDs matched the transmitted list; the five originally confirmed items were **+0**. The `[+5] Judgment Weapon Selection Box` (ID `16207`) and `[+5] Judgment Armor Selection Box` (ID `16208`) are different items and are not represented by this table.
 
 The **Observed returns** column only counts this small opening sample. It is not a drop-rate estimate. Per-outcome quantities remain unverified.
