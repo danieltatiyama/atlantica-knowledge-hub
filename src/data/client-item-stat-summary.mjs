@@ -107,6 +107,14 @@ export function buildHistoricalClientProjection(item){
     return field && field.status!=="conflict" &&
       isRawNonnegativeInteger(field.value) && Number(field.value)>0;
   });
+  // Fractional or negative original primary attributes remain observable
+  // in the +0 row, but never receive a fabricated integer projection.
+  const baselineOnlyFields=projectedKeys.filter(key=>{
+    const field=summary.byKey.get(key);
+    return field&&field.status!=="conflict"&&!eligible.includes(key) &&
+      field.value!=="0" && typeof field.value==="string" &&
+      /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(field.value);
+  });
   const fixedFields=FIXED_ENCHANT_FIELDS.map(key=>{
     const field=summary.byKey.get(key);
     return field&&field.status!=="conflict"&&
@@ -121,8 +129,8 @@ export function buildHistoricalClientProjection(item){
   // All 551 reviewed equipment have at least one positive original
   // scalable field. In future exports, still show known FIXED fields even
   // when no numeric scaling baseline is available.
-  if(!eligible.length&&!fixedFields.length){
-    return {fields:[],fixedFields:[],rows:[],excluded:[],fixedConflicts};
+  if(!eligible.length&&!fixedFields.length&&!baselineOnlyFields.length){
+    return {fields:[],baselineOnlyFields:[],fixedFields:[],rows:[],excluded:[],fixedConflicts};
   }
   const excluded=projectedKeys.filter(key=>{
     const field=summary.byKey.get(key);
@@ -138,12 +146,19 @@ export function buildHistoricalClientProjection(item){
         const initial=Number(summary.byKey.get(key).value);
         return [key,grade===0?initial:projectClassicStat(initial,grade)];
       })),
+      // Fractional/negative original fields belong to the RAW +0 row
+      // only. Later grades have no supported rounding/scaling rule.
+      ...(grade===0
+        ? Object.fromEntries(baselineOnlyFields.map(key=>[
+            key,summary.byKey.get(key).value
+          ]))
+        : {}),
       // FIXED client values are copied literally from source, never
       // projected or rounded. Repeated values are NOT "estimated".
       ...Object.fromEntries(fixedFields.map(field=>[field.key,field.value])),
     },
   }));
-  return {fields:eligible,fixedFields,rows,excluded,fixedConflicts};
+  return {fields:eligible,baselineOnlyFields,fixedFields,rows,excluded,fixedConflicts};
 }
 
 export function labelForClientField(key,pt=false){
