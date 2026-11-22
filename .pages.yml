@@ -477,3 +477,439 @@ content:
             - jpeg
             - webp
             - gif
+
+# Events & Mercenaries: reviewed editorial content only.
+
+  - name: events-en
+    label: "Events (English) — verified editorial only"
+    type: collection
+    path: src/content/events/en
+    format: yaml-frontmatter
+    filename: "{translationKey}.md"
+    operations:
+      rename: false
+    view:
+      primary: title
+      fields:
+        - title
+        - updatedAt
+        - draft
+        - reviewStatus
+      sort:
+        - updatedAt
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: description
+        label: Description
+        type: text
+        required: true
+      - name: translationKey
+        label: Shared translation key
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - name: lang
+        label: Language
+        type: select
+        required: true
+        default: en
+        options:
+          values:
+            - en
+      - name: kind
+        label: Type
+        type: select
+        required: true
+        options:
+          values:
+            - event
+            - pass
+            - challenge
+            - promotion
+            - update
+      - name: startsAt
+        label: Verified start time (timezone-aware ISO-8601, optional)
+        type: string
+        required: false
+      - name: endsAt
+        label: Verified end time (timezone-aware ISO-8601, optional)
+        type: string
+        required: false
+      - name: updatedAt
+        label: Review date
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: draft
+        label: Draft
+        type: boolean
+        default: true
+        description: "Do not commit unreviewed private client data, even as a draft."
+      - name: reviewStatus
+        label: Editorial review status
+        type: select
+        default: draft
+        options:
+          values:
+            - draft
+            - in-review
+            - approved
+      - name: evidenceStatus
+        label: Independently verified evidence
+        type: select
+        default: client-config
+        description: "Client-only data CANNOT be published."
+        options:
+          values:
+            - client-config
+            - in-game-verified
+            - official-announced
+      - name: verificationUrl
+        label: Official verification URL (required if official-announced)
+        type: string
+        required: false
+      - name: verificationNote
+        label: In-game verification note (required if in-game-verified)
+        type: text
+        required: false
+      - name: body
+        label: Reviewed content
+        type: rich-text
+        default: |
+          ## Overview
+
+          Source-checked summary. Do not copy unreleased client data.
+        options:
+          format: markdown
+          switcher: true
+          path: public/images/guides
+          extensions:
+            - png
+            - jpg
+            - jpeg
+            - webp
+            - gif
+
+  - name: events-pt-br
+    label: "Eventos (Português) — verified editorial only"
+    type: collection
+    path: src/content/events/pt-br
+    format: yaml-frontmatter
+    filename: "{translationKey}.md"
+    operations:
+      rename: false
+    view:
+      primary: title
+      fields:
+        - title
+        - updatedAt
+        - draft
+        - reviewStatus
+      sort:
+        - updatedAt
+    fields:
+      - name: title
+        label: Título
+        type: string
+        required: true
+      - name: description
+        label: Descrição
+        type: text
+        required: true
+      - name: translationKey
+        label: Shared translation key
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - name: lang
+        label: Language
+        type: select
+        required: true
+        default: pt-br
+        options:
+          values:
+            - pt-br
+      - name: kind
+        label: Tipo
+        type: select
+        required: true
+        options:
+          values:
+            - event
+            - pass
+            - challenge
+            - promotion
+            - update
+      - name: startsAt
+        label: Verified start time (timezone-aware ISO-8601, optional)
+        type: string
+        required: false
+      - name: endsAt
+        label: Verified end time (timezone-aware ISO-8601, optional)
+        type: string
+        required: false
+      - name: updatedAt
+        label: Review date
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: draft
+        label: Draft
+        type: boolean
+        default: true
+        description: "Do not commit unreviewed private client data, even as a draft."
+      - name: reviewStatus
+        label: Editorial review status
+        type: select
+        default: draft
+        options:
+          values:
+            - draft
+            - in-review
+            - approved
+      - name: evidenceStatus
+        label: Independently verified evidence
+        type: select
+        default: client-config
+        description: "Client-only data CANNOT be published."
+        options:
+          values:
+            - client-config
+            - in-game-verified
+            - official-announced
+      - name: verificationUrl
+        label: Official verification URL (required if official-announced)
+        type: string
+        required: false
+      - name: verificationNote
+        label: In-game verification note (required if in-game-verified)
+        type: text
+        required: false
+      - name: body
+        label: Conteúdo revisado
+        type: rich-text
+        default: |
+          ## Overview
+
+          Source-checked summary. Do not copy unreleased client data.
+        options:
+          format: markdown
+          switcher: true
+          path: public/images/guides
+          extensions:
+            - png
+            - jpg
+            - jpeg
+            - webp
+            - gif
+
+  - name: mercenaries-en
+    label: "Mercenaries (English) — verified editorial only"
+    type: collection
+    path: src/content/mercenaries/en
+    format: yaml-frontmatter
+    filename: "{translationKey}.md"
+    operations:
+      rename: false
+    view:
+      primary: title
+      fields:
+        - title
+        - updatedAt
+        - draft
+        - reviewStatus
+      sort:
+        - updatedAt
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: description
+        label: Description
+        type: text
+        required: true
+      - name: translationKey
+        label: Shared translation key
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - name: lang
+        label: Language
+        type: select
+        required: true
+        default: en
+        options:
+          values:
+            - en
+      - name: weaponType
+        label: Weapon type
+        type: string
+        required: false
+      - name: recruitment
+        label: Verified recruitment
+        type: string
+        required: false
+      - name: updatedAt
+        label: Review date
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: draft
+        label: Draft
+        type: boolean
+        default: true
+        description: "Do not commit unreviewed private client data, even as a draft."
+      - name: reviewStatus
+        label: Editorial review status
+        type: select
+        default: draft
+        options:
+          values:
+            - draft
+            - in-review
+            - approved
+      - name: evidenceStatus
+        label: Independently verified evidence
+        type: select
+        default: client-config
+        description: "Client-only data CANNOT be published."
+        options:
+          values:
+            - client-config
+            - in-game-verified
+            - official-announced
+      - name: verificationUrl
+        label: Official verification URL (required if official-announced)
+        type: string
+        required: false
+      - name: verificationNote
+        label: In-game verification note (required if in-game-verified)
+        type: text
+        required: false
+      - name: body
+        label: Reviewed content
+        type: rich-text
+        default: |
+          ## Overview
+
+          Source-checked summary. Do not copy unreleased client data.
+        options:
+          format: markdown
+          switcher: true
+          path: public/images/guides
+          extensions:
+            - png
+            - jpg
+            - jpeg
+            - webp
+            - gif
+
+  - name: mercenaries-pt-br
+    label: "Mercenários (Português) — verified editorial only"
+    type: collection
+    path: src/content/mercenaries/pt-br
+    format: yaml-frontmatter
+    filename: "{translationKey}.md"
+    operations:
+      rename: false
+    view:
+      primary: title
+      fields:
+        - title
+        - updatedAt
+        - draft
+        - reviewStatus
+      sort:
+        - updatedAt
+    fields:
+      - name: title
+        label: Título
+        type: string
+        required: true
+      - name: description
+        label: Descrição
+        type: text
+        required: true
+      - name: translationKey
+        label: Shared translation key
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - name: lang
+        label: Language
+        type: select
+        required: true
+        default: pt-br
+        options:
+          values:
+            - pt-br
+      - name: weaponType
+        label: Tipo de arma
+        type: string
+        required: false
+      - name: recruitment
+        label: Recrutamento verificado
+        type: string
+        required: false
+      - name: updatedAt
+        label: Review date
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: draft
+        label: Draft
+        type: boolean
+        default: true
+        description: "Do not commit unreviewed private client data, even as a draft."
+      - name: reviewStatus
+        label: Editorial review status
+        type: select
+        default: draft
+        options:
+          values:
+            - draft
+            - in-review
+            - approved
+      - name: evidenceStatus
+        label: Independently verified evidence
+        type: select
+        default: client-config
+        description: "Client-only data CANNOT be published."
+        options:
+          values:
+            - client-config
+            - in-game-verified
+            - official-announced
+      - name: verificationUrl
+        label: Official verification URL (required if official-announced)
+        type: string
+        required: false
+      - name: verificationNote
+        label: In-game verification note (required if in-game-verified)
+        type: text
+        required: false
+      - name: body
+        label: Conteúdo revisado
+        type: rich-text
+        default: |
+          ## Overview
+
+          Source-checked summary. Do not copy unreleased client data.
+        options:
+          format: markdown
+          switcher: true
+          path: public/images/guides
+          extensions:
+            - png
+            - jpg
+            - jpeg
+            - webp
+            - gif

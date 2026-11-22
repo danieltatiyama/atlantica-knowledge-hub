@@ -1,0 +1,18 @@
+---
+import EditorialArticle from "../../components/EditorialArticle.astro";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+export async function getStaticPaths() {
+  const entries = await getCollection("events", ({ data }) =>
+    data.lang === "en" && !data.draft &&
+    data.reviewStatus === "approved" && data.evidenceStatus !== "client-config"
+  );
+  return entries.map((entry) => ({
+    params: { slug: entry.id.replace(/^[^/]+\//, "") },
+    props: { entry },
+  }));
+}
+interface Props { entry: CollectionEntry<"events">; }
+const { entry } = Astro.props;
+---
+<EditorialArticle lang="en" entry={entry} />

@@ -9,6 +9,8 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
+const eventsHref = lang === "en" ? "/events/" : `/${lang}/events/`;
+const mercenariesHref = lang === "en" ? "/mercenaries/" : `/${lang}/mercenaries/`;
 
 const navigation = [
   {
@@ -20,6 +22,16 @@ const navigation = [
     label: t("nav.guides"),
     href: guidesHref,
     active: pathname.startsWith(guidesHref),
+  },
+  {
+    label: lang === "pt-br" ? "Eventos" : "Events",
+    href: eventsHref,
+    active: pathname.startsWith(eventsHref),
+  },
+  {
+    label: lang === "pt-br" ? "Mercenários" : "Mercenaries",
+    href: mercenariesHref,
+    active: pathname.startsWith(mercenariesHref),
   },
   {
     label: t("nav.explore"),
@@ -83,6 +95,13 @@ function getLanguageTarget(targetLang: SupportedLang): string {
     return `${prefix}/guides/`;
   }
 
+  // New curated collections: preserve their listing type when switching languages.
+  if (normalizedPath.startsWith("/events/") || normalizedPath.startsWith("/pt-br/events/")) {
+    return `${prefix}/events/`;
+  }
+  if (normalizedPath.startsWith("/mercenaries/") || normalizedPath.startsWith("/pt-br/mercenaries/")) {
+    return `${prefix}/mercenaries/`;
+  }
   // Home or other pages.
   return `${prefix}/`;
 }

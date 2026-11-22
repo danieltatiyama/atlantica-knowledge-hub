@@ -27,3 +27,13 @@ pnpm-debug.log*
 
 # Logs
 *.log
+
+# Private Atlantica mining and editorial staging — never commit
+Atlantica_Deep_Research_Evidence_*.zip
+Atlantica_Research_*_Private.zip
+Atlantica_Deep_Review_*_Private.json
+Editorial_Staging_*/
+Atlantica_Editorial_Review_*_PRIVATE/
+private_drafts/
+Review_Dashboard_PRIVATE.html
+Atl_Event_Editorial_Private_Drafts_*.zip

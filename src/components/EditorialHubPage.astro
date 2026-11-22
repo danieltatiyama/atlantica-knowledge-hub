@@ -1,0 +1,145 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+interface Props { lang: "en" | "pt-br"; domain: "events" | "mercenaries"; }
+const { lang, domain } = Astro.props;
+const isPt = lang === "pt-br";
+const isEvents = domain === "events";
+const heading = isEvents ? (isPt ? "Eventos e Atualizações" : "Events & Updates")
+  : (isPt ? "Mercenários" : "Mercenaries");
+const intro = isEvents
+  ? (isPt ? "Calendário editorial de eventos, passes, desafios e atualizações verificados."
+    : "Editorial catalog of verified events, passes, challenges, and updates.")
+  : (isPt ? "Informações revisadas sobre os mercenários e suas mecânicas."
+    : "Reviewed information about mercenaries and their mechanics.");
+const caution = isPt
+  ? "Somente conteúdos revisados aparecem aqui. Datas e itens encontrados apenas nos arquivos do cliente não comprovam disponibilidade no servidor."
+  : "Only reviewed content appears here. Dates and items found only in client files do not establish server availability.";
+const events = (await getCollection("events", ({ data }) =>
+  !data.draft && data.reviewStatus === "approved" && data.evidenceStatus !== "client-config" && data.lang === lang
+)).map(({ id, data }) => ({
+  title: data.title, description: data.description, slug: id.replace(/^[^/]+\//, ""),
+  kind: data.kind, updatedAt: data.updatedAt, extra: "",
+  dateRange: [data.startsAt, data.endsAt].filter(Boolean).join(" — "),
+}));
+const mercenaries = (await getCollection("mercenaries", ({ data }) =>
+  !data.draft && data.reviewStatus === "approved" && data.evidenceStatus !== "client-config" && data.lang === lang
+)).map(({ id, data }) => ({
+  title: data.title, description: data.description, slug: id.replace(/^[^/]+\//, ""),
+  kind: "mercenary", updatedAt: data.updatedAt, extra: data.weaponType ?? "",
+  dateRange: "",
+}));
+const records = (isEvents ? events : mercenaries)
+  .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+const root = (isPt ? "/pt-br" : "") + "/" + domain + "/";
+const alternatePaths = { en: "/" + domain + "/", "pt-br": "/pt-br/" + domain + "/" };
+const types = ["event", "pass", "challenge", "promotion", "update"];
+const searchLabel = isPt ? "Pesquisar pelo nome" : "Search by name";
+const emptyLabel = isPt ? "Ainda não há artigos publicados nesta seção." : "No articles have been published in this section yet.";
+const noneLabel = isPt ? "Nenhum resultado corresponde ao filtro." : "No results match the filter.";
+---
+<BaseLayout title={heading + " | Atlantica Knowledge Hub"} description={intro} lang={lang} alternatePaths={alternatePaths}>
+  <main class="container">
+    <nav class="crumb" aria-label="Breadcrumb">
+      <a href={isPt ? "/pt-br/" : "/"}>{isPt ? "Início" : "Home"}</a>
+      <span>/</span> {heading}
+    </nav>
+    <header class="intro">
+      <p class="eyebrow">{isPt ? "BASE DE CONHECIMENTO" : "KNOWLEDGE BASE"}</p>
+      <h1>{heading}</h1>
+      <p>{intro}</p>
+      <p class="caution">{caution}</p>
+    </header>
+    <section aria-label={heading} class="catalog">
+      <div class="filters">
+        <label class="field">
+          <span>{searchLabel}</span>
+          <input data-editorial-search type="search" placeholder={searchLabel} autocomplete="off" />
+        </label>
+        {isEvents && (
+          <label class="field">
+            <span>{isPt ? "Categoria" : "Type"}</span>
+            <select data-editorial-filter>
+              <option value="">{isPt ? "Todos os tipos" : "All types"}</option>
+              {types.map((type) => <option value={type}>{type}</option>)}
+            </select>
+          </label>
+        )}
+      </div>
+      <p class="count" aria-live="polite">
+        <span data-editorial-count>{records.length}</span>
+        {isPt ? " artigos" : " articles"}
+      </p>
+      <div class="grid">
+        {records.map((entry) => (
+          <article class="entry" data-editorial-entry data-kind={entry.kind}
+            data-query={(entry.title + " " + entry.description).toLowerCase()}>
+            <span class="kind">{entry.extra || entry.kind}</span>
+            <h2><a href={root + entry.slug + "/"}>{entry.title}</a></h2>
+            <p>{entry.description}</p>
+            {entry.dateRange && <small>{entry.dateRange}</small>}
+          </article>
+        ))}
+      </div>
+      <p class="empty" data-editorial-empty={emptyLabel} data-editorial-none={noneLabel}
+        hidden={records.length > 0}>{emptyLabel}</p>
+    </section>
+  </main>
+</BaseLayout>
+<style>
+  .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
+  .crumb{padding:24px 0;color:var(--color-text-muted);font-size:.9rem}
+  .crumb a{color:var(--color-accent);text-decoration:none}
+  .crumb span{padding:0 10px}
+  .intro{padding:20px 0 28px;border-bottom:1px solid var(--color-border)}
+  .eyebrow{color:var(--color-accent);letter-spacing:.16em;font-size:.8rem}
+  h1{font-size:clamp(2rem,4vw,3.4rem);margin:8px 0}
+  .intro>p{max-width:950px;color:var(--color-text-muted)}
+  .caution{font-size:.9rem;border-left:3px solid var(--color-bronze);padding-left:16px}
+  .catalog{padding-top:32px}
+  .filters{display:flex;flex-wrap:wrap;gap:16px;align-items:end}
+  .field{display:grid;gap:6px;min-width:200px;flex:1}
+  .field span{font-size:.85rem;color:var(--color-gold-light)}
+  input,select{width:100%;background:var(--color-surface);border:1px solid var(--color-border);
+    color:var(--color-text);font:inherit;padding:12px 14px;border-radius:5px}
+  input:focus-visible,select:focus-visible{outline:2px solid var(--color-accent)}
+  .count{font-size:.85rem;color:var(--color-text-muted);margin:18px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:18px}
+  .entry{min-width:0;border:1px solid var(--color-card-border);border-radius:6px;
+    padding:23px;background:var(--color-surface)}
+  .kind{color:var(--color-accent);text-transform:uppercase;font-size:.75rem;letter-spacing:.08em}
+  .entry h2{font-size:1.45rem;margin:10px 0}
+  .entry a{text-decoration:none;color:var(--color-text)}
+  .entry a:hover,.entry a:focus-visible{color:var(--color-accent)}
+  .entry p{color:var(--color-text-muted);line-height:1.65}
+  .entry small{color:var(--color-gold-light);overflow-wrap:anywhere}
+  .empty{padding:30px;border:1px dashed var(--color-border);color:var(--color-text-muted);text-align:center}
+</style>
+<script>
+  const search = document.querySelector<HTMLInputElement>("[data-editorial-search]");
+  const filter = document.querySelector<HTMLSelectElement>("[data-editorial-filter]");
+  const entries = Array.from(document.querySelectorAll<HTMLElement>("[data-editorial-entry]"));
+  const count = document.querySelector<HTMLElement>("[data-editorial-count]");
+  const empty = document.querySelector<HTMLElement>("[data-editorial-empty]");
+  function update() {
+    const q = (search?.value ?? "").trim().toLowerCase();
+    const type = filter?.value ?? "";
+    let visible = 0;
+    entries.forEach((entry) => {
+      const matches = (!q || (entry.dataset.query ?? "").includes(q)) &&
+        (!type || entry.dataset.kind === type);
+      entry.hidden = !matches;
+      if (matches) visible++;
+    });
+    if (count) count.textContent = String(visible);
+    if (empty) {
+      empty.hidden = visible > 0;
+      empty.textContent = entries.length === 0
+        ? empty.dataset.editorialEmpty ?? ""
+        : empty.dataset.editorialNone ?? "";
+    }
+  }
+  search?.addEventListener("input", update);
+  filter?.addEventListener("change", update);
+</script>
