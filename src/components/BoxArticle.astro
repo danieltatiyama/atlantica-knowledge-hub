@@ -11,6 +11,12 @@ const d=box.data;
 const hasRates=d.oddsStatus==="regional-published";
 const rate=(n:number|undefined)=>n===undefined?"—":n.toLocaleString(pt?"pt-BR":"en-US",{maximumFractionDigits:4})+"%";
 const source=d.probabilitySourceUrl||d.verificationUrl;
+const captured=d.contentsEvidence==="server-preview-captured";
+const contentsLabel=captured
+  ? (pt?"Lista recebida do jogo durante a abertura":"Item list received from the game during box opening")
+  : (d.contentsEvidence==="family-candidates"
+    ? (pt?"Candidatos por família — drops não confirmados":"Family-matched candidates — drops unverified")
+    : (pt?"Recompensas em revisão":"Rewards under review"));
 ---
 <BaseLayout lang={lang} title={d.title+" | Atlantica Knowledge Hub"} description={d.description}>
   <main class="container">
@@ -34,15 +40,22 @@ const source=d.probabilitySourceUrl||d.verificationUrl;
               : "No outcome percentages are confirmed for this box. Raw client weights are not verified drop rates.")}
         </p>
       </header>
-      <h2>{pt?"Possíveis recompensas":"Possible rewards"}</h2>
+      <h2>{pt?"Itens associados à box":"Items associated with the box"}</h2>
+      <p class="evidence"><strong>{contentsLabel}</strong>{d.contentsNote && <span> — {d.contentsNote}</span>}</p>
+      <p class="note">{pt
+        ? "A lista exibida pelo jogo não demonstra chances iguais ou garante que cada item seja obtido em qualquer condição."
+        : "A game-transmitted item list does not establish equal drop rates or prove every item is obtainable under all conditions."}</p>
       <div class="table-scroll">
         <table><thead><tr>
-          <th>{pt?"Item":"Item"}</th><th>{pt?"Quantidade":"Quantity"}</th>
-          <th>{pt?"Chance":"Chance"}</th>
+          <th>{pt?"Item":"Item"}</th><th>ID</th><th>{pt?"Quantidade":"Quantity"}</th>
+          <th>{pt?"Observações":"Observed returns"}</th><th>{pt?"Chance":"Chance"}</th>
         </tr></thead>
           <tbody>
             {d.outcomes.map(row=><tr>
-              <td>{row.itemName}</td><td>{row.quantity.toLocaleString(pt?"pt-BR":"en-US")}</td>
+              <td>{row.itemName}</td>
+              <td>{row.itemUniqueId ?? "—"}</td>
+              <td>{row.quantityVerified ? row.quantity.toLocaleString(pt?"pt-BR":"en-US") : "—"}</td>
+              <td>{row.observedCount ? row.observedCount : "—"}</td>
               <td>{hasRates?rate(row.chancePercent):"—"}</td>
             </tr>)}
           </tbody>
@@ -69,12 +82,13 @@ header>p:not(.eyebrow){color:var(--color-text-muted)}
 .caution{border-left:3px solid var(--color-bronze);padding:12px 16px;background:var(--color-surface)}
 h2{font-size:1.7rem;margin-top:34px}
 .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
-table{width:100%;border-collapse:collapse;min-width:420px}
+table{width:100%;border-collapse:collapse;min-width:620px}
 th,td{padding:12px 15px;text-align:left;border-bottom:1px solid var(--color-border)}
 th{background:#29271f;color:var(--color-gold-light)}
 td{color:var(--color-text-muted)}
 td:last-child{font-variant-numeric:tabular-nums}
 .note,.source{color:var(--color-text-muted);font-size:.9rem}
+.evidence{padding:10px 15px;border-left:3px solid var(--color-accent);background:var(--color-surface);color:var(--color-text)}
 .content{line-height:1.8;margin-top:38px}
 :global(.content a){color:var(--color-accent)}
 :global(.content img){max-width:100%;height:auto}
