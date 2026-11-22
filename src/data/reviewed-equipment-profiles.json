@@ -98,6 +98,311 @@
       "legendaryProjectionModel": null
     },
     {
+      "id": "100",
+      "nameEn": "Spirit Spear",
+      "overview": {
+        "typeEn": "Spear",
+        "minimumLevel": 1,
+        "eligibleClasses": [
+          "Spearman",
+          "Spartan",
+          "Dragoon",
+          "General",
+          "Taoist",
+          "Trainee Master Lian Hua",
+          "Trainee Chueh Shui"
+        ]
+      },
+      "stats": [
+        {
+          "enchantLevel": 0,
+          "attackMin": 80,
+          "attackMax": 110,
+          "strength": 11,
+          "vitality": 3
+        },
+        {
+          "enchantLevel": 1,
+          "attackMin": 96,
+          "attackMax": 132,
+          "strength": 13,
+          "vitality": 3
+        },
+        {
+          "enchantLevel": 2,
+          "attackMin": 112,
+          "attackMax": 154,
+          "strength": 15,
+          "vitality": 4
+        },
+        {
+          "enchantLevel": 3,
+          "attackMin": 128,
+          "attackMax": 176,
+          "strength": 17,
+          "vitality": 4
+        },
+        {
+          "enchantLevel": 4,
+          "attackMin": 144,
+          "attackMax": 198,
+          "strength": 19,
+          "vitality": 5
+        },
+        {
+          "enchantLevel": 5,
+          "attackMin": 168,
+          "attackMax": 231,
+          "strength": 23,
+          "vitality": 6
+        },
+        {
+          "enchantLevel": 6,
+          "attackMin": 192,
+          "attackMax": 264,
+          "strength": 26,
+          "vitality": 7
+        },
+        {
+          "enchantLevel": 7,
+          "attackMin": 224,
+          "attackMax": 308,
+          "strength": 30,
+          "vitality": 8
+        },
+        {
+          "enchantLevel": 8,
+          "attackMin": 256,
+          "attackMax": 352,
+          "strength": 35,
+          "vitality": 9
+        },
+        {
+          "enchantLevel": 9,
+          "attackMin": 288,
+          "attackMax": 396,
+          "strength": 39,
+          "vitality": 10
+        },
+        {
+          "enchantLevel": 10,
+          "attackMin": 320,
+          "attackMax": 440,
+          "strength": 44,
+          "vitality": 12
+        }
+      ],
+      "enchantmentProjectionModel": null,
+      "legendaryEligible": false,
+      "legendaryProjectionModel": null,
+      "crafting": {
+        "productionPerBatch": 1,
+        "requiredWorkload": 450,
+        "requiredSkill": {
+          "nameEn": "Spear",
+          "level": 1
+        },
+        "materials": [
+          {
+            "nameEn": "Coral",
+            "quantity": 5
+          },
+          {
+            "nameEn": "Maple",
+            "quantity": 4
+          }
+        ]
+      },
+      "evidence": {
+        "overview": "community-reference",
+        "stats": "community-reference",
+        "crafting": "community-reference",
+        "materials": "community-reference",
+        "projections": "not-provided",
+        "legendary": "not-provided",
+        "references": [
+          {
+            "kind": "community-reference",
+            "label": "Spirit Spear — Atlantica Online Wikidot (historical item data, 2017-12-02)",
+            "url": "https://atlantica-online.wikidot.com/item:spirit-spear"
+          }
+        ]
+      }
+    },
+    {
+      "id": "264",
+      "nameEn": "Evil Staff",
+      "overview": {
+        "typeEn": "Staff",
+        "minimumLevel": 130,
+        "eligibleClasses": [
+          "Monk",
+          "Shaman",
+          "Witch",
+          "Elementalist",
+          "Princess",
+          "Oracle",
+          "Mage",
+          "Sorceress",
+          "Goddess",
+          "Atlantian Battlemage",
+          "Astrologer",
+          "Trainee Hualin",
+          "Trainee White Witch",
+          "Trainee Xuanzang",
+          "Trainee Dharma",
+          "Trainee Ching Ya"
+        ]
+      },
+      "stats": [
+        {
+          "enchantLevel": 0,
+          "attackMin": 988,
+          "attackMax": 1326,
+          "intelligence": 392,
+          "vitality": 148
+        },
+        {
+          "enchantLevel": 1,
+          "attackMin": 1185,
+          "attackMax": 1591,
+          "intelligence": 470,
+          "vitality": 177
+        },
+        {
+          "enchantLevel": 2,
+          "attackMin": 1383,
+          "attackMax": 1856,
+          "intelligence": 548,
+          "vitality": 207
+        },
+        {
+          "enchantLevel": 3,
+          "attackMin": 1580,
+          "attackMax": 2121,
+          "intelligence": 627,
+          "vitality": 236
+        },
+        {
+          "enchantLevel": 4,
+          "attackMin": 1778,
+          "attackMax": 2386,
+          "intelligence": 705,
+          "vitality": 266
+        },
+        {
+          "enchantLevel": 5,
+          "attackMin": 2074,
+          "attackMax": 2784,
+          "intelligence": 823,
+          "vitality": 310
+        },
+        {
+          "enchantLevel": 6,
+          "attackMin": 2371,
+          "attackMax": 3182,
+          "intelligence": 940,
+          "vitality": 355
+        },
+        {
+          "enchantLevel": 7,
+          "attackMin": 2766,
+          "attackMax": 3712,
+          "intelligence": 1097,
+          "vitality": 414
+        },
+        {
+          "enchantLevel": 8,
+          "attackMin": 3161,
+          "attackMax": 4243,
+          "intelligence": 1254,
+          "vitality": 473
+        },
+        {
+          "enchantLevel": 9,
+          "attackMin": 3556,
+          "attackMax": 4773,
+          "intelligence": 1411,
+          "vitality": 532
+        },
+        {
+          "enchantLevel": 10,
+          "attackMin": 3952,
+          "attackMax": 5304,
+          "intelligence": 1568,
+          "vitality": 592
+        }
+      ],
+      "enchantmentProjectionModel": null,
+      "legendaryEligible": false,
+      "legendaryProjectionModel": null,
+      "crafting": {
+        "productionPerBatch": 1,
+        "requiredWorkload": 160000000,
+        "requiredSkill": {
+          "nameEn": "Staff",
+          "level": 110
+        },
+        "materials": [
+          {
+            "nameEn": "Evil Imprint",
+            "quantity": 15
+          },
+          {
+            "nameEn": "Vindictive Soul Imprint",
+            "quantity": 150
+          },
+          {
+            "nameEn": "Storm Element",
+            "quantity": 250
+          },
+          {
+            "nameEn": "Titanium Ingot",
+            "quantity": 50
+          },
+          {
+            "nameEn": "Atlantis Silver Coin",
+            "quantity": 10
+          },
+          {
+            "nameEn": "Craftsman's Soul",
+            "quantity": 100
+          },
+          {
+            "nameEn": "Imitation Oriharukon",
+            "quantity": 3
+          },
+          {
+            "nameEn": "Alchemist's Stone",
+            "quantity": 1
+          },
+          {
+            "nameEn": "Monster Egg",
+            "quantity": 600
+          },
+          {
+            "nameEn": "Evil Soul Extract",
+            "quantity": 500
+          }
+        ]
+      },
+      "evidence": {
+        "overview": "community-reference",
+        "stats": "community-reference",
+        "crafting": "community-reference",
+        "materials": "community-reference",
+        "projections": "not-provided",
+        "legendary": "not-provided",
+        "references": [
+          {
+            "kind": "community-reference",
+            "label": "Evil Staff — Atlantica Online Wikidot (historical item data, 2017-09-12)",
+            "url": "https://atlantica-online.wikidot.com/item:evil-staff"
+          }
+        ]
+      }
+    },
+    {
       "id": "400",
       "nameEn": "Spirit Bow",
       "overview": {
@@ -240,6 +545,311 @@
       "enchantmentProjectionModel": "wikidot-classic-v1",
       "legendaryEligible": false,
       "legendaryProjectionModel": null
+    },
+    {
+      "id": "1420",
+      "nameEn": "Phoenix's Instrument",
+      "overview": {
+        "typeEn": "Instrument",
+        "minimumLevel": 113,
+        "eligibleClasses": [
+          "Maestro",
+          "Minstrel",
+          "Vampire",
+          "Necromancer",
+          "Bard",
+          "Trainee Maitreya",
+          "Trainee Chiu Hong"
+        ]
+      },
+      "stats": [
+        {
+          "enchantLevel": 0,
+          "attackMin": 634,
+          "attackMax": 850,
+          "intelligence": 252,
+          "vitality": 95
+        },
+        {
+          "enchantLevel": 1,
+          "attackMin": 760,
+          "attackMax": 1020,
+          "intelligence": 302,
+          "vitality": 114
+        },
+        {
+          "enchantLevel": 2,
+          "attackMin": 887,
+          "attackMax": 1190,
+          "intelligence": 352,
+          "vitality": 133
+        },
+        {
+          "enchantLevel": 3,
+          "attackMin": 1014,
+          "attackMax": 1360,
+          "intelligence": 403,
+          "vitality": 152
+        },
+        {
+          "enchantLevel": 4,
+          "attackMin": 1141,
+          "attackMax": 1530,
+          "intelligence": 453,
+          "vitality": 171
+        },
+        {
+          "enchantLevel": 5,
+          "attackMin": 1331,
+          "attackMax": 1785,
+          "intelligence": 529,
+          "vitality": 199
+        },
+        {
+          "enchantLevel": 6,
+          "attackMin": 1521,
+          "attackMax": 2040,
+          "intelligence": 604,
+          "vitality": 228
+        },
+        {
+          "enchantLevel": 7,
+          "attackMin": 1775,
+          "attackMax": 2380,
+          "intelligence": 705,
+          "vitality": 266
+        },
+        {
+          "enchantLevel": 8,
+          "attackMin": 2028,
+          "attackMax": 2720,
+          "intelligence": 806,
+          "vitality": 304
+        },
+        {
+          "enchantLevel": 9,
+          "attackMin": 2282,
+          "attackMax": 3060,
+          "intelligence": 907,
+          "vitality": 342
+        },
+        {
+          "enchantLevel": 10,
+          "attackMin": 2536,
+          "attackMax": 3400,
+          "intelligence": 1008,
+          "vitality": 380
+        }
+      ],
+      "enchantmentProjectionModel": null,
+      "legendaryEligible": false,
+      "legendaryProjectionModel": null,
+      "crafting": {
+        "productionPerBatch": 1,
+        "requiredWorkload": 60000000,
+        "requiredSkill": {
+          "nameEn": "Instrument",
+          "level": 85
+        },
+        "materials": [
+          {
+            "nameEn": "Large Diamond",
+            "quantity": 4
+          },
+          {
+            "nameEn": "Imitation Oriharukon",
+            "quantity": 1
+          },
+          {
+            "nameEn": "Refined Mithril Ingot",
+            "quantity": 1
+          },
+          {
+            "nameEn": "Alchemist's Stone",
+            "quantity": 1
+          },
+          {
+            "nameEn": "Enriched Adamantium Ingot",
+            "quantity": 1
+          },
+          {
+            "nameEn": "Flame Element",
+            "quantity": 200
+          },
+          {
+            "nameEn": "Animal Replica",
+            "quantity": 5
+          },
+          {
+            "nameEn": "Oriental Mushroom",
+            "quantity": 60
+          },
+          {
+            "nameEn": "Phoenix's Feather",
+            "quantity": 8
+          }
+        ]
+      },
+      "evidence": {
+        "overview": "community-reference",
+        "stats": "community-reference",
+        "crafting": "community-reference",
+        "materials": "community-reference",
+        "projections": "not-provided",
+        "legendary": "not-provided",
+        "references": [
+          {
+            "kind": "community-reference",
+            "label": "Phoenix's Instrument — Atlantica Online Wikidot (historical item data, 2017-08-17)",
+            "url": "https://atlantica-online.wikidot.com/item:phoenix-s-instrument"
+          }
+        ]
+      }
+    },
+    {
+      "id": "11245",
+      "nameEn": "Pegasus Shield",
+      "overview": {
+        "typeEn": "Shield",
+        "minimumLevel": 140,
+        "eligibleClasses": [
+          "Swordsman",
+          "Lady Knight",
+          "Spartan",
+          "Valkyrie",
+          "Knight",
+          "Champion",
+          "Trainee Mo Chien Lang",
+          "Trainee Nightshade",
+          "Trainee Empress Tianmo",
+          "Trainee Ching Yue",
+          "Trainee Kim Choon Sam",
+          "Knight (Merc)",
+          "Sage King Arthur",
+          "Dark King Arthur"
+        ]
+      },
+      "stats": [
+        {
+          "enchantLevel": 0,
+          "defense": 9812,
+          "vitality": 182
+        },
+        {
+          "enchantLevel": 1,
+          "defense": 11774,
+          "vitality": 218
+        },
+        {
+          "enchantLevel": 2,
+          "defense": 13736,
+          "vitality": 254
+        },
+        {
+          "enchantLevel": 3,
+          "defense": 15699,
+          "vitality": 291
+        },
+        {
+          "enchantLevel": 4,
+          "defense": 17661,
+          "vitality": 327
+        },
+        {
+          "enchantLevel": 5,
+          "defense": 20605,
+          "vitality": 382
+        },
+        {
+          "enchantLevel": 6,
+          "defense": 23548,
+          "vitality": 436
+        },
+        {
+          "enchantLevel": 7,
+          "defense": 27473,
+          "vitality": 509
+        },
+        {
+          "enchantLevel": 8,
+          "defense": 31398,
+          "vitality": 582
+        },
+        {
+          "enchantLevel": 9,
+          "defense": 35323,
+          "vitality": 655
+        },
+        {
+          "enchantLevel": 10,
+          "defense": 39248,
+          "vitality": 728
+        }
+      ],
+      "enchantmentProjectionModel": null,
+      "legendaryEligible": false,
+      "legendaryProjectionModel": null,
+      "crafting": {
+        "productionPerBatch": 1,
+        "requiredWorkload": 60000000,
+        "requiredSkill": {
+          "nameEn": "Shield",
+          "level": 110
+        },
+        "materials": [
+          {
+            "nameEn": "Oriharukon",
+            "quantity": 15
+          },
+          {
+            "nameEn": "Pegasus Tear",
+            "quantity": 10
+          },
+          {
+            "nameEn": "Fused Devil Stone",
+            "quantity": 1
+          },
+          {
+            "nameEn": "Atlantis Silver Coin",
+            "quantity": 20
+          },
+          {
+            "nameEn": "Storm Element",
+            "quantity": 300
+          },
+          {
+            "nameEn": "Expert's Soul",
+            "quantity": 20
+          },
+          {
+            "nameEn": "Enhanced Titanium Ingot",
+            "quantity": 1
+          },
+          {
+            "nameEn": "Sorcerer's Mask",
+            "quantity": 50
+          },
+          {
+            "nameEn": "Root of Life",
+            "quantity": 200
+          }
+        ]
+      },
+      "evidence": {
+        "overview": "community-reference",
+        "stats": "community-reference",
+        "crafting": "community-reference",
+        "materials": "community-reference",
+        "projections": "not-provided",
+        "legendary": "not-provided",
+        "references": [
+          {
+            "kind": "community-reference",
+            "label": "Pegasus Shield — Atlantica Online Wikidot (historical item data, 2017-08-18)",
+            "url": "https://atlantica-online.wikidot.com/item:pegasus-shield"
+          }
+        ]
+      }
     }
   ]
 }
