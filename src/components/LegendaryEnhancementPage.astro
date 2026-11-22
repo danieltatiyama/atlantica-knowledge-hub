@@ -6,6 +6,8 @@ import legendaryReference from "../data/legendary-eligibility-reference.json";
 import {crossReferenceLegendaryNames,LEGENDARY_REFERENCE_URL}
   from "../data/legendary-eligibility-reference-gate.mjs";
 import {EQUIPMENT_ITEM_NAMES_EN} from "../data/equipment-item-names-en";
+import clientLegendary from "../data/legendary-client-name-candidates.json";
+import {assertLegendaryClientCandidates} from "../data/legendary-client-name-candidates-gate.mjs";
 
 interface Props { lang:"en"|"pt-br"; }
 const { lang } = Astro.props;
@@ -13,10 +15,16 @@ const pt=lang==="pt-br";
 const prefix=pt?"/pt-br":"";
 const title=pt?"Encantamento lendário (L)":"Legendary enhancement (L)";
 const examples=getLegendaryResearchRows(research);
-const eligibility=crossReferenceLegendaryNames(legendaryReference,EQUIPMENT_ITEM_NAMES_EN);
+const clientCandidates=assertLegendaryClientCandidates(clientLegendary,legendaryReference);
+const eligibility=crossReferenceLegendaryNames(legendaryReference,EQUIPMENT_ITEM_NAMES_EN)
+  .map((item,index)=>({...item,clientSource:clientCandidates[index]}));
 const categoryGroups=[...new Set(eligibility.map(item=>item.category))]
   .map(category=>({category,items:eligibility.filter(item=>item.category===category)}));
-const matchedLegendary=eligibility.filter(item=>item.identityStatus==="exact-name-candidate").length;
+const matchCounts={
+  unique:clientCandidates.filter(item=>item.clientMatchStatus==="one-exact-source-name").length,
+  ambiguous:clientCandidates.filter(item=>item.clientMatchStatus==="ambiguous-client-identity").length,
+  missing:clientCandidates.filter(item=>item.clientMatchStatus==="not-found-in-miner").length,
+};
 const format=(n:number)=>new Intl.NumberFormat(pt?"pt-BR":"en-US").format(n);
 const stats=[
  {key:"attackMin",pt:"Ataque mínimo",en:"Min. attack"},
@@ -42,8 +50,8 @@ const stats=[
       ?"A graduação L (Legendary, equivalente a +11) existe somente para equipamentos elegíveis. Compare valores publicados em fontes comunitárias com o modelo histórico."
       :"L (Legendary, equivalent to +11) exists only for eligible equipment. Compare community-documented figures with the historical model."}</p>
     <p class="source-disclaimer">{pt
-      ?"Os números desta página vêm de wikis comunitárias históricas. Não são confirmação das estatísticas do cliente Atlantica Global atual. Não conhecemos ainda os IDs desses quatro equipamentos na nossa base revisada."
-      :"The numbers on this page come from historical community wikis, not confirmed current Atlantica Global client values. The four items do not yet have verified IDs in our curated registry."}</p>
+      ?"As tabelas de progressão abaixo vêm de fontes comunitárias históricas. Já as correspondências de nomes/IDs mais adiante vêm dos arquivos do cliente Global (Miner snapshot 1). Um ID candidato não comprova que a versão atual permite enhancement até L."
+      :"The progression tables below come from historical community sources. Later, separate client name/ID candidates come from Global game files (Miner snapshot 1). A matching item ID is not proof that its current version can be enhanced to L."}</p>
   </header>
   <section>
     <h2>{pt?"Modelo de progressão":"Progression model"}</h2>
@@ -62,13 +70,13 @@ const stats=[
   <section id="legendary-eligibility" class="legendary-reference">
     <h2>{pt?"Lista inicial de equipamentos elegíveis a L":"Initial list of L-eligible equipment"}</h2>
     <p class="note">{pt
-      ?"47 entradas em 12 categorias, conforme o catálogo comunitário Legendary Weapons do Fandom. É uma lista histórica de referência, não necessariamente completa ou atualizada para o cliente Global. Origem em eventos, fabricação, obtenção e IDs do cliente ainda precisam ser identificados separadamente."
-      :"47 entries across 12 categories from the community Fandom Legendary Weapons reference list. This is a historical starting point, not necessarily exhaustive or current for the Global client. Event origin, craftability, drops and client IDs require independent evidence."}</p>
+      ?"47 entradas em 12 categorias da lista histórica do Fandom, cruzadas com todos os 23.586 IDs do Miner (snapshot 1). Os IDs mostrados são candidatos por correspondência exata de nome em inglês. Elegibilidade real a L, fabricação, origem por evento e disponibilidade atual não foram comprovadas."
+      :"47 entries in 12 groups from the historical Fandom list, matched against all 23,586 Miner item IDs (snapshot 1). Shown IDs are exact-English-name source candidates. Actual L eligibility, crafting, event origin and current availability are not established."}</p>
     <p class="sources"><a href={LEGENDARY_REFERENCE_URL} target="_blank" rel="noopener noreferrer">
       {pt?"Fonte: Legendary Weapons — Atlantica Wiki (Fandom)":"Source: Legendary Weapons — Atlantica Wiki (Fandom)"}</a></p>
     <p class="note">{pt
-      ? `${matchedLegendary} dos 47 nomes com correspondência única nos 551 IDs públicos atuais. Isso não prova ausência no cliente: o catálogo de 551 foi montado a partir de caixas, não de todos os equipamentos.`
-      : `${matchedLegendary} of 47 names matched uniquely in the current 551-ID public catalog. Lack of a match does not imply absence from the game client; the 551-item subset came from box lists.`}</p>
+      ? `${matchCounts.unique} correspondências únicas de nome, ${matchCounts.ambiguous} nomes com múltiplos IDs e ${matchCounts.missing} sem correspondência. Nível e grade do cliente são campos brutos, não necessariamente o requisito exibido no jogo. Nomes divergentes continuam para revisão.`
+      : `${matchCounts.unique} unique name matches, ${matchCounts.ambiguous} names with multiple item IDs and ${matchCounts.missing} unmatched. Client level and grade are raw fields, not necessarily the live requirement. Divergent source names remain unresolved.`}</p>
     <div class="legendary-groups">
       {categoryGroups.map(group=><details class="legendary-group">
         <summary>{group.category} <span>({group.items.length})</span></summary>
@@ -76,15 +84,20 @@ const stats=[
           <thead><tr>
             <th>{pt?"Equipamento":"Equipment"}</th>
             <th>{pt?"Nível na fonte":"Listed level"}</th>
-            <th>{pt?"ID verificado":"Verified item ID"}</th>
+            <th>{pt?"IDs candidatos do cliente":"Candidate client IDs"}</th>
           </tr></thead>
           <tbody>{group.items.map(item=><tr>
             <td>{item.nameEn}</td>
             <td>{item.minimumLevel===null?"—":"Lv. "+item.minimumLevel}</td>
-            <td>{item.identityStatus==="exact-name-candidate"
-              ? <span class="candidate">{
-                  pt?"Correspondência de nome — revisar ID":"Name match — review ID"}</span>
-              : <span class="unresolved">{pt?"Ainda não identificado":"Not yet identified"}</span>}</td>
+            <td>{item.clientSource.clientCandidates.length
+              ? <div class="client-candidates">{item.clientSource.clientCandidates.map(candidate=>
+                <div><code>{candidate.itemId}</code> <span class="client-raw">
+                  {pt?"Nível bruto":"Raw Lv"} {candidate.clientLevelRaw} · {candidate.clientGradeRaw}
+                </span></div>)}
+                {item.clientSource.clientMatchStatus==="ambiguous-client-identity" &&
+                  <small class="unresolved">{pt?"IDs diferentes — requer revisão":"Different IDs — review required"}</small>}
+                </div>
+              : <span class="unresolved">{pt?"Sem correspondência no Miner":"No Miner name match"}</span>}</td>
           </tr>)}</tbody>
         </table></div>
       </details>)}
@@ -237,6 +250,10 @@ const stats=[
   .legendary-group th,.legendary-group td{padding:8px 11px;font-size:.87rem}
   .candidate{color:var(--color-gold-light)}
   .unresolved{color:var(--color-text-muted)}
+  .client-candidates{display:grid;gap:5px}
+  .client-candidates>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:9px}
+  .client-candidates code{font-size:.92rem;color:var(--color-gold-light)}
+  .client-raw{font-size:.77rem;color:var(--color-text-muted)}
   .sources{font-size:.84rem;line-height:1.6}
   .sources a{text-decoration:underline;text-underline-offset:3px}
   form{border:1px solid var(--color-border);border-radius:5px;padding:18px;background:var(--color-surface)}
