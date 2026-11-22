@@ -155,7 +155,7 @@ npm run build
 git diff -- src/data/client-equipment-facts.json
 ```
 
-The first invocation is a **dry run**: 4 local outputs, NO tracked
+The first invocation is a **dry run**: 5 local outputs, NO tracked
 changes. The second prepares the PUBLIC candidate in the local working
 tree and builds the site; it does NOT commit, push, merge or deploy.
 
