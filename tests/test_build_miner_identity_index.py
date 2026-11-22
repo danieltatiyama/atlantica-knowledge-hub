@@ -134,6 +134,9 @@ class MinerIdentityTests(unittest.TestCase):
             r("Weapon", "KR"), r("Decoration", "OTHER")
         ])[0], "cross-category-name-conflict")
         self.assertEqual(module.classify_records([
+            r("Weapon", "KR", region="ENG"), r("Decoration", "OTHER", region="ENG")
+        ])[0], "cross-category-name-conflict")
+        self.assertEqual(module.classify_records([
             r("Weapon", "KR"), r("Weapon", "KR", region="ENG", name="KOREAN")
         ])[0], "localization-overlap-candidate")
         self.assertEqual(module.classify_records([
