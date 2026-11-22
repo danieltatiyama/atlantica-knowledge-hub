@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "reviewed-equipment-profiles",
+  "records": [
+    {
+      "id": "1",
+      "nameEn": "Spirit Sword",
+      "overview": {
+        "typeEn": "Sword",
+        "minimumLevel": 1,
+        "eligibleClasses": [
+          "Swordsman",
+          "Exorcist",
+          "Lady Knight",
+          "Pirate",
+          "Valkyrie",
+          "Knight",
+          "Champion",
+          "Warlord",
+          "Atlantian Blademaster",
+          "Clown",
+          "Mo Chien Lang",
+          "Nightshade",
+          "Empress Tianmo",
+          "Ching Yue",
+          "Kim Choon Sam",
+          "Knight",
+          "Sage King Arthur",
+          "Dark King Arthur",
+          "Gladiator",
+          "Natasha",
+          "Ari"
+        ]
+      },
+      "stats": [
+        {
+          "enchantLevel": 0,
+          "attackMin": 60,
+          "attackMax": 90,
+          "strength": 5,
+          "vitality": 5
+        }
+      ],
+      "crafting": {
+        "productionPerBatch": 1,
+        "requiredWorkload": 450,
+        "requiredSkill": {
+          "nameEn": "Sword",
+          "level": 1
+        },
+        "materials": [
+          {
+            "nameEn": "Copper Flakes",
+            "quantity": 5
+          },
+          {
+            "nameEn": "Maple",
+            "quantity": 4
+          }
+        ]
+      },
+      "evidence": {
+        "overview": "ingame-screenshot",
+        "stats": "ingame-screenshot",
+        "crafting": "ingame-screenshot",
+        "materials": "community-reference",
+        "references": [
+          {
+            "kind": "ingame-screenshot",
+            "label": "Spirit Sword in-game tooltip, two screenshots supplied on 2026-11-22"
+          },
+          {
+            "kind": "community-reference",
+            "label": "Spirit Sword — Atlantica Wiki (community)",
+            "url": "https://atlantica.fandom.com/wiki/Spirit_Sword"
+          }
+        ]
+      }
+    }
+  ]
+}
