@@ -9,6 +9,7 @@ export interface EquipmentBoxEntry {
   itemUniqueId: string;
   nameTextId: string;
   group: "standard" | "variant";
+  interaction?: "random" | "selection";
   baseSlug?: string;
   variantKind?: "supreme" | "enchanted" | "infused";
   enhancementMin?: number;
@@ -21,13 +22,13 @@ export const EQUIPMENT_BOXES: EquipmentBoxEntry[] = [
   {slug:"spirit-equipment-box",name:"Spirit Equipment Box",itemUniqueId:"20900",nameTextId:"850",group:"standard"},
   {slug:"sea-kings-equipment-box",name:"Sea King's Equipment Box",itemUniqueId:"20904",nameTextId:"851",group:"standard"},
   {slug:"angkor-wat-equipment-box",name:"Angkor Wat Equipment Box",itemUniqueId:"20906",nameTextId:"852",group:"standard"},
-  {slug:"asuras-equipment-box",name:"Asura's Equipment Box",itemUniqueId:"20907",nameTextId:"1391",group:"standard"},
+  {slug:"asuras-equipment-box",name:"Asura's Equipment Box",itemUniqueId:"20907",nameTextId:"1391",group:"standard",interaction:"selection"},
   {slug:"insect-equipment-box",name:"Insect Equipment Box",itemUniqueId:"20908",nameTextId:"853",group:"standard"},
   {slug:"bran-castle-equipment-box",name:"Bran Castle Equipment Box",itemUniqueId:"20912",nameTextId:"854",group:"standard",setName:"Walachia",setLevel:50},
-  {slug:"dark-knights-equipment-box",name:"Dark Knight's Equipment Box",itemUniqueId:"20913",nameTextId:"1392",group:"standard"},
+  {slug:"dark-knights-equipment-box",name:"Dark Knight's Equipment Box",itemUniqueId:"20913",nameTextId:"1392",group:"standard",interaction:"selection"},
   {slug:"babylons-equipment-box",name:"Babylon's Equipment Box",itemUniqueId:"20914",nameTextId:"855",group:"standard"},
   {slug:"pyramid-equipment-box",name:"Pyramid Equipment Box",itemUniqueId:"20916",nameTextId:"1208",group:"standard"},
-  {slug:"osiris-equipment-box",name:"Osiris' Equipment Box",itemUniqueId:"20917",nameTextId:"1393",group:"standard"},
+  {slug:"osiris-equipment-box",name:"Osiris' Equipment Box",itemUniqueId:"20917",nameTextId:"1393",group:"standard",interaction:"selection"},
   {slug:"shoguns-equipment-box",name:"Shogun's Equipment Box",itemUniqueId:"20918",nameTextId:"856",group:"standard"},
   {slug:"volcano-valley-equipment-box",name:"Volcano Valley Equipment Box",itemUniqueId:"20920",nameTextId:"1754",group:"standard"},
   {slug:"conquerors-equipment-box",name:"Conqueror's Equipment Box",itemUniqueId:"20981",nameTextId:"2255",group:"standard"},
