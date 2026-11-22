@@ -56,9 +56,14 @@ const boxTypes = ["random","selection","fixed","unknown"];
           <div class="meta"><span>{box.boxType.toUpperCase()}</span><span>{box.region.toUpperCase()}</span></div>
           <h2><a href={base+box.id+"/"}>{box.title}</a></h2>
           <p>{box.description}</p>
-          <span class="sub">{box.oddsStatus === "regional-published"
-            ? (pt?"Taxas publicadas para a região":"Regional published rates")
-            : (pt?"Chance ainda não confirmada":"Chances not yet confirmed")}</span>
+          <span class="sub">{box.contentsEvidence === "server-preview-captured"
+            ? (pt?"Lista capturada durante a abertura":"Game-transmitted item list")
+            : box.contentsEvidence === "official-published"
+              ? (pt?"Lista oficial de recompensas":"Official reward list")
+              : (pt?"Recompensas em revisão":"Rewards under review")} · {box.outcomes.length} {pt?"itens":"items"}</span>
+          <p class="rate-note">{box.oddsStatus === "regional-published"
+            ? (pt?"Taxas regionais publicadas":"Published regional rates")
+            : (pt?"Probabilidades desconhecidas":"Unknown drop rates")}</p>
         </article>
       ))}
     </div>
@@ -92,6 +97,7 @@ border-radius:5px;color:var(--color-text);font:inherit}
 .item a{text-decoration:none}.item a:hover{color:var(--color-accent)}
 .item p{color:var(--color-text-muted);line-height:1.6}
 .sub{font-size:.83rem;color:var(--color-gold-light)}
+.rate-note{font-size:.79rem!important;margin-top:8px!important}
 .empty{padding:30px;border:1px dashed var(--color-border);text-align:center;color:var(--color-text-muted)}
 @media(max-width:720px){.filters{grid-template-columns:1fr}}
 </style>
