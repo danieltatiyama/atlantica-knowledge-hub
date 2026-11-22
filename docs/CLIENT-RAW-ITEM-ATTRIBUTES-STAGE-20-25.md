@@ -129,11 +129,24 @@ npm run build
 git diff -- src/data/client-equipment-facts.json src/data/client-item-attributes.json
 ```
 
-The site initially retains the four sample-backed equipment
-definitions from Stage 20.23. The user's uploaded **private**
-full-inventory JSON is also sufficient to regenerate a complete
-551-ID *source-facts* JSON offline, but that 35 MB private input
-is never committed or included in public static assets.
+## Actual 551-ID public source facts now imported in this PR
+
+**All 551** existing reviewed equipment IDs are now populated directly
+from the uploaded Miner snapshot 1 in the tracked
+`src/data/client-equipment-facts.json` source layer. They reference
+**1,031** original client source record IDs. No manual file copy is
+required for this portion. The original ~35 MB PRIVATE inventory,
+Korean original-name strings, other 23,035 IDs and raw file paths
+were **not** committed.
+
+The previous four seeded examples (Spirit Sword, Twilight Instrument,
+Red Soul Robe and Conqueror's Greaves) remain in the now-complete
+551-ID dataset. The new `Items.csv` raw combat values, however,
+still need a separate read-only local export, because the uploaded
+field-schema report did not include their actual values.
+
+Use `-PreparePublic` only if refreshing these values from the same
+local Miner snapshot and after inspecting the diff.
 
 To collaborate on the next stage without sharing raw 87,422-row
 data, send back:
