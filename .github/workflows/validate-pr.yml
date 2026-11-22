@@ -38,7 +38,7 @@ jobs:
       - name: Parse Windows PowerShell review wrappers
         shell: pwsh
         run: |
-          foreach ($path in @('scripts/Start-EquipmentReview.ps1', 'scripts/Finalize-EquipmentReview.ps1')) {
+          foreach ($path in @('scripts/Start-EquipmentReview.ps1', 'scripts/Finalize-EquipmentReview.ps1', 'scripts/Start-WikidotBatchReview.ps1', 'scripts/Finalize-WikidotBatchReview.ps1')) {
             $tokens = $null
             $issues = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$issues)
@@ -67,6 +67,11 @@ jobs:
       - name: Verify expanded in-game equipment detail evidence and all-item review coverage
         run: |
           node --test tests/extended-equipment-facts.test.mjs tests/item-article-review-queue.test.mjs
+          node scripts/build-item-article-review-queue.mjs
+
+      - name: Validate historical Wikidot audit and manual approval compiler
+        run: |
+          node --test tests/historical-item-profile-drafts.test.mjs
           node scripts/build-item-article-review-queue.mjs
 
       - name: Validate Astro build
