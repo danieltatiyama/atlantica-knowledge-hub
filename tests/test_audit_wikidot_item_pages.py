@@ -77,6 +77,21 @@ class HistoricalAuditTests(unittest.TestCase):
             {"nameEn": "Maple", "quantity": 4}])
         self.assertNotIn("Spirit Weapon Box", json.dumps(result))
 
+    def test_wikidot_break_separated_fields_are_kept_separate(self):
+        html = """<html><head><title>Spirit Bow - Atlantica Online Wiki</title></head>
+        <body><div id="page-content"><p>Type: <a>Bow</a><br>
+        Min. Level: 1<br>Restrictions: Archer/Prophet Classes Only</p>
+        <h2>Stats</h2><table><tr><th>Enchant Level</th><th>Attack Power</th></tr>
+        <tr><td>+0</td><td>50 - 100</td></tr></table></div></body></html>"""
+        result = module.parse_page(
+            html,"Spirit Bow",module.ORIGIN+"/item:spirit-bow"
+        )
+        self.assertEqual(result["overview"], {
+            "typeEn":"Bow", "minimumLevel":1,
+            "eligibleClasses":["Archer","Prophet"],
+        })
+        self.assertEqual(result["stats"][0]["attackMin"],50)
+
     def test_numeric_thousands_and_L_are_parsed_not_interpolated(self):
         result = module.parse_page(
             FAKE_EXCALIBUR, "Excalibur", module.ORIGIN + "/item:excalibur")
