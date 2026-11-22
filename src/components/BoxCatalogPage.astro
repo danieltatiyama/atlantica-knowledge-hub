@@ -10,7 +10,7 @@ const base = prefix + "/items/boxes/";
 const editorialEntries = (await getCollection("boxes", ({data}) =>
   !data.draft && data.reviewStatus === "approved" &&
   data.evidenceStatus !== "client-config" && data.lang === lang))
-  .map((entry)=>({id:entry.id.replace(/^[^/]+\\//,""),...entry.data}));
+  .map((entry)=>({id:entry.id.split("/").slice(1).join("/"),...entry.data}));
 const editorSlugs = new Set(editorialEntries.map(entry=>entry.id));
 const registryEntries = EQUIPMENT_BOXES.filter(box=>!editorSlugs.has(box.slug)).map(box=>({
   id:box.slug,
