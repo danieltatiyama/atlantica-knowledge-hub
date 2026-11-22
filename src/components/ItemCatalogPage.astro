@@ -1,0 +1,107 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { EQUIPMENT_ITEM_CATALOG } from "../data/equipment-item-catalog";
+
+interface Props { lang: "en" | "pt-br"; }
+const { lang } = Astro.props;
+const pt = lang === "pt-br";
+const prefix = pt ? "/pt-br" : "";
+const items = EQUIPMENT_ITEM_CATALOG;
+const title = pt ? "Catálogo de Equipamentos" : "Equipment Item Catalog";
+const description = pt
+  ? "Consulte os 551 equipamentos com nomes oficiais do cliente em inglês e relações capturadas com Equipment Boxes."
+  : "Browse 551 equipment items with official client English names and captured Equipment Box references.";
+---
+<BaseLayout lang={lang} title={title + " | Atlantica Knowledge Hub"} description={description}
+  alternatePaths={{en:"/items/", "pt-br":"/pt-br/items/"}}>
+  <main class="container">
+    <nav class="breadcrumb">
+      <a href={prefix + "/"}>{pt ? "Início" : "Home"}</a><span>/</span><span>{title}</span>
+    </nav>
+    <header class="intro">
+      <p class="eyebrow">{pt ? "BANCO DE DADOS" : "ITEM DATABASE"} · GLOBAL / NA CLIENT</p>
+      <h1>{title}</h1>
+      <p>{description}</p>
+      <p class="notice">{pt
+        ? "Este é um catálogo inicial de equipamentos identificados em listas de boxes. Não é uma lista completa de todos os itens do jogo. Os nomes ainda não possuem tradução verificada para português."
+        : "This is an initial catalog of equipment found in captured box lists, not every item in the game. English names were resolved against NA client localization."}</p>
+      <p><a class="related" href={prefix + "/items/boxes/"}>{pt ? "Explorar Equipment Boxes" : "Explore Equipment Boxes"}</a></p>
+    </header>
+    <section class="catalog" aria-label={title}>
+      <div class="filters">
+        <label for="item-search">{pt ? "Buscar pelo nome em inglês ou ID" : "Search English name or item ID"}</label>
+        <input id="item-search" type="search" autocomplete="off"
+          placeholder={pt ? "Ex.: Judgment Sword ou 47" : "e.g. Judgment Sword or 47"}/>
+      </div>
+      <p class="count" aria-live="polite"><strong id="item-count">{items.length}</strong>
+        {pt ? " equipamentos encontrados" : " equipment items found"}</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>{pt ? "Nome (inglês oficial)" : "Official English name"}</th>
+            <th>{pt ? "ID do item" : "Item ID"}</th>
+            <th>{pt ? "Boxes associadas" : "Associated boxes"}</th>
+          </tr></thead>
+          <tbody>
+            {items.map((item) => (
+              <tr data-item-row data-search={(item.nameEn + " " + item.id).toLocaleLowerCase()}>
+                <td><a href={prefix + "/items/" + item.id + "/"}>{item.nameEn}</a></td>
+                <td><code>{item.id}</code></td>
+                <td>{item.boxReferences.length}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p id="item-empty" hidden>{pt ? "Nenhum equipamento corresponde à busca." : "No equipment items match your search."}</p>
+      <p class="footnote">{pt
+        ? "As associações representam listas transmitidas pelo jogo durante a abertura de boxes. Não representam probabilidades, garantia de obtenção ou quantidades."
+        : "Associations mean presence in captured game-transmitted previews, not published drop rates, guaranteed availability or quantities."}</p>
+    </section>
+  </main>
+</BaseLayout>
+<script>
+  const search = document.querySelector<HTMLInputElement>("#item-search");
+  const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>("[data-item-row]"));
+  const count = document.querySelector<HTMLElement>("#item-count");
+  const empty = document.querySelector<HTMLElement>("#item-empty");
+  function filterItems() {
+    const query = search?.value.toLocaleLowerCase().trim() ?? "";
+    let visible = 0;
+    for (const row of rows) {
+      const match = (row.dataset.search ?? "").includes(query);
+      row.hidden = !match;
+      if (match) visible++;
+    }
+    if (count) count.textContent = String(visible);
+    if (empty) empty.hidden = visible > 0;
+  }
+  search?.addEventListener("input", filterItems);
+</script>
+<style>
+  .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
+  .breadcrumb{padding:24px 0;color:var(--color-text-muted);font-size:.9rem}
+  .breadcrumb a,.related{color:var(--color-accent);text-decoration:none}
+  .breadcrumb span{margin:0 9px}
+  .intro{border-bottom:1px solid var(--color-border);padding:22px 0 32px}
+  .eyebrow{color:var(--color-accent);font-size:.8rem;letter-spacing:.14em}
+  h1{font-size:clamp(2rem,4.5vw,3.2rem);margin:12px 0}
+  .intro>p:not(.eyebrow){color:var(--color-text-muted);max-width:940px}
+  .notice{border-left:3px solid var(--color-bronze);padding:12px 16px;background:var(--color-surface)}
+  .catalog{padding:28px 0}
+  .filters{max-width:620px}
+  label{display:block;margin-bottom:8px;color:var(--color-gold-light)}
+  input{width:100%;padding:13px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text);font:inherit}
+  input:focus-visible,a:focus-visible{outline:2px solid var(--color-gold-light);outline-offset:3px}
+  .count,.footnote{color:var(--color-text-muted);font-size:.92rem}
+  .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:6px}
+  table{width:100%;border-collapse:collapse;min-width:520px}
+  th,td{padding:12px 17px;text-align:left;border-bottom:1px solid var(--color-border)}
+  th{background:#29271f;color:var(--color-gold-light);font-weight:600}
+  td{color:var(--color-text-muted)}
+  td:first-child{font-weight:600}td:first-child a{color:var(--color-text);text-decoration:none}
+  td:first-child a:hover{color:var(--color-accent)}
+  tr:hover td{background:var(--color-surface)}
+  tr[hidden]{display:none}
+  code{font-size:.9em}
+</style>

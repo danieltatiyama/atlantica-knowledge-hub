@@ -11,7 +11,7 @@ const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
 const eventsHref = lang === "en" ? "/events/" : `/${lang}/events/`;
 const mercenariesHref = lang === "en" ? "/mercenaries/" : `/${lang}/mercenaries/`;
-const boxesHref = lang === "en" ? "/items/boxes/" : `/${lang}/items/boxes/`;
+const itemsHref = lang === "en" ? "/items/" : `/${lang}/items/`;
 
 const navigation = [
   {
@@ -36,7 +36,7 @@ const navigation = [
   },
   {
     label: lang === "pt-br" ? "Itens" : "Items",
-    href: boxesHref,
+    href: itemsHref,
     active: pathname.startsWith(lang === "en" ? "/items/" : `/${lang}/items/`),
   },
   {
@@ -109,7 +109,7 @@ function getLanguageTarget(targetLang: SupportedLang): string {
     return `${prefix}/mercenaries/`;
   }
   if (normalizedPath.startsWith("/items/") || normalizedPath.startsWith("/pt-br/items/")) {
-    return `${prefix}/items/boxes/`;
+    return `${prefix}${normalizedPath.replace(/^\/pt-br(?=\/)/, "")}`;
   }
   // Home or other pages.
   return `${prefix}/`;

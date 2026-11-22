@@ -1,0 +1,12 @@
+---
+import ItemDetailPage from "../../../components/ItemDetailPage.astro";
+import { EQUIPMENT_ITEM_CATALOG } from "../../../data/equipment-item-catalog";
+import type { EquipmentItemCatalogEntry } from "../../../data/equipment-item-catalog";
+
+export function getStaticPaths() {
+  return EQUIPMENT_ITEM_CATALOG.map(item => ({ params: { id: item.id }, props: { item } }));
+}
+interface Props { item: EquipmentItemCatalogEntry; }
+const { item } = Astro.props;
+---
+<ItemDetailPage lang="pt-br" item={item} />
