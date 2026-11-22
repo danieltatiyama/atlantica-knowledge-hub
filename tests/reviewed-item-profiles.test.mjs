@@ -17,8 +17,8 @@ test("real reviewed profile passes explicit public gate", () => {
   const check = checkReviewedItemProfiles();
   assert.deepEqual(check.errors, []);
   assert.equal(check.ok, true);
-  assert.equal(check.records.length, 3);
-  assert.deepEqual(check.records.map(x => x.id), ["1","400","1400"]);
+  assert.equal(check.records.length, 7);
+  assert.deepEqual(check.records.map(x => x.id), ["1","100","264","400","1400","1420","11245"]);
   assert.equal(check.records[0].nameEn, names["1"]);
 });
 
