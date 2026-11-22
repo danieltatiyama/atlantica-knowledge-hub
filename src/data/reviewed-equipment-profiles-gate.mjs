@@ -15,7 +15,8 @@ const natural = (v, limit = 1000000000000) =>
 const positive = (v, limit = 1000000000000) => natural(v, limit) && v > 0;
 const simple = (v, limit = 160) =>
   typeof v === "string" && v.length > 0 && v.length <= limit &&
-  v.trim() === v && !/[<>{}\n\r\\]/.test(v);
+  v.trim() === v && !/[<>{}\n\r\\]/.test(v) &&
+  !/^(?:\/|[A-Za-z]:)/.test(v) && !v.includes("/mnt/data/");
 const STAT_FIELDS = ["enchantLevel", "attackMin", "attackMax", "strength", "vitality",
   "dexterity", "intelligence", "defense", "magicDefense"];
 const EVIDENCE_TYPES = ["ingame-screenshot", "community-reference", "not-provided"];
