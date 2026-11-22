@@ -15,8 +15,8 @@ const previewGrades=captured?.gradeCodes.map(code=>decodedEnhancementCandidate(c
 const hasRates=d.oddsStatus==="regional-published";
 const rate=(n:number|undefined)=>n===undefined?"—":n.toLocaleString(pt?"pt-BR":"en-US",{maximumFractionDigits:4})+"%";
 const source=d.probabilitySourceUrl||d.verificationUrl;
-const captured=d.contentsEvidence==="server-preview-captured";
-const contentsLabel=captured
+const hasCapturedEvidence=d.contentsEvidence==="server-preview-captured";
+const contentsLabel=hasCapturedEvidence
   ? (pt?"Lista recebida do jogo durante a abertura":"Item list received from the game during box opening")
   : (d.contentsEvidence==="family-candidates"
     ? (pt?"Candidatos por família — drops não confirmados":"Family-matched candidates — drops unverified")
