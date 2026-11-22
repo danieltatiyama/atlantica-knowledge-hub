@@ -47,6 +47,14 @@ const clientFields = curatedFields ? [
           ? "Nome associado a partir de arquivos de equipamento e localização em inglês do cliente. Ainda não há tradução oficial em português verificada."
           : "English name reconciled from client equipment definitions and NA localization. This does not establish equipment stats or current item availability."}</p>
       </header>
+      <p class="source-export">
+        <a href="/data/client-equipment-grades.csv" download>{pt
+          ?"Exportar CSV: tabelas +0 a +10 dos 551 equipamentos"
+          :"Download CSV: +0 to +10 tables for all 551 equipment items"}</a>
+        <small>{pt
+          ?"Atributos +1..+10 são projeções históricas; MagicDef, EV e MoveSpeed ficam fixos."
+          :"+1..+10 values are historical projections; MagicDef, EV and MoveSpeed stay fixed."}</small>
+      </p>
       <nav class="page-sections" aria-label={pt ? "Seções do item" : "Item sections"}>
         <a href="#item-stats">{pt ? "Atributos" : "Stats"}</a>
         <a href="#item-sources">{pt ? "Fontes" : "Source"}</a>
@@ -115,6 +123,9 @@ const clientFields = curatedFields ? [
   .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
   .breadcrumb{padding:26px 0}.breadcrumb a,td a{color:var(--color-accent);text-decoration:none}
   article{max-width:1140px;margin:0 auto}
+  .source-export{display:flex;flex-wrap:wrap;gap:7px 15px;align-items:baseline;margin:20px 0 10px}
+  .source-export a{color:var(--color-accent);font-weight:600}
+  .source-export small{color:var(--color-text-muted);line-height:1.5}
   header{padding:12px 0 30px;border-bottom:1px solid var(--color-border)}
   h1{font-size:clamp(2rem,4vw,3.2rem);margin:10px 0 18px}
   .eyebrow{font-size:.8rem;letter-spacing:.14em;color:var(--color-accent)}
