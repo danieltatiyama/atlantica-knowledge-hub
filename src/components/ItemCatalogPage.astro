@@ -3,12 +3,29 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { EQUIPMENT_ITEM_CATALOG } from "../data/equipment-item-catalog";
 import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_METADATA_COUNT } from "../data/curated-equipment-metadata";
 import { getReviewedItemProfile } from "../data/reviewed-equipment-profiles";
+import {getClientEquipmentFacts} from "../data/client-equipment-facts";
+import {getClientItemAttributes} from "../data/client-item-attributes";
+import {getClientItemSourceOverview}
+  from "../data/equipment-catalog-source-index.mjs";
 
 interface Props { lang: "en" | "pt-br"; }
 const { lang } = Astro.props;
 const pt = lang === "pt-br";
 const prefix = pt ? "/pt-br" : "";
 const items = EQUIPMENT_ITEM_CATALOG;
+const indexedItems=items.map(item=>({
+  ...item,
+  sourceIndex:getClientItemSourceOverview(item,
+    getClientEquipmentFacts(item.id),getClientItemAttributes(item.id))
+}));
+const sourceCategories=[...new Set(indexedItems.map(x=>x.sourceIndex.category))]
+  .sort((a,b)=>a.localeCompare(b,"en"));
+const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const fmt=value=>value===null||value===undefined||value==="0"||value===""
+  ?"—":/^-?\d+(?:\.\d+)?$/.test(value)?nf.format(Number(value)):value;
+const attackRange=stats=>(stats.minDamage===null||stats.maxDamage===null||
+  (stats.minDamage==="0"&&stats.maxDamage==="0"))
+  ?"—":fmt(stats.minDamage)+"–"+fmt(stats.maxDamage);
 const title = pt ? "Catálogo de Equipamentos" : "Equipment Item Catalog";
 const description = pt
   ? "Consulte os 551 equipamentos com nomes oficiais do cliente em inglês e relações capturadas com Equipment Boxes."
@@ -38,9 +55,32 @@ const description = pt
     </header>
     <section class="catalog" aria-label={title}>
       <div class="filters">
-        <label for="item-search">{pt ? "Buscar pelo nome em inglês ou ID" : "Search English name or item ID"}</label>
-        <input id="item-search" type="search" autocomplete="off"
-          placeholder={pt ? "Ex.: Judgment Sword ou 47" : "e.g. Judgment Sword or 47"}/>
+        <div>
+          <label for="item-search">{pt ? "Pesquisar nome ou ID" : "Search name or ID"}</label>
+          <input id="item-search" type="search" autocomplete="off"
+            placeholder={pt ? "Ex.: Judgment Sword ou 47" : "e.g. Judgment Sword or 47"}/>
+        </div>
+        <div>
+          <label for="item-category">{pt ? "Categoria do arquivo" : "Client source category"}</label>
+          <select id="item-category">
+            <option value="">{pt?"Todas as categorias":"All categories"}</option>
+            {sourceCategories.map(category=><option value={category}>{category}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="item-min-level">{pt?"Nível bruto mínimo":"Min. raw level"}</label>
+          <input id="item-min-level" type="number" min="0" max="999" step="1"
+            placeholder={pt?"Qualquer nível":"Any level"}/>
+        </div>
+        <div>
+          <label for="item-sort">{pt?"Ordenar por":"Sort by"}</label>
+          <select id="item-sort">
+            <option value="name">{pt?"Nome A–Z":"Name A–Z"}</option>
+            <option value="level">{pt?"Nível bruto ↑":"Raw level ↑"}</option>
+            <option value="attack">{pt?"Ataque base ↓":"Base attack ↓"}</option>
+            <option value="ac">{pt?"Defesa física base ↓":"Base AC ↓"}</option>
+          </select>
+        </div>
       </div>
       <p class="count" aria-live="polite"><strong id="item-count">{items.length}</strong>
         {pt ? " equipamentos encontrados" : " equipment items found"}</p>
@@ -49,16 +89,30 @@ const description = pt
           <thead><tr>
             <th>{pt ? "Nome (inglês oficial)" : "Official English name"}</th>
             <th>{pt ? "ID do item" : "Item ID"}</th>
+            <th>{pt ? "Categoria do cliente" : "Client category"}</th>
+            <th>{pt ? "Nível bruto" : "Raw level"}</th>
+            <th>{pt ? "Ataque base" : "Base attack"}</th>
+            <th>{pt ? "AC base" : "Base AC"}</th>
             <th>{pt ? "Boxes associadas" : "Associated boxes"}</th>
             {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
               <th>{pt ? "Metadados do cliente" : "Client metadata"}</th>}
           </tr></thead>
-          <tbody>
-            {items.map((item) => (
-              <tr data-item-row data-search={(item.nameEn + " " + item.id).toLocaleLowerCase()}>
+          <tbody id="item-table-body">
+            {indexedItems.map((item) => (
+              <tr data-item-row
+                data-search={(item.nameEn+" "+item.id+" "+item.sourceIndex.category).toLocaleLowerCase()}
+                data-sort-name={item.nameEn.toLocaleLowerCase()}
+                data-category={item.sourceIndex.category}
+                data-level={item.sourceIndex.rawLevel??""}
+                data-attack={item.sourceIndex.maxDamage??""}
+                data-ac={item.sourceIndex.physicalAC??""}>
                 <td><a href={prefix + "/items/" + item.id + "/"}>{item.nameEn}</a>
                   {getReviewedItemProfile(item.id) && <span class="profile-mark">{pt ? "Ficha detalhada" : "Detailed profile"}</span>}</td>
                 <td><code>{item.id}</code></td>
+                <td>{item.sourceIndex.category}</td>
+                <td>{item.sourceIndex.rawLevel??"—"}</td>
+                <td>{attackRange(item.sourceIndex)}</td>
+                <td>{fmt(item.sourceIndex.physicalAC)}</td>
                 <td>{item.boxReferences.length}</td>
                 {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
                   <td>{getCuratedEquipmentMetadata(item.id)
@@ -71,28 +125,57 @@ const description = pt
       </div>
       <p id="item-empty" hidden>{pt ? "Nenhum equipamento corresponde à busca." : "No equipment items match your search."}</p>
       <p class="footnote">{pt
-        ? "As associações representam listas transmitidas pelo jogo durante a abertura de boxes. Não representam probabilidades, garantia de obtenção ou quantidades."
-        : "Associations mean presence in captured game-transmitted previews, not published drop rates, guaranteed availability or quantities."}</p>
+        ?"Categoria, nível, ataque e AC nesta tabela são campos BRUTOS extraídos dos arquivos do cliente, não requisitos de equipamento nem valores confirmados em combate. Zero ou campo sem ataque/defesa é abreviado como —. As boxes mostram prévias capturadas, não probabilidades ou garantia de obtenção."
+        :"Category, level, attack and AC here are RAW client-file values, not verified equipment requirements or measured combat stats. Zero or unavailable attack/armor is abbreviated as —. Box associations reflect captured previews, not drop odds or guaranteed rewards."}</p>
     </section>
   </main>
 </BaseLayout>
 <script>
-  const search = document.querySelector<HTMLInputElement>("#item-search");
-  const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>("[data-item-row]"));
-  const count = document.querySelector<HTMLElement>("#item-count");
-  const empty = document.querySelector<HTMLElement>("#item-empty");
-  function filterItems() {
-    const query = search?.value.toLocaleLowerCase().trim() ?? "";
-    let visible = 0;
-    for (const row of rows) {
-      const match = (row.dataset.search ?? "").includes(query);
-      row.hidden = !match;
-      if (match) visible++;
+  const search=document.querySelector<HTMLInputElement>("#item-search");
+  const category=document.querySelector<HTMLSelectElement>("#item-category");
+  const minLevel=document.querySelector<HTMLInputElement>("#item-min-level");
+  const sort=document.querySelector<HTMLSelectElement>("#item-sort");
+  const tbody=document.querySelector<HTMLTableSectionElement>("#item-table-body");
+  const rows=Array.from(document.querySelectorAll<HTMLTableRowElement>("[data-item-row]"));
+  const count=document.querySelector<HTMLElement>("#item-count");
+  const empty=document.querySelector<HTMLElement>("#item-empty");
+  function filterItems(){
+    const query=search?.value.toLocaleLowerCase().trim()??"";
+    const selectedCategory=category?.value??"";
+    const minString=minLevel?.value??"";
+    const minimum=minString!==""?Number(minString):null;
+    let visible=0;
+    for(const row of rows){
+      const rawLevel=row.dataset.level??"";
+      const match=(row.dataset.search??"").includes(query) &&
+        (!selectedCategory||row.dataset.category===selectedCategory) &&
+        (minimum===null||(rawLevel!==""&&Number(rawLevel)>=minimum));
+      row.hidden=!match;
+      if(match)visible++;
     }
-    if (count) count.textContent = String(visible);
-    if (empty) empty.hidden = visible > 0;
+    const order=sort?.value??"name";
+    const value=(row:HTMLTableRowElement,key:string)=>{
+      const source=key==="level"?row.dataset.level:
+        key==="attack"?row.dataset.attack:row.dataset.ac;
+      return source===""||source===undefined?null:Number(source);
+    };
+    rows.sort((a,b)=>{
+      if(order==="name")return (a.dataset.sortName??"").localeCompare(b.dataset.sortName??"");
+      const left=value(a,order),right=value(b,order);
+      if(left===null&&right===null)return (a.dataset.sortName??"").localeCompare(b.dataset.sortName??"");
+      if(left===null)return 1;
+      if(right===null)return -1;
+      const delta=order==="level"?left-right:right-left;
+      return delta||(a.dataset.sortName??"").localeCompare(b.dataset.sortName??"");
+    });
+    if(tbody)for(const row of rows)tbody.append(row);
+    if(count)count.textContent=String(visible);
+    if(empty)empty.hidden=visible>0;
   }
-  search?.addEventListener("input", filterItems);
+  search?.addEventListener("input",filterItems);
+  category?.addEventListener("change",filterItems);
+  minLevel?.addEventListener("input",filterItems);
+  sort?.addEventListener("change",filterItems);
 </script>
 <style>
   .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
@@ -108,13 +191,15 @@ const description = pt
   .legendary-link{color:#d4adf2;border:1px solid #8255a7;padding:7px 12px;border-radius:4px}
   .legendary-link:hover{background:rgba(117,73,159,.15)}
   .catalog{padding:28px 0}
-  .filters{max-width:620px}
-  label{display:block;margin-bottom:8px;color:var(--color-gold-light)}
-  input{width:100%;padding:13px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px;color:var(--color-text);font:inherit}
+  .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px;margin-bottom:16px}
+  label{display:block;margin-bottom:8px;color:var(--color-gold-light);font-size:.85rem}
+  input,select{width:100%;padding:12px;background:var(--color-surface);border:1px solid var(--color-border);
+    border-radius:5px;color:var(--color-text);font:inherit}
+  select{cursor:pointer}
   input:focus-visible,a:focus-visible{outline:2px solid var(--color-gold-light);outline-offset:3px}
   .count,.footnote{color:var(--color-text-muted);font-size:.92rem}
   .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:6px}
-  table{width:100%;border-collapse:collapse;min-width:520px}
+  table{width:100%;border-collapse:collapse;min-width:850px}
   th,td{padding:12px 17px;text-align:left;border-bottom:1px solid var(--color-border)}
   th{background:#29271f;color:var(--color-gold-light);font-weight:600}
   td{color:var(--color-text-muted)}
