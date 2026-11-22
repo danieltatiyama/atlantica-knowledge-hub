@@ -107,7 +107,8 @@ export function buildHistoricalClientProjection(item){
   if(!eligible.length)return {fields:[],rows:[],excluded:[]};
   const excluded=projectedKeys.filter(key=>{
     const field=summary.byKey.get(key);
-    return field&&field.value!==null&&field.value!=="0"&&!eligible.includes(key);
+    return field&&(field.status==="conflict"||
+      (field.value!=="0"&&!eligible.includes(key)));
   });
   const rows=CLASSIC_ENCHANT_MULTIPLIER_TENTHS.map((multiplier,grade)=>({
     grade,
