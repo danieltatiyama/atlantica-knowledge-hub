@@ -62,7 +62,7 @@ outcomes:
     itemUniqueId: "359"
     quantity: 1
     quantityVerified: false
-    observedCount: 0
+    observedCount: 1
   - itemName: "Equipment item #360 (name pending)"
     itemUniqueId: "360"
     quantity: 1
