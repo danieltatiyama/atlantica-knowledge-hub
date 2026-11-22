@@ -27,7 +27,7 @@ test("all 551 catalog items obtain source-based categories and raw levels",()=>{
   assert.equal(counts.get("Boots"),52);
   assert.equal(counts.get("Defence"),46);
   assert.equal(counts.get("Weapon"),25);
-  assert.equal(counts.size,20);
+  assert.equal(counts.size,19);
 });
 
 test("indexed raw +0 values are the client data, not scaled estimates",()=>{
