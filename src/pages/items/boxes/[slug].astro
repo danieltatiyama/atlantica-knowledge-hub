@@ -1,0 +1,12 @@
+---
+import BoxArticle from "../../../components/BoxArticle.astro";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+export async function getStaticPaths() {
+  const boxes=await getCollection("boxes",({data})=> data.lang==="en" && !data.draft && data.reviewStatus==="approved" && data.evidenceStatus!=="client-config");
+  return boxes.map(box=>({params:{slug:box.id.replace(/^en\//,"")},props:{box}}));
+}
+interface Props { box: CollectionEntry<"boxes">; }
+const {box}=Astro.props;
+---
+<BoxArticle box={box} lang="en" />
