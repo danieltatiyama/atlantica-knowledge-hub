@@ -38,7 +38,7 @@ jobs:
       - name: Parse Windows PowerShell review wrappers
         shell: pwsh
         run: |
-          foreach ($path in @('scripts/Start-EquipmentReview.ps1', 'scripts/Finalize-EquipmentReview.ps1', 'scripts/Start-WikidotBatchReview.ps1', 'scripts/Finalize-WikidotBatchReview.ps1', 'scripts/Start-WikidotCategoryReview.ps1')) {
+          foreach ($path in @('scripts/Start-EquipmentReview.ps1', 'scripts/Finalize-EquipmentReview.ps1', 'scripts/Start-WikidotBatchReview.ps1', 'scripts/Finalize-WikidotBatchReview.ps1', 'scripts/Start-WikidotCategoryReview.ps1', 'scripts/Start-ClientEquipmentImport.ps1')) {
             $tokens = $null
             $issues = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$issues)
@@ -73,6 +73,11 @@ jobs:
         run: |
           node --test tests/historical-item-profile-drafts.test.mjs
           node scripts/build-item-article-review-queue.mjs
+
+      - name: Validate Fandom Legendary reference and client-extracted source contracts
+        run: |
+          node scripts/check-client-equipment-facts.mjs
+          node --test tests/client-first-equipment.test.mjs
 
       - name: Validate Astro build
         run: npm run build
