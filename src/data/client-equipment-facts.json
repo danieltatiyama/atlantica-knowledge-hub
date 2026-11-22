@@ -1,0 +1,340 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "client-equipment-facts",
+  "snapshotId": 1,
+  "records": [
+    {
+      "id": "1",
+      "nameEn": "Spirit Sword",
+      "origin": "game-client-extracted",
+      "identity": "official-base-name-match",
+      "sourceDefinitions": [
+        {
+          "recordId": 112473,
+          "file": "ItemTypeWeapon.ndt",
+          "role": "general",
+          "category": "Weapon",
+          "levelRaw": "1",
+          "gradeRaw": "NORMAL",
+          "workRaw": 450,
+          "unitRaw": null,
+          "ingredientsStatus": "parsed-client-material",
+          "ingredients": [
+            {
+              "itemId": "5100",
+              "quantity": 5
+            },
+            {
+              "itemId": "6080",
+              "quantity": 4
+            }
+          ]
+        },
+        {
+          "recordId": 192767,
+          "file": "ItemTypeSword.ndt",
+          "role": "specific",
+          "category": "Sword",
+          "levelRaw": "1",
+          "gradeRaw": "NORMAL",
+          "workRaw": 450,
+          "unitRaw": 1,
+          "ingredientsStatus": "parsed-client-recipe",
+          "ingredients": [
+            {
+              "itemId": "5100",
+              "quantity": 5
+            },
+            {
+              "itemId": "6080",
+              "quantity": 4
+            }
+          ]
+        }
+      ],
+      "variantSourceSets": [
+        {
+          "variantIndex": 1,
+          "recordIds": [
+            112473
+          ]
+        },
+        {
+          "variantIndex": 2,
+          "recordIds": [
+            192767
+          ]
+        }
+      ]
+    },
+    {
+      "id": "192",
+      "nameEn": "Twilight Instrument",
+      "origin": "game-client-extracted",
+      "identity": "official-base-name-match",
+      "sourceDefinitions": [
+        {
+          "recordId": 113256,
+          "file": "ItemTypeWeapon.ndt",
+          "role": "general",
+          "category": "Weapon",
+          "levelRaw": "165",
+          "gradeRaw": "NORMAL",
+          "workRaw": 550000000,
+          "unitRaw": null,
+          "ingredientsStatus": "parsed-client-material",
+          "ingredients": [
+            {
+              "itemId": "8293",
+              "quantity": 1
+            },
+            {
+              "itemId": "28308",
+              "quantity": 150
+            },
+            {
+              "itemId": "8399",
+              "quantity": 15
+            },
+            {
+              "itemId": "8292",
+              "quantity": 10
+            },
+            {
+              "itemId": "5348",
+              "quantity": 3
+            },
+            {
+              "itemId": "20339",
+              "quantity": 50
+            }
+          ]
+        }
+      ],
+      "variantSourceSets": [
+        {
+          "variantIndex": 1,
+          "recordIds": [
+            113256
+          ]
+        }
+      ]
+    },
+    {
+      "id": "650",
+      "nameEn": "Red Soul Robe",
+      "origin": "game-client-extracted",
+      "identity": "official-base-name-match",
+      "sourceDefinitions": [
+        {
+          "recordId": 113690,
+          "file": "ItemTypeDefence.ndt",
+          "role": "general",
+          "category": "Defence",
+          "levelRaw": "15",
+          "gradeRaw": "NORMAL",
+          "workRaw": 2200,
+          "unitRaw": null,
+          "ingredientsStatus": "parsed-client-material",
+          "ingredients": [
+            {
+              "itemId": "5100",
+              "quantity": 3
+            },
+            {
+              "itemId": "5080",
+              "quantity": 1
+            },
+            {
+              "itemId": "5009",
+              "quantity": 2
+            },
+            {
+              "itemId": "7060",
+              "quantity": 2
+            },
+            {
+              "itemId": "28300",
+              "quantity": 5
+            }
+          ]
+        },
+        {
+          "recordId": 182173,
+          "file": "ItemTypeArmor.ndt",
+          "role": "specific",
+          "category": "Armor",
+          "levelRaw": "15",
+          "gradeRaw": "NORMAL",
+          "workRaw": 2200,
+          "unitRaw": 1,
+          "ingredientsStatus": "parsed-client-recipe",
+          "ingredients": [
+            {
+              "itemId": "5009",
+              "quantity": 2
+            },
+            {
+              "itemId": "5080",
+              "quantity": 1
+            },
+            {
+              "itemId": "5100",
+              "quantity": 3
+            },
+            {
+              "itemId": "7060",
+              "quantity": 2
+            },
+            {
+              "itemId": "28300",
+              "quantity": 5
+            }
+          ]
+        }
+      ],
+      "variantSourceSets": [
+        {
+          "variantIndex": 1,
+          "recordIds": [
+            113690
+          ]
+        },
+        {
+          "variantIndex": 2,
+          "recordIds": [
+            182173
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1211",
+      "nameEn": "Conqueror's Greaves",
+      "origin": "game-client-extracted",
+      "identity": "official-base-name-match",
+      "sourceDefinitions": [
+        {
+          "recordId": 113847,
+          "file": "ItemTypeDefence.ndt",
+          "role": "general",
+          "category": "Defence",
+          "levelRaw": "97",
+          "gradeRaw": "NORMAL",
+          "workRaw": 6000000,
+          "unitRaw": null,
+          "ingredientsStatus": "parsed-client-material",
+          "ingredients": [
+            {
+              "itemId": "7044",
+              "quantity": 10
+            },
+            {
+              "itemId": "8003",
+              "quantity": 30
+            },
+            {
+              "itemId": "5334",
+              "quantity": 23
+            },
+            {
+              "itemId": "5342",
+              "quantity": 8
+            },
+            {
+              "itemId": "5340",
+              "quantity": 1
+            },
+            {
+              "itemId": "28304",
+              "quantity": 30
+            },
+            {
+              "itemId": "28305",
+              "quantity": 20
+            },
+            {
+              "itemId": "5335",
+              "quantity": 8
+            },
+            {
+              "itemId": "5333",
+              "quantity": 10
+            },
+            {
+              "itemId": "20312",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "recordId": 188092,
+          "file": "ItemTypePants.ndt",
+          "role": "specific",
+          "category": "Pants",
+          "levelRaw": "97",
+          "gradeRaw": "NORMAL",
+          "workRaw": 6000000,
+          "unitRaw": 1,
+          "ingredientsStatus": "parsed-client-recipe",
+          "ingredients": [
+            {
+              "itemId": "5333",
+              "quantity": 10
+            },
+            {
+              "itemId": "5334",
+              "quantity": 23
+            },
+            {
+              "itemId": "5335",
+              "quantity": 8
+            },
+            {
+              "itemId": "5340",
+              "quantity": 1
+            },
+            {
+              "itemId": "5342",
+              "quantity": 8
+            },
+            {
+              "itemId": "7044",
+              "quantity": 10
+            },
+            {
+              "itemId": "8003",
+              "quantity": 30
+            },
+            {
+              "itemId": "20312",
+              "quantity": 1
+            },
+            {
+              "itemId": "28304",
+              "quantity": 30
+            },
+            {
+              "itemId": "28305",
+              "quantity": 20
+            }
+          ]
+        }
+      ],
+      "variantSourceSets": [
+        {
+          "variantIndex": 1,
+          "recordIds": [
+            113847
+          ]
+        },
+        {
+          "variantIndex": 2,
+          "recordIds": [
+            188092
+          ]
+        }
+      ]
+    }
+  ]
+}

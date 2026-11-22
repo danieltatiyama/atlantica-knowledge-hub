@@ -21,7 +21,11 @@
     "coverage:items": "node scripts/build-item-article-review-queue.mjs",
     "test:wikidot-review": "node --test tests/historical-item-profile-drafts.test.mjs",
     "audit:wikidot": "python scripts/audit-wikidot-item-pages.py",
-    "draft:wikidot": "node scripts/build-historical-item-profile-draft.mjs"
+    "draft:wikidot": "node scripts/build-historical-item-profile-draft.mjs",
+    "test:client-facts": "node --test tests/client-first-equipment.test.mjs tests/legendary-client-reconciliation.test.mjs",
+    "validate:client-facts": "node scripts/check-client-equipment-facts.mjs",
+    "profile:miner-fields": "python scripts/profile-miner-reference-fields.py",
+    "match:legendary": "node scripts/build-legendary-client-report.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.10",

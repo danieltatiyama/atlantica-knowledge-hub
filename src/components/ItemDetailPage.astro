@@ -4,6 +4,8 @@ import type { EquipmentItemCatalogEntry } from "../data/equipment-item-catalog";
 import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_SOURCE_SNAPSHOT } from "../data/curated-equipment-metadata";
 import { getReviewedItemProfile } from "../data/reviewed-equipment-profiles";
 import ItemKnowledgeSections from "./ItemKnowledgeSections.astro";
+import {getClientEquipmentFacts} from "../data/client-equipment-facts";
+import ClientEquipmentFactsSection from "./ClientEquipmentFactsSection.astro";
 
 interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
 const { lang, item } = Astro.props;
@@ -13,6 +15,7 @@ const base = prefix + "/items/";
 const boxRefs = [...item.boxReferences].sort((a,b)=>a.boxName.localeCompare(b.boxName,"en"));
 const title = item.nameEn;
 const profile = getReviewedItemProfile(item.id);
+const sourceFacts = getClientEquipmentFacts(item.id);
 const curated = getCuratedEquipmentMetadata(item.id);
 const curatedFields = curated?.fields;
 const clientFields = curatedFields ? [
@@ -42,6 +45,7 @@ const clientFields = curatedFields ? [
         <a href="#item-stats">{pt ? "Atributos" : "Stats"}</a>
         <a href="#item-sources">{pt ? "Fontes" : "Source"}</a>
         <a href="#item-crafting">{pt ? "Fabricação" : "Crafting"}</a>
+        {sourceFacts && <a href="#client-facts">{pt ? "Arquivos do jogo" : "Game files"}</a>}
       </nav>
       <ItemKnowledgeSections lang={lang} profile={profile} section="overview" />
       <ItemKnowledgeSections lang={lang} profile={profile} section="stats" />
@@ -69,6 +73,7 @@ const clientFields = curatedFields ? [
         )}
       </section>
       <ItemKnowledgeSections lang={lang} profile={profile} section="crafting" />
+      <ClientEquipmentFactsSection lang={lang} item={sourceFacts} />
       {curated && (
         <section class="curated">
           <h2>{pt ? "Metadados extraídos e revisados" : "Reviewed client-extracted metadata"}</h2>
@@ -87,7 +92,7 @@ const clientFields = curatedFields ? [
           </p>
         </section>
       )}
-      {!profile && <p class="pending-note">{pt
+      {!profile && !sourceFacts && <p class="pending-note">{pt
         ? "Esta ficha ainda não possui atributos revisados. As informações serão adicionadas conforme forem documentadas com fontes."
         : "This item has no reviewed gameplay stats yet. Its profile will expand when source-backed information becomes available."}</p>}
     </article>
