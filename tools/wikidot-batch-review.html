@@ -98,6 +98,15 @@ legend{color:#ebcc99;padding:0 7px}
     const meta=node("p","Fonte: "+item.sourceUrl+
       (item.sourceRevision===null?"":" · revisão "+item.sourceRevision),"sub");
     body.append(meta);
+    if(item.sourceScope==="category-index"){
+      body.append(node("p","ATENÇÃO: registro vindo da tabela de CATEGORIA "+
+        (item.categoryLabel||"")+", não da página individual. O nome foi comparado com o catálogo revisado. "+
+        "Índice fornece apenas atributos +0; classes, fabricação e materiais permanecem não documentados.","strong-warning"));
+      if(item.indexedMinimumLevel!==null && Number.isInteger(item.indexedMinimumLevel)){
+        body.append(node("p","Nível listado no índice: "+item.indexedMinimumLevel+
+          " (não transferido automaticamente para o resumo da ficha).","sub"));
+      }
+    }
     if(!valid){
       body.append(node("p","Requer coleta, confirmação de título ou revisão do formato. Nenhuma aprovação disponível.","bad"));
       card.append(body);return card;
