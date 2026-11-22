@@ -1,0 +1,342 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "legendary-eligibility-reference",
+  "scope": "historical-community-list",
+  "source": {
+    "title": "Legendary Weapons — Atlantica Wiki (Fandom)",
+    "url": "https://atlantica.fandom.com/wiki/Legendary_Weapons",
+    "accessedDate": "2026-11-22"
+  },
+  "qualification": "Only these listed items are initial candidates for L. List is not exhaustive. Event-only/craftable/acquisition flags are unknown until item-specific evidence is available.",
+  "items": [
+    {
+      "nameEn": "Minotaur Axe",
+      "category": "Axe",
+      "minimumLevel": 101,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Wratheater Minotaur Axe",
+      "category": "Axe",
+      "minimumLevel": 135,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Merciless Grudge of Grendel",
+      "category": "Axe",
+      "minimumLevel": 140,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Axe",
+      "category": "Axe",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Hephaestus' Silver Hammer",
+      "category": "Axe",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Hephaestus' Gold Hammer",
+      "category": "Axe",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Grim Reaper's Sickle",
+      "category": "Axe",
+      "minimumLevel": 155,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Immortal Bow",
+      "category": "Bow",
+      "minimumLevel": 100,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Bow",
+      "category": "Bow",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Wailing Piercer",
+      "category": "Bow",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Nemesis Cannon",
+      "category": "Cannon",
+      "minimumLevel": 100,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Cannon",
+      "category": "Cannon",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Shadowveil Buster",
+      "category": "Cannon",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Lucifer's Rifle",
+      "category": "Gun",
+      "minimumLevel": 100,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Rifle",
+      "category": "Gun",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Queen Bee Stinger",
+      "category": "Gun",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Faust's Violin",
+      "category": "Instrument",
+      "minimumLevel": 140,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Feather de Milan",
+      "category": "Instrument",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Instrument",
+      "category": "Instrument",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Dark Abyssal Instrument",
+      "category": "Instrument",
+      "minimumLevel": 165,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Grimms' Magic Source",
+      "category": "Orb",
+      "minimumLevel": null,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Crimson Wasteland Power Saw",
+      "category": "Power Saw",
+      "minimumLevel": 140,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Power Saw",
+      "category": "Power Saw",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Guardian Sheath",
+      "category": "Shield",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Fire Dragon's Long Spear",
+      "category": "Spear",
+      "minimumLevel": 120,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Lance",
+      "category": "Spear",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Merciful Crescent Glaive",
+      "category": "Spear",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Passionate Crescent Glaive",
+      "category": "Spear",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Peaceful Crescent Glaive",
+      "category": "Spear",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Purity Crescent Glaive",
+      "category": "Spear",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Sage Crescent Glaive",
+      "category": "Spear",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Diabolic Staff",
+      "category": "Staff",
+      "minimumLevel": 120,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Staff",
+      "category": "Staff",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "IceColdSnow Candy Cane",
+      "category": "Staff",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "HotFireLava Candy Cane",
+      "category": "Staff",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Golden Scepter",
+      "category": "Staff",
+      "minimumLevel": 155,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Sword",
+      "category": "Sword",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Excalibur",
+      "category": "Sword",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Blooming Blade of Roses",
+      "category": "Sword",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Dell'arte Phantom Sword",
+      "category": "Sword",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Flourishing Blade of Roses",
+      "category": "Sword",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Spartacus' Great Sword",
+      "category": "Sword",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Dynasty Sword",
+      "category": "Sword",
+      "minimumLevel": 160,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Sword of Life’s Song",
+      "category": "Sword",
+      "minimumLevel": 160,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Dell'arte's Ambition",
+      "category": "Sword",
+      "minimumLevel": 180,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Jupiter's Whip",
+      "category": "Whip",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    },
+    {
+      "nameEn": "Garuda's Solar Whip",
+      "category": "Whip",
+      "minimumLevel": 150,
+      "acquisition": "unknown",
+      "craftability": "unknown"
+    }
+  ]
+}
