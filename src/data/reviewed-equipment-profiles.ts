@@ -9,7 +9,7 @@ import { EQUIPMENT_ITEM_NAMES_EN } from "./equipment-item-names-en";
 import { assertReviewedProfiles } from "./reviewed-equipment-profiles-gate.mjs";
 
 export interface ItemArticleStatRow {
-  enchantLevel: number;
+  enchantLevel: number | "L";
   attackMin?: number;
   attackMax?: number;
   strength?: number;
@@ -30,6 +30,9 @@ export interface ItemArticleProfile {
   };
   stats: ItemArticleStatRow[];
   enchantmentProjectionModel: "wikidot-classic-v1" | null;
+  /** A reviewed eligibility fact; never inferred from the existence of +10. */
+  legendaryEligible: boolean;
+  legendaryProjectionModel: "wikidot-legendary-43-v1" | null;
   crafting: null | {
     productionPerBatch: number;
     requiredWorkload: number;
@@ -42,6 +45,7 @@ export interface ItemArticleProfile {
     crafting: "ingame-screenshot" | "community-reference" | "not-provided";
     materials: "ingame-screenshot" | "community-reference" | "not-provided";
     projections: "community-reference" | "not-provided";
+    legendary: "ingame-screenshot" | "community-reference" | "not-provided";
     references: {
       kind: "ingame-screenshot" | "community-reference";
       label: string;
