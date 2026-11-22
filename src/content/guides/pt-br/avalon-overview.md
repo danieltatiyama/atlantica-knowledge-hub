@@ -28,7 +28,9 @@ Na captura da terceira área, o Field Info não exibia monstros na lista. **Isso
 
 A janela Field Info apresenta os seguintes monstros na entrada:
 
-| Monstro | Nível exibido |
+**Escalonamento de nível:** segundo a observação do jogador, Avalon ajusta o nível dos inimigos em função do nível do personagem principal. Os números abaixo são **os níveis exibidos em um conjunto de capturas**, e não níveis fixos dos monstros ou uma fórmula de escalonamento. Dois monstros apareceram no nível 175, enquanto os demais apareceram no nível 200; ainda não sabemos por que há essa diferença.
+
+| Monstro | Nível no print (variável) |
 | --- | ---: |
 | Evil Dark Knight | 200 |
 | Evil Sylph | 200 |
@@ -43,9 +45,9 @@ Esta é uma **lista exibida na interface**, não um levantamento completo de sur
 
 ## Hall of Respite — segunda área
 
-A lista mostrada no Field Info do segundo andar contém:
+A lista mostrada no Field Info do segundo andar contém (com níveis específicos destas capturas, não universais):
 
-| Monstro | Nível exibido |
+| Monstro | Nível no print (variável) |
 | --- | ---: |
 | Evil Dark Knight | 200 |
 | Evil Sylph | 200 |
@@ -78,7 +80,8 @@ A terceira área se chama **Heart of Avalon**. O mapa aparece no Field Info, mas
 | Afirmação | Evidência | Situação |
 | --- | --- | --- |
 | Três áreas com nomes definidos | Capturas do Field Info | Observado na interface |
-| Monstros e níveis das duas primeiras áreas | Capturas do Field Info | Observado na interface |
+| Monstros e níveis exibidos nas duas primeiras áreas | Capturas do Field Info | Observado neste personagem; níveis variáveis |
+| Nível dos inimigos ajustado ao personagem principal | Observação do jogador | Comportamento relatado; regra exata não validada |
 | Encontro condicionado aos monstros “inocentes” | Relato de jogador | Ainda não reproduzido independentemente |
 | Condições, quantidades e tempos de surgimento | Não estabelecido | Pendente |
 | Encontros da terceira área | Não estabelecido | Pendente |
