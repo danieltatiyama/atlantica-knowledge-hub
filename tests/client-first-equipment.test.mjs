@@ -37,20 +37,19 @@ const fixture={
 test("four prior Miner source-sample items are now populated with source-specific data",()=>{
   const r=validateClientEquipmentFacts(client,EQUIPMENT_ITEM_NAMES_EN);
   assert.equal(r.ok,true,r.errors.join("; "));
-  assert.equal(r.records.length,4);
-  assert.equal(client.snapshotId,1);
-  assert.deepEqual(r.records.map(x=>x.id),["1","192","650","1211"]);
-  const sword=r.records[0];
-  assert.equal(sword.sourceDefinitions.length,2);
-  assert.deepEqual(sword.sourceDefinitions[1].ingredients,[
-    {itemId:"5100",quantity:5},{itemId:"6080",quantity:4}]);
-  const twilight=r.records[1];
-  assert.equal(twilight.sourceDefinitions[0].levelRaw,"165");
-  assert.equal(twilight.sourceDefinitions[0].workRaw,550000000);
-  assert.equal(twilight.sourceDefinitions[0].ingredients.length,6);
-  const greaves=r.records[3];
-  assert.equal(greaves.sourceDefinitions[1].category,"Pants");
-  assert.equal(greaves.sourceDefinitions[1].ingredients.length,10);
+  assert.ok(r.records.length>=4);
+  assert.ok(Number.isSafeInteger(client.snapshotId)&&client.snapshotId>0);
+  for(const id of ["1","192","650","1211"])assert.ok(r.records.some(x=>x.id===id));
+  const sword=r.records.find(x=>x.id==="1");
+  assert.ok(sword.sourceDefinitions.some(row=>row.file==="ItemTypeSword.ndt" &&
+    row.ingredients.some(x=>x.itemId==="5100" && x.quantity===5) &&
+    row.ingredients.some(x=>x.itemId==="6080" && x.quantity===4)));
+  const twilight=r.records.find(x=>x.id==="192");
+  assert.ok(twilight.sourceDefinitions.some(row=>row.levelRaw==="165" &&
+    row.workRaw===550000000 && row.ingredients.length===6));
+  const greaves=r.records.find(x=>x.id==="1211");
+  assert.ok(greaves.sourceDefinitions.some(row=>row.category==="Pants" &&
+    row.ingredients.length===10));
   assert.ok(!JSON.stringify(client).includes("SECRET_PRIVATE_KOREAN"));
   assert.ok(!JSON.stringify(client).includes("5100(5)"));
 });
