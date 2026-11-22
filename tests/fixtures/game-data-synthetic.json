@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "items",
+  "snapshot": {
+    "id": "synthetic-test-snapshot",
+    "game": "Atlantica Online Global",
+    "minerVersion": "0.7",
+    "exportedAt": "2026-11-21T00:00:00Z"
+  },
+  "records": [
+    {
+      "id": "synthetic-item-001",
+      "names": { "en": "Synthetic Test Item" },
+      "fields": { "exampleOnly": true },
+      "evidence": {
+        "status": "Extracted",
+        "sources": ["synthetic/fixture.ndt"]
+      }
+    }
+  ]
+}
