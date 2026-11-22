@@ -1,0 +1,98 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  lang: "en" | "pt-br";
+  entry: CollectionEntry<"events"> | CollectionEntry<"mercenaries">;
+}
+const { lang, entry } = Astro.props;
+const { Content, headings } = entry.collection === "events"
+  ? await render(entry)
+  : await render(entry);
+const isPt = lang === "pt-br";
+const domain = entry.collection === "events" ? "events" : "mercenaries";
+const listingUrl = (isPt ? "/pt-br/" : "/") + domain + "/";
+const title = entry.data.title;
+const intro = entry.data.description;
+const evidence = entry.data.evidenceStatus === "official-announced"
+  ? (isPt ? "Comunicado oficial verificado" : "Verified official announcement")
+  : (isPt ? "Verificado dentro do jogo" : "Verified in-game");
+const sections = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const alternatePaths = undefined;
+---
+<BaseLayout title={title + " | Atlantica Knowledge Hub"} description={intro} lang={lang} alternatePaths={alternatePaths}>
+  <main class="container">
+    <nav class="crumb" aria-label="Breadcrumb">
+      <a href={isPt ? "/pt-br/" : "/"}>{isPt ? "Início" : "Home"}</a>
+      <span>/</span>
+      <a href={listingUrl}>{domain === "events"
+        ? (isPt ? "Eventos" : "Events")
+        : (isPt ? "Mercenários" : "Mercenaries")}</a>
+      <span>/</span>{title}
+    </nav>
+    <article>
+      <header class="intro">
+        <p class="eyebrow">{evidence}</p>
+        <h1>{title}</h1>
+        <p>{intro}</p>
+        {entry.data.verificationUrl && (
+          <p class="source"><a href={entry.data.verificationUrl} rel="noopener noreferrer"
+            target="_blank">{isPt ? "Fonte da verificação" : "Verification source"}</a></p>
+        )}
+        <p class="updated">{isPt ? "Revisado em" : "Reviewed"}:
+          {entry.data.updatedAt.toLocaleDateString(isPt ? "pt-BR" : "en-US",{timeZone:"UTC"})}
+        </p>
+      </header>
+      <div class="article-layout">
+        <section class="article-body"><Content /></section>
+        {sections.length > 0 && (
+          <aside class="sidebar"><nav aria-label={isPt ? "Nesta página" : "On this page"}>
+            <strong>{isPt ? "Nesta página" : "On this page"}</strong>
+            <ul>{sections.map((h) => (
+              <li class:list={{nested:h.depth===3}}>
+                <a href={"#" + h.slug}>{h.text}</a>
+              </li>
+            ))}</ul>
+          </nav></aside>
+        )}
+      </div>
+      <a class="back" href={listingUrl}>{isPt ? "Voltar" : "Back to listing"}</a>
+    </article>
+  </main>
+</BaseLayout>
+<style>
+  .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:70px}
+  .crumb{padding:24px 0;color:var(--color-text-muted);font-size:.87rem;overflow-wrap:anywhere}
+  .crumb a,.source a,.back{color:var(--color-accent);text-decoration:none}
+  .crumb span{padding:0 10px}
+  .intro{border-bottom:1px solid var(--color-border);padding:26px 0;max-width:960px}
+  .eyebrow{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)}
+  h1{font-size:clamp(2rem,4vw,3.3rem);margin:6px 0}
+  .intro p:not(.eyebrow){color:var(--color-text-muted)}
+  .updated{font-size:.85rem}
+  .article-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,230px);
+    align-items:start;gap:clamp(24px,3vw,44px);padding:24px 0 50px}
+  .article-body{min-width:0;line-height:1.78;overflow-wrap:anywhere}
+  :global(.article-body h2){font-size:1.7rem;margin:34px 0 10px}
+  :global(.article-body h3){font-size:1.3rem;margin:24px 0 9px}
+  :global(.article-body p),:global(.article-body li){color:var(--color-text-muted)}
+  :global(.article-body a){color:var(--color-accent)}
+  :global(.article-body table){display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}
+  :global(.article-body th),:global(.article-body td){padding:10px 14px;
+    border:1px solid var(--color-border);white-space:normal}
+  :global(.article-body th){color:var(--color-gold-light);background:var(--color-surface)}
+  :global(.article-body img){max-width:100%;height:auto}
+  .sidebar{position:sticky;top:24px;border:1px solid var(--color-border);
+    border-radius:5px;padding:22px;background:var(--color-surface);max-height:80dvh;overflow-y:auto}
+  .sidebar strong{font-family:var(--font-heading);color:var(--color-gold-light)}
+  .sidebar ul{padding:0;list-style:none}
+  .sidebar li{margin:11px 0}
+  .sidebar li.nested{padding-left:14px;border-left:1px solid var(--color-border)}
+  .sidebar a{color:var(--color-text-muted);font-size:.88rem;text-decoration:none}
+  .sidebar a:hover{color:var(--color-accent)}
+  .back{display:inline-block}
+  @media(max-width:850px){.article-layout{display:flex;flex-direction:column-reverse}
+    .sidebar{position:static;width:100%;max-height:none}}
+</style>
