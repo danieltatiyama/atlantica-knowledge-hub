@@ -11,7 +11,10 @@
     "preview": "astro preview",
     "astro": "astro",
     "validate:curated": "node scripts/check-curated-equipment.mjs",
-    "test:curated": "node --test tests/curated-equipment-gate.test.mjs tests/offline-review-workbench.test.mjs"
+    "test:curated": "node --test tests/curated-equipment-gate.test.mjs tests/offline-review-workbench.test.mjs",
+    "validate:profiles": "node scripts/check-reviewed-item-profiles.mjs",
+    "test:profiles": "node --test tests/reviewed-item-profiles.test.mjs tests/equipment-enchant-projection.test.mjs tests/wikidot-url-pattern.test.mjs",
+    "suggest:wikidot": "node scripts/suggest-wikidot-item-pages.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.10",

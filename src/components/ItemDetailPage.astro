@@ -2,6 +2,8 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import type { EquipmentItemCatalogEntry } from "../data/equipment-item-catalog";
 import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_SOURCE_SNAPSHOT } from "../data/curated-equipment-metadata";
+import { getReviewedItemProfile } from "../data/reviewed-equipment-profiles";
+import ItemKnowledgeSections from "./ItemKnowledgeSections.astro";
 
 interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
 const { lang, item } = Astro.props;
@@ -10,6 +12,7 @@ const prefix = pt ? "/pt-br" : "";
 const base = prefix + "/items/";
 const boxRefs = [...item.boxReferences].sort((a,b)=>a.boxName.localeCompare(b.boxName,"en"));
 const title = item.nameEn;
+const profile = getReviewedItemProfile(item.id);
 const curated = getCuratedEquipmentMetadata(item.id);
 const curatedFields = curated?.fields;
 const clientFields = curatedFields ? [
@@ -35,8 +38,16 @@ const clientFields = curatedFields ? [
           ? "Nome associado a partir de arquivos de equipamento e localização em inglês do cliente. Ainda não há tradução oficial em português verificada."
           : "English name reconciled from client equipment definitions and NA localization. This does not establish equipment stats or current item availability."}</p>
       </header>
-      <section>
-        <h2>{pt ? "Encontrado nas prévias de boxes" : "Seen in box previews"}</h2>
+      <nav class="page-sections" aria-label={pt ? "Seções do item" : "Item sections"}>
+        <a href="#item-stats">{pt ? "Atributos" : "Stats"}</a>
+        <a href="#item-sources">{pt ? "Fontes" : "Source"}</a>
+        <a href="#item-crafting">{pt ? "Fabricação" : "Crafting"}</a>
+      </nav>
+      <ItemKnowledgeSections lang={lang} profile={profile} section="overview" />
+      <ItemKnowledgeSections lang={lang} profile={profile} section="stats" />
+      <section id="item-sources">
+        <h2>{pt ? "Fontes de obtenção" : "Source"}</h2>
+        <h3>{pt ? "Prévia de Equipment Boxes" : "Equipment Box previews"}</h3>
         {boxRefs.length ? (
           <>
             <p class="note">{pt
@@ -57,6 +68,7 @@ const clientFields = curatedFields ? [
           <p>{pt ? "Nenhuma associação de box capturada para este item." : "No captured box association for this item."}</p>
         )}
       </section>
+      <ItemKnowledgeSections lang={lang} profile={profile} section="crafting" />
       {curated && (
         <section class="curated">
           <h2>{pt ? "Metadados extraídos e revisados" : "Reviewed client-extracted metadata"}</h2>
@@ -75,12 +87,9 @@ const clientFields = curatedFields ? [
           </p>
         </section>
       )}
-      <section>
-        <h2>{pt ? "Informações ainda não verificadas" : "Information not yet verified"}</h2>
-        <p class="note">{pt
-          ? "Atributos, requisitos, receitas, monstros e locais de obtenção serão adicionados somente com fontes identificadas e dados revisados."
-          : "Stats, requirements, recipes, monster drops and acquisition locations will be added only after source-backed review."}</p>
-      </section>
+      {!profile && <p class="pending-note">{pt
+        ? "Esta ficha ainda não possui atributos revisados. As informações serão adicionadas conforme forem documentadas com fontes."
+        : "This item has no reviewed gameplay stats yet. Its profile will expand when source-backed information becomes available."}</p>}
     </article>
   </main>
 </BaseLayout>
@@ -95,6 +104,15 @@ const clientFields = curatedFields ? [
   .meta span{border:1px solid var(--color-border);background:var(--color-surface);padding:8px 12px;font-size:.85rem}
   .evidence{margin-top:22px;border-left:3px solid var(--color-bronze);background:var(--color-surface);padding:14px 17px;color:var(--color-text-muted)}
   h2{font-size:1.55rem;margin-top:34px}
+  h3{font-size:1.08rem;color:var(--color-gold-light);margin:12px 0}
+  .page-sections{display:flex;flex-wrap:wrap;gap:10px;padding:16px 0 5px}
+  .page-sections a{display:inline-block;color:var(--color-gold-light);
+    border:1px solid var(--color-border);padding:8px 15px;border-radius:4px;
+    text-decoration:none;background:var(--color-surface)}
+  .page-sections a:hover,.page-sections a:focus-visible{border-color:var(--color-accent)}
+  #item-sources{margin-top:34px}
+  .pending-note{color:var(--color-text-muted);border-left:2px solid var(--color-steel);
+    padding:12px 16px;margin:26px 0;background:var(--color-surface)}
   .curated{padding:2px 0}
   .provenance{color:var(--color-text-muted);font-size:.9rem;margin-top:16px}
   .provenance code{color:var(--color-gold-light)}
