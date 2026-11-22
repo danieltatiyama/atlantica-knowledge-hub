@@ -95,6 +95,25 @@ real ID collisions and ambiguous source matches:
 py -m unittest discover -s .\tests -p "test_group_miner_equipment_sources.py" -v
 ```
 
+## Integration with the local review workbench
+
+The regular `Start-EquipmentReview.ps1` command now generates both
+the Stage 20.5 human approval queue and the Stage 20.11 source
+relationship analysis in a single read-only session. After opening the
+offline HTML workbench, select:
+
+1. `Miner_Equipment_Private_Review_20_5.json` — reviewed name and
+   per-record approval candidates.
+2. `Miner_Source_Groups_Private_20_11.json` — **optional** richer
+   general/specific source comparison and variant grouping.
+
+The workbench can display source files, record IDs and grouping
+classification inside the **same item card**. It never promotes
+`divergent-source-variants` or name collisions automatically, and
+it preserves the Stage 20.5 explicit-approval gate.
+
+The source grouping JSON is private, local-only, and not committed.
+
 ## Publication boundary
 
 The current 551 item pages already have **one page per reviewed item
