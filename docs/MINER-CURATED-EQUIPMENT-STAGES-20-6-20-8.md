@@ -74,17 +74,21 @@ the public output.
 #    the same snapshot + existing reviewed name registry.
 py .\scripts\reconcile-miner-equipment.py "D:\Documentos\Games\Atlantica Online\Data Mining\Atlantica_Data_Miner_v0.2\AtlanticaDataMiner\atlantica.sqlite3" --snapshot 1 --private-review ".\Miner_Equipment_Private_Review_20_5.json" --report ".\Miner_Review_20_5.json" --approvals ".\Miner_Equipment_Approvals_20_5.json" --approved-output ".\Miner_Equipment_Approved_20_5.json"
 
-# 4: Validate the approved candidate dataset in public contract mode.
+# 4: First attest every field against the original read-only SQLite
+#    (not just the JSON schema).
+py .\scripts\verify-approved-equipment-against-sqlite.py "D:\Documentos\Games\Atlantica Online\Data Mining\Atlantica_Data_Miner_v0.2\AtlanticaDataMiner\atlantica.sqlite3" ".\Miner_Equipment_Approved_20_5.json" --snapshot 1
+
+# 5: Validate the approved candidate dataset in public contract mode.
 node .\scripts\validate-game-dataset.mjs ".\Miner_Equipment_Approved_20_5.json" --public
 node .\scripts\check-curated-equipment.mjs ".\Miner_Equipment_Approved_20_5.json"
 
-# 5: Preview what an append-only import would change (writes nothing).
+# 6: Preview what an append-only import would change (writes nothing).
 node .\scripts\promote-approved-equipment.mjs ".\Miner_Equipment_Approved_20_5.json"
 
-# 6: Only after reviewing the candidate file and the dry run:
+# 7: Only after reviewing the candidate file and the dry run:
 node .\scripts\promote-approved-equipment.mjs ".\Miner_Equipment_Approved_20_5.json" --write
 
-# 7: Verify and review the exact public changes before opening a PR.
+# 8: Verify and review the exact public changes before opening a PR.
 node .\scripts\check-curated-equipment.mjs
 node --test .\tests\curated-equipment-gate.test.mjs
 npm run build
@@ -120,3 +124,15 @@ promotion CLI refuses silent replacements.
 For recipes, loot and mercenaries, use separate source-aware datasets,
 review gates, editorial evidence and UI provenance. Never reuse
 `rateRaw` as a percentage or assume that `ENG` always means English.
+
+
+## Stage 20.9 — independent source consistency recheck
+
+`scripts/verify-approved-equipment-against-sqlite.py` reopens the
+original local SQLite **read-only** and recomputes the Stage 20.5
+approved subset from the source rows. It compares *exact names,
+per-field raw values, evidence, selected source record IDs, snapshot
+and original review policy*. It refuses edited, stale or structurally
+valid but source-inaccurate JSON. It does **not** claim that source data
+is correct in the running game. Python synthetic regression tests
+cover tampered names/categories/grades/levels/recipes/source IDs.
