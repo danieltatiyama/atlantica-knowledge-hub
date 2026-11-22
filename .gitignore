@@ -57,3 +57,8 @@ Miner_Quarantine_*.csv
 Miner_Quarantine_*.json
 Miner_Identity_Index_*.json
 Miner_Sample_*.json
+
+# Local reviewed-equipment bridge and human approval files (Stage 20.5)
+Miner_Equipment_Private_Review_*.json
+Miner_Equipment_Approvals_*.json
+Miner_Equipment_Approved_*.json
