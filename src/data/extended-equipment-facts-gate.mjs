@@ -44,8 +44,8 @@ function attackComposition(item) {
   const mod=item.socketedModifiers;
   const lower=projectClassicStat(base.attackMin,"L");
   const upper=projectClassicStat(base.attackMax,"L");
-  const loStone= Math.floor(lower*mod.perStone.attackEnhancePercent/100);
-  const hiStone= Math.floor(upper*mod.perStone.attackEnhancePercent/100);
+  const loStone=Number(BigInt(lower)*BigInt(mod.perStone.attackEnhancePercent)/100n);
+  const hiStone=Number(BigInt(upper)*BigInt(mod.perStone.attackEnhancePercent)/100n);
   return {
     bareL:{attackMin:lower,attackMax:upper},
     perStoneAttack:{min:loStone,max:hiStone},
