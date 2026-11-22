@@ -29,6 +29,7 @@ export interface ItemArticleProfile {
     eligibleClasses: string[];
   };
   stats: ItemArticleStatRow[];
+  enchantmentProjectionModel: "wikidot-classic-v1" | null;
   crafting: null | {
     productionPerBatch: number;
     requiredWorkload: number;
@@ -40,6 +41,7 @@ export interface ItemArticleProfile {
     stats: "ingame-screenshot" | "community-reference" | "not-provided";
     crafting: "ingame-screenshot" | "community-reference" | "not-provided";
     materials: "ingame-screenshot" | "community-reference" | "not-provided";
+    projections: "community-reference" | "not-provided";
     references: {
       kind: "ingame-screenshot" | "community-reference";
       label: string;
