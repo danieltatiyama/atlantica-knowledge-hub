@@ -27,7 +27,11 @@ const description = pt
       <p class="notice">{pt
         ? "Este é um catálogo inicial de equipamentos identificados em listas de boxes. Não é uma lista completa de todos os itens do jogo. Os nomes ainda não possuem tradução verificada para português."
         : "This is an initial catalog of equipment found in captured box lists, not every item in the game. English names were resolved against NA client localization."}</p>
-      <p><a class="related" href={prefix + "/items/boxes/"}>{pt ? "Explorar Equipment Boxes" : "Explore Equipment Boxes"}</a></p>
+      <p class="related-links">
+        <a class="related" href={prefix + "/items/boxes/"}>{pt ? "Explorar Equipment Boxes" : "Explore Equipment Boxes"}</a>
+        <a class="related legendary-link" href={prefix + "/items/legendary/"}>{pt
+          ? "Pesquisa: encantamento lendário (L)" : "Research: Legendary enhancement (L)"}</a>
+      </p>
     </header>
     <section class="catalog" aria-label={title}>
       <div class="filters">
@@ -97,6 +101,9 @@ const description = pt
   h1{font-size:clamp(2rem,4.5vw,3.2rem);margin:12px 0}
   .intro>p:not(.eyebrow){color:var(--color-text-muted);max-width:940px}
   .notice{border-left:3px solid var(--color-bronze);padding:12px 16px;background:var(--color-surface)}
+  .related-links{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .legendary-link{color:#d4adf2;border:1px solid #8255a7;padding:7px 12px;border-radius:4px}
+  .legendary-link:hover{background:rgba(117,73,159,.15)}
   .catalog{padding:28px 0}
   .filters{max-width:620px}
   label{display:block;margin-bottom:8px;color:var(--color-gold-light)}
