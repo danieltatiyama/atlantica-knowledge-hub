@@ -24,6 +24,8 @@ $source=(Resolve-Path -LiteralPath $Database -ErrorAction Stop).Path
 $private=Join-Path $root 'Miner_ClientFacts_Private_20_23.json'
 $report=Join-Path $root 'Miner_ClientFacts_Report_20_23.json'
 $candidate=Join-Path $root 'Miner_ClientFacts_PublicCandidate_20_23.json'
+$legendaryReport=Join-Path $root 'Miner_Legendary_Client_20_24.json'
+$referenceFields=Join-Path $root 'Miner_ReferenceFields_20_24.json'
 $target=Join-Path $root 'src\data\client-equipment-facts.json'
 $registry=Join-Path $root 'src\data\equipment-item-names-en.ts'
 
@@ -42,12 +44,20 @@ try{
   & py @arguments
   Assert-Command 'Exportação somente leitura dos arquivos do cliente'
 
+  & node (Join-Path $root 'scripts\build-legendary-client-report.mjs') $private --output $legendaryReport
+  Assert-Command 'Cruzamento dos 47 lendários com inventário completo'
+
+  & py (Join-Path $root 'scripts\profile-miner-reference-fields.py') $source --output $referenceFields
+  Assert-Command 'Descoberta dos campos disponíveis em todos os datasets de referência'
+
   & node (Join-Path $root 'scripts\check-client-equipment-facts.mjs') $candidate
   Assert-Command 'Validação de dados extraídos para publicação'
 
   Write-Host '[IC] Inventário privado de todos os IDs:' $private
   Write-Host '[IC] Relatório agregado seguro:' $report
   Write-Host '[IC] Candidato público, ainda NÃO integrado:' $candidate
+  Write-Host '[IC] Correspondências lendárias privadas:' $legendaryReport
+  Write-Host '[IC] Campos identificados nos dados completos do Miner:' $referenceFields
 
   if(-not $PreparePublic){
     Write-Host '[IC] DRY RUN. Nenhuma fonte do site foi alterada.'
