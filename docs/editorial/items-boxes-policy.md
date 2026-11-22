@@ -45,6 +45,27 @@ and use the game-captured 27-item lists only for Judgment and Abyssal.
 All other box pages explicitly state that their complete reward list is not yet confirmed.
 The older 113-box source-name candidate crosswalk remains a separate private review tool.
 
+## Stage 17.0: 30 captured game-client previews (2026-11-22)
+
+A single passive capture (`equipment_boxes_filtered.pcapng`, kept private) yielded:
+- **30 different box IDs**, one `0x2137` item-list preview and one `0x2138` observed result per box.
+- **763 box-to-distinct-item associations** across the 30 previews.
+- **1,390 preview positions**, including item+grade combinations; **1,386 distinct (item, grade code) pairs**.
+- **30/30 observed result pairs** appear in the matching preceding preview's item+grade pairs.
+- Three standard boxes still lack captures: Asura's, Dark Knight's, Osiris'.
+
+`src/data/equipment-box-captured-pools.ts` is a curated, non-sensitive source file containing the 30 item-ID lists, preview grade-code sets and one observed outcome per box. It contains no raw network payloads.
+
+For the known Judgment standard box, code `5` corresponded to +0 user-observed equipment. Other previews use codes `5–8` for Supreme / Enchanted and `9–11` for Infused. Display a **likely enhancement grade** as `code - 5` rather than declaring an official grade specification.
+
+**Do not assume variants equal the base pool.** Specifically, capture comparisons show:
+- Enchanted Pegasus excludes item `3771` relative to Pegasus.
+- Infused Evil excludes item `28221` relative to Evil.
+- Enchanted Judgment excludes item `3773` relative to Judgment.
+- Enchanted Dark Pegasus excludes items `431` and `3772` relative to Dark Pegasus and repeats some exact item+grade pairs.
+
+A preview does not demonstrate equipability, exact probability, or the complete server RNG policy. Preview repetition is not a drop weight. Names without validated localization should be displayed by Unique ID only.
+
 ## Regional chances
 
 Rates can appear in an approved article only with:
