@@ -1,0 +1,79 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import type { EquipmentItemCatalogEntry } from "../data/equipment-item-catalog";
+
+interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
+const { lang, item } = Astro.props;
+const pt = lang === "pt-br";
+const prefix = pt ? "/pt-br" : "";
+const base = prefix + "/items/";
+const boxRefs = [...item.boxReferences].sort((a,b)=>a.boxName.localeCompare(b.boxName,"en"));
+const title = item.nameEn;
+---
+<BaseLayout lang={lang} title={title + " | Atlantica Knowledge Hub"}
+  description={(pt ? "Informações de equipamento, ID e referências a boxes capturadas: " : "Equipment item ID and captured box references: ") + title}
+  alternatePaths={{en:"/items/" + item.id + "/", "pt-br":"/pt-br/items/" + item.id + "/"}}>
+  <main class="container">
+    <nav class="breadcrumb"><a href={base}>{pt ? "← Voltar ao catálogo" : "← Back to item catalog"}</a></nav>
+    <article>
+      <header>
+        <p class="eyebrow">{pt ? "CATÁLOGO DE EQUIPAMENTOS" : "EQUIPMENT ITEM CATALOG"}</p>
+        <h1>{title}</h1>
+        <div class="meta">
+          <span>{pt ? "ID do item (Unique)" : "Item ID (Unique)"}: <code>{item.id}</code></span>
+          <span>{pt ? "Nome em inglês do cliente NA" : "NA client English name"}</span>
+        </div>
+        <p class="evidence">{pt
+          ? "Nome associado a partir de arquivos de equipamento e localização em inglês do cliente. Ainda não há tradução oficial em português verificada."
+          : "English name reconciled from client equipment definitions and NA localization. This does not establish equipment stats or current item availability."}</p>
+      </header>
+      <section>
+        <h2>{pt ? "Encontrado nas prévias de boxes" : "Seen in box previews"}</h2>
+        {boxRefs.length ? (
+          <>
+            <p class="note">{pt
+              ? "As boxes abaixo transmitiram este ID em suas listas durante as capturas de 22/11/2026. Isso não confirma probabilidades, disponibilidade permanente nem quantidade recebida."
+              : "These boxes transmitted this item ID in their previews captured on November 22, 2026. This does not confirm drop odds, permanent availability or reward quantity."}</p>
+            <div class="table-scroll"><table>
+              <thead><tr><th>{pt ? "Box" : "Box"}</th><th>{pt ? "ID da box" : "Box ID"}</th><th>{pt ? "Prévia" : "Preview"}</th></tr></thead>
+              <tbody>{boxRefs.map((box) => <tr>
+                <td><a href={prefix + "/items/boxes/" + box.boxSlug + "/"}>{box.boxName}</a></td>
+                <td><code>{box.boxId}</code></td>
+                <td>{box.interaction === "selection"
+                  ? (pt ? "Escolha de item" : "Player selection")
+                  : (pt ? "Lista de possíveis resultados" : "Random-box preview")}</td>
+              </tr>)}</tbody>
+            </table></div>
+          </>
+        ) : (
+          <p>{pt ? "Nenhuma associação de box capturada para este item." : "No captured box association for this item."}</p>
+        )}
+      </section>
+      <section>
+        <h2>{pt ? "Informações ainda não verificadas" : "Information not yet verified"}</h2>
+        <p class="note">{pt
+          ? "Atributos, requisitos, receitas, monstros e locais de obtenção serão adicionados somente com fontes identificadas e dados revisados."
+          : "Stats, requirements, recipes, monster drops and acquisition locations will be added only after source-backed review."}</p>
+      </section>
+    </article>
+  </main>
+</BaseLayout>
+<style>
+  .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
+  .breadcrumb{padding:26px 0}.breadcrumb a,td a{color:var(--color-accent);text-decoration:none}
+  article{max-width:1140px;margin:0 auto}
+  header{padding:12px 0 30px;border-bottom:1px solid var(--color-border)}
+  h1{font-size:clamp(2rem,4vw,3.2rem);margin:10px 0 18px}
+  .eyebrow{font-size:.8rem;letter-spacing:.14em;color:var(--color-accent)}
+  .meta{display:flex;flex-wrap:wrap;gap:10px}
+  .meta span{border:1px solid var(--color-border);background:var(--color-surface);padding:8px 12px;font-size:.85rem}
+  .evidence{margin-top:22px;border-left:3px solid var(--color-bronze);background:var(--color-surface);padding:14px 17px;color:var(--color-text-muted)}
+  h2{font-size:1.55rem;margin-top:34px}
+  .note{color:var(--color-text-muted);line-height:1.65}
+  .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
+  table{width:100%;min-width:550px;border-collapse:collapse}
+  th,td{padding:12px 16px;border-bottom:1px solid var(--color-border);text-align:left}
+  th{background:#29271f;color:var(--color-gold-light)}
+  td{color:var(--color-text-muted)}
+  a:hover{color:var(--color-gold-light)}
+</style>
