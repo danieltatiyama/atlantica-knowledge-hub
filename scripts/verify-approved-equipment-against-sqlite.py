@@ -12,6 +12,7 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import sqlite3
 import sys
 
 SCRIPT = Path(__file__).with_name("reconcile-miner-equipment.py")
@@ -100,7 +101,7 @@ def main(argv: list[str] | None = None) -> int:
         print("[IC] No data files written; SQLite opened read-only.")
         print("[IC] This does not independently verify in-game mechanics or availability.")
         return 0
-    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
+    except (OSError, ValueError, TypeError, KeyError, sqlite3.Error, json.JSONDecodeError) as error:
         # Do not leak local source path, recipe expressions or raw payloads.
         print(f"[IC] ERROR: Source consistency check blocked: {type(error).__name__}.", file=sys.stderr)
         return 1
