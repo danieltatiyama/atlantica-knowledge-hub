@@ -77,7 +77,8 @@ jobs:
       - name: Validate Fandom Legendary reference and client-extracted source contracts
         run: |
           node scripts/check-client-equipment-facts.mjs
-          node --test tests/client-first-equipment.test.mjs tests/legendary-client-reconciliation.test.mjs
+          node --test tests/client-first-equipment.test.mjs tests/legendary-client-reconciliation.test.mjs tests/client-source-attributes.test.mjs
+          node scripts/check-client-item-attributes.mjs
 
       - name: Validate Astro build
         run: npm run build
