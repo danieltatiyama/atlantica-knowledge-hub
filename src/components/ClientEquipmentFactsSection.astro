@@ -1,0 +1,93 @@
+---
+import type {ClientEquipmentFacts,ClientSourceDefinition} from "../data/client-equipment-facts";
+import {CLIENT_EQUIPMENT_SOURCE_SNAPSHOT} from "../data/client-equipment-facts";
+import {EQUIPMENT_ITEM_NAMES_EN} from "../data/equipment-item-names-en";
+
+interface Props {lang:"en"|"pt-br"; item?:ClientEquipmentFacts;}
+const {lang,item}=Astro.props;
+const pt=lang==="pt-br";
+const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const raws=[
+  {key:"category",en:"Source category",pt:"Categoria de origem"},
+  {key:"levelRaw",en:"Client level (raw)",pt:"Nível bruto do cliente"},
+  {key:"gradeRaw",en:"Client grade (raw)",pt:"Grade bruta do cliente"},
+  {key:"unitRaw",en:"Unit (raw)",pt:"Unidade bruta"},
+  {key:"workRaw",en:"Work (raw)",pt:"Workload bruto"},
+] as const;
+const members=(ids:number[])=>ids
+  .map(id=>item?.sourceDefinitions.find(r=>r.recordId===id))
+  .filter(Boolean) as ClientSourceDefinition[];
+const formatValue=(x:string|number|null)=>x===null||x===""?"—":
+  typeof x==="number"?fmt.format(x):x;
+---
+{item && <section id="client-facts">
+  <h2>{pt?"Dados extraídos dos arquivos do jogo":"Values extracted from game files"}</h2>
+  <p class="source-note">{pt
+    ?"Definições de origem do cliente NA, preservando arquivo, categoria, nível, grade, unidade, workload e referências estruturadas de materiais. Não são atributos de combate confirmados no tooltip. Valores divergentes não foram unidos automaticamente."
+    :"NA client source definitions with file, category, level, grade, unit, work and structured material references. These are not independently verified tooltip combat stats. Conflicting values are never silently merged."}</p>
+  <p class="source-note">{pt?"Snapshot do Miner":"Miner snapshot"}:
+    <code>{CLIENT_EQUIPMENT_SOURCE_SNAPSHOT}</code> ·
+    {pt?"Identidade: nome oficial do cliente conciliado com ID revisado":"Identity: official client name reconciled with reviewed ID"}</p>
+  {item.variantSourceSets.length>1 && <p class="variants-note">{pt
+    ?"Os grupos abaixo representam diferenças entre definições de arquivos. Isso NÃO confirma que existam variantes diferentes dentro do jogo."
+    :"The groups below represent differing file definitions. They do NOT prove separate in-game equipment variants."}</p>}
+  {item.variantSourceSets.map(variant=><details class="source-variant"
+    open={item.variantSourceSets.length===1}>
+    <summary>{pt?"Conjunto de definições":"Source definition set"} {variant.variantIndex}
+      <small> ({variant.recordIds.length} {pt?"registro(s)":"record(s)"})</small></summary>
+    {members(variant.recordIds).map(record=><div class="source-record">
+      <h3>{record.file} <small>· {record.role==="general"
+        ?(pt?"tabela geral":"general table"):(pt?"tabela específica":"specific table")}</small></h3>
+      <div class="table-scroll"><table><tbody>
+        {raws.map(field=><tr><th>{pt?field.pt:field.en}</th>
+          <td><code>{formatValue(record[field.key])}</code></td></tr>)}
+      </tbody></table></div>
+      <h4>{pt?"Referências de materiais (cliente)":"Material references (client)"}</h4>
+      {record.ingredients.length?(
+        <div class="materials">
+          {record.ingredients.map(material=><span class="material">
+            {EQUIPMENT_ITEM_NAMES_EN[material.itemId]??("Item #"+material.itemId)}
+            {" ×"}{fmt.format(material.quantity)}
+          </span>)}
+        </div>
+      ):<p class="source-note">{pt
+        ?(record.ingredientsStatus==="unsupported"
+          ?"Expressão de materiais não interpretada automaticamente."
+          :"Nenhum material estruturado confirmado nesta definição.")
+        :(record.ingredientsStatus==="unsupported"
+          ?"Material expression not automatically parsed."
+          :"No confirmed structured materials in this definition.")}</p>}
+      <p class="source-footnote">{pt?"Registro do Miner":"Miner record"}:
+        <code>{record.recordId}</code> ·
+        {pt?"Estado da receita":"Recipe parsing"}:
+        <code>{record.ingredientsStatus}</code></p>
+    </div>)}
+  </details>)}
+  <p class="source-note">{pt
+    ?"Um registro com materiais ou workload não confirma, sozinho, que o item seja fabricável ou obtido por determinada fonte. Probabilidades de drop não foram calculadas."
+    :"A record containing materials or work does not, by itself, prove craftability or a particular acquisition method. No drop probabilities have been calculated."}</p>
+</section>}
+<style>
+  section{margin:32px 0}
+  h2{font-size:1.5rem;color:var(--color-gold-light);margin-bottom:12px}
+  h3{font-size:1.06rem;margin:13px 0;color:var(--color-gold-light);overflow-wrap:anywhere}
+  h3 small{font-weight:400;color:var(--color-text-muted)}
+  h4{font-size:.93rem;margin:15px 0 9px;color:var(--color-gold-light)}
+  .source-note,.source-footnote{color:var(--color-text-muted);font-size:.9rem;line-height:1.65}
+  .variants-note{padding:12px 15px;background:var(--color-surface);border-left:3px solid var(--color-bronze);
+    color:var(--color-gold-light)}
+  .source-variant{margin:12px 0;border:1px solid var(--color-border);border-radius:5px}
+  .source-variant summary{padding:13px 15px;cursor:pointer;color:var(--color-gold-light);
+    background:var(--color-surface);font-weight:600}
+  .source-variant summary small{color:var(--color-text-muted);font-weight:400}
+  .source-record{padding:12px 16px 17px;border-top:1px solid var(--color-border)}
+  .table-scroll{overflow-x:auto}
+  table{width:100%;max-width:650px;border-collapse:collapse}
+  th,td{padding:8px 13px;border-bottom:1px solid var(--color-border);text-align:left}
+  th{font-weight:500;color:var(--color-text-muted);width:42%}
+  td{color:var(--color-text)}
+  .materials{display:flex;gap:7px;flex-wrap:wrap}
+  .material{border:1px solid var(--color-border);background:var(--color-surface);
+    padding:5px 10px;border-radius:4px;font-size:.9rem}
+  .source-footnote{margin:14px 0 0}
+</style>
