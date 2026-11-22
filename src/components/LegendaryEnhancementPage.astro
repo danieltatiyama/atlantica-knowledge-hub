@@ -84,6 +84,11 @@ const stats=[
           <strong> {format(item.unchangedAtLegendary.magicDefense)}</strong> —
           {pt?" não aplicar 4,3×":" do not apply 4.3×"}</p>}
       <p class="note">{pt?item.notePt:item.noteEn}</p>
+      {item.nameEn === "Dell'arte's Ambition" && <p class="detail-link">
+        <a href={prefix+"/items/legendary/dell-artes-ambition/"}>{pt
+          ? "Ver ficha detalhada do L equipado: atributos, Star Stones e efeitos"
+          : "View detailed equipped L profile: stats, Star Stones and special effects"}</a>
+      </p>}
       <p class="sources">
         <a href={item.source.url} target="_blank" rel="noopener noreferrer">
           {pt?"Fonte da tabela":"Table source"}: {item.source.label}
@@ -181,6 +186,9 @@ const stats=[
   thead th{background:#29271f}
   td small{display:block;font-size:.75rem;color:var(--color-text-muted)}
   .legendary-value{background:rgba(117,73,159,.13);font-weight:600}
+  .detail-link a{display:inline-block;border:1px solid #9261b1;color:#e4b8ff;
+    background:rgba(117,73,159,.13);text-decoration:none;padding:9px 14px;border-radius:4px}
+  .detail-link a:hover{background:rgba(117,73,159,.24)}
   .sources{font-size:.84rem;line-height:1.6}
   .sources a{text-decoration:underline;text-underline-offset:3px}
   form{border:1px solid var(--color-border);border-radius:5px;padding:18px;background:var(--color-surface)}
