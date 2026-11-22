@@ -18,7 +18,10 @@
     "validate:legendary": "node scripts/check-legendary-research.mjs",
     "test:legendary": "node --test tests/legendary-enhancement.test.mjs",
     "test:item-facts": "node --test tests/extended-equipment-facts.test.mjs tests/item-article-review-queue.test.mjs",
-    "coverage:items": "node scripts/build-item-article-review-queue.mjs"
+    "coverage:items": "node scripts/build-item-article-review-queue.mjs",
+    "test:wikidot-review": "node --test tests/historical-item-profile-drafts.test.mjs",
+    "audit:wikidot": "python scripts/audit-wikidot-item-pages.py",
+    "draft:wikidot": "node scripts/build-historical-item-profile-draft.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.10",
