@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "client-item-attributes",
+  "sourceDataset": "Items.csv",
+  "snapshotId": null,
+  "records": []
+}
