@@ -107,7 +107,7 @@ outcomes:
     itemUniqueId: "9345"
     quantity: 1
     quantityVerified: false
-    observedCount: 0
+    observedCount: 1
   - itemName: "Judgment Heavy Helmet"
     itemUniqueId: "10197"
     quantity: 1
