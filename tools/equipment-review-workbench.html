@@ -43,6 +43,8 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
 <section class="shell">
   <label for="file">1. Selecione o arquivo privado <code>Miner_Equipment_Private_Review_20_5.json</code></label>
   <input id="file" type="file" accept=".json,application/json">
+  <label for="group-file">Comparar fontes generalizadas/específicas e variantes (opcional: <code>Miner_Source_Groups_Private_20_11.json</code>)</label>
+  <input id="group-file" type="file" accept=".json,application/json">
   <div class="row">
     <div><label for="search">Buscar por nome, ID ou estado</label><input id="search" type="search" placeholder="Spirit Sword, 192, conflito..." disabled></div>
     <div><label for="filter">Mostrar</label><select id="filter" disabled>
@@ -51,7 +53,7 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
       <option value="blocked">Conflitos bloqueados</option>
       <option value="chosen">Itens selecionados</option>
     </select></div>
-    <div><label>&nbsp;</label><button id="export" disabled>2. Exportar aprovações revisadas</button></div>
+    <div><label>&nbsp;</label><button id="export" disabled>3. Exportar aprovações revisadas</button></div>
   </div>
   <p id="statistics" class="note">Aguardando arquivo local.</p>
   <p id="message" role="status" aria-live="polite"></p>
@@ -77,6 +79,7 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
   };
   const documentById = (id) => document.getElementById(id);
   const fileInput = documentById("file");
+  const groupInput = documentById("group-file");
   const search = documentById("search");
   const filter = documentById("filter");
   const message = documentById("message");
@@ -88,6 +91,29 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
   let entries = [];
   const decisions = new Map();
   const cards = new Map();
+  let groupSnapshotId = null;
+  let sourceGroups = new Map();
+  const GROUP_STATES = new Set([
+    "not-in-source", "no-reviewed-base-match",
+    "id-collision-different-names", "identity-ambiguous-original-names",
+    "divergent-source-variants", "ambiguous-source-assignment",
+    "general-and-specific-overlap", "complementary-source-definitions",
+    "identical-source-definitions", "localization-overlay-only",
+    "single-source-definition"
+  ]);
+  const GROUP_DESCRIPTIONS = {
+    "general-and-specific-overlap": "Mesma identidade: arquivo geral + específico (não são duas variantes)",
+    "complementary-source-definitions": "Registros complementares: mesma identidade",
+    "identical-source-definitions": "Registros equivalentes nos campos comparados",
+    "divergent-source-variants": "Variantes de ORIGEM: diferenças reais nos campos extraídos; revisão pendente",
+    "id-collision-different-names": "COLISÃO DE IDENTIDADE: mesmo ID aponta para nomes diferentes",
+    "identity-ambiguous-original-names": "Identidade original ambígua: conferência obrigatória",
+    "ambiguous-source-assignment": "Fonte geral compatível com mais de uma variante; não atribuída",
+    "localization-overlay-only": "Um registro base e uma sobreposição de localização",
+    "single-source-definition": "Uma definição base",
+    "not-in-source": "Sem dados neste snapshot",
+    "no-reviewed-base-match": "Nenhum nome base correspondente ao catálogo revisado"
+  };
 
   function clearMessage() {message.textContent = "";message.className = "";}
   function setMessage(text, error = false) {
@@ -138,6 +164,7 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
       const filterMatch = mode === "all" || (mode === "eligible" && !isBlocked) ||
         (mode === "blocked" && isBlocked) || (mode === "chosen" && decision?.recordId !== null && decision !== undefined);
       const haystack = [entry.itemId, entry.reviewedPublicNameEn, entry.reviewState,
+        sourceGroups.get(entry.itemId)?.classification ?? "",
         ...entry.candidateSourceRows.map(c=>c.category)].join(" ").toLocaleLowerCase();
       card.hidden = !filterMatch || !haystack.includes(term);
       if (!card.hidden) shown++;
@@ -157,6 +184,7 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
     summary.append(element("span",
       entry.reviewState + " · " + entry.sourceRowCount + " linha(s) no Miner · " +
       available.length + " candidato(s)", "sub " + (eligible ? "" : "blocked")));
+    summary.append(element("span", "", "sub group-status"));
     card.append(summary);
     const body = element("div");
 
@@ -165,6 +193,8 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
       : "Bloqueado automaticamente: identidade, nome ou campos conflitantes, ou origem inadequada.",
       "note");
     body.append(note);
+    const groupDetails = element("div", undefined, "group-details");
+    body.append(groupDetails);
     if (!eligible) {
       card.append(body);
       return card;
@@ -232,7 +262,106 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
     filter.disabled = false;
     exportButton.disabled = false;
     displayEntries();
+    updateGroupDisplays();
   }
+
+  function updateGroupDisplays() {
+    for (const entry of entries) {
+      const card = cards.get(entry.itemId);
+      if (!card) continue;
+      const source = sourceGroups.get(entry.itemId);
+      const status = card.querySelector(".group-status");
+      const details = card.querySelector(".group-details");
+      if (!status || !details) continue;
+      details.replaceChildren();
+      status.textContent = source ? GROUP_DESCRIPTIONS[source.classification] || source.classification : "";
+      if (!source) continue;
+      const heading = element("p", "Comparação das fontes (diagnóstico privado, não é aprovação):", "note");
+      details.append(heading);
+      for (const group of source.sourceVariantGroups) {
+        const title = element("p", "Grupo de origem " + group.variantIndex + " · " +
+          group.sourceRows.length + " registro(s)", "meta");
+        details.append(title);
+        const ul = element("ul");
+        for (const row of group.sourceRows) {
+          ul.append(element("li", "Registro " + row.recordId + " · " + row.fileOnly +
+            " · " + row.category + " (" + row.role + ")", "meta"));
+        }
+        details.append(ul);
+      }
+      if (source.ambiguousSharedSourceRows.length)
+        details.append(element("p", source.ambiguousSharedSourceRows.length +
+          " fonte(s) ambígua(s) sem associação automática a uma variante.", "note blocked"));
+      if (source.identityCollisionSourceRows.length) {
+        details.append(element("p", source.identityCollisionSourceRows.length +
+          " fonte(s) com outro nome no MESMO ID; não são variantes confirmadas.", "note blocked"));
+        for (const matched of source.matchingBaseSourceRows || []) {
+          details.append(element("p", "Nome revisado: registro " + matched.recordId +
+            " · " + matched.fileOnly, "meta"));
+        }
+        for (const other of source.identityCollisionSourceRows) {
+          details.append(element("p", "Outra identidade: registro " + other.recordId +
+            " · " + other.fileOnly + " · " + other.category, "meta blocked"));
+        }
+      }
+      if (source.localizationRows)
+        details.append(element("p", source.localizationRows +
+          " arquivo(s) da partição de localização: não alterar nome revisado automaticamente.", "note"));
+      if (Array.isArray(source.differentSemanticFields) && source.differentSemanticFields.length)
+        details.append(element("p", "Campos com valores efetivamente divergentes: " +
+          source.differentSemanticFields.join(", "), "note blocked"));
+      if (source.classification === "divergent-source-variants")
+        details.append(element("p", "Estas variantes ainda NÃO podem ser aprovadas pelo manifesto de um único registro. Não selecione um dos valores para ocultar conflitos.", "note blocked"));
+    }
+  }
+
+  groupInput.addEventListener("change", async () => {
+    if (!groupInput.files?.length) {
+      sourceGroups = new Map();
+      groupSnapshotId = null;
+      updateGroupDisplays();
+      return;
+    }
+    try {
+      if (groupInput.files[0].size > 25000000) throw new Error("Arquivo muito grande");
+      const payload = JSON.parse(await groupInput.files[0].text());
+      if (payload?.reviewVersion !== "20.11-private" ||
+        !Number.isSafeInteger(payload.snapshotId) || payload.snapshotId < 1 ||
+        !Array.isArray(payload.items) ||
+        (snapshotId !== null && snapshotId !== payload.snapshotId)) throw new Error("Snapshot incompatível");
+      const byId = new Map();
+      for (const item of payload.items) {
+        if (!item || typeof item.itemId !== "string" ||
+          !/^[1-9]\d*$/.test(item.itemId) ||
+          !GROUP_STATES.has(item.classification) ||
+          !Array.isArray(item.sourceVariantGroups) ||
+          !Array.isArray(item.ambiguousSharedSourceRows) ||
+          !Array.isArray(item.identityCollisionSourceRows) ||
+          !Number.isSafeInteger(item.localizationRows) ||
+          byId.has(item.itemId)) throw new Error("Dados de agrupamento incompatíveis");
+        for (const group of item.sourceVariantGroups) {
+          if (!Number.isSafeInteger(group.variantIndex) || !Array.isArray(group.sourceRows)) throw new Error("Grupo inválido");
+          for (const row of group.sourceRows) {
+            if (!Number.isSafeInteger(row.recordId) || row.recordId < 1 ||
+              typeof row.fileOnly !== "string" || typeof row.category !== "string" ||
+              !["general", "specific", "localization"].includes(row.role)) throw new Error("Fonte inválida");
+          }
+        }
+        byId.set(item.itemId, item);
+      }
+      sourceGroups = byId;
+      groupSnapshotId = payload.snapshotId;
+      updateGroupDisplays();
+      displayEntries();
+      setMessage("Comparação de fontes carregada localmente. Os grupos são apenas candidatos, não aprovações.");
+    } catch {
+      sourceGroups = new Map();
+      groupSnapshotId = null;
+      groupInput.value = "";
+      updateGroupDisplays();
+      setMessage("Não foi possível carregar os grupos; confira o snapshot e o formato.", true);
+    }
+  });
 
   fileInput.addEventListener("change", async () => {
     entries = [];
@@ -264,6 +393,11 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
         records.push(value);
       }
       snapshotId = payload.snapshotId;
+      if (groupSnapshotId !== null && groupSnapshotId !== snapshotId) {
+        sourceGroups = new Map();
+        groupSnapshotId = null;
+        groupInput.value = "";
+      }
       entries = records.sort((a,b)=>Number(a.itemId)-Number(b.itemId));
       render();
       setMessage("Arquivo carregado localmente. Nenhum item foi aprovado automaticamente.");

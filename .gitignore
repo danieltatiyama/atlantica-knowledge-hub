@@ -62,3 +62,6 @@ Miner_Sample_*.json
 Miner_Equipment_Private_Review_*.json
 Miner_Equipment_Approvals_*.json
 Miner_Equipment_Approved_*.json
+
+# Local-only source grouping review (Stage 20.11)
+Miner_Source_Groups_Private_*.json

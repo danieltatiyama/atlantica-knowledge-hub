@@ -23,6 +23,9 @@ $review = Join-Path $repo 'Miner_Equipment_Private_Review_20_5.json'
 $report = Join-Path $repo 'Miner_Review_20_5.json'
 $workbench = Join-Path $repo 'tools\equipment-review-workbench.html'
 $script = Join-Path $repo 'scripts\reconcile-miner-equipment.py'
+$groupScript = Join-Path $repo 'scripts\group-miner-equipment-sources.py'
+$groupPrivate = Join-Path $repo 'Miner_Source_Groups_Private_20_11.json'
+$groupReport = Join-Path $repo 'Miner_Review_20_11.json'
 
 if (-not (Test-Path -LiteralPath $Database -PathType Leaf)) {
     throw '[IC] SQLite não encontrado. Confira o parâmetro -Database.'
@@ -37,11 +40,18 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw '[IC] Falha na geração da fila privada; nenhuma revisão foi iniciada.'
     }
+    & py $groupScript $Database --snapshot "$Snapshot" --private-output $groupPrivate --report $groupReport
+    if ($LASTEXITCODE -ne 0) {
+        throw '[IC] Não foi possível agrupar as fontes; confira a versão da Wiki e o snapshot.'
+    }
+    Write-Host '[IC] Comparação geral/específico e variantes (privado):' $groupPrivate
+    Write-Host '[IC] Relatório agregado de grupos:' $groupReport
     Write-Host '[IC] Fila privada gerada (não publicar):' $review
     Write-Host '[IC] Relatório agregado:' $report
     if (-not $NoOpen) {
         Start-Process -FilePath $workbench
         Write-Host '[IC] Selecione o arquivo de revisão na janela do navegador.'
+        Write-Host '[IC] Para conferir sobreposições/variantes, carregue também o JSON de grupos (20.11).'
         Write-Host '[IC] Revise e exporte Miner_Equipment_Approvals_20_5.json.'
     } else {
         Write-Host '[IC] Abra tools\equipment-review-workbench.html quando desejar.'
