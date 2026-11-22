@@ -73,9 +73,26 @@
             "kind": "community-reference",
             "label": "Spirit Sword — Atlantica Wiki (community)",
             "url": "https://atlantica.fandom.com/wiki/Spirit_Sword"
+          },
+          {
+            "kind": "community-reference",
+            "label": "Spirit Bow — historical enchantment progression (comparison)",
+            "url": "https://atlantica-online.wikidot.com/item:spirit-bow"
+          },
+          {
+            "kind": "community-reference",
+            "label": "Destroyer's Sword — historical enchantment progression (comparison)",
+            "url": "https://atlantica-online.wikidot.com/item:destroyer-s-sword"
+          },
+          {
+            "kind": "community-reference",
+            "label": "Phoenix's Light Armor — historical enchantment progression (comparison)",
+            "url": "https://atlantica-online.wikidot.com/item:phoenix-s-light-armor"
           }
-        ]
-      }
+        ],
+        "projections": "community-reference"
+      },
+      "enchantmentProjectionModel": "wikidot-classic-v1"
     }
   ]
 }
