@@ -189,6 +189,13 @@ def analyze_equipment(item_id: str, name_en: str, rows: list[dict]) -> dict:
         "baseRows": len(base),
         "localizationRows": len(localized),
         "sourceVariantGroups": variants,
+        # Keep the reviewed-name source rows even when an ID collision
+        # blocks variant grouping. Never lose a source identity.
+        "matchingBaseSourceRows": [
+            {"recordId": r["record_id"], "fileOnly": file_only(r),
+             "category": r["category"], "role": source_role(r)}
+            for r in matched
+        ],
         "differentSemanticFields": different_semantic_fields,
         "ambiguousSharedSourceRows": [
             {"recordId": r["record_id"], "fileOnly": file_only(r),
