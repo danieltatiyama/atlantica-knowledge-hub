@@ -162,6 +162,12 @@ def analyze_equipment(item_id: str, name_en: str, rows: list[dict]) -> dict:
         else:
             status = "single-source-definition"
 
+    different_semantic_fields = sorted({
+        field
+        for index, left in enumerate(matched)
+        for right in matched[index + 1:]
+        for field in compare_rows(left, right)
+    })
     other_identities = [r for r in base if key(r["name"]) != key(name_en)]
     variants = []
     for index, group in enumerate(clusters, 1):
@@ -183,6 +189,7 @@ def analyze_equipment(item_id: str, name_en: str, rows: list[dict]) -> dict:
         "baseRows": len(base),
         "localizationRows": len(localized),
         "sourceVariantGroups": variants,
+        "differentSemanticFields": different_semantic_fields,
         "ambiguousSharedSourceRows": [
             {"recordId": r["record_id"], "fileOnly": file_only(r),
              "category": r["category"], "role": source_role(r)}
