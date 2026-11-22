@@ -1,0 +1,81 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+interface Props { lang: "en"|"pt-br"; box: CollectionEntry<"boxes">; }
+const {lang,box}=Astro.props;
+const pt=lang==="pt-br";
+const base=(pt?"/pt-br":"")+"/items/boxes/";
+const {Content}=await render(box);
+const d=box.data;
+const hasRates=d.oddsStatus==="regional-published";
+const rate=(n:number|undefined)=>n===undefined?"—":n.toLocaleString(pt?"pt-BR":"en-US",{maximumFractionDigits:4})+"%";
+const source=d.probabilitySourceUrl||d.verificationUrl;
+---
+<BaseLayout lang={lang} title={d.title+" | Atlantica Knowledge Hub"} description={d.description}>
+  <main class="container">
+    <nav class="crumb"><a href={base}>{pt?"← Voltar às boxes":"← Back to boxes"}</a></nav>
+    <article class="body">
+      <header>
+        <p class="eyebrow">{pt?"CATÁLOGO DE BOXES":"BOX DATABASE"} · {d.region.toUpperCase()}</p>
+        <h1>{d.title}</h1><p>{d.description}</p>
+        <div class="meta">
+          <span>{pt?"Tipo":"Type"}: {d.boxType}</span>
+          <span>{pt?"Região":"Region"}: {d.region.toUpperCase()}</span>
+          <span>{pt?"Modelo de sorteio":"Roll model"}: {d.rollModel}</span>
+        </div>
+        <p class="caution">
+          {hasRates
+            ? (pt
+              ? "As porcentagens são taxas publicadas para a região indicada; não representam necessariamente as chances do Atlantica Global."
+              : "These published percentages apply to the indicated region; they do not necessarily represent Atlantica Global rates.")
+            : (pt
+              ? "Nenhuma chance de obtenção foi confirmada para esta box. Pesos internos do cliente não são probabilidades verificadas."
+              : "No outcome percentages are confirmed for this box. Raw client weights are not verified drop rates.")}
+        </p>
+      </header>
+      <h2>{pt?"Possíveis recompensas":"Possible rewards"}</h2>
+      <div class="table-scroll">
+        <table><thead><tr>
+          <th>{pt?"Item":"Item"}</th><th>{pt?"Quantidade":"Quantity"}</th>
+          <th>{pt?"Chance":"Chance"}</th>
+        </tr></thead>
+          <tbody>
+            {d.outcomes.map(row=><tr>
+              <td>{row.itemName}</td><td>{row.quantity.toLocaleString(pt?"pt-BR":"en-US")}</td>
+              <td>{hasRates?rate(row.chancePercent):"—"}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      {d.outcomes.length===0 && <p>{pt?"Lista de recompensas ainda não confirmada.":"Reward list not confirmed yet."}</p>}
+      {d.probabilityNotes && <p class="note">{d.probabilityNotes}</p>}
+      {source && <p class="source"><a href={source} rel="noopener noreferrer" target="_blank">
+        {pt?"Fonte para verificação":"Verification source"}</a></p>}
+      <div class="content"><Content /></div>
+    </article>
+  </main>
+</BaseLayout>
+<style>
+.container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:75px}
+.crumb{padding:26px 0}.crumb a,.source a{color:var(--color-accent);text-decoration:none}
+.body{max-width:1140px;margin:0 auto}
+header{border-bottom:1px solid var(--color-border);padding:10px 0 28px}
+.eyebrow{color:var(--color-accent);font-size:.8rem;letter-spacing:.13em}
+h1{font-size:clamp(2rem,4vw,3.3rem);margin:8px 0}
+header>p:not(.eyebrow){color:var(--color-text-muted)}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}
+.meta span{padding:5px 9px;background:var(--color-surface);border:1px solid var(--color-border);font-size:.85rem}
+.caution{border-left:3px solid var(--color-bronze);padding:12px 16px;background:var(--color-surface)}
+h2{font-size:1.7rem;margin-top:34px}
+.table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
+table{width:100%;border-collapse:collapse;min-width:420px}
+th,td{padding:12px 15px;text-align:left;border-bottom:1px solid var(--color-border)}
+th{background:#29271f;color:var(--color-gold-light)}
+td{color:var(--color-text-muted)}
+td:last-child{font-variant-numeric:tabular-nums}
+.note,.source{color:var(--color-text-muted);font-size:.9rem}
+.content{line-height:1.8;margin-top:38px}
+:global(.content a){color:var(--color-accent)}
+:global(.content img){max-width:100%;height:auto}
+</style>
