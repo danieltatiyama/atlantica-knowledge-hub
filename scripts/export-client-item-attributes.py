@@ -165,6 +165,8 @@ def export_reference_stats(database: Path, names: dict[str,str], snapshot: int,
             counters["itemsWithNumericClientAttributes"]+=1
     if len(public_records)>len(names):
         raise ValueError("Invalid public output size")
+    if not counters["reviewedSourceRows"] or not public_records:
+        raise ValueError("No exact reviewed IDs with numeric client fields; inspect reference schema before preparing empty site data")
     private={
         "reportVersion":"20.25-private",
         "sourceDataset":DATASET,
