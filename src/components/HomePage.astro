@@ -15,6 +15,24 @@ const siteName = "Atlantica Knowledge Hub";
 
 const sections = [
   {
+    title: lang === "pt-br" ? "Eventos e Atualizações" : "Events & Updates",
+    description: lang === "pt-br"
+      ? "Calendário de eventos e histórico de novidades revisados."
+      : "Curated event calendar and recent updates.",
+    symbol: "✧",
+    theme: "events",
+    href: lang === "en" ? "/events/" : "/pt-br/events/",
+  },
+  {
+    title: lang === "pt-br" ? "Mercenários" : "Mercenaries",
+    description: lang === "pt-br"
+      ? "Informações e habilidades dos mercenários, com evidências verificadas."
+      : "Mercenary profiles and skills with verified evidence.",
+    symbol: "⚔",
+    theme: "mercenaries",
+    href: lang === "en" ? "/mercenaries/" : "/pt-br/mercenaries/",
+  },
+  {
     title: t("home.gameGuides"),
     description: t("home.gameGuidesDesc"),
     symbol: "⚔",
