@@ -27,4 +27,7 @@ test("workbench inline JavaScript is syntactically valid and uses explicit human
   assert.match(code[1], /schemaVersion:"20\.5-approvals"/);
   assert.match(code[1], /no-source-records/);
   assert.match(code[1], /base-item-field-conflict/);
+  assert.match(code[1], /20\.11-private/);
+  assert.match(code[1], /id-collision-different-names/);
+  assert.match(html, /id="group-file"/);
 });
