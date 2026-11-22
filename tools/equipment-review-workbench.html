@@ -292,9 +292,18 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
       if (source.ambiguousSharedSourceRows.length)
         details.append(element("p", source.ambiguousSharedSourceRows.length +
           " fonte(s) ambígua(s) sem associação automática a uma variante.", "note blocked"));
-      if (source.identityCollisionSourceRows.length)
+      if (source.identityCollisionSourceRows.length) {
         details.append(element("p", source.identityCollisionSourceRows.length +
           " fonte(s) com outro nome no MESMO ID; não são variantes confirmadas.", "note blocked"));
+        for (const matched of source.matchingBaseSourceRows || []) {
+          details.append(element("p", "Nome revisado: registro " + matched.recordId +
+            " · " + matched.fileOnly, "meta"));
+        }
+        for (const other of source.identityCollisionSourceRows) {
+          details.append(element("p", "Outra identidade: registro " + other.recordId +
+            " · " + other.fileOnly + " · " + other.category, "meta blocked"));
+        }
+      }
       if (source.localizationRows)
         details.append(element("p", source.localizationRows +
           " arquivo(s) da partição de localização: não alterar nome revisado automaticamente.", "note"));
