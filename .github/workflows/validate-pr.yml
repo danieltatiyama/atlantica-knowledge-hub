@@ -54,6 +54,11 @@ jobs:
           node scripts/check-curated-equipment.mjs
           node --test tests/curated-equipment-gate.test.mjs tests/offline-review-workbench.test.mjs
 
+      - name: Validate source-backed item articles
+        run: |
+          node scripts/check-reviewed-item-profiles.mjs
+          node --test tests/reviewed-item-profiles.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
