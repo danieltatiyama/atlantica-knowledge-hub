@@ -163,6 +163,11 @@ const boxes = defineCollection({
     verificationNote: z.string().optional(),
     itemUniqueId: z.string().regex(/^\d+$/).optional(),
     itemNameTextId: z.string().regex(/^\d+$/).optional(),
+    catalogGroup: z.enum(["standard-equipment", "equipment-variant"]).optional(),
+    baseBoxSlug: z.string().regex(/^[a-z0-9-]+$/).optional(),
+    variantKind: z.enum(["supreme", "enchanted", "infused"]).optional(),
+    enhancementMin: z.number().int().min(0).max(10).optional(),
+    enhancementMax: z.number().int().min(0).max(10).optional(),
     region: z.enum(["global", "kr", "jp", "other", "unknown"]).default("unknown"),
     boxType: z.enum(["random", "selection", "fixed", "unknown"]).default("unknown"),
     contentsEvidence: z.enum(["unknown", "server-preview-captured", "family-candidates", "official-published"]).default("unknown"),
@@ -183,6 +188,14 @@ const boxes = defineCollection({
       quantityVerified: z.boolean().default(true),
     })).default([]),
   }).superRefine((data, ctx) => {
+    if (data.catalogGroup === "equipment-variant" && (!data.baseBoxSlug || !data.variantKind)) {
+      ctx.addIssue({code:"custom",path:["baseBoxSlug"],message:"Equipment variants require their base box and variant type."});
+    }
+    if ((data.enhancementMin === undefined) !== (data.enhancementMax === undefined) ||
+        (data.enhancementMin !== undefined && data.enhancementMax !== undefined &&
+         data.enhancementMin > data.enhancementMax)) {
+      ctx.addIssue({code:"custom",path:["enhancementMin"],message:"Provide a complete, ordered enhancement range."});
+    }
     const withChances = data.outcomes.filter((row) => row.chancePercent !== undefined);
     if (withChances.length > 0 &&
         (data.oddsStatus !== "regional-published" || !data.probabilitySourceUrl)) {
