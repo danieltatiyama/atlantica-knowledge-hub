@@ -12,6 +12,18 @@ Prism Carnival Random Box, as found in ItemTypePackCash, has Unique 21783
 and NameTextNum 49290. The earlier odds spreadsheet incorrectly referred
 to 49290 as its Box ID; this is the name-text index.
 
+## Confirmed contents without probabilities
+
+A box can have a usable list of related items even when no odds are known.
+
+- `contentsEvidence: server-preview-captured` means that the game transmitted a list of item Unique IDs while the player opened that exact box; it establishes a **transmitted list**, not equal odds or necessarily obtainable under every condition.
+- `contentsEvidence: family-candidates` is only a client-name or equipment-set inference. It cannot publish nonempty reward lists as confirmed contents.
+- `observedCount` reports how often a specific reward ID was seen in the small capture sample. It is not a drop-rate estimate.
+- `quantityVerified: false` makes the item quantity appear as unknown (`—`) even when the schema contains a placeholder numeric value. Do not display inferred quantities as confirmed.
+- Separate the Judgment random Equipment Box `13583` from the selection boxes `16207` and `16208` which grant +5 choices. Five observed Judgment random-box rewards were +0; the repeated packet value `5` is **not** proof of +5 item grade.
+- In the November 22, 2026 capture, Judgment `13583` and Abyssal `16812` each transmitted a 27-item list; 9 observed reward identifiers belonged to those lists (5 Judgment, 4 Abyssal). No percentages or guaranteed pool completeness are established.
+- The local 113-box family crosswalk is for private editorial review only and is not automatically committed or published.
+
 ## Regional chances
 
 Rates can appear in an approved article only with:
