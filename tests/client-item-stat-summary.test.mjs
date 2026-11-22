@@ -87,7 +87,9 @@ test("source Mag is projected only when integer, never by coercing decimals",()=
   assert.equal(summary.byKey.get("Mag").value,"292.5");
   const projection=buildHistoricalClientProjection(fractional);
   assert.ok(projection.excluded.includes("Mag"));
-  assert.ok(projection.rows.every(row=>!Object.hasOwn(row.values,"Mag")));
+  assert.ok(projection.baselineOnlyFields.includes("Mag"));
+  assert.equal(projection.rows[0].values.Mag,"292.5");
+  assert.ok(projection.rows.slice(1).every(row=>!Object.hasOwn(row.values,"Mag")));
   const phoenix=get("1420");
   assert.equal(summarizeClientRawFields(phoenix).byKey.get("Mag").value,"252");
   assert.equal(buildHistoricalClientProjection(phoenix).rows[10].values.Mag,1008);
@@ -137,9 +139,12 @@ test("actual conflicts must remain visible; no arbitrary definition wins",()=>{
 test("invalid projected values and empty source rows are rejected or safely omitted",()=>{
   assert.throws(()=>summarizeClientRawFields({sourceRows:[]}),TypeError);
   assert.throws(()=>summarizeClientRawFields({sourceRows:[{sourceRowNumber:1,fieldsRaw:{Str:12}}]}),TypeError);
-  assert.deepEqual(buildHistoricalClientProjection({
+  const fractionalOnly=buildHistoricalClientProjection({
     sourceRows:[{sourceRowNumber:7,fieldsRaw:{Mag:"292.5",AC:"0"}}],
-  }).rows,[]);
+  });
+  assert.equal(fractionalOnly.rows.length,11);
+  assert.equal(fractionalOnly.rows[0].values.Mag,"292.5");
+  assert.equal(fractionalOnly.rows[10].values.Mag,undefined);
   assert.equal(labelForClientField("Str",true),"Força");
   assert.equal(labelForClientField("Str",false),"Strength");
 });
@@ -185,6 +190,10 @@ test("all 551 items expose +0..+10; fixed MagicDef/EV/MoveSpeed never multiply",
     for(const row of preview.rows){
       assert.ok(Object.keys(row.values).every(key=>
         core.has(key)||FIXED_ENCHANT_FIELDS.includes(key)));
+      if(item.id==="363"){
+        assert.equal(preview.rows[0].values.Mag,"292.5");
+        if(row.grade>0)assert.equal(row.values.Mag,undefined);
+      }
       assert.ok(!Object.hasOwn(row.values,"HitRate"));
       assert.ok(!Object.hasOwn(row.values,"MagicSkillPlus"));
       assert.ok(!Object.hasOwn(row.values,"CriticalPlus"));
