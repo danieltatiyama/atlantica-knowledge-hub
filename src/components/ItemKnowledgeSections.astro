@@ -12,8 +12,13 @@ const { lang, section, profile } = Astro.props;
 const pt = lang === "pt-br";
 const rows = getEnchantStatRows(
   profile?.stats ?? [],
-  profile?.enchantmentProjectionModel ?? null
+  profile?.enchantmentProjectionModel ?? null,
+  profile?.legendaryEligible ? profile.legendaryProjectionModel : null
 ) as (ItemArticleStatRow & { origin: "observed" | "estimated" })[];
+const hasLegendary = rows.some((row) => row.enchantLevel === "L");
+const hasEstimatedLegendary = rows.some((row) => row.enchantLevel === "L" && row.origin === "estimated");
+const hasMissingNormalGrades = Array.from({ length: 11 }, (_, index) => index)
+  .some((grade) => !rows.some((row) => row.enchantLevel === grade));
 const hasEstimated = rows.some((row) => row.origin === "estimated");
 const baseStatsFromGame = profile?.evidence.stats === "ingame-screenshot";
 const baseSourceDescription = baseStatsFromGame
@@ -88,8 +93,10 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
               {present.map((column) => <th>{pt ? column.pt : column.en}</th>)}
               <th>{pt ? "Origem" : "Basis"}</th>
             </tr></thead>
-            <tbody>{rows.map((row) => <tr>
-              <th scope="row">+{row.enchantLevel}</th>
+            <tbody>{rows.map((row) => <tr class={row.enchantLevel === "L" ? "legendary-row" : undefined}>
+              <th scope="row">{row.enchantLevel === "L"
+                ? <span class="legendary-mark" title="Legendary Enhancement">L</span>
+                : "+" + row.enchantLevel}</th>
               {hasAttack && <td>{row.attackMin !== undefined && row.attackMax !== undefined
                 ? format(row.attackMin) + " – " + format(row.attackMax) : "—"}</td>}
               {present.map((column) => <td>{row[column.key] === undefined
@@ -105,7 +112,13 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
         {hasEstimated && <p class="model-note">{pt
           ? "Modelo estimado: +1–+10 aplicam multiplicadores históricos com arredondamento para baixo apenas a ataque e atributos básicos. Não são valores confirmados no Atlantica Global atual. Durabilidade, custos de Atlas, Magic Defense fixa, efeitos e habilidades NÃO são calculados."
           : "Estimate: +1–+10 use historical multipliers with rounding down for attack and basic stats only. These values are not confirmed for the current Atlantica Global. Durability, Atlas costs, fixed Magic Defense, effects and skills are NOT calculated."}</p>}
-        {rows.length < 11 && <p class="source-note">{pt
+        {hasEstimatedLegendary && <p class="model-note legendary-info">{pt
+          ? "L (lendário): estimativa de 4,3× o atributo +0, com truncamento para baixo. Equivale a 7,5% acima do valor +10 antes do arredondamento. Somente equipamentos comprovadamente elegíveis exibem esta projeção; efeitos especiais podem evoluir de outra forma."
+          : "L (Legendary): estimated 4.3× the +0 stat, rounded down. This is 7.5% above +10 before truncation. Only explicitly eligible equipment displays this prediction; special effects may scale differently."}</p>}
+        {profile?.legendaryEligible && !hasLegendary && <p class="source-note">{pt
+          ? "Este item está documentado como elegível ao L, mas os valores lendários ainda não foram aprovados."
+          : "This item is documented as L-eligible, but its Legendary values are not yet reviewed."}</p>}
+        {hasMissingNormalGrades && <p class="source-note">{pt
           ? "Outros níveis de encantamento ainda aguardam dados; os valores ausentes não foram inventados."
           : "Other enchantment levels still need data; missing values were not invented."}</p>}
       </>
@@ -193,6 +206,11 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
     padding:11px 13px;margin:16px 0;background:var(--color-surface);line-height:1.6}
   .estimated{color:var(--color-text-muted)!important;font-style:italic;font-size:.84rem;white-space:nowrap}
   .observed{color:var(--color-gold-light)!important;font-weight:600;font-size:.84rem;white-space:nowrap}
+  .legendary-row{background:rgba(117,73,159,.13)}
+  .legendary-row:hover{background:rgba(117,73,159,.21)!important}
+  .legendary-mark{display:inline-block;font-weight:700;color:#e3bcff;border:1px solid #8f58b3;
+    border-radius:3px;background:#47285d;padding:2px 11px}
+  .legendary-info{border-left-color:#a276bf}
   .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
   .item-table{width:100%;min-width:390px;border-collapse:collapse;font-variant-numeric:tabular-nums}
   .item-table th,.item-table td{padding:12px 16px;text-align:left;

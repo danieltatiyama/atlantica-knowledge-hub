@@ -1,0 +1,199 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import research from "../data/legendary-enhancement-research.json";
+import { getLegendaryResearchRows } from "../data/legendary-enhancement-research.mjs";
+
+interface Props { lang:"en"|"pt-br"; }
+const { lang } = Astro.props;
+const pt=lang==="pt-br";
+const prefix=pt?"/pt-br":"";
+const title=pt?"Encantamento lendário (L)":"Legendary enhancement (L)";
+const examples=getLegendaryResearchRows(research);
+const format=(n:number)=>new Intl.NumberFormat(pt?"pt-BR":"en-US").format(n);
+const stats=[
+ {key:"attackMin",pt:"Ataque mínimo",en:"Min. attack"},
+ {key:"attackMax",pt:"Ataque máximo",en:"Max. attack"},
+ {key:"strength",pt:"Força",en:"Strength"},
+ {key:"dexterity",pt:"Destreza",en:"Dexterity"},
+ {key:"intelligence",pt:"Inteligência",en:"Intelligence"},
+ {key:"vitality",pt:"Vitalidade",en:"Vitality"},
+ {key:"defense",pt:"Defesa física",en:"Physical defense"},
+] as const;
+---
+<BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
+ description={pt
+   ?"Comparação histórica de upgrades +0 a +10 e L, com previsões claramente separadas de valores documentados."
+   :"Historical +0 through +10 and Legendary (L) progression, separating documented stats from predictions."}
+ alternatePaths={{en:"/items/legendary/", "pt-br":"/pt-br/items/legendary/"}}>
+ <main class="container">
+  <nav class="breadcrumbs"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
+  <header>
+    <p class="eyebrow">{pt?"PESQUISA DE EQUIPAMENTOS":"EQUIPMENT RESEARCH"}</p>
+    <h1>{title}</h1>
+    <p class="lead">{pt
+      ?"A graduação L (Legendary, equivalente a +11) existe somente para equipamentos elegíveis. Compare valores publicados em fontes comunitárias com o modelo histórico."
+      :"L (Legendary, equivalent to +11) exists only for eligible equipment. Compare community-documented figures with the historical model."}</p>
+    <p class="source-disclaimer">{pt
+      ?"Os números desta página vêm de wikis comunitárias históricas. Não são confirmação das estatísticas do cliente Atlantica Global atual. Não conhecemos ainda os IDs desses quatro equipamentos na nossa base revisada."
+      :"The numbers on this page come from historical community wikis, not confirmed current Atlantica Global client values. The four items do not yet have verified IDs in our curated registry."}</p>
+  </header>
+  <section>
+    <h2>{pt?"Modelo de progressão":"Progression model"}</h2>
+    <div class="formula">
+      <div><span>{pt?"+10 sobre +0":"+10 vs +0"}</span><strong>4,0×</strong></div>
+      <div><span>L vs +0</span><strong>4,3×</strong></div>
+      <div><span>{pt?"L vs +10":"L vs +10"}</span><strong>+7,5%</strong></div>
+    </div>
+    <p class="note">{pt
+      ?"Estimativa para ataque, força, destreza, inteligência, vitalidade e defesa física: piso(valor +0 × multiplicador). O modelo usa aritmética inteira para evitar erros de arredondamento. O bônus adicional de 7,5% compara os multiplicadores antes do truncamento."
+      :"Estimate for attack, Strength, Dexterity, Intelligence, Vitality and physical Defense: floor(base +0 × multiplier). Integer arithmetic avoids floating-point rounding errors. The additional 7.5% compares multipliers before truncation."}</p>
+    <p class="note">{pt
+      ?"Bônus especiais, chance de ativação, Magic Defense fixa, evasão, durabilidade, Atlas Ore, habilidades e probabilidades de sucesso não obedecem necessariamente a esta fórmula."
+      :"Special bonuses, proc rates, fixed Magic Defense, evasion, durability, Atlas Ore, skills and enhancement success rates are not covered by this formula."}</p>
+  </section>
+  <section id="historical-evidence">
+    <h2>{pt?"Equipamentos analisados":"Equipment studied"}</h2>
+    {examples.map(item=><article class="evidence-item">
+      <div class="item-heading">
+        <div>
+          <h3>{item.nameEn}</h3>
+          <p>{item.typeEn} · Lv. {item.minimumLevel}</p>
+        </div>
+        <span class={item.legendaryBasis==="historical-table"?"observed":"pending"}>
+          {item.legendaryBasis==="historical-table"
+            ?(pt?"L documentado":"L documented")
+            :(pt?"L estimado":"L estimated")}
+        </span>
+      </div>
+      <div class="table-scroll"><table>
+        <thead><tr><th>{pt?"Atributo":"Stat"}</th><th>+0</th><th>+10</th><th>L</th></tr></thead>
+        <tbody>{stats.filter(field=>field.key in item.base).map(field=>
+          <tr>
+            <th scope="row">{pt?field.pt:field.en}</th>
+            <td>{format(item.base[field.key])}</td>
+            <td>{format(item.plusTen[field.key])} <small>({pt?"calculado":"calculated"})</small></td>
+            <td class="legendary-value">{format(item.legendary[field.key])}
+              <small>({item.legendaryBasis==="historical-table"
+                ? (pt?"fonte histórica":"historical source")
+                : (pt?"projeção":"projection")})</small></td>
+          </tr>
+        )}</tbody>
+      </table></div>
+      {item.unchangedAtLegendary?.magicDefense !== undefined &&
+        <p class="note">{pt?"Defesa Mágica fixa":"Fixed Magic Defense"}:
+          <strong> {format(item.unchangedAtLegendary.magicDefense)}</strong> —
+          {pt?" não aplicar 4,3×":" do not apply 4.3×"}</p>}
+      <p class="note">{pt?item.notePt:item.noteEn}</p>
+      <p class="sources">
+        <a href={item.source.url} target="_blank" rel="noopener noreferrer">
+          {pt?"Fonte da tabela":"Table source"}: {item.source.label}
+        </a>
+        {item.eligibilitySource && <>
+          {" · "}<a href={item.eligibilitySource.url} target="_blank" rel="noopener noreferrer">
+            {pt?"Lista de elegibilidade":"Eligibility list"}</a>
+        </>}
+      </p>
+    </article>)}
+  </section>
+  <section id="calculator">
+    <h2>{pt?"Calculadora do multiplicador histórico":"Historical multiplier calculator"}</h2>
+    <p class="note">{pt
+      ?"Insira o valor de +0 de um atributo básico. Ative L somente após confirmar que o item é elegível; a calculadora não verifica a elegibilidade."
+      :"Enter the +0 value of a basic stat. Enable L only after confirming the item is eligible; the calculator cannot check eligibility."}</p>
+    <form id="legendary-form">
+      <div class="form-grid">
+        <label>{pt?"Valor +0":"Base +0 stat"}
+          <input id="legendary-base" name="base" inputmode="numeric" type="number" min="0" max="1000000000000" step="1" value="1350"/>
+        </label>
+        <label class="checkbox">
+          <input id="legendary-eligible" type="checkbox" />
+          {pt?"Confirmo que este equipamento é elegível a L":"I have confirmed this equipment is L-eligible"}
+        </label>
+      </div>
+      <div class="calc-values" aria-live="polite">
+        <div><span>+0</span><strong id="legendary-v0">1.350</strong></div>
+        <div><span>+10 · 4,0×</span><strong id="legendary-v10">5.400</strong></div>
+        <div><span>L · 4,3×</span><strong id="legendary-vL">—</strong></div>
+      </div>
+      <p id="legendary-calc-note" class="note">{pt?"L não habilitado.":"L disabled."}</p>
+    </form>
+  </section>
+ </main>
+</BaseLayout>
+<script>
+  import { projectClassicStat } from "../data/equipment-enchant-projection.mjs";
+  const base=document.querySelector<HTMLInputElement>("#legendary-base");
+  const eligible=document.querySelector<HTMLInputElement>("#legendary-eligible");
+  const at0=document.querySelector<HTMLElement>("#legendary-v0");
+  const at10=document.querySelector<HTMLElement>("#legendary-v10");
+  const atL=document.querySelector<HTMLElement>("#legendary-vL");
+  const status=document.querySelector<HTMLElement>("#legendary-calc-note");
+  const pageLang=document.documentElement.lang;
+  const pt=pageLang.toLowerCase().startsWith("pt");
+  const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+  function render(){
+    const value=Number(base?.value);
+    const valid=base && base.value.trim()!=="" && Number.isSafeInteger(value) &&
+      value>=0 && value<=1000000000000;
+    if(at0)at0.textContent=valid?fmt.format(value):"—";
+    if(at10)at10.textContent=valid?fmt.format(projectClassicStat(value,10)):"—";
+    if(atL)atL.textContent=valid && eligible?.checked
+      ?fmt.format(projectClassicStat(value,"L")):"—";
+    if(status)status.textContent=!valid
+      ?(pt?"Informe um número inteiro válido.":"Enter a valid nonnegative integer.")
+      :eligible?.checked
+        ?(pt?"Estimativa matemática, não uma leitura do jogo.":"Mathematical estimate, not an in-game reading.")
+        :(pt?"L não habilitado: confirme a elegibilidade antes de calcular.":"L disabled: verify eligibility before calculating.");
+  }
+  base?.addEventListener("input",render);
+  eligible?.addEventListener("change",render);
+  render();
+</script>
+<style>
+  .container{width:min(var(--content-width),92%);max-width:1120px;margin:auto;padding-bottom:80px}
+  .breadcrumbs{padding:25px 0}.breadcrumbs a,.sources a{color:var(--color-accent)}
+  .eyebrow{color:var(--color-accent);font-size:.8rem;letter-spacing:.13em}
+  header{padding:4px 0 25px;border-bottom:1px solid var(--color-border)}
+  h1{font-size:clamp(2rem,4vw,3.15rem);margin:12px 0 18px}
+  h2{font-size:1.55rem;margin:32px 0 18px;color:var(--color-gold-light)}
+  h3{font-size:1.33rem;margin:0;color:var(--color-text)}
+  .lead{font-size:1.08rem;line-height:1.65;color:var(--color-text-muted)}
+  .source-disclaimer{padding:13px 16px;border-left:3px solid var(--color-bronze);
+    background:var(--color-surface);line-height:1.6;color:var(--color-text-muted)}
+  .formula,.calc-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .formula>div,.calc-values>div{border:1px solid var(--color-border);
+    background:var(--color-surface);border-radius:4px;padding:16px}
+  .formula span,.calc-values span{display:block;color:var(--color-text-muted);font-size:.86rem}
+  .formula strong,.calc-values strong{display:block;font-size:1.7rem;font-variant-numeric:tabular-nums;
+    color:var(--color-gold-light);margin-top:5px}
+  .note{line-height:1.65;color:var(--color-text-muted)}
+  .evidence-item{border:1px solid var(--color-border);border-radius:6px;
+    padding:20px;background:var(--color-surface);margin:18px 0}
+  .item-heading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .item-heading p{color:var(--color-text-muted);margin:5px 0 16px}
+  .observed,.pending{border:1px solid #8f58b3;color:#e6c7ff;background:#3e284f;
+    font-size:.84rem;padding:5px 11px;border-radius:4px}
+  .pending{color:var(--color-gold-light);background:#372c1b;border-color:var(--color-bronze)}
+  .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
+  table{width:100%;border-collapse:collapse;min-width:520px;font-variant-numeric:tabular-nums}
+  th,td{padding:11px 14px;border-bottom:1px solid var(--color-border);text-align:left}
+  th{color:var(--color-gold-light)}td{color:var(--color-text)}
+  thead th{background:#29271f}
+  td small{display:block;font-size:.75rem;color:var(--color-text-muted)}
+  .legendary-value{background:rgba(117,73,159,.13);font-weight:600}
+  .sources{font-size:.84rem;line-height:1.6}
+  .sources a{text-decoration:underline;text-underline-offset:3px}
+  form{border:1px solid var(--color-border);border-radius:5px;padding:18px;background:var(--color-surface)}
+  .form-grid{display:flex;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:20px}
+  .form-grid label{display:flex;flex-direction:column;gap:9px;color:var(--color-gold-light)}
+  .form-grid label.checkbox{display:flex;flex-direction:row;align-items:center;gap:8px;color:var(--color-text)}
+  input[type=number]{font:inherit;color:var(--color-text);background:#181d24;
+    border:1px solid var(--color-border);padding:10px;border-radius:4px;max-width:240px}
+  input[type=checkbox]{accent-color:#9b66c1;width:18px;height:18px}
+  @media(max-width:640px){
+    .formula,.calc-values{grid-template-columns:1fr}
+    .evidence-item{padding:12px}
+    .item-heading{display:block}
+    table th,table td{padding:9px}
+  }
+</style>

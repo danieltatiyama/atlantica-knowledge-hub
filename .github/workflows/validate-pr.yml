@@ -59,6 +59,11 @@ jobs:
           node scripts/check-reviewed-item-profiles.mjs
           node --test tests/reviewed-item-profiles.test.mjs tests/equipment-enchant-projection.test.mjs tests/wikidot-url-pattern.test.mjs
 
+      - name: Validate Legendary historical source examples and opt-in L scaling
+        run: |
+          node scripts/check-legendary-research.mjs
+          node --test tests/legendary-enhancement.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 

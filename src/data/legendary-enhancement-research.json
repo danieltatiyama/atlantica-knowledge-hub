@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "legendary-enhancement-research",
+  "model": "wikidot-legendary-43-v1",
+  "sourceScope": "historical-community-tables",
+  "items": [
+    {
+      "nameEn": "Immortal Bow",
+      "typeEn": "Bow",
+      "minimumLevel": 100,
+      "legendaryEligible": true,
+      "base": {
+        "attackMin": 1350,
+        "attackMax": 2750,
+        "dexterity": 230
+      },
+      "legendaryObserved": {
+        "attackMin": 5805,
+        "attackMax": 11825,
+        "dexterity": 989
+      },
+      "source": {
+        "label": "Immortal Bow — Atlantica Wiki (Fandom), historical stats",
+        "url": "https://atlantica.fandom.com/wiki/Immortal_Bow"
+      },
+      "noteEn": "First Hit Damage is listed as +20% at +0 and +54% at L; this special bonus is NOT calculated by the basic-stat formula.",
+      "notePt": "O bônus de primeiro ataque consta como +20% em +0 e +54% em L; ele NÃO é calculado pela fórmula dos atributos básicos."
+    },
+    {
+      "nameEn": "Excalibur",
+      "typeEn": "Sword",
+      "minimumLevel": 150,
+      "legendaryEligible": true,
+      "base": {
+        "attackMin": 3016,
+        "attackMax": 3782,
+        "strength": 250,
+        "vitality": 250
+      },
+      "legendaryObserved": {
+        "attackMin": 12968,
+        "attackMax": 16262,
+        "strength": 1075,
+        "vitality": 1075
+      },
+      "source": {
+        "label": "Excalibur — Atlantica Online Wikidot, historical +0/L table",
+        "url": "https://atlantica-online.wikidot.com/item:excalibur"
+      },
+      "noteEn": "Sage Sword's Judgment increases from Lv1 (+0) to Lv12 (L); skills are not derived by this numeric model.",
+      "notePt": "Sage Sword's Judgment passa de Lv1 (+0) para Lv12 (L); habilidades não são derivadas por este modelo numérico."
+    },
+    {
+      "nameEn": "Guardian Sheath",
+      "typeEn": "Shield",
+      "minimumLevel": 150,
+      "legendaryEligible": true,
+      "base": {
+        "defense": 15570,
+        "vitality": 288
+      },
+      "legendaryObserved": {
+        "defense": 66951,
+        "vitality": 1238
+      },
+      "unchangedAtLegendary": {
+        "magicDefense": 198
+      },
+      "source": {
+        "label": "Guardian Sheath Shield — Atlantica Wiki (Fandom), historical stats",
+        "url": "https://atlantica.fandom.com/wiki/Guardian_Sheath_Shield"
+      },
+      "noteEn": "This is the Guardian Sheath EQUIPMENT SHIELD, not King Arthur's separate passive skill. Magic Defense 198 and evasion 8.5% are fixed in the source table.",
+      "notePt": "Trata-se do ESCUDO Guardian Sheath, não da habilidade passiva homônima do Rei Arthur. Defesa Mágica 198 e evasão 8,5% permanecem fixas na tabela."
+    },
+    {
+      "nameEn": "Dell'arte's Ambition",
+      "typeEn": "Sword",
+      "minimumLevel": 180,
+      "legendaryEligible": true,
+      "base": {
+        "attackMin": 4705,
+        "attackMax": 5901,
+        "strength": 399,
+        "vitality": 399
+      },
+      "legendaryObserved": null,
+      "source": {
+        "label": "Dell'arte's Ambition — Atlantica Wiki (Fandom), partial historical stats",
+        "url": "https://atlantica.fandom.com/wiki/Dell%27arte%27s_Ambition"
+      },
+      "eligibilitySource": {
+        "label": "Legendary Weapons list — Atlantica Wiki (Fandom)",
+        "url": "https://atlantica.fandom.com/wiki/Legendary_Weapons"
+      },
+      "noteEn": "The available source lists +0 and +3, not a full L row. All L numbers shown here are explicitly estimates, not verified historic measurements.",
+      "notePt": "A fonte consultada informa +0 e +3, mas não uma linha L completa. Todos os valores L exibidos aqui são estimativas, não medições históricas confirmadas."
+    }
+  ]
+}

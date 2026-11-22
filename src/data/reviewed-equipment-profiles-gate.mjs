@@ -20,7 +20,7 @@ const simple = (v, limit = 160) =>
 const STAT_FIELDS = ["enchantLevel", "attackMin", "attackMax", "strength", "vitality",
   "dexterity", "intelligence", "defense", "magicDefense"];
 const EVIDENCE_TYPES = ["ingame-screenshot", "community-reference", "not-provided"];
-const REQUIRED_SECTIONS = ["overview", "stats", "crafting", "materials", "projections"];
+const REQUIRED_SECTIONS = ["overview", "stats", "crafting", "materials", "projections", "legendary"];
 
 export function validateReviewedProfiles(payload, nameRegistry) {
   const errors = [];
@@ -34,7 +34,7 @@ export function validateReviewedProfiles(payload, nameRegistry) {
   const used = new Set();
   for (const [i, item] of payload.records.entries()) {
     const label = "profile " + (i + 1);
-    if (!exact(item, ["id", "nameEn", "overview", "stats", "crafting", "evidence", "enchantmentProjectionModel"])) {
+    if (!exact(item, ["id", "nameEn", "overview", "stats", "crafting", "evidence", "enchantmentProjectionModel", "legendaryEligible", "legendaryProjectionModel"])) {
       fail(label + " has invalid keys");
       continue;
     }
@@ -50,6 +50,15 @@ export function validateReviewedProfiles(payload, nameRegistry) {
           (!Array.isArray(item.stats) || !item.stats.some((row) => row?.enchantLevel === 0)))) {
       fail(label + " has uncalibrated or unsupported enchantment prediction model");
     }
+    if (typeof item.legendaryEligible !== "boolean" ||
+        ![null, "wikidot-legendary-43-v1"].includes(item.legendaryProjectionModel) ||
+        (item.legendaryProjectionModel !== null &&
+          (!item.legendaryEligible ||
+            item.enchantmentProjectionModel !== "wikidot-classic-v1" ||
+            !Array.isArray(item.stats) ||
+            !item.stats.some((row) => row?.enchantLevel === 0)))) {
+      fail(label + " has unsupported or ineligible Legendary enhancement settings");
+    }
     if (item.overview !== null) {
       const overview = item.overview;
       if (!exact(overview, ["typeEn", "minimumLevel", "eligibleClasses"]) ||
@@ -60,13 +69,14 @@ export function validateReviewedProfiles(payload, nameRegistry) {
         fail(label + " has invalid item overview");
       }
     }
-    if (!Array.isArray(item.stats) || item.stats.length > 11) {
+    if (!Array.isArray(item.stats) || item.stats.length > 12) {
       fail(label + " has invalid enchantment stat rows");
     } else {
       const usedGrade = new Set();
       for (const stat of item.stats) {
         if (!allowed(stat, STAT_FIELDS) ||
-            !natural(stat?.enchantLevel, 10) ||
+            !(stat?.enchantLevel === "L" || natural(stat?.enchantLevel, 10)) ||
+            (stat?.enchantLevel === "L" && item.legendaryEligible !== true) ||
             usedGrade.has(stat.enchantLevel) ||
             Object.keys(stat).length < 2 ||
             (("attackMin" in stat) !== ("attackMax" in stat))) {
@@ -108,7 +118,7 @@ export function validateReviewedProfiles(payload, nameRegistry) {
     }
 
     const evidence = item.evidence;
-    if (!exact(evidence, ["overview", "stats", "crafting", "materials", "projections", "references"]) ||
+    if (!exact(evidence, ["overview", "stats", "crafting", "materials", "projections", "legendary", "references"]) ||
         !REQUIRED_SECTIONS.every((section) => EVIDENCE_TYPES.includes(evidence?.[section])) ||
         !Array.isArray(evidence?.references) ||
         evidence.references.length < 1 || evidence.references.length > 20) {
@@ -150,6 +160,15 @@ export function validateReviewedProfiles(payload, nameRegistry) {
     if (item.enchantmentProjectionModel === null &&
         evidence.projections !== "not-provided") {
       fail(label + " declares unneeded enchantment prediction evidence");
+    }
+    if (item.legendaryEligible && evidence.legendary === "not-provided") {
+      fail(label + " declares Legendary eligibility without an explicit source");
+    }
+    if (!item.legendaryEligible && evidence.legendary !== "not-provided") {
+      fail(label + " cites Legendary eligibility but has not enabled it");
+    }
+    if (item.legendaryProjectionModel !== null && evidence.legendary !== "community-reference") {
+      fail(label + " predicts Legendary without historical community calibration");
     }
     if (item.overview === null && evidence.overview !== "not-provided") {
       fail(label + " declares evidence for a missing overview");
