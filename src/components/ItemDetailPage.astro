@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import type { EquipmentItemCatalogEntry } from "../data/equipment-item-catalog";
+import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_SOURCE_SNAPSHOT } from "../data/curated-equipment-metadata";
 
 interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
 const { lang, item } = Astro.props;
@@ -9,6 +10,13 @@ const prefix = pt ? "/pt-br" : "";
 const base = prefix + "/items/";
 const boxRefs = [...item.boxReferences].sort((a,b)=>a.boxName.localeCompare(b.boxName,"en"));
 const title = item.nameEn;
+const curated = getCuratedEquipmentMetadata(item.id);
+const curatedFields = curated?.fields;
+const clientFields = curatedFields ? [
+  { label: pt ? "Categoria no cliente" : "Client category", value: curatedFields.clientCategory },
+  { label: pt ? "Nível bruto do cliente" : "Raw client level", value: curatedFields.clientLevelRaw },
+  { label: pt ? "Grade bruta do cliente" : "Raw client grade", value: curatedFields.clientGradeRaw },
+].filter((field) => field.value !== undefined) : [];
 ---
 <BaseLayout lang={lang} title={title + " | Atlantica Knowledge Hub"}
   description={(pt ? "Informações de equipamento, ID e referências a boxes capturadas: " : "Equipment item ID and captured box references: ") + title}
@@ -49,6 +57,24 @@ const title = item.nameEn;
           <p>{pt ? "Nenhuma associação de box capturada para este item." : "No captured box association for this item."}</p>
         )}
       </section>
+      {curated && (
+        <section class="curated">
+          <h2>{pt ? "Metadados extraídos e revisados" : "Reviewed client-extracted metadata"}</h2>
+          <p class="note">{pt
+            ? "Fonte do cliente selecionada por revisão editorial. Estes campos são valores brutos extraídos, não comprovações de requisitos, atributos ou disponibilidade no jogo."
+            : "Client source selected through editorial review. These are extracted raw fields, not independently verified equipment requirements, stats or current availability."}</p>
+          <div class="table-scroll"><table>
+            <thead><tr><th>{pt ? "Campo" : "Field"}</th><th>{pt ? "Valor bruto" : "Raw value"}</th></tr></thead>
+            <tbody>{clientFields.map((field) => <tr>
+              <td>{field.label}</td><td><code>{field.value}</code></td>
+            </tr>)}</tbody>
+          </table></div>
+          <p class="provenance">{pt ? "Evidência" : "Evidence"}: <strong>Extracted</strong>
+            {APPROVED_EQUIPMENT_SOURCE_SNAPSHOT &&
+              <> · {pt ? "Snapshot" : "Snapshot"}: <code>{APPROVED_EQUIPMENT_SOURCE_SNAPSHOT}</code></>}
+          </p>
+        </section>
+      )}
       <section>
         <h2>{pt ? "Informações ainda não verificadas" : "Information not yet verified"}</h2>
         <p class="note">{pt
@@ -69,6 +95,9 @@ const title = item.nameEn;
   .meta span{border:1px solid var(--color-border);background:var(--color-surface);padding:8px 12px;font-size:.85rem}
   .evidence{margin-top:22px;border-left:3px solid var(--color-bronze);background:var(--color-surface);padding:14px 17px;color:var(--color-text-muted)}
   h2{font-size:1.55rem;margin-top:34px}
+  .curated{padding:2px 0}
+  .provenance{color:var(--color-text-muted);font-size:.9rem;margin-top:16px}
+  .provenance code{color:var(--color-gold-light)}
   .note{color:var(--color-text-muted);line-height:1.65}
   .table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:5px}
   table{width:100%;min-width:550px;border-collapse:collapse}
