@@ -1,0 +1,113 @@
+---
+import type {ClientEquipmentFacts} from "../data/client-equipment-facts";
+import {CLIENT_EQUIPMENT_SOURCE_SNAPSHOT} from "../data/client-equipment-facts";
+import {summarizeClientCrafting} from "../data/client-equipment-crafting-summary.mjs";
+
+interface Props {lang:"en"|"pt-br"; item?:ClientEquipmentFacts;}
+const {lang,item}=Astro.props;
+const pt=lang==="pt-br";
+const source=item?summarizeClientCrafting(item):null;
+const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const isConflict=source?.status==="different-source-materials";
+const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
+  ?fmt.format(Number(value)):value;
+---
+{item&&source&&<section id="client-crafting" class="client-crafting">
+  <div class="header-row">
+    <div>
+      <p class="eyebrow">{pt?"ARQUIVOS DO CLIENTE":"CLIENT SOURCE FILES"}</p>
+      <h2>{pt?"Materiais e dados de fabricação":"Materials and crafting source data"}</h2>
+    </div>
+    <small>{pt?"Snapshot do Miner":"Miner snapshot"} {CLIENT_EQUIPMENT_SOURCE_SNAPSHOT}</small>
+  </div>
+  <p class="note">{pt
+    ?"As quantidades e IDs são extraídos das tabelas ItemType*.ndt. O registro de materiais não confirma que a receita esteja disponível na interface de fabricação do jogo atual, nem indica como obter os itens."
+    :"Material IDs and quantities come from ItemType*.ndt tables. A material record does not prove the recipe is currently available in the in-game crafting UI or establish where materials can be obtained."}</p>
+  <div class="raw-metadata">
+    {[
+      {key:"levelRaw",label:pt?"Nível bruto do item":"Raw item level"},
+      {key:"gradeRaw",label:pt?"Grade bruta do cliente":"Raw client grade"},
+      {key:"workRaw",label:pt?"Work (valor bruto)":"Work (raw field)"},
+      {key:"unitRaw",label:pt?"Unit (valor bruto)":"Unit (raw field)"},
+    ].map(row=><div class="raw-field">
+      <span>{row.label}</span>
+      <strong>{source.fields[row.key].status==="conflict"
+        ?(pt?"Divergência entre arquivos":"Source conflict")
+        :fmtRaw(source.fields[row.key].value)}</strong>
+      {source.fields[row.key].status==="partial"&&<small>{pt?"Apenas em parte das fontes":"Only some sources"}</small>}
+    </div>)}
+  </div>
+  {source.recipes.length>0 ? (
+    <>
+      {isConflict&&<p class="warning">{pt
+        ?"As fontes apresentam receitas diferentes. Nenhuma foi escolhida como definitiva."
+        :"Source files contain different material lists. No preferred recipe was chosen."}</p>}
+      {source.status==="partial-source-materials"&&<p class="warning">{pt
+        ?"Algumas fontes possuem lista de materiais e outras não. A ausência não significa quantidade zero."
+        :"Only some files contain materials; missing lists do not imply zero quantities."}</p>}
+      {source.recipes.map((recipe,index)=><div class="recipe-card">
+        {source.recipes.length>1&&<h3>{pt?"Definição":"Definition"} {index+1}</h3>}
+        <div class="recipe-meta">{pt?"Fontes concordantes":"Matching source records"}:
+          {" "}{recipe.sourceFiles.map((file,index)=>file+" (#"+recipe.sourceRecordIds[index]+")").join(" · ")}
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>{pt?"Material registrado":"Source material"}</th>
+            <th>{pt?"ID":"ID"}</th><th>{pt?"Quantidade":"Quantity"}</th></tr></thead>
+          <tbody>{recipe.materials.map(material=><tr>
+            <td>{material.nameEn??(pt?"Nome não validado":"Unverified name")}</td>
+            <td><code>{material.itemId}</code></td>
+            <td class="quantity">{fmt.format(material.quantity)}</td>
+          </tr>)}</tbody>
+        </table></div>
+      </div>)}
+    </>
+  ) : <p class="warning">{source.status==="unparsed-source-materials"
+    ?(pt?"Existem expressões de materiais que ainda não foram decodificadas; nenhum valor foi estimado."
+      :"Some material expressions could not be decoded; no value was estimated.")
+    :(pt?"Nenhuma lista estruturada de materiais foi encontrada. Isso não comprova que o item seja impossível de fabricar."
+      :"No structured material list was found. This is not proof the item cannot be crafted.")}</p>}
+  {source.missingMaterialNames>0&&<p class="warning">{pt
+    ?\`\${source.missingMaterialNames} referência(s) de material permanecem sem nome inglês validado.\`
+    :\`\${source.missingMaterialNames} material references lack a reviewed English name.\`}</p>}
+  {Object.entries(source.fields).some(([key,value])=>value.status==="conflict")&&<details class="conflicts">
+    <summary>{pt?"Revisar valores divergentes nos metadados":"Inspect conflicting source metadata"}</summary>
+    {Object.entries(source.fields).filter(([key,field])=>field.status==="conflict").map(([key,field])=>
+      <p><strong>{key}</strong>: {field.observations.map(o=>\`#\${o.recordId}: \${o.value}\`).join(" · ")}</p>)}
+  </details>}
+  <p class="note footer">{pt
+    ?"Os nomes dos materiais foram associados a seus IDs oficiais em inglês na mesma extração do cliente; não são traduções próprias. Classes permitidas e habilidade de fabricação exigem análise de campos distintos."
+    :"Material names were joined by exact item ID to their client official English names, not independently translated. Class restrictions and crafting skills require separate source fields."}</p>
+</section>}
+<style>
+  .client-crafting{margin:32px 0;padding:18px 20px;border:1px solid var(--color-border);
+    border-radius:5px;background:var(--color-surface)}
+  .header-row{display:flex;align-items:start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .eyebrow{margin:0 0 6px;color:var(--color-accent);font-size:.76rem;letter-spacing:.11em}
+  h2{margin:0;color:var(--color-gold-light);font-size:1.48rem}
+  .header-row small{color:var(--color-text-muted)}
+  .note{font-size:.87rem;line-height:1.6;color:var(--color-text-muted)}
+  .raw-metadata{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;margin:18px 0}
+  .raw-field{padding:11px 12px;border:1px solid var(--color-border);border-radius:4px;
+    display:flex;flex-direction:column;gap:4px}
+  .raw-field span{font-size:.8rem;color:var(--color-text-muted)}
+  .raw-field strong{font-size:1rem;color:var(--color-text)}
+  .raw-field small{color:var(--color-gold-light);font-size:.72rem}
+  .recipe-card{border:1px solid var(--color-border);border-radius:4px;overflow:hidden;margin:14px 0}
+  h3{margin:12px;font-size:1rem;color:var(--color-gold-light)}
+  .recipe-meta{padding:10px 12px;font-size:.8rem;line-height:1.5;
+    color:var(--color-text-muted);overflow-wrap:anywhere}
+  .table-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:9px 12px;text-align:left;border-top:1px solid var(--color-border);
+    font-size:.86rem}
+  th{font-weight:600;color:var(--color-gold-light)}
+  td{color:var(--color-text)}
+  .quantity{text-align:right;font-variant-numeric:tabular-nums}
+  .warning{border-left:3px solid var(--color-bronze);padding:10px 12px;
+    color:var(--color-text-muted);font-size:.88rem}
+  .conflicts{border:1px solid var(--color-border);border-radius:4px}
+  .conflicts summary{cursor:pointer;padding:12px}
+  .conflicts p{padding:0 12px}
+  .footer{margin-top:16px}
+  @media(max-width:620px){.client-crafting{padding:13px}}
+</style>
