@@ -90,9 +90,12 @@
             "url": "https://atlantica-online.wikidot.com/item:phoenix-s-light-armor"
           }
         ],
-        "projections": "community-reference"
+        "projections": "community-reference",
+        "legendary": "not-provided"
       },
-      "enchantmentProjectionModel": "wikidot-classic-v1"
+      "enchantmentProjectionModel": "wikidot-classic-v1",
+      "legendaryEligible": false,
+      "legendaryProjectionModel": null
     },
     {
       "id": "400",
@@ -159,9 +162,12 @@
             "label": "Phoenix's Light Armor — historical enchantment pattern cross-check",
             "url": "https://atlantica-online.wikidot.com/item:phoenix-s-light-armor"
           }
-        ]
+        ],
+        "legendary": "not-provided"
       },
-      "enchantmentProjectionModel": "wikidot-classic-v1"
+      "enchantmentProjectionModel": "wikidot-classic-v1",
+      "legendaryEligible": false,
+      "legendaryProjectionModel": null
     },
     {
       "id": "1400",
@@ -228,9 +234,12 @@
             "label": "Phoenix's Light Armor — historical enchantment pattern cross-check",
             "url": "https://atlantica-online.wikidot.com/item:phoenix-s-light-armor"
           }
-        ]
+        ],
+        "legendary": "not-provided"
       },
-      "enchantmentProjectionModel": "wikidot-classic-v1"
+      "enchantmentProjectionModel": "wikidot-classic-v1",
+      "legendaryEligible": false,
+      "legendaryProjectionModel": null
     }
   ]
 }
