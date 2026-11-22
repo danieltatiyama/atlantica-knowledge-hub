@@ -109,7 +109,7 @@ export function buildHistoricalClientProjection(item){
   });
   const fixedFields=FIXED_ENCHANT_FIELDS.map(key=>{
     const field=summary.byKey.get(key);
-    return field&&field.status!=="conflict"&&field.value!=="0"&&
+    return field&&field.status!=="conflict"&&
       typeof field.value==="string"&&/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(field.value)
       ? {key,value:field.value,status:field.status,
          observedIn:field.observedIn,sourceCount:field.sourceCount,
