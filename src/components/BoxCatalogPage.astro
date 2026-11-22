@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { EQUIPMENT_BOXES } from "../data/equipment-box-registry";
+import { getCapturedEquipmentPool } from "../data/equipment-box-captured-pools";
 interface Props { lang: "en" | "pt-br"; }
 const { lang } = Astro.props;
 const pt = lang === "pt-br";
@@ -10,7 +11,7 @@ const base = prefix + "/items/boxes/";
 const editorialEntries = (await getCollection("boxes", ({data}) =>
   !data.draft && data.reviewStatus === "approved" &&
   data.evidenceStatus !== "client-config" && data.lang === lang))
-  .map((entry)=>({id:entry.id.split("/").slice(1).join("/"),...entry.data}));
+  .map((entry)=>({id:entry.id.split("/").slice(1).join("/"),...entry.data,capturedItemCount:entry.data.outcomes.length}));
 const editorSlugs = new Set(editorialEntries.map(entry=>entry.id));
 const registryEntries = EQUIPMENT_BOXES.filter(box=>!editorSlugs.has(box.slug)).map(box=>({
   id:box.slug,
@@ -24,9 +25,10 @@ const registryEntries = EQUIPMENT_BOXES.filter(box=>!editorSlugs.has(box.slug)).
   boxType:"random" as const,
   region:"global" as const,
   oddsStatus:"unknown" as const,
-  contentsEvidence:"unknown" as const,
+  contentsEvidence:(getCapturedEquipmentPool(box.itemUniqueId) ? "server-preview-captured" : "unknown") as "server-preview-captured" | "unknown",
   catalogGroup:box.group==="variant" ? "equipment-variant" as const : "standard-equipment" as const,
   outcomes:[],
+  capturedItemCount:getCapturedEquipmentPool(box.itemUniqueId)?.itemUniqueIds.length ?? 0,
 }));
 const entries = [...editorialEntries,...registryEntries]
   .sort((a,b)=>((a.catalogGroup==="equipment-variant")?1:0)-((b.catalogGroup==="equipment-variant")?1:0)
@@ -89,7 +91,7 @@ const boxTypes = ["random","selection","fixed","unknown"];
             ? (pt?"Lista capturada durante a abertura":"Game-transmitted item list")
             : box.contentsEvidence === "official-published"
               ? (pt?"Lista oficial de recompensas":"Official reward list")
-              : (pt?"Recompensas em revisão":"Rewards under review")} · {box.outcomes.length} {pt?"itens":"items"}</span>
+              : (pt?"Lista ainda não capturada":"List not yet captured")} · {box.capturedItemCount} {pt?"itens":"items"}</span>
           <p class="rate-note">{box.oddsStatus === "regional-published"
             ? (pt?"Taxas regionais publicadas":"Published regional rates")
             : (pt?"Probabilidades desconhecidas":"Unknown drop rates")}</p>
