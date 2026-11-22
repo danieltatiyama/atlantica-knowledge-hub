@@ -53,3 +53,5 @@ Prism_Carnival_KR_29_Outcomes.csv
 Miner_Schema_*.json
 Miner_Staging_*.json
 Miner_Review_*.json
+Miner_Quarantine_*.csv
+Miner_Quarantine_*.json
