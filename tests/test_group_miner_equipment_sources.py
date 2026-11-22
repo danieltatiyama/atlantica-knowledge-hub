@@ -99,6 +99,7 @@ class SourceGroupingTests(unittest.TestCase):
                 unit=1, recipe_state="valid", recipe="[[5100, 5], [6080, 4]]"),
         ])
         self.assertEqual(grouped["classification"], "general-and-specific-overlap")
+        self.assertEqual(grouped["differentSemanticFields"], [])
         self.assertEqual(len(grouped["sourceVariantGroups"]), 1)
         self.assertEqual(len(grouped["sourceVariantGroups"][0]["sourceRows"]), 2)
         self.assertEqual(len(grouped["localizationSourceRows"]), 1)
@@ -119,6 +120,7 @@ class SourceGroupingTests(unittest.TestCase):
                 recipe="[[3000, 4]]"),
         ])
         self.assertEqual(grouped["classification"], "divergent-source-variants")
+        self.assertEqual(grouped["differentSemanticFields"], ["recipe", "work"])
         self.assertEqual(len(grouped["sourceVariantGroups"]), 2)
         self.assertEqual(grouped["itemId"], "23208")
 
