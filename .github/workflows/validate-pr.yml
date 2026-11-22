@@ -64,6 +64,11 @@ jobs:
           node scripts/check-legendary-research.mjs
           node --test tests/legendary-enhancement.test.mjs
 
+      - name: Verify expanded in-game equipment detail evidence and all-item review coverage
+        run: |
+          node --test tests/extended-equipment-facts.test.mjs tests/item-article-review-queue.test.mjs
+          node scripts/build-item-article-review-queue.mjs
+
       - name: Validate Astro build
         run: npm run build
 
