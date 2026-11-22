@@ -298,6 +298,9 @@ summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summ
       if (source.localizationRows)
         details.append(element("p", source.localizationRows +
           " arquivo(s) da partição de localização: não alterar nome revisado automaticamente.", "note"));
+      if (Array.isArray(source.differentSemanticFields) && source.differentSemanticFields.length)
+        details.append(element("p", "Campos com valores efetivamente divergentes: " +
+          source.differentSemanticFields.join(", "), "note blocked"));
       if (source.classification === "divergent-source-variants")
         details.append(element("p", "Estas variantes ainda NÃO podem ser aprovadas pelo manifesto de um único registro. Não selecione um dos valores para ocultar conflitos.", "note blocked"));
     }
