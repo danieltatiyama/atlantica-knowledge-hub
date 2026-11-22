@@ -73,3 +73,5 @@ Wikidot_HTML/
 Wikidot_Index_HTML/
 # Full local Miner client source datasets and safe preview candidates
 Miner_ClientFacts_*.json
+Miner_Legendary_Client_*.json
+Miner_ReferenceFields_*.json
