@@ -18,7 +18,7 @@ const contentsLabel=captured
     ? (pt?"Candidatos por família — drops não confirmados":"Family-matched candidates — drops unverified")
     : (pt?"Recompensas em revisão":"Rewards under review"));
 ---
-<BaseLayout lang={lang} title={d.title+" | Atlantica Knowledge Hub"} description={d.description}>
+<BaseLayout lang={lang} title={d.title+" | Atlantica Knowledge Hub"} description={d.description} alternatePaths={{en:"/items/boxes/"+box.id.split("/").slice(1).join("/")+"/", "pt-br":"/pt-br/items/boxes/"+box.id.split("/").slice(1).join("/")+"/"}}>
   <main class="container">
     <nav class="crumb"><a href={base}>{pt?"← Voltar às boxes":"← Back to boxes"}</a></nav>
     <article class="body">
