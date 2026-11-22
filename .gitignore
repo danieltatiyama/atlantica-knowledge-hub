@@ -45,3 +45,11 @@ Atlantica_Box_Definitions.csv
 Atlantica_Box_Reward_Database.xlsx
 Box_Name_Candidates.csv
 Prism_Carnival_KR_29_Outcomes.csv
+
+# Miner Stage 20+ private SQLite, schema, review, and staging outputs
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+Miner_Schema_*.json
+Miner_Staging_*.json
+Miner_Review_*.json
