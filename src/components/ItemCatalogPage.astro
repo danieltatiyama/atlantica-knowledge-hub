@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { EQUIPMENT_ITEM_CATALOG } from "../data/equipment-item-catalog";
 import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_METADATA_COUNT } from "../data/curated-equipment-metadata";
+import { getReviewedItemProfile } from "../data/reviewed-equipment-profiles";
 
 interface Props { lang: "en" | "pt-br"; }
 const { lang } = Astro.props;
@@ -48,7 +49,8 @@ const description = pt
           <tbody>
             {items.map((item) => (
               <tr data-item-row data-search={(item.nameEn + " " + item.id).toLocaleLowerCase()}>
-                <td><a href={prefix + "/items/" + item.id + "/"}>{item.nameEn}</a></td>
+                <td><a href={prefix + "/items/" + item.id + "/"}>{item.nameEn}</a>
+                  {getReviewedItemProfile(item.id) && <span class="profile-mark">{pt ? "Ficha detalhada" : "Detailed profile"}</span>}</td>
                 <td><code>{item.id}</code></td>
                 <td>{item.boxReferences.length}</td>
                 {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
@@ -108,6 +110,10 @@ const description = pt
   td{color:var(--color-text-muted)}
   td:first-child{font-weight:600}td:first-child a{color:var(--color-text);text-decoration:none}
   td:first-child a:hover{color:var(--color-accent)}
+  .profile-mark{display:inline-block;font-size:.74rem;letter-spacing:.01em;
+    color:var(--color-gold-light);border:1px solid var(--color-card-border);
+    border-radius:3px;padding:2px 6px;margin:0 0 0 9px;font-weight:400;
+    white-space:nowrap;background:var(--color-surface)}
   tr:hover td{background:var(--color-surface)}
   tr[hidden]{display:none}
   code{font-size:.9em}
