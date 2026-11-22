@@ -20,7 +20,7 @@ const simple = (v, limit = 160) =>
 const STAT_FIELDS = ["enchantLevel", "attackMin", "attackMax", "strength", "vitality",
   "dexterity", "intelligence", "defense", "magicDefense"];
 const EVIDENCE_TYPES = ["ingame-screenshot", "community-reference", "not-provided"];
-const REQUIRED_SECTIONS = ["overview", "stats", "crafting", "materials"];
+const REQUIRED_SECTIONS = ["overview", "stats", "crafting", "materials", "projections"];
 
 export function validateReviewedProfiles(payload, nameRegistry) {
   const errors = [];
@@ -34,7 +34,7 @@ export function validateReviewedProfiles(payload, nameRegistry) {
   const used = new Set();
   for (const [i, item] of payload.records.entries()) {
     const label = "profile " + (i + 1);
-    if (!exact(item, ["id", "nameEn", "overview", "stats", "crafting", "evidence"])) {
+    if (!exact(item, ["id", "nameEn", "overview", "stats", "crafting", "evidence", "enchantmentProjectionModel"])) {
       fail(label + " has invalid keys");
       continue;
     }
@@ -45,6 +45,11 @@ export function validateReviewedProfiles(payload, nameRegistry) {
       continue;
     }
     used.add(item.id);
+    if (![null, "wikidot-classic-v1"].includes(item.enchantmentProjectionModel) ||
+        (item.enchantmentProjectionModel !== null &&
+          !item.stats.some((row) => row?.enchantLevel === 0))) {
+      fail(label + " has uncalibrated or unsupported enchantment prediction model");
+    }
     if (item.overview !== null) {
       const overview = item.overview;
       if (!exact(overview, ["typeEn", "minimumLevel", "eligibleClasses"]) ||
@@ -103,7 +108,7 @@ export function validateReviewedProfiles(payload, nameRegistry) {
     }
 
     const evidence = item.evidence;
-    if (!exact(evidence, ["overview", "stats", "crafting", "materials", "references"]) ||
+    if (!exact(evidence, ["overview", "stats", "crafting", "materials", "projections", "references"]) ||
         !REQUIRED_SECTIONS.every((section) => EVIDENCE_TYPES.includes(evidence?.[section])) ||
         !Array.isArray(evidence?.references) ||
         evidence.references.length < 1 || evidence.references.length > 20) {
@@ -137,6 +142,14 @@ export function validateReviewedProfiles(payload, nameRegistry) {
       if (evidence[section] !== "not-provided" && !kinds.has(evidence[section])) {
         fail(label + " has an undocumented evidence type");
       }
+    }
+    if (item.enchantmentProjectionModel !== null &&
+        evidence.projections !== "community-reference") {
+      fail(label + " predicts enchantments without community model evidence");
+    }
+    if (item.enchantmentProjectionModel === null &&
+        evidence.projections !== "not-provided") {
+      fail(label + " declares unneeded enchantment prediction evidence");
     }
     if (item.overview === null && evidence.overview !== "not-provided") {
       fail(label + " declares evidence for a missing overview");
