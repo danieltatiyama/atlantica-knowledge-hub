@@ -1,16 +1,39 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
+import { EQUIPMENT_BOXES } from "../data/equipment-box-registry";
+import { getCapturedEquipmentPool } from "../data/equipment-box-captured-pools";
+import { getCapturedSelectionPool } from "../data/equipment-box-selection-pools";
 interface Props { lang: "en" | "pt-br"; }
 const { lang } = Astro.props;
 const pt = lang === "pt-br";
 const prefix = pt ? "/pt-br" : "";
 const base = prefix + "/items/boxes/";
-const entries = (await getCollection("boxes", ({data}) =>
+const editorialEntries = (await getCollection("boxes", ({data}) =>
   !data.draft && data.reviewStatus === "approved" &&
   data.evidenceStatus !== "client-config" && data.lang === lang))
-  .sort((a,b) => a.data.title.localeCompare(b.data.title,pt?"pt-BR":"en"))
-  .map((entry)=>({id:entry.id.replace(/^[^/]+\//,""),...entry.data}));
+  .map((entry)=>({id:entry.id.split("/").slice(1).join("/"),...entry.data,capturedItemCount:entry.data.outcomes.length}));
+const editorSlugs = new Set(editorialEntries.map(entry=>entry.id));
+const registryEntries = EQUIPMENT_BOXES.filter(box=>!editorSlugs.has(box.slug)).map(box=>({
+  id:box.slug,
+  title:box.name,
+  description:box.group==="variant"
+    ? (pt?"Variante de equipment box: mesmo conjunto da box base; faixa de aprimoramento informada pelo jogador."
+        :"Equipment box variant: same base pool; enhancement range reported by the player.")
+    : (pt?"Box padrão identificada no jogo; lista de recompensas aguardando validação."
+        :"In-game standard equipment box; item list awaiting verification."),
+  itemUniqueId:box.itemUniqueId,
+  boxType:box.interaction==="selection" ? "selection" as const : "random" as const,
+  region:"global" as const,
+  oddsStatus:"unknown" as const,
+  contentsEvidence:((getCapturedEquipmentPool(box.itemUniqueId) || getCapturedSelectionPool(box.itemUniqueId)) ? "server-preview-captured" : "unknown") as "server-preview-captured" | "unknown",
+  catalogGroup:box.group==="variant" ? "equipment-variant" as const : "standard-equipment" as const,
+  outcomes:[],
+  capturedItemCount:getCapturedEquipmentPool(box.itemUniqueId)?.itemUniqueIds.length ?? getCapturedSelectionPool(box.itemUniqueId)?.itemUniqueIds.length ?? 0,
+}));
+const entries = [...editorialEntries,...registryEntries]
+  .sort((a,b)=>((a.catalogGroup==="equipment-variant")?1:0)-((b.catalogGroup==="equipment-variant")?1:0)
+     ||a.title.localeCompare(b.title,pt?"pt-BR":"en"));
 const pageTitle = pt ? "Boxes e Recompensas" : "Boxes & Rewards";
 const subtitle = pt
   ? "Consulte o conteúdo de boxes, formas de obtenção e probabilidades verificadas por região."
@@ -33,6 +56,12 @@ const boxTypes = ["random","selection","fixed","unknown"];
   </header>
   <section class="catalog" aria-label={pageTitle}>
     <div class="filters">
+      <label><span>{pt?"Grupo":"Group"}</span>
+        <select id="boxes-scope"><option value="">{pt?"Todos":"All"}</option>
+          <option value="standard-equipment">{pt?"Boxes padrão":"Standard boxes"}</option>
+          <option value="equipment-variant">{pt?"Supreme / Enchanted / Infused":"Supreme / Enchanted / Infused"}</option>
+        </select>
+      </label>
       <label><span>{pt?"Buscar box":"Search boxes"}</span>
         <input type="search" id="boxes-search" placeholder={pt?"Nome da box...":"Box name..."} autocomplete="off"/>
       </label>
@@ -47,18 +76,28 @@ const boxTypes = ["random","selection","fixed","unknown"];
         </select>
       </label>
     </div>
+    <p class="scope-note">{pt
+      ? "Catálogo focado em Equipment Boxes gerais: 26 padrão e 7 variantes. Boxes de classe (Melee, Ranged e Magic) não estão incluídas."
+      : "Focused on general Equipment Boxes: 26 standard and 7 variants. Melee, Ranged and Magic class-specific boxes are excluded."}</p>
     <p class="count" aria-live="polite"><span id="boxes-count">{entries.length}</span>
       {pt?" boxes encontradas":" boxes found"}</p>
     <div class="grid">
       {entries.map(box=>(
-        <article class="item" data-box data-query={(box.title+" "+box.description).toLowerCase()}
-          data-type={box.boxType} data-region={box.region}>
-          <div class="meta"><span>{box.boxType.toUpperCase()}</span><span>{box.region.toUpperCase()}</span></div>
+        <article class="item" data-box data-query={(box.title+" "+box.description+" "+(box.itemUniqueId??"")).toLowerCase()}
+          data-type={box.boxType} data-region={box.region} data-scope={box.catalogGroup??"standard-equipment"}>
+          <div class="meta"><span>{box.catalogGroup==="equipment-variant" ? (pt?"VARIANTE":"VARIANT") : (pt?"PADRÃO":"STANDARD")}</span><span>{box.region.toUpperCase()}</span></div>
           <h2><a href={base+box.id+"/"}>{box.title}</a></h2>
           <p>{box.description}</p>
-          <span class="sub">{box.oddsStatus === "regional-published"
-            ? (pt?"Taxas publicadas para a região":"Regional published rates")
-            : (pt?"Chance ainda não confirmada":"Chances not yet confirmed")}</span>
+          <span class="sub">{box.contentsEvidence === "server-preview-captured"
+            ? (pt?"Lista capturada durante a abertura":"Game-transmitted item list")
+            : box.contentsEvidence === "official-published"
+              ? (pt?"Lista oficial de recompensas":"Official reward list")
+              : (pt?"Lista ainda não capturada":"List not yet captured")} · {box.capturedItemCount} {pt?"itens":"items"}</span>
+          <p class="rate-note">{box.boxType === "selection"
+            ? (pt?"Seleção de item — não é sorteio":"Player choice — not a random draw")
+            : box.oddsStatus === "regional-published"
+              ? (pt?"Taxas regionais publicadas":"Published regional rates")
+              : (pt?"Probabilidades desconhecidas":"Unknown drop rates")}</p>
         </article>
       ))}
     </div>
@@ -79,11 +118,11 @@ h1{font-size:clamp(2rem,5vw,3.4rem);margin:10px 0}
 .intro>p{max-width:960px;color:var(--color-text-muted)}
 .notice{border-left:3px solid var(--color-bronze);padding-left:14px;font-size:.9rem}
 .catalog{padding:28px 0}
-.filters{display:grid;grid-template-columns:minmax(0,2fr) repeat(2,minmax(140px,1fr));gap:14px}
+.filters{display:grid;grid-template-columns:repeat(3,minmax(130px,1fr)) minmax(190px,2fr);gap:14px}
 label{display:grid;gap:6px;font-size:.85rem;color:var(--color-gold-light)}
 input,select{width:100%;padding:12px;background:var(--color-surface);border:1px solid var(--color-border);
 border-radius:5px;color:var(--color-text);font:inherit}
-.count{color:var(--color-text-muted);font-size:.9rem}
+.count,.scope-note{color:var(--color-text-muted);font-size:.9rem}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:18px}
 .item{border:1px solid var(--color-card-border);border-radius:6px;background:var(--color-surface);padding:22px}
 .meta{display:flex;gap:8px;font-size:.7rem;color:var(--color-accent);letter-spacing:.07em}
@@ -92,6 +131,7 @@ border-radius:5px;color:var(--color-text);font:inherit}
 .item a{text-decoration:none}.item a:hover{color:var(--color-accent)}
 .item p{color:var(--color-text-muted);line-height:1.6}
 .sub{font-size:.83rem;color:var(--color-gold-light)}
+.rate-note{font-size:.79rem!important;margin-top:8px!important}
 .empty{padding:30px;border:1px dashed var(--color-border);text-align:center;color:var(--color-text-muted)}
 @media(max-width:720px){.filters{grid-template-columns:1fr}}
 </style>
@@ -99,6 +139,7 @@ border-radius:5px;color:var(--color-text);font:inherit}
 const search=document.querySelector<HTMLInputElement>("#boxes-search");
 const type=document.querySelector<HTMLSelectElement>("#boxes-type");
 const region=document.querySelector<HTMLSelectElement>("#boxes-region");
+const scope=document.querySelector<HTMLSelectElement>("#boxes-scope");
 const rows=Array.from(document.querySelectorAll<HTMLElement>("[data-box]"));
 const count=document.querySelector<HTMLElement>("#boxes-count");
 const empty=document.querySelector<HTMLElement>("#boxes-empty");
@@ -107,7 +148,8 @@ function filter(){
   const q=(search?.value??"").trim().toLowerCase();
   for(const row of rows){
     const show=(!q||row.dataset.query?.includes(q))&&(!type?.value||type.value===row.dataset.type)
-      &&(!region?.value||region.value===row.dataset.region);
+      &&(!region?.value||region.value===row.dataset.region)
+      &&(!scope?.value||scope.value===row.dataset.scope);
     row.hidden=!show;if(show)visible++;
   }
   if(count)count.textContent=String(visible);
@@ -117,4 +159,5 @@ function filter(){
 search?.addEventListener("input",filter);
 type?.addEventListener("change",filter);
 region?.addEventListener("change",filter);
+scope?.addEventListener("change",filter);
 </script>

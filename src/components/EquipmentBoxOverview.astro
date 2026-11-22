@@ -1,0 +1,172 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getEquipmentBoxBySlug } from "../data/equipment-box-registry";
+import type { EquipmentBoxEntry } from "../data/equipment-box-registry";
+import { getCapturedEquipmentPool, decodedEnhancementCandidate } from "../data/equipment-box-captured-pools";
+import { getCapturedSelectionPool } from "../data/equipment-box-selection-pools";
+import { getEquipmentItemEnglishName } from "../data/equipment-item-names-en";
+
+interface Props { lang: "en" | "pt-br"; entry: EquipmentBoxEntry; }
+const {lang,entry}=Astro.props;
+const pt=lang==="pt-br";
+const base=(pt?"/pt-br":"")+"/items/boxes/";
+const parent=entry.baseSlug ? getEquipmentBoxBySlug(entry.baseSlug) : undefined;
+const captured=getCapturedEquipmentPool(entry.itemUniqueId);
+const selection=getCapturedSelectionPool(entry.itemUniqueId);
+const capturedBase=parent ? getCapturedEquipmentPool(parent.itemUniqueId) : undefined;
+const missingFromVariant=captured && capturedBase
+  ? capturedBase.itemUniqueIds.filter(id=>!captured.itemUniqueIds.includes(id))
+  : [];
+const grades=captured?.gradeCodes.map(code=>({
+  code,enhancement:decodedEnhancementCandidate(code)
+})) ?? [];
+const description=selection
+  ? (pt?"Lista de 11 opções de seleção identificadas na interface transmitida pelo jogo.":"11 selectable equipment IDs recovered from the game-transmitted selection screen.")
+  : captured
+  ? (pt
+    ? "Relação de IDs de equipamentos transmitida pelo jogo durante a abertura. Probabilidades não verificadas."
+    : "Equipment item IDs transmitted during an in-game box opening. Drop probabilities unverified.")
+  : (pt
+    ? "Box identificada no jogo. Lista de resultados ainda não capturada e probabilidades desconhecidas."
+    : "Box identified in-game. Item list not yet captured and drop probabilities unknown.");
+---
+<BaseLayout lang={lang} title={entry.name+" | Atlantica Knowledge Hub"} description={description}
+  alternatePaths={{en:"/items/boxes/"+entry.slug+"/", "pt-br":"/pt-br/items/boxes/"+entry.slug+"/"}}>
+  <main class="container">
+    <nav class="crumb"><a href={base}>{pt?"← Voltar às boxes":"← Back to boxes"}</a></nav>
+    <article class="article">
+      <header>
+        <p class="eyebrow">{pt?"CATÁLOGO DE EQUIPMENT BOXES":"EQUIPMENT BOX CATALOG"} · GLOBAL</p>
+        <h1>{entry.name}</h1>
+        <p class="intro">{description}</p>
+        <div class="meta">
+          <span>{pt?"ID da box":"Box ID"}: {entry.itemUniqueId}</span>
+          <span>{pt?"ID de texto":"Text ID"}: {entry.nameTextId}</span>
+          <span>{entry.group==="variant" ? (pt?"Variante":"Variant") : (pt?"Box padrão":"Standard box")}</span>
+          {captured && <span>{captured.itemUniqueIds.length} {pt?"equipamentos listados":"listed equipment items"}</span>}
+          {selection && <span>{selection.itemUniqueIds.length} {pt?"opções identificadas":"selection choices identified"}</span>}
+          {entry.interaction==="selection" && <span>{pt?"Escolha de equipamento":"Equipment selection"}</span>}
+        </div>
+      </header>
+
+      {parent && <p class="parent">
+        {pt?"Box-base":"Base box"}: <a href={base+parent.slug+"/"}>{parent.name}</a>.
+      </p>}
+
+      <section>
+        <h2>{pt?"Equipamentos associados":"Associated equipment"}</h2>
+        {entry.setName && <p>
+          {pt?"Família associada":"Associated family"}: <strong>{entry.setName}</strong>
+          {entry.setLevel ? " ("+(pt?"nível ":"level ")+entry.setLevel+")" : ""}.
+        </p>}
+
+        {selection ? (
+          <>
+            <p class="notice">{pt
+              ?"Esta box permite escolher um equipamento. A lista foi obtida da mensagem 0x2139 durante a abertura; não é um sorteio com chances de drop."
+              :"This box lets players choose equipment. The list was captured in a 0x2139 selection message; it is not a random drop pool."}</p>
+            <div class="table-scroll"><table>
+              <thead><tr><th>#</th><th>{pt?"ID do item selecionável":"Selectable item ID"}</th><th>{pt?"Nome":"Name"}</th></tr></thead>
+              <tbody>{selection.itemUniqueIds.map((id,i)=><tr>
+                <td>{i+1}</td><td><code>{id}</code></td>
+                <td>{getEquipmentItemEnglishName(id) ?? (pt?"Nome pendente":"Name pending")}</td>
+              </tr>)}</tbody>
+            </table></div>
+            <p class="soft">{pt
+              ?"A escolha e o grau do equipamento ainda devem ser validados separadamente. Nenhuma probabilidade se aplica à escolha do jogador."
+              :"The chosen item and its enhancement grade require separate verification. Player choices have no random drop percentage."}</p>
+          </>
+        ) : captured ? (
+          <>
+            <p class="notice">{pt
+              ? "Esta lista foi transmitida pelo jogo durante uma abertura real. Ela não comprova chances iguais, resultados garantidos nem ausência de condições adicionais."
+              : "This list was transmitted by the game during a real opening. It does not establish equal odds, guaranteed outcomes or the absence of additional conditions."}</p>
+            <p>
+              <strong>{pt?"Graus prováveis mostrados":"Likely listed enhancement grades"}:</strong>
+              {" "}{grades.map(g=>g.enhancement===undefined?"?":"+"+g.enhancement).join(", ")}
+              <span class="soft"> ({pt?"códigos":"codes"}: {captured.gradeCodes.join(", ")})</span>.
+            </p>
+            <p>
+              <strong>{pt?"Retorno observado":"Observed return"}:</strong>
+              {" "}{pt?"ID do item":"Item ID"} <code>{captured.observedItemId}</code>
+              {" "}({pt?"grau provável":"likely grade"} +{decodedEnhancementCandidate(captured.observedGradeCode)??"?"}).
+              {" "}{pt?"Uma amostra, não uma estimativa de chance.":"One sample, not an odds estimate."}
+            </p>
+            {missingFromVariant.length>0 && <p class="notice">
+              {pt
+                ? "A prévia desta variante não incluiu alguns IDs presentes na box-base: "
+                : "This variant's preview did not include some IDs present in the base box: "}
+              <strong>{missingFromVariant.join(", ")}</strong>.
+              {pt?" Não foram adicionados automaticamente.":" They have not been added by assumption."}
+            </p>}
+            {captured.repeatedIdenticalPairs>0 && <p class="notice">
+              {pt
+                ? "A prévia continha pares idênticos de item+grau repetidos. As repetições não foram interpretadas como pesos de sorteio."
+                : "The preview contained repeated identical item+grade pairs. Repetitions are not treated as drop weights."}
+            </p>}
+            <div class="table-scroll"><table>
+              <thead><tr>
+                <th>#</th><th>{pt?"Equipamento (ID Unique)":"Equipment (Unique ID)"}</th>
+                <th>{pt?"Graus possíveis na prévia":"Preview grades"}</th><th>{pt?"Chance":"Chance"}</th>
+              </tr></thead>
+              <tbody>
+                {captured.itemUniqueIds.map((id,index)=><tr>
+                  <td>{index+1}</td>
+                  <td><strong>{getEquipmentItemEnglishName(id) ?? (pt?"Nome pendente":"Name pending")}</strong><span class="item-id"> ID {id}</span></td>
+                  <td>{grades.map(g=>g.enhancement===undefined?"?":"+"+g.enhancement).join(", ")}</td>
+                  <td>—</td>
+                </tr>)}
+              </tbody>
+            </table></div>
+            <p class="soft">{captured.itemUniqueIds.length} {pt?"IDs distintos":"distinct item IDs"} ·
+              {" "}{captured.rawPreviewPositionCount} {pt?"posições transmitidas":"transmitted positions"}.
+              {pt?" Nomes obtidos da localização inglesa do cliente.":"Names taken from the English game-client localization."}
+            </p>
+          </>
+        ) : (
+          <>
+            <p class="notice">{pt
+              ? (entry.interaction==="selection"?"A box é de seleção, mas ainda não identificamos sua lista de opções na captura.":"Ainda não há uma prévia de abertura capturada para esta box. Não é possível afirmar sua lista completa de resultados.")
+              : (entry.interaction==="selection"?"This selection box has no recovered option list yet.":"No opening preview has been captured for this box. Its complete result list has not been verified.")}</p>
+            {entry.group==="variant" && entry.enhancementMin!==undefined && entry.enhancementMax!==undefined &&
+              <p>{pt?"Faixa informada pelo jogador":"Player-reported enhancement range"}:
+                <strong> +{entry.enhancementMin} {pt?"a":"to"} +{entry.enhancementMax}</strong>.
+              </p>}
+          </>
+        )}
+        <p class="soft">{entry.interaction==="selection"
+          ? (pt?"Escolha de item: não é sorteio aleatório.":"Item selection: not a random draw.")
+          : (pt?"Probabilidades: desconhecidas.":"Drop rates: unknown.")}</p>
+      </section>
+
+      <p class="source-note">{selection
+        ? (pt?"Proveniência: seleção exibida pela mensagem 0x2139 na captura passiva de 22/11/2026. Nomes resolvidos por Unique ID → NameTextNum → TextMgr_Item_ENG.ntx.":"Provenance: 0x2139 selection UI captured passively on Nov 22, 2026. English names resolved via Unique ID → NameTextNum → TextMgr_Item_ENG.ntx.")
+        : captured
+        ? (pt
+          ? "Proveniência: captura passiva de 22/11/2026; prévia 0x2137 e resposta 0x2138. IDs e códigos extraídos sem dados de sessão. Graus interpretados como código menos cinco; esta regra não é uma especificação oficial."
+          : "Provenance: passive capture from Nov 22, 2026; preview 0x2137 and result 0x2138. IDs and codes extracted without session data. Grades interpreted as code minus five; this is not an official protocol specification.")
+        : (pt
+          ? "Escopo conferido com as capturas de tela do jogador; ainda sem prévia de recompensa."
+          : "Scope checked against player screenshots; reward preview not yet captured.")}</p>
+    </article>
+  </main>
+</BaseLayout>
+<style>
+.container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
+.crumb{padding:24px 0}.crumb a,.article a{color:var(--color-accent);text-decoration:none}
+.article{max-width:1100px;margin:0 auto}.eyebrow{color:var(--color-accent);font-size:.8rem;letter-spacing:.1em}
+h1{font-size:clamp(2rem,4vw,3rem);margin:9px 0 16px}
+.intro,.source-note,.soft{color:var(--color-text-muted)}
+.meta{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 28px}
+.meta span{padding:6px 10px;background:var(--color-surface);border:1px solid var(--color-border);font-size:.85rem}
+section{padding:24px 0;border-top:1px solid var(--color-border);line-height:1.8}
+h2{font-size:1.6rem}.notice{padding:13px 18px;border-left:3px solid var(--color-bronze);background:var(--color-surface)}
+.parent{margin:20px 0}
+.source-note{font-size:.86rem;border-top:1px solid var(--color-border);padding-top:18px}
+.table-scroll{overflow-x:auto;border:1px solid var(--color-border);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:630px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--color-border)}
+th{color:var(--color-gold-light);background:#29271f}
+.item-id{font-size:.78rem;color:var(--color-text-muted);margin-left:7px;white-space:nowrap}
+code{font-variant-numeric:tabular-nums}
+</style>

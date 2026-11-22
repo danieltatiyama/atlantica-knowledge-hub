@@ -1,12 +1,26 @@
 ---
 import BoxArticle from "../../../components/BoxArticle.astro";
+import EquipmentBoxOverview from "../../../components/EquipmentBoxOverview.astro";
+import { EQUIPMENT_BOXES } from "../../../data/equipment-box-registry";
+import type { EquipmentBoxEntry } from "../../../data/equipment-box-registry";
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
+
 export async function getStaticPaths() {
-  const boxes=await getCollection("boxes",({data})=> data.lang==="en" && !data.draft && data.reviewStatus==="approved" && data.evidenceStatus!=="client-config");
-  return boxes.map(box=>({params:{slug:box.id.replace(/^en\//,"")},props:{box}}));
+  const published=await getCollection("boxes",({data})=>
+    data.lang==="en" && !data.draft && data.reviewStatus==="approved" &&
+    data.evidenceStatus!=="client-config");
+  const slugs=new Set(published.map(box=>box.id.split("/").slice(1).join("/")));
+  return [
+    ...published.map(box=>({params:{slug:box.id.split("/").slice(1).join("/")},props:{box}})),
+    ...EQUIPMENT_BOXES.filter(entry=>!slugs.has(entry.slug))
+      .map(entry=>({params:{slug:entry.slug},props:{entry}})),
+  ];
 }
-interface Props { box: CollectionEntry<"boxes">; }
-const {box}=Astro.props;
+interface Props {
+  box?: CollectionEntry<"boxes">;
+  entry?: EquipmentBoxEntry;
+}
+const {box,entry}=Astro.props;
 ---
-<BoxArticle box={box} lang="en" />
+{box ? <BoxArticle box={box} lang="en" /> : entry ? <EquipmentBoxOverview entry={entry} lang="en" /> : null}
