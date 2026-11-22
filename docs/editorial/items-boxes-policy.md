@@ -76,10 +76,29 @@ Game item Unique IDs are not localization indexes. Join item definition tables f
 Then resolve `NameTextNum` through `LANG/ENG/TextMgr/TextMgr_Item_ENG.ntx`.
 `TextMgr_ItemHelper_ENG.ntx` is supplementary descriptive text, not the principal English name table.
 
-The complete ENG NTX files were **not part of the private Stage 17 packet export**,
-so names not already verified remain **Unique ID only** until extracted.
-Use the separately delivered private `Export_Atlantica_Item_Names.ps1` helper to
-gather the sources locally. Do not upload raw game asset files to the public repo.
+## Stage 18.0 English name resolution (2026-11-22)
+
+The user supplied the original NCR v3-encoded English TextMgr files and ItemType
+definitions in a **private** ZIP. The NCR v3 decoder successfully read
+`TextMgr_Item_ENG.ntx` and `TextMgr_ItemHelper_ENG.ntx` (both UTF-16
+after decryption). The latter contains auxiliary descriptions/templates;
+it is not used as a replacement for item-name strings.
+
+Result:
+- `TextMgr_Item_ENG.ntx`: 31,237 nonempty translated keys.
+- `TextMgr_ItemHelper_ENG.ntx`: 8,970 nonempty auxiliary keys.
+- 74 parseable ItemType NDT definitions: 33,437 rows and 22,483 distinct IDs
+  (some non-equipment tables use different header layouts and are excluded).
+- 551 scoped distinct equipment IDs (529 from 30 random-box previews and
+  22 from Asura/Osiris selection lists), **551/551 names resolved**, no
+  naming conflicts and no unverified fallback names in the scoped dictionary.
+
+`src/data/equipment-item-names-en.ts` contains the 551 reviewed
+`Unique -> EnglishName` pairs only. The website displays names together with
+Unique IDs; the private export retains `NameTextNum` and source paths for
+audits. The original encrypted assets remain private and are **not** committed.
+The box-content evidence tier still comes from the gameplay capture, not
+from the localization file. No drop probabilities are inferred.
 
 ## Regional chances
 
