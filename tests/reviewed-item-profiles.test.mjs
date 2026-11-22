@@ -17,7 +17,8 @@ test("real reviewed profile passes explicit public gate", () => {
   const check = checkReviewedItemProfiles();
   assert.deepEqual(check.errors, []);
   assert.equal(check.ok, true);
-  assert.equal(check.records.length, 1);
+  assert.equal(check.records.length, 3);
+  assert.deepEqual(check.records.map(x => x.id), ["1","400","1400"]);
   assert.equal(check.records[0].nameEn, names["1"]);
 });
 
@@ -47,6 +48,24 @@ test("Spirit Sword displays only screenshot-backed +0 stats and original class r
   assert.equal(sword.enchantmentProjectionModel, "wikidot-classic-v1");
   assert.equal(sword.evidence.projections, "community-reference");
   assert.equal(sword.evidence.references.length, 5);
+});
+
+test("community-backed Spirit Bow and Instrument are labeled as historical, not observed in-game", () => {
+  for (const [id, type, base, urlSuffix] of [
+    ["400","Bow",{attackMin:50,attackMax:100,dexterity:8},"item:spirit-bow"],
+    ["1400","Instrument",{attackMin:40,attackMax:50,intelligence:16,vitality:6},"item:spirit-instrument"]
+  ]) {
+    const rec=profiles.records.find(x=>x.id===id);
+    assert.equal(rec.nameEn,names[id]);
+    assert.equal(rec.overview.typeEn,type);
+    assert.deepEqual(rec.stats[0],{enchantLevel:0,...base});
+    assert.equal(rec.evidence.stats,"community-reference");
+    assert.equal(rec.evidence.overview,"community-reference");
+    assert.equal(rec.evidence.crafting,"community-reference");
+    assert.equal(rec.evidence.materials,"community-reference");
+    assert.equal(rec.enchantmentProjectionModel,"wikidot-classic-v1");
+    assert.ok(rec.evidence.references.some(ref=>ref.url?.endsWith(urlSuffix)));
+  }
 });
 
 test("reject unknown IDs, overwritten published names and injected extra fields", () => {
