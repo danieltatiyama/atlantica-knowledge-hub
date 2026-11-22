@@ -55,9 +55,9 @@ const clone=x=>JSON.parse(JSON.stringify(x));
 
 test("explicit human selection yields a strict public-schema-valid DRAFT only",()=>{
   const result=makeHistoricalDraft(existing,audit,approvals,registry);
-  assert.equal(result.existing,3);
+  assert.equal(result.existing,existing.records.length);
   assert.equal(result.added,1);
-  assert.equal(result.dataset.records.length,4);
+  assert.equal(result.dataset.records.length,existing.records.length+1);
   assert.equal(validateReviewedProfiles(result.dataset,registry).ok,true);
   const output=result.dataset.records.find(x=>x.id===id);
   assert.equal(output.nameEn,name);
