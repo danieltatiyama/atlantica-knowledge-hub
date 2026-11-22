@@ -25,7 +25,9 @@
     "test:client-facts": "node --test tests/client-first-equipment.test.mjs tests/legendary-client-reconciliation.test.mjs",
     "validate:client-facts": "node scripts/check-client-equipment-facts.mjs",
     "profile:miner-fields": "python scripts/profile-miner-reference-fields.py",
-    "match:legendary": "node scripts/build-legendary-client-report.mjs"
+    "match:legendary": "node scripts/build-legendary-client-report.mjs",
+    "test:client-attributes": "node --test tests/client-source-attributes.test.mjs",
+    "validate:client-attributes": "node scripts/check-client-item-attributes.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.10",

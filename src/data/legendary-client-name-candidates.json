@@ -1,0 +1,730 @@
+{
+  "schemaVersion": "1.0",
+  "dataset": "legendary-client-name-candidates",
+  "snapshotId": 1,
+  "sourceList": "https://atlantica.fandom.com/wiki/Legendary_Weapons",
+  "sourceKind": "game-client-extracted:catalog_items",
+  "matchPolicy": "Exact official English name only; candidates are not verified Legendary-capable item IDs or evidence of current distribution.",
+  "entries": [
+    {
+      "nameEn": "Minotaur Axe",
+      "category": "Axe",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "324",
+          "recordIds": [
+            112681,
+            182403
+          ],
+          "clientLevelRaw": "101",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Wratheater Minotaur Axe",
+      "category": "Axe",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "325",
+          "recordIds": [
+            112682,
+            182404
+          ],
+          "clientLevelRaw": "135",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Merciless Grudge of Grendel",
+      "category": "Axe",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "8585",
+          "recordIds": [
+            112701
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Axe",
+      "category": "Axe",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1373",
+          "recordIds": [
+            113342
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Hephaestus' Silver Hammer",
+      "category": "Axe",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "23778",
+          "recordIds": [
+            113524
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Hephaestus' Gold Hammer",
+      "category": "Axe",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "23779",
+          "recordIds": [
+            113525
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Grim Reaper's Sickle",
+      "category": "Axe",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "398",
+          "recordIds": [
+            113404
+          ],
+          "clientLevelRaw": "155",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Immortal Bow",
+      "category": "Bow",
+      "clientMatchStatus": "ambiguous-client-identity",
+      "clientCandidates": [
+        {
+          "itemId": "429",
+          "recordIds": [
+            112768,
+            182586
+          ],
+          "clientLevelRaw": "100",
+          "clientGradeRaw": "NORMAL"
+        },
+        {
+          "itemId": "437",
+          "recordIds": [
+            112776
+          ],
+          "clientLevelRaw": "100",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Bow",
+      "category": "Bow",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1374",
+          "recordIds": [
+            113343
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Wailing Piercer",
+      "category": "Bow",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24067",
+          "recordIds": [
+            113517
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Nemesis Cannon",
+      "category": "Cannon",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "9350",
+          "recordIds": [
+            112923
+          ],
+          "clientLevelRaw": "100",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Cannon",
+      "category": "Cannon",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1376",
+          "recordIds": [
+            113345
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Shadowveil Buster",
+      "category": "Cannon",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24315",
+          "recordIds": [
+            113516
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "LUXURY"
+        }
+      ]
+    },
+    {
+      "nameEn": "Lucifer's Rifle",
+      "category": "Gun",
+      "clientMatchStatus": "ambiguous-client-identity",
+      "clientCandidates": [
+        {
+          "itemId": "528",
+          "recordIds": [
+            112834,
+            185765
+          ],
+          "clientLevelRaw": "100",
+          "clientGradeRaw": "RARE"
+        },
+        {
+          "itemId": "536",
+          "recordIds": [
+            113414
+          ],
+          "clientLevelRaw": "100",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Rifle",
+      "category": "Gun",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1375",
+          "recordIds": [
+            113344
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Queen Bee Stinger",
+      "category": "Gun",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24134",
+          "recordIds": [
+            113515
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "LUXURY"
+        }
+      ]
+    },
+    {
+      "nameEn": "Faust's Violin",
+      "category": "Instrument",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1461",
+          "recordIds": [
+            113068,
+            185703
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Feather de Milan",
+      "category": "Instrument",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "23780",
+          "recordIds": [
+            113526
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Instrument",
+      "category": "Instrument",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1378",
+          "recordIds": [
+            113347
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Dark Abyssal Instrument",
+      "category": "Instrument",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1399",
+          "recordIds": [
+            113430
+          ],
+          "clientLevelRaw": "165",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Grimms' Magic Source",
+      "category": "Orb",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "21105",
+          "recordIds": [
+            114484
+          ],
+          "clientLevelRaw": "155",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Crimson Wasteland Power Saw",
+      "category": "Power Saw",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "8583",
+          "recordIds": [
+            113141
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Power Saw",
+      "category": "Power Saw",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1379",
+          "recordIds": [
+            113348
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Guardian Sheath",
+      "category": "Shield",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "152",
+          "recordIds": [
+            114566
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Fire Dragon's Long Spear",
+      "category": "Spear",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "139",
+          "recordIds": [
+            113207,
+            192445
+          ],
+          "clientLevelRaw": "120",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Lance",
+      "category": "Spear",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1372",
+          "recordIds": [
+            113341
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Merciful Crescent Glaive",
+      "category": "Spear",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24041",
+          "recordIds": [
+            113519
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Passionate Crescent Glaive",
+      "category": "Spear",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24042",
+          "recordIds": [
+            113520
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Peaceful Crescent Glaive",
+      "category": "Spear",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24040",
+          "recordIds": [
+            113518
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Purity Crescent Glaive",
+      "category": "Spear",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24043",
+          "recordIds": [
+            113521
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Sage Crescent Glaive",
+      "category": "Spear",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24044",
+          "recordIds": [
+            113522
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Diabolic Staff",
+      "category": "Staff",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "227",
+          "recordIds": [
+            113205,
+            192574
+          ],
+          "clientLevelRaw": "120",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Staff",
+      "category": "Staff",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1377",
+          "recordIds": [
+            113346
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "IceColdSnow Candy Cane",
+      "category": "Staff",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "21452",
+          "recordIds": [
+            113529
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "HotFireLava Candy Cane",
+      "category": "Staff",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "21451",
+          "recordIds": [
+            113528
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Golden Scepter",
+      "category": "Staff",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "232",
+          "recordIds": [
+            113236
+          ],
+          "clientLevelRaw": "155",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Sword",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1371",
+          "recordIds": [
+            113340
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Excalibur",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "151",
+          "recordIds": [
+            113416
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Blooming Blade of Roses",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24132",
+          "recordIds": [
+            113514
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "LUXURY"
+        }
+      ]
+    },
+    {
+      "nameEn": "Dell'arte Phantom Sword",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "59",
+          "recordIds": [
+            112549
+          ],
+          "clientLevelRaw": "90",
+          "clientGradeRaw": "LUXURY"
+        }
+      ]
+    },
+    {
+      "nameEn": "Flourishing Blade of Roses",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "24131",
+          "recordIds": [
+            113513
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "LUXURY"
+        }
+      ]
+    },
+    {
+      "nameEn": "Spartacus' Great Sword",
+      "category": "Sword",
+      "clientMatchStatus": "not-found-in-miner",
+      "clientCandidates": []
+    },
+    {
+      "nameEn": "Dynasty Sword",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "97",
+          "recordIds": [
+            112550
+          ],
+          "clientLevelRaw": "160",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Sword of Life’s Song",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "50",
+          "recordIds": [
+            112542,
+            192836
+          ],
+          "clientLevelRaw": "160",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    },
+    {
+      "nameEn": "Dell'arte's Ambition",
+      "category": "Sword",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "23810",
+          "recordIds": [
+            113527
+          ],
+          "clientLevelRaw": "150",
+          "clientGradeRaw": "LUXURY"
+        }
+      ]
+    },
+    {
+      "nameEn": "Jupiter's Whip",
+      "category": "Whip",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "1380",
+          "recordIds": [
+            113349
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "NORMAL"
+        }
+      ]
+    },
+    {
+      "nameEn": "Garuda's Solar Whip",
+      "category": "Whip",
+      "clientMatchStatus": "one-exact-source-name",
+      "clientCandidates": [
+        {
+          "itemId": "8584",
+          "recordIds": [
+            113235
+          ],
+          "clientLevelRaw": "140",
+          "clientGradeRaw": "RARE"
+        }
+      ]
+    }
+  ]
+}
