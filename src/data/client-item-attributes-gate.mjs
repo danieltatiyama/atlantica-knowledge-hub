@@ -6,7 +6,7 @@
  */
 const fields=new Set([
 "MinDamage","MaxDamage","Attack","AC","Defence","MagicDef",
-"Str","Dex","Vit","Mag","Intl","Int","Critical","CriticalPlus",
+"Str","Dex","Vit","Mag","Intl","Int","Critical","CriticalPlus","MoveSpeed",
 "Critical_Damage","HitRate","Dodge","EV","Magic_Damage",
 "Magic","MagicSkillPlus","ActivePower","BuffUpPercentage",
 "AddElementalBuff","AddAWKPoint","ElementPoint",
