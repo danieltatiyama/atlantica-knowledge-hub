@@ -21,7 +21,9 @@
     "coverage:items": "node scripts/build-item-article-review-queue.mjs",
     "test:wikidot-review": "node --test tests/historical-item-profile-drafts.test.mjs",
     "audit:wikidot": "python scripts/audit-wikidot-item-pages.py",
-    "draft:wikidot": "node scripts/build-historical-item-profile-draft.mjs"
+    "draft:wikidot": "node scripts/build-historical-item-profile-draft.mjs",
+    "test:client-facts": "node --test tests/client-first-equipment.test.mjs",
+    "validate:client-facts": "node scripts/check-client-equipment-facts.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.10",
