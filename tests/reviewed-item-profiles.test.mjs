@@ -83,7 +83,7 @@ test("reject fabricated or malformed enchantments", () => {
 test("reject unsourced gameplay or materials and unsafe community URLs", () => {
   for (const mutate of [
     (x) => { x.records[0].evidence.overview = "not-provided"; },
-    (x) => { x.records[0].evidence.stats = "community-reference"; },
+    (x) => { x.records[0].evidence.stats = "unverified"; },
     (x) => { x.records[0].evidence.crafting = "not-provided"; },
     (x) => { x.records[0].evidence.materials = "not-provided"; },
     (x) => { x.records[0].evidence.references = []; },
