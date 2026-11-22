@@ -4,6 +4,7 @@ import { getEquipmentBoxBySlug } from "../data/equipment-box-registry";
 import type { EquipmentBoxEntry } from "../data/equipment-box-registry";
 import { getCapturedEquipmentPool, decodedEnhancementCandidate } from "../data/equipment-box-captured-pools";
 import { getCapturedSelectionPool } from "../data/equipment-box-selection-pools";
+import { getEquipmentItemEnglishName } from "../data/equipment-item-names-en";
 
 interface Props { lang: "en" | "pt-br"; entry: EquipmentBoxEntry; }
 const {lang,entry}=Astro.props;
@@ -68,7 +69,7 @@ const description=selection
               <thead><tr><th>#</th><th>{pt?"ID do item selecionável":"Selectable item ID"}</th><th>{pt?"Nome":"Name"}</th></tr></thead>
               <tbody>{selection.itemUniqueIds.map((id,i)=><tr>
                 <td>{i+1}</td><td><code>{id}</code></td>
-                <td class="soft">{pt?"Em resolução pelo TextMgr em inglês":"Pending English TextMgr resolution"}</td>
+                <td>{getEquipmentItemEnglishName(id) ?? (pt?"Nome pendente":"Name pending")}</td>
               </tr>)}</tbody>
             </table></div>
             <p class="soft">{pt
@@ -111,7 +112,7 @@ const description=selection
               <tbody>
                 {captured.itemUniqueIds.map((id,index)=><tr>
                   <td>{index+1}</td>
-                  <td><code>{id}</code> <span class="soft">{pt?"— Nome em validação":"— Name pending"}</span></td>
+                  <td><strong>{getEquipmentItemEnglishName(id) ?? (pt?"Nome pendente":"Name pending")}</strong><span class="item-id"> ID {id}</span></td>
                   <td>{grades.map(g=>g.enhancement===undefined?"?":"+"+g.enhancement).join(", ")}</td>
                   <td>—</td>
                 </tr>)}
@@ -119,7 +120,7 @@ const description=selection
             </table></div>
             <p class="soft">{captured.itemUniqueIds.length} {pt?"IDs distintos":"distinct item IDs"} ·
               {" "}{captured.rawPreviewPositionCount} {pt?"posições transmitidas":"transmitted positions"}.
-              {pt?" Nomes estão pendentes de revisão das traduções oficiais.":"Names are pending a check against official localization."}
+              {pt?" Nomes obtidos da localização inglesa do cliente.":"Names taken from the English game-client localization."}
             </p>
           </>
         ) : (
@@ -139,7 +140,7 @@ const description=selection
       </section>
 
       <p class="source-note">{selection
-        ? (pt?"Proveniência: seleção exibida pela mensagem 0x2139 na captura passiva de 22/11/2026. Nomes ainda não reconciliados com o TextMgr.":"Provenance: 0x2139 selection UI captured passively on Nov 22, 2026. English names pending TextMgr reconciliation.")
+        ? (pt?"Proveniência: seleção exibida pela mensagem 0x2139 na captura passiva de 22/11/2026. Nomes resolvidos por Unique ID → NameTextNum → TextMgr_Item_ENG.ntx.":"Provenance: 0x2139 selection UI captured passively on Nov 22, 2026. English names resolved via Unique ID → NameTextNum → TextMgr_Item_ENG.ntx.")
         : captured
         ? (pt
           ? "Proveniência: captura passiva de 22/11/2026; prévia 0x2137 e resposta 0x2138. IDs e códigos extraídos sem dados de sessão. Graus interpretados como código menos cinco; esta regra não é uma especificação oficial."
@@ -166,5 +167,6 @@ h2{font-size:1.6rem}.notice{padding:13px 18px;border-left:3px solid var(--color-
 table{border-collapse:collapse;width:100%;min-width:630px}
 th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--color-border)}
 th{color:var(--color-gold-light);background:#29271f}
+.item-id{font-size:.78rem;color:var(--color-text-muted);margin-left:7px;white-space:nowrap}
 code{font-variant-numeric:tabular-nums}
 </style>
