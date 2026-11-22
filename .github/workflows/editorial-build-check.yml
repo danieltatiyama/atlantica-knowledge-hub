@@ -1,0 +1,44 @@
+name: Editorial content build check
+
+on:
+  pull_request:
+    paths:
+      - "src/content.config.ts"
+      - "src/components/Editorial*.astro"
+      - "src/content/events/**"
+      - "src/content/mercenaries/**"
+      - "src/pages/events/**"
+      - "src/pages/mercenaries/**"
+      - "src/pages/pt-br/events/**"
+      - "src/pages/pt-br/mercenaries/**"
+      - ".pages.yml"
+      - ".github/workflows/editorial-build-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  editorial-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Astro content schemas and build
+        run: npm run build
+      - name: Reject private evidence filenames
+        shell: bash
+        run: |
+          if find src/content -type f \( \
+              -iname '*private*' -o \
+              -iname '*research*10_1*' -o \
+              -iname '*miner*' \
+            \) | grep -q .; then
+            echo "Private source material must not be in public content." >&2
+            exit 1
+          fi
