@@ -107,6 +107,10 @@ class WikidotHtmlParser(HTMLParser):
             self._heading = []
         elif tag in ("p", "li"):
             self._block = []
+        elif tag == "br" and self._block is not None:
+            # Wikidot often puts Type, Level and Restrictions into one
+            # paragraph separated only by <br> tags.
+            self._block.append("\n")
         elif tag == "table":
             self._table = []
         elif tag == "tr" and self._table is not None:
@@ -141,9 +145,10 @@ class WikidotHtmlParser(HTMLParser):
                 self.tables.append({"section": self.section, "rows": self._table})
                 self._table = None
             if tag in ("p", "li") and self._block is not None:
-                value = clean("".join(self._block))
-                if value:
-                    self.blocks.append(value)
+                for line in "".join(self._block).splitlines():
+                    value = clean(line)
+                    if value:
+                        self.blocks.append(value)
                 self._block = None
             if tag in ("h1", "h2", "h3", "h4", "h5", "h6") and self._heading is not None:
                 self.section = clean("".join(self._heading)).casefold()
