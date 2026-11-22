@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; img-src data:; object-src 'none'; form-action 'none'; base-uri 'none'">
+<title>Atlantica Knowledge Hub — Revisão histórica em lote</title>
+<style>
+:root{color-scheme:dark;font:15px/1.52 system-ui,Arial,sans-serif;background:#101318;color:#eae6db}
+*{box-sizing:border-box}body{max-width:1260px;padding:20px;margin:auto}
+h1,h2{color:#e5bb77;font-weight:600}h1{font-size:1.65rem}h2{font-size:1.14rem}
+p{color:#b9b9b1}code,small{color:#cabbab}
+.panel,.item{background:#1d242e;border:1px solid #504332;padding:16px 20px;border-radius:7px;margin:14px 0}
+label{display:block;margin:10px 0 6px;color:#ecd1a1}
+input,textarea{font:inherit}input[type=file],input[type=search],textarea{
+  background:#10171f;border:1px solid #63513c;border-radius:5px;color:#efe7db;
+  padding:10px;width:100%}
+textarea{min-height:73px;resize:vertical}input[type=checkbox]{accent-color:#c99b55}
+label.toggle{display:inline-flex;align-items:center;gap:8px;margin:5px 12px 5px 0;color:#eae6db}
+button{padding:9px 15px;background:#544027;color:#fae7c6;border:1px solid #c59857;
+  border-radius:5px;cursor:pointer;font:inherit}button:disabled{opacity:.4;cursor:not-allowed}
+.controls{display:flex;gap:14px;align-items:end;flex-wrap:wrap}
+.controls>div{flex:1 1 280px}
+.summary{cursor:pointer;font-weight:600;color:#ebcb91}
+.summary small{display:block;font-weight:400;color:#a7a8a8}
+details[open] .summary{margin-bottom:14px}
+.sub{color:#bcb5ab;font-size:.9rem}
+.strong-warning{border-left:3px solid #d3a768;padding:12px;color:#e9d7b8;background:#30281e}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.mini{border:1px solid #454b55;padding:10px;border-radius:5px;background:#141b24}
+.mini strong{color:#d8b680}
+.table-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:470px}
+th,td{padding:9px;text-align:left;border-bottom:1px solid #414850}
+th{color:#e8c38a}td{color:#d8d7d2}
+fieldset{border:1px solid #5b4b37;border-radius:5px;padding:12px;margin:15px 0}
+legend{color:#ebcc99;padding:0 7px}
+.status-error{color:#f9b3a5!important}.status-success{color:#b2e0be!important}
+.bad{color:#dca295}a{color:#e4b879}a:focus-visible{outline:2px solid #f8d6ab}
+#cards{max-height:67vh;overflow:auto}.hidden{display:none}button:hover{filter:brightness(1.15)}
+@media(max-width:670px){body{padding:10px}.panel,.item{padding:12px}#cards{max-height:none}}
+</style>
+</head>
+<body>
+<header>
+ <h1>Pesquisa histórica de equipamentos · revisão em lote</h1>
+ <p>Carregue o JSON <code>Miner_Wikidot_Audit_20_17.json</code> gerado pelo script de consulta. Esta página funciona <strong>100% offline</strong>, não faz requisições, não mantém dados após fechar e não altera a wiki.</p>
+ <p class="strong-warning">Os valores do Wikidot são históricos e podem não refletir o jogo atual. Uma URL com título correspondente não constitui aprovação. Confira cada fonte e selecione apenas os campos que deseja incluir no rascunho. Ao aprovar L, confirme separadamente a elegibilidade do equipamento.</p>
+</header>
+<div class="panel">
+ <label for="audit-file">1. Carregar lote histórico privado</label>
+ <input id="audit-file" type="file" accept=".json,application/json">
+ <div class="controls">
+  <div><label for="filter">Filtrar por item, ID ou status</label>
+   <input id="filter" type="search" placeholder="Spirit, 400, title-mismatch..." disabled></div>
+  <div><label>&nbsp;</label><button id="export" disabled>2. Exportar aprovações manuais</button></div>
+ </div>
+ <p id="overview" class="sub">Nenhum lote carregado.</p>
+ <p id="status" role="status" aria-live="polite"></p>
+</div>
+<main id="cards" aria-label="Fontes de equipamento para revisão"></main>
+<footer><p class="sub">O arquivo exportado <code>Miner_Wikidot_Approvals_20_18.json</code> contém somente decisões de revisão (não páginas copiadas). Use-o com o JSON original de auditoria para produzir um rascunho. O publicador bloqueia IDs já publicados e não permite merge silencioso.</p></footer>
+<script>
+"use strict";
+(() => {
+  const el=id=>document.getElementById(id);
+  const file=el("audit-file"), filter=el("filter"), exp=el("export");
+  const cards=el("cards"), status=el("status"), overview=el("overview");
+  let entries=[];
+  const controls=new Map();
+  function node(tag,txt,cls){
+    const x=document.createElement(tag);
+    if(txt!==undefined)x.textContent=String(txt);
+    if(cls)x.className=cls;
+    return x;
+  }
+  function message(txt,error=false){
+    status.textContent=txt;
+    status.className=error?"status-error":"status-success";
+  }
+  function makeToggle(text,onChange,disabled=false){
+    const label=node("label",undefined,"toggle");
+    const box=node("input");box.type="checkbox";box.disabled=disabled;
+    label.append(box,document.createTextNode(text));
+    box.addEventListener("change",()=>onChange(box.checked));
+    return {label,box};
+  }
+  function renderOne(item){
+    const valid=item.status==="historical-draft" && item.titleMatches===true &&
+      typeof item.sourceSha256==="string" &&
+      /^[a-f0-9]{64}$/.test(item.sourceSha256);
+    const card=node("details",undefined,"item");
+    const summary=node("summary",undefined,"summary");
+    summary.append(node("span","ID "+item.itemId+" · "+item.reviewedNameEn));
+    summary.append(node("small",item.status+
+      (valid?" · candidato revisável":" · bloqueado ou pendente")));
+    card.append(summary);
+    const body=node("div");
+    const meta=node("p","Fonte: "+item.sourceUrl+
+      (item.sourceRevision===null?"":" · revisão "+item.sourceRevision),"sub");
+    body.append(meta);
+    if(!valid){
+      body.append(node("p","Requer coleta, confirmação de título ou revisão do formato. Nenhuma aprovação disponível.","bad"));
+      card.append(body);return card;
+    }
+    const state={
+      sections:new Set(),grades:new Set(),legendary:false,
+      checkedSource:false,historical:false,note:""
+    };
+    controls.set(item.itemId,state);
+    if(item.overview){
+      const wrap=node("div",undefined,"mini");
+      wrap.append(node("strong","Resumo"));
+      wrap.append(node("p",(item.overview.typeEn||"Tipo pendente")+" · Lv. "+
+        (item.overview.minimumLevel??"?")+
+        " · Classes: "+(item.overview.eligibleClasses?.length??0)));
+      body.append(wrap);
+    }
+    if(Array.isArray(item.stats)&&item.stats.length){
+      const wrap=node("div",undefined,"table-scroll");
+      const table=node("table");
+      const tr=node("tr");
+      for(const text of ["Grade","Ataque","Atributos disponíveis"]){
+        tr.append(node("th",text));
+      }
+      table.append(tr);
+      for(const s of item.stats){
+        const r=node("tr");
+        const grade=s.enchantLevel==="L"?"L":"+"+s.enchantLevel;
+        const range=s.attackMin===undefined?"—":s.attackMin+"–"+s.attackMax;
+        const fields=Object.entries(s).filter(([k])=>
+          !["enchantLevel","attackMin","attackMax"].includes(k)
+        ).map(([k,v])=>k+" "+v).join(" · ");
+        r.append(node("td",grade),node("td",range),node("td",fields||"—"));
+        table.append(r);
+      }
+      wrap.append(table);body.append(wrap);
+    }
+    if(item.crafting){
+      body.append(node("p","Fabricação histórica: "+(item.crafting.productionPerBatch??"—")+
+        " por lote · Workload "+(item.crafting.requiredWorkload??"—")+
+        " · Skill "+(item.crafting.requiredSkill?.nameEn??"—")+" "+
+        (item.crafting.requiredSkill?.level??"—"),"sub"));
+    }
+    if(item.materials?.length){
+      body.append(node("p","Materiais registrados: "+
+        item.materials.map(m=>m.nameEn+" ×"+m.quantity).join("; "),"sub"));
+    }
+
+    const sectionField=node("fieldset");
+    sectionField.append(node("legend","Seções autorizadas (nenhuma pré-marcada)"));
+    const available={
+      overview: Boolean(item.overview?.typeEn &&
+        Number.isInteger(item.overview?.minimumLevel) &&
+        Array.isArray(item.overview?.eligibleClasses)),
+      stats: Array.isArray(item.stats)&&item.stats.length>0,
+      crafting: Boolean(item.crafting?.requiredSkill &&
+        Number.isInteger(item.crafting?.productionPerBatch) &&
+        Number.isInteger(item.crafting?.requiredWorkload)),
+      materials: Array.isArray(item.materials)&&item.materials.length>0,
+    };
+    const sectionControls=new Map();
+    for(const [section,ok] of Object.entries(available)){
+      const t=makeToggle(section+(ok?"":" (dados insuficientes)"),checked=>{
+        if(checked)state.sections.add(section);else state.sections.delete(section);
+        if(section==="stats" && !checked){
+          state.grades.clear();
+          for(const box of gradeChecks.values())box.checked=false;
+        }
+        if(section==="crafting" && !checked){
+          state.sections.delete("materials");
+          if(sectionControls.has("materials"))sectionControls.get("materials").checked=false;
+        }
+      },!ok);
+      sectionControls.set(section,t.box);
+      sectionField.append(t.label);
+    }
+    body.append(sectionField);
+
+    const gradeField=node("fieldset");
+    gradeField.append(node("legend","Níveis da tabela histórica aprovados"));
+    const gradeChecks=new Map();
+    for(const s of item.stats||[]){
+      const grade=s.enchantLevel;
+      const t=makeToggle(grade==="L"?"L · Legendary":"+"+grade,checked=>{
+        if(checked)state.grades.add(grade);else state.grades.delete(grade);
+      });
+      gradeChecks.set(String(grade),t.box);
+      gradeField.append(t.label);
+    }
+    body.append(gradeField);
+    const legendary=makeToggle(
+      "L confirmado como elegível nesta fonte (necessário para aprovar L)",
+      checked=>{state.legendary=checked;});
+    body.append(legendary.label);
+
+    const source=makeToggle("Conferi a página, identidade do item e fonte",
+      checked=>state.checkedSource=checked);
+    const historical=makeToggle("Aceito que dados históricos NÃO são confirmação da versão atual",
+      checked=>state.historical=checked);
+    body.append(source.label,historical.label);
+    const note=node("textarea");
+    note.placeholder="Justificativa da revisão (mínimo de 20 caracteres): quais campos foram conferidos e de onde?";
+    note.addEventListener("input",()=>state.note=note.value);
+    const label=node("label","Anotação obrigatória de revisão");
+    body.append(label,note);
+    card.append(body);
+    return card;
+  }
+  function reset(){
+    entries=[];controls.clear();cards.replaceChildren();
+    filter.disabled=true;exp.disabled=true;filter.value="";overview.textContent="Nenhum lote carregado.";
+  }
+  function display(){
+    const term=filter.value.trim().toLocaleLowerCase();
+    let shown=0;
+    for(const card of cards.children){
+      const id=card.dataset.itemId;
+      const item=entries.find(x=>x.itemId===id);
+      card.classList.toggle("hidden",!item ||
+        ![item.itemId,item.reviewedNameEn,item.status].join(" ")
+           .toLocaleLowerCase().includes(term));
+      if(!card.classList.contains("hidden"))shown++;
+    }
+    overview.textContent=entries.length+" registros no lote · "+controls.size+
+      " aptos para revisão · "+shown+" visíveis";
+  }
+  file.addEventListener("change",async()=>{
+    reset();message("");
+    if(!file.files?.length)return;
+    try{
+      if(file.files[0].size>5000000)throw Error("too large");
+      const data=JSON.parse(await file.files[0].text());
+      if(data?.reviewVersion!=="20.17-private" ||
+         data.allRowsAreHistoricalUnverified!==true ||
+         !Array.isArray(data.entries) || data.entries.length>20)throw Error("invalid");
+      const seen=new Set();
+      for(const item of data.entries){
+        if(!item || typeof item.itemId!=="string" ||
+           !/^[1-9]\d*$/.test(item.itemId) || seen.has(item.itemId) ||
+           typeof item.reviewedNameEn!=="string" ||
+           typeof item.status!=="string" ||
+           typeof item.sourceUrl!=="string")throw Error("invalid entry");
+        seen.add(item.itemId);
+      }
+      entries=data.entries;
+      for(const item of entries){
+        const card=renderOne(item);
+        card.dataset.itemId=item.itemId;
+        cards.append(card);
+      }
+      filter.disabled=false;exp.disabled=false;display();
+      message("Lote carregado localmente. Nenhuma seção nem item foi aprovado automaticamente.");
+    }catch{
+      reset();message("O arquivo não corresponde a uma auditoria histórica válida.",true);
+    }
+  });
+  filter.addEventListener("input",display);
+  exp.addEventListener("click",()=>{
+    const decisions=[];
+    for(const item of entries){
+      const d=controls.get(item.itemId);
+      if(!d || (d.sections.size===0 && d.grades.size===0 &&
+                !d.legendary && !d.checkedSource && !d.historical && !d.note.trim())){
+        continue;
+      }
+      if(d.sections.size===0 || !d.checkedSource || !d.historical ||
+         d.note.trim().length<20 ||
+         (d.sections.has("stats") && d.grades.size===0) ||
+         (!d.sections.has("stats") && d.grades.size>0) ||
+         (d.grades.has("L") && !d.legendary) ||
+         (d.legendary && !d.grades.has("L")) ||
+         (d.sections.has("materials") && !d.sections.has("crafting"))){
+        message("Revisão incompleta no item ID "+item.itemId+
+          ": campos, fonte, confirmação histórica e nota são obrigatórios.",true);
+        const card=Array.from(cards.children).find(c=>c.dataset.itemId===item.itemId);
+        if(card)card.open=true;
+        return;
+      }
+      decisions.push({
+        itemId:item.itemId,
+        sourceUrl:item.sourceUrl,
+        sourceSha256:item.sourceSha256,
+        reviewerNote:d.note.trim(),
+        approvedSections:Array.from(d.sections),
+        approvedStatLevels:Array.from(d.grades),
+        legendaryEligibleApproved:d.legendary,
+        reviewerCheckedSource:d.checkedSource,
+        acknowledgeHistoricalNotCurrent:d.historical,
+      });
+    }
+    if(!decisions.length){message("Nenhum item revisado foi selecionado.",true);return;}
+    const data={manifestVersion:"20.18-approvals",items:decisions};
+    const url=URL.createObjectURL(new Blob(
+      [JSON.stringify(data,null,2)+"\n"],{type:"application/json"}));
+    const a=node("a");
+    a.href=url;a.download="Miner_Wikidot_Approvals_20_18.json";
+    document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    message(decisions.length+" revisão(ões) exportadas como manifesto privado. Nenhum arquivo da wiki mudou.");
+  });
+})();
+</script>
+</body>
+</html>
