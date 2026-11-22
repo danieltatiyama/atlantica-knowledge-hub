@@ -15,6 +15,10 @@ const rows = getEnchantStatRows(
   profile?.enchantmentProjectionModel ?? null
 ) as (ItemArticleStatRow & { origin: "observed" | "estimated" })[];
 const hasEstimated = rows.some((row) => row.origin === "estimated");
+const baseStatsFromGame = profile?.evidence.stats === "ingame-screenshot";
+const baseSourceDescription = baseStatsFromGame
+  ? (pt ? "Observado no jogo" : "Observed in-game")
+  : (pt ? "Tabela comunitária histórica" : "Historical community table");
 const number = new Intl.NumberFormat(pt ? "pt-BR" : "en-US");
 const format = (value: number | undefined) => value === undefined ? "—" : number.format(value);
 const possibleStats: { key: keyof ItemArticleStatRow; en: string; pt: string }[] = [
@@ -54,7 +58,9 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
             <span class="class-chip">{cls}</span>)}</div>
         </div>
       )}
-      <p class="source-note">{pt ? "Fonte: tooltip do jogo · Equipamento +0" : "Source: in-game tooltip · +0 equipment"}</p>
+      <p class="source-note">{profile.evidence.overview === "ingame-screenshot"
+        ? (pt ? "Fonte: tooltip do jogo · Equipamento +0" : "Source: in-game tooltip · +0 equipment")
+        : (pt ? "Fonte: documentação comunitária histórica · Não verificado no jogo atual" : "Source: historical community documentation · Not verified in the current game")}</p>
     </div>
   </section>
 )}
@@ -65,10 +71,14 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
       <>
         <p class="subtle">{pt
           ? (hasEstimated
-            ? "O +0 foi observado no jogo; os demais valores são projeções baseadas em tabelas históricas de equipamentos. Cada linha identifica sua origem."
+            ? (baseStatsFromGame
+              ? "O +0 foi observado no jogo; os demais valores são projeções baseadas em tabelas históricas de equipamentos. Cada linha identifica sua origem."
+              : "O +0 foi documentado em uma wiki comunitária histórica; os demais valores são projeções do mesmo modelo. Nenhum deles foi confirmado no cliente atual.")
             : "Valores por nível de encantamento, provenientes de fontes revisadas.")
           : (hasEstimated
-            ? "+0 was observed in-game; other values are predictions derived from historical equipment tables. Every row identifies its origin."
+            ? (baseStatsFromGame
+              ? "+0 was observed in-game; other values are predictions derived from historical equipment tables. Every row identifies its origin."
+              : "+0 was documented in a historic community wiki; other values are predictions from the same model. None have been confirmed in the current client.")
             : "Enchantment statistics from reviewed sources.")}</p>
         <div class="table-scroll">
           <table class="item-table">
@@ -86,7 +96,7 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
                 ? "—" : "+" + format(row[column.key])}</td>)}
               <td class={row.origin === "estimated" ? "estimated" : "observed"}>
                 {row.origin === "observed"
-                  ? (pt ? "Observado no jogo" : "Observed in-game")
+                  ? baseSourceDescription
                   : (pt ? "Calculado · modelo histórico" : "Calculated · historical model")}
               </td>
             </tr>)}</tbody>
@@ -109,6 +119,9 @@ const sourceLegend = (kind: string) => kind === "ingame-screenshot" ? screenshot
     <h2>{pt ? "Fabricação" : "Crafting"}</h2>
     {crafting ? (
       <>
+        <p class="source-note">{profile.evidence.crafting === "ingame-screenshot"
+          ? (pt ? "Valores de fabricação observados no tooltip do jogo." : "Crafting values observed in the in-game tooltip.")
+          : (pt ? "Valores de fabricação provenientes de fonte comunitária histórica; podem ter mudado." : "Crafting values from historical community documentation; they may have changed.")}</p>
         <div class="craft-info">
           <dl>
             <div><dt>{pt ? "Produção por lote" : "Production per batch"}</dt>
