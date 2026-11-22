@@ -44,7 +44,9 @@ test("Spirit Sword displays only screenshot-backed +0 stats and original class r
   assert.equal(sword.evidence.stats, "ingame-screenshot");
   assert.equal(sword.evidence.crafting, "ingame-screenshot");
   assert.equal(sword.evidence.materials, "community-reference");
-  assert.equal(sword.evidence.references.length, 2);
+  assert.equal(sword.enchantmentProjectionModel, "wikidot-classic-v1");
+  assert.equal(sword.evidence.projections, "community-reference");
+  assert.equal(sword.evidence.references.length, 5);
 });
 
 test("reject unknown IDs, overwritten published names and injected extra fields", () => {
@@ -54,6 +56,7 @@ test("reject unknown IDs, overwritten published names and injected extra fields"
     (x) => { x.records[0].overview.typeEn = "<script>alert(1)</script>"; },
     (x) => { x.records[0].overview.eligibleClasses[0] = "Rogue\nNew Class"; },
     (x) => { x.records[0].recipe = "[[5100, 99]]"; },
+    (x) => { x.records[0].enchantmentProjectionModel = "invented-unsupported"; },
     (x) => { x.records.push(clone(x.records[0])); },
     (x) => { x.privatePayload = "SECRET_CLIENT_DUMP"; },
     (x) => { x.records[0].crafting.materials[0].rawClientPath = "C:\\PRIVATE"; },
@@ -86,6 +89,7 @@ test("reject unsourced gameplay or materials and unsafe community URLs", () => {
     (x) => { x.records[0].evidence.stats = "unverified"; },
     (x) => { x.records[0].evidence.crafting = "not-provided"; },
     (x) => { x.records[0].evidence.materials = "not-provided"; },
+    (x) => { x.records[0].evidence.projections = "not-provided"; },
     (x) => { x.records[0].evidence.references = []; },
     (x) => { x.records[0].evidence.references[1].url = "file:///C:/private/secret.json"; },
     (x) => { x.records[0].evidence.references[1].url = "https://malicious.example/"; },
@@ -102,6 +106,8 @@ test("reject unsourced gameplay or materials and unsafe community URLs", () => {
 test("allows future partial articles with missing unknown stats/crafting but explicit evidence", () => {
   const partial = clone(profiles);
   partial.records[0].stats = [];
+  partial.records[0].enchantmentProjectionModel = null;
+  partial.records[0].evidence.projections = "not-provided";
   partial.records[0].crafting = null;
   partial.records[0].evidence.stats = "not-provided";
   partial.records[0].evidence.crafting = "not-provided";
