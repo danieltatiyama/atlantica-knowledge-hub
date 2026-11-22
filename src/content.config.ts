@@ -165,6 +165,8 @@ const boxes = defineCollection({
     itemNameTextId: z.string().regex(/^\d+$/).optional(),
     region: z.enum(["global", "kr", "jp", "other", "unknown"]).default("unknown"),
     boxType: z.enum(["random", "selection", "fixed", "unknown"]).default("unknown"),
+    contentsEvidence: z.enum(["unknown", "server-preview-captured", "family-candidates", "official-published"]).default("unknown"),
+    contentsNote: z.string().optional(),
     oddsStatus: z.enum(["unknown", "client-weights-unverified", "regional-published"])
       .default("unknown"),
     rollModel: z.enum(["single-outcome", "multiple-independent", "unknown"])
@@ -177,6 +179,8 @@ const boxes = defineCollection({
       quantity: z.number().int().positive(),
       chancePercent: z.number().min(0).max(100).optional(),
       chanceNotes: z.string().optional(),
+      observedCount: z.number().int().min(0).optional(),
+      quantityVerified: z.boolean().default(true),
     })).default([]),
   }).superRefine((data, ctx) => {
     const withChances = data.outcomes.filter((row) => row.chancePercent !== undefined);
@@ -213,6 +217,10 @@ const boxes = defineCollection({
       }
     }
     if (!data.draft) {
+      if (data.contentsEvidence === "family-candidates" && data.outcomes.length > 0) {
+        ctx.addIssue({ code: "custom", path: ["contentsEvidence"],
+          message: "Inferred family candidates cannot be presented as published reward pools." });
+      }
       if (data.reviewStatus !== "approved") {
         ctx.addIssue({ code: "custom", path: ["reviewStatus"],
           message: "Published boxes require editorial approval." });
