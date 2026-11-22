@@ -123,6 +123,32 @@ test("partial approvals keep unknown sections genuinely empty",()=>{
   assert.equal(rec.evidence.materials,"not-provided");
 });
 
+test("category index row may contribute source-attributed +0 ONLY after explicit review",()=>{
+  const indexAudit=clone(audit);
+  indexAudit.entries[0].sourceScope="category-index";
+  indexAudit.entries[0].itemNameMatchedInIndex=true;
+  indexAudit.entries[0].categoryLabel="Axe";
+  indexAudit.entries[0].indexedMinimumLevel=1;
+  indexAudit.entries[0].overview=null;
+  indexAudit.entries[0].crafting=null;
+  indexAudit.entries[0].materials=[];
+  indexAudit.entries[0].stats=[{enchantLevel:0,attackMin:60,attackMax:130,strength:7,vitality:6}];
+  indexAudit.entries[0].sourceUrl="https://atlantica-online.wikidot.com/item:axe";
+  const indexApproval=clone(approvals);
+  indexApproval.items[0].sourceUrl=indexAudit.entries[0].sourceUrl;
+  indexApproval.items[0].approvedSections=["stats"];
+  indexApproval.items[0].approvedStatLevels=[0];
+  const result=makeHistoricalDraft(existing,indexAudit,indexApproval,registry);
+  const profile=result.dataset.records.find(x=>x.id===id);
+  assert.equal(profile.overview,null);
+  assert.equal(profile.crafting,null);
+  assert.equal(profile.stats[0].attackMax,130);
+  assert.equal(profile.evidence.references[0].url,"https://atlantica-online.wikidot.com/item:axe");
+  assert.equal(profile.evidence.stats,"community-reference");
+  indexAudit.entries[0].itemNameMatchedInIndex=false;
+  assert.throws(()=>makeHistoricalDraft(existing,indexAudit,indexApproval,registry));
+});
+
 test("offline historical batch review page has no external scripts, network or storage APIs",()=>{
   const html=readFileSync(fileURLToPath(new URL("../tools/wikidot-batch-review.html",import.meta.url)),"utf8");
   assert.match(html,/connect-src 'none'/);
