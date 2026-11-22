@@ -38,6 +38,14 @@ jobs:
       - name: Validate Astro build
         run: npm run build
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Validate Miner read-only tooling
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
       - name: Validation completed
         if: success()
         run: |
