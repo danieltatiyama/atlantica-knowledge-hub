@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Atlantica Miner — Revisão local de equipamentos</title>
+<style>
+:root{color-scheme:dark;font:16px/1.5 system-ui,Arial,sans-serif;background:#101318;color:#efe7d8}
+*{box-sizing:border-box}body{max-width:1250px;padding:20px;margin:0 auto}
+h1,h2{font-weight:500;color:#e3bf7f}h1{font-size:1.7rem}h2{font-size:1.1rem;margin:0}
+p{color:#c6b8a2;max-width:1000px}a{color:#e3bf7f}
+.shell{border:1px solid #53432e;padding:20px;border-radius:7px;background:#1d2229;margin:16px 0}
+fieldset{border:1px solid #53432e;border-radius:6px;padding:12px;margin-top:12px}
+legend{color:#e3bf7f}button,input,select,textarea{font:inherit}
+button{border:1px solid #d2a45b;background:#493923;color:#ffe3b1;border-radius:5px;padding:9px 16px;cursor:pointer}
+button:hover{background:#6b512c}button:disabled{opacity:.5;cursor:not-allowed}
+input[type=file],input[type=search],select,textarea{background:#131923;color:#efe7d8;border:1px solid #645032;border-radius:4px;padding:9px;width:100%}
+label{display:block;color:#e3bf7f;margin:8px 0 5px}
+input[type=checkbox]{accent-color:#d2a45b} .inline-label{display:inline-flex;align-items:center;gap:6px;color:#efe7d8;margin:4px 14px 4px 0}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}.row>*{flex:1 1 180px}
+.note{font-size:.91rem;color:#b7b3a8}.status{font-size:.88rem;color:#e3bf7f}.blocked{color:#d9a09e}
+details.item{padding:12px 14px;background:#1d2229;border:1px solid #465261;border-radius:6px;margin:8px 0}
+details.item[open]{border-color:#a17d45}summary{cursor:pointer;list-style:none}
+summary::before{content:"▸";padding-right:9px;color:#d2a45b}details[open]>summary::before{content:"▾"}
+.item-name{font-weight:600}.sub{font-size:.88rem;color:#b7b3a8;display:block;margin-left:24px}
+.meta{font-size:.84rem;color:#b7b3a8}textarea{resize:vertical;min-height:70px}
+.option-rows{display:flex;gap:15px;flex-wrap:wrap}
+#message{font-weight:600;min-height:30px}#message.error{color:#efb4a8}
+#message.success{color:#a4d8bf}#filter{max-width:240px}
+#results{max-height:65vh;overflow:auto;padding-right:4px}
+.item[hidden]{display:none}code{font-size:.9em}hr{border:0;border-top:1px solid #53432e;margin:20px 0}
+@media(max-width:650px){body{padding:10px}.shell{padding:12px}#results{max-height:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Atlantica Data Miner — Workbench de revisão (local)</h1>
+  <p>Esta ferramenta funciona inteiramente no navegador. Não faz requisições de rede, não armazena o arquivo e não publica informações. Abra-a diretamente como arquivo HTML no seu computador. O exportador cria somente um <strong>manifesto de decisões humanas</strong> para o reconciliador da Stage 20.5.</p>
+  <p class="note"><strong>Atenção:</strong> arquivo de revisão, manifesto de aprovação e SQLite devem permanecer privados. O campo <code>ENG</code> não garante tradução inglesa. Não aprove campos sem conferir a origem.</p>
+</header>
+<section class="shell">
+  <label for="file">1. Selecione o arquivo privado <code>Miner_Equipment_Private_Review_20_5.json</code></label>
+  <input id="file" type="file" accept=".json,application/json">
+  <div class="row">
+    <div><label for="search">Buscar por nome, ID ou estado</label><input id="search" type="search" placeholder="Spirit Sword, 192, conflito..." disabled></div>
+    <div><label for="filter">Mostrar</label><select id="filter" disabled>
+      <option value="all">Todos</option>
+      <option value="eligible">Apenas elegíveis para revisão</option>
+      <option value="blocked">Conflitos bloqueados</option>
+      <option value="chosen">Itens selecionados</option>
+    </select></div>
+    <div><label>&nbsp;</label><button id="export" disabled>2. Exportar aprovações revisadas</button></div>
+  </div>
+  <p id="statistics" class="note">Aguardando arquivo local.</p>
+  <p id="message" role="status" aria-live="polite"></p>
+</section>
+<main id="results" aria-label="Itens para revisão"></main>
+<footer><hr><p class="note">Critérios: um registro de origem por ID, pelo menos um campo permitido, uma justificativa de no mínimo 20 caracteres. Identidades ambíguas continuam bloqueadas. Nenhuma aprovação é automática.</p></footer>
+<script>
+"use strict";
+(() => {
+  const BLOCKED = new Set([
+    "no-source-records", "no-exact-base-name", "base-name-conflict",
+    "base-original-name-conflict", "base-item-field-conflict"
+  ]);
+  const FIELD_RULES = {
+    clientCategory: /^[A-Za-z][A-Za-z0-9_]{0,63}$/,
+    clientLevelRaw: /^\d{1,4}$/,
+    clientGradeRaw: /^[A-Z_]{3,32}$/
+  };
+  const FIELD_LABELS = {
+    clientCategory: "Categoria do cliente",
+    clientLevelRaw: "Nível bruto",
+    clientGradeRaw: "Grade bruta"
+  };
+  const documentById = (id) => document.getElementById(id);
+  const fileInput = documentById("file");
+  const search = documentById("search");
+  const filter = documentById("filter");
+  const message = documentById("message");
+  const results = documentById("results");
+  const statistics = documentById("statistics");
+  const exportButton = documentById("export");
+
+  let snapshotId = null;
+  let entries = [];
+  const decisions = new Map();
+  const cards = new Map();
+
+  function clearMessage() {message.textContent = "";message.className = "";}
+  function setMessage(text, error = false) {
+    message.textContent = text;
+    message.className = error ? "error" : "success";
+  }
+  function element(tag, text, classname) {
+    const el = document.createElement(tag);
+    if (text !== undefined) el.textContent = String(text);
+    if (classname) el.className = classname;
+    return el;
+  }
+  function appendLabel(parent, text, field) {
+    const lbl = element("label", text);
+    if (field) lbl.htmlFor = field.id;
+    parent.append(lbl);
+    if (field) parent.append(field);
+  }
+  function candidateValid(candidate) {
+    return candidate && Number.isSafeInteger(candidate.recordId) &&
+      candidate.recordId > 0 && typeof candidate.sourceFileOnly === "string";
+  }
+  function pickField(candidate, field) {
+    return field === "clientCategory" ? candidate.category
+      : field === "clientLevelRaw" ? candidate.clientLevelRaw : candidate.clientGradeRaw;
+  }
+  function usable(candidate, field) {
+    const value = pickField(candidate, field);
+    return typeof value === "string" && FIELD_RULES[field].test(value);
+  }
+  function refreshStats() {
+    const eligible = entries.filter(x => !BLOCKED.has(x.reviewState) &&
+      x.candidateSourceRows.some(candidateValid)).length;
+    const chosen = [...decisions.values()].filter(d => d.recordId !== null).length;
+    statistics.textContent = entries.length + " itens na fila · " + eligible +
+      " disponíveis para revisão · " + (entries.length - eligible) +
+      " bloqueados/sem candidatos · " + chosen + " fontes selecionadas";
+  }
+  function displayEntries() {
+    const term = search.value.trim().toLocaleLowerCase();
+    let shown = 0;
+    for (const entry of entries) {
+      const card = cards.get(entry.itemId);
+      const isBlocked = BLOCKED.has(entry.reviewState) ||
+        !entry.candidateSourceRows.some(candidateValid);
+      const decision = decisions.get(entry.itemId);
+      const mode = filter.value;
+      const filterMatch = mode === "all" || (mode === "eligible" && !isBlocked) ||
+        (mode === "blocked" && isBlocked) || (mode === "chosen" && decision?.recordId !== null && decision !== undefined);
+      const haystack = [entry.itemId, entry.reviewedPublicNameEn, entry.reviewState,
+        ...entry.candidateSourceRows.map(c=>c.category)].join(" ").toLocaleLowerCase();
+      card.hidden = !filterMatch || !haystack.includes(term);
+      if (!card.hidden) shown++;
+    }
+    refreshStats();
+    if (shown === 0 && entries.length) setMessage("Nenhum item corresponde aos filtros.", true);
+    else clearMessage();
+  }
+
+  function renderEntry(entry) {
+    const blocked = BLOCKED.has(entry.reviewState);
+    const available = entry.candidateSourceRows.filter(candidateValid);
+    const eligible = !blocked && available.length > 0;
+    const card = element("details", undefined, "item");
+    const summary = element("summary");
+    summary.append(element("span", "ID " + entry.itemId + " · " + entry.reviewedPublicNameEn, "item-name"));
+    summary.append(element("span",
+      entry.reviewState + " · " + entry.sourceRowCount + " linha(s) no Miner · " +
+      available.length + " candidato(s)", "sub " + (eligible ? "" : "blocked")));
+    card.append(summary);
+    const body = element("div");
+
+    const note = element("p", eligible
+      ? "Escolha o registro de origem, marque somente os campos que validou e descreva a revisão."
+      : "Bloqueado automaticamente: identidade, nome ou campos conflitantes, ou origem inadequada.",
+      "note");
+    body.append(note);
+    if (!eligible) {
+      card.append(body);
+      return card;
+    }
+    const state = { recordId: null, fields: new Set(), reviewNote: "" };
+    decisions.set(entry.itemId, state);
+    const choose = element("select");
+    choose.append(element("option", "-- Selecione um registro manualmente --"));
+    choose.options[0].value = "";
+    for (const candidate of available) {
+      const opt = element("option", "Registro " + candidate.recordId +
+        " · " + candidate.sourceFileOnly + " · " + candidate.category +
+        " · nível=" + (candidate.clientLevelRaw ?? "∅") +
+        " · grade=" + (candidate.clientGradeRaw ?? "∅"));
+      opt.value = String(candidate.recordId);
+      choose.append(opt);
+    }
+    appendLabel(body, "Registro candidato (obrigatório)", choose);
+    const fieldset = element("fieldset");
+    fieldset.append(element("legend", "Campos aprovados"));
+    const checkboxes = new Map();
+    for (const field of Object.keys(FIELD_RULES)) {
+      const label = element("label", undefined, "inline-label");
+      const checkbox = element("input");
+      checkbox.type = "checkbox";
+      checkbox.disabled = true;
+      label.append(checkbox, document.createTextNode(FIELD_LABELS[field]));
+      fieldset.append(label);
+      checkboxes.set(field, checkbox);
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) state.fields.add(field);
+        else state.fields.delete(field);
+      });
+    }
+    body.append(fieldset);
+    choose.addEventListener("change", () => {
+      state.recordId = choose.value ? Number(choose.value) : null;
+      state.fields.clear();
+      const candidate = available.find(x => x.recordId === state.recordId);
+      for (const [field, checkbox] of checkboxes) {
+        checkbox.checked = false;
+        checkbox.disabled = !candidate || !usable(candidate, field);
+      }
+      refreshStats();
+    });
+    const textarea = element("textarea");
+    textarea.rows = 3;
+    textarea.placeholder = "Explique a conferência da fonte e por que este registro representa o item (mínimo 20 caracteres)";
+    textarea.addEventListener("input", () => state.reviewNote = textarea.value);
+    appendLabel(body, "Justificativa da revisão (obrigatória)", textarea);
+    card.append(body);
+    return card;
+  }
+
+  function render() {
+    results.replaceChildren();
+    cards.clear();
+    decisions.clear();
+    for (const entry of entries) {
+      const card = renderEntry(entry);
+      cards.set(entry.itemId, card);
+      results.append(card);
+    }
+    search.disabled = false;
+    filter.disabled = false;
+    exportButton.disabled = false;
+    displayEntries();
+  }
+
+  fileInput.addEventListener("change", async () => {
+    entries = [];
+    snapshotId = null;
+    results.replaceChildren();
+    exportButton.disabled = true;
+    search.disabled = true;
+    filter.disabled = true;
+    decisions.clear();
+    cards.clear();
+    clearMessage();
+    if (!fileInput.files?.length) return;
+    try {
+      const payload = JSON.parse(await fileInput.files[0].text());
+      if (payload?.reviewVersion !== "20.5-private" ||
+        !Number.isSafeInteger(payload.snapshotId) || payload.snapshotId < 1 ||
+        !Array.isArray(payload.entries)) throw new Error("Formato incompatível");
+      const seen = new Set();
+      const records = [];
+      for (const value of payload.entries) {
+        if (!value || typeof value.itemId !== "string" ||
+          !/^[1-9]\d*$/.test(value.itemId) ||
+          typeof value.reviewedPublicNameEn !== "string" ||
+          !value.reviewedPublicNameEn.trim() ||
+          typeof value.reviewState !== "string" ||
+          !Array.isArray(value.candidateSourceRows) ||
+          seen.has(value.itemId)) throw new Error("Registro de revisão inválido");
+        seen.add(value.itemId);
+        records.push(value);
+      }
+      snapshotId = payload.snapshotId;
+      entries = records.sort((a,b)=>Number(a.itemId)-Number(b.itemId));
+      render();
+      setMessage("Arquivo carregado localmente. Nenhum item foi aprovado automaticamente.");
+    } catch (error) {
+      entries = [];
+      setMessage("Não foi possível validar o JSON privado de revisão.", true);
+    }
+  });
+  search.addEventListener("input", displayEntries);
+  filter.addEventListener("change", displayEntries);
+  exportButton.addEventListener("click", () => {
+    clearMessage();
+    if (!Number.isSafeInteger(snapshotId)) return;
+    const approvals = [];
+    for (const entry of entries) {
+      const decision = decisions.get(entry.itemId);
+      if (!decision?.recordId) continue;
+      const chosen = entry.candidateSourceRows.find(c => c.recordId === decision.recordId);
+      if (!candidateValid(chosen) || decision.fields.size === 0 ||
+        ![...decision.fields].every(f => usable(chosen, f)) ||
+        decision.reviewNote.trim().length < 20) {
+        setMessage("Revise o ID " + entry.itemId +
+          ": escolha campos permitidos e informe justificativa de 20+ caracteres.", true);
+        cards.get(entry.itemId).open = true;
+        return;
+      }
+      approvals.push({
+        itemId: entry.itemId, recordId: decision.recordId,
+        fields: [...decision.fields],
+        reviewNote: decision.reviewNote.trim()
+      });
+    }
+    if (!approvals.length) {
+      setMessage("Nenhum item selecionado. Revise e escolha pelo menos um registro.", true);
+      return;
+    }
+    const output = { schemaVersion:"20.5-approvals", snapshotId, approvals };
+    const blob = new Blob([JSON.stringify(output, null, 2) + "\n"], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = element("a");
+    link.href = url;
+    link.download = "Miner_Equipment_Approvals_20_5.json";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setMessage(approvals.length + " aprovações exportadas para revisão final. Nada foi publicado.");
+  });
+})();
+</script>
+</body>
+</html>
