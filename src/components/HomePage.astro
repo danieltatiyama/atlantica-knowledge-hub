@@ -15,6 +15,15 @@ const siteName = "Atlantica Knowledge Hub";
 
 const sections = [
   {
+    title: lang === "pt-br" ? "Itens e Boxes" : "Items & Boxes",
+    description: lang === "pt-br"
+      ? "Conteúdos de boxes, recompensas e chances verificadas por região."
+      : "Box contents, rewards and verified region-specific probabilities.",
+    symbol: "◈",
+    theme: "items",
+    href: lang === "en" ? "/items/boxes/" : "/pt-br/items/boxes/",
+  },
+  {
     title: lang === "pt-br" ? "Eventos e Atualizações" : "Events & Updates",
     description: lang === "pt-br"
       ? "Calendário de eventos e histórico de novidades revisados."
