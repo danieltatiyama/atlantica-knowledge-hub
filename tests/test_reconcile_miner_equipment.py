@@ -64,8 +64,9 @@ def prepare_files(folder: Path) -> tuple[Path, Path]:
                 source="ItemTypeBook.ndt", work=30000000),
             row(1032, 23208, "Book: Watchful Soul [III]", category="Book",
                 source="ItemTypeBook.ndt", work=5200000),
-            row(1041, 650, "Red Soul Robe", category="Defence"),
-            row(1042, 650, "Red Soul Robe", category="Armor", source="ItemTypeArmor.ndt"),
+            row(1041, 650, "Red Soul Robe", category="Defence", recipe_state="unsupported"),
+            row(1042, 650, "Red Soul Robe", category="Armor", source="ItemTypeArmor.ndt",
+                recipe_state="valid", recipe="[[5100,3]]"),
             row(1051, 2200, "Small Bolt", category="Metal", source="ItemTypeMetal.ndt"),
             row(2001, 192, "Twilight Instrument", snapshot=2),
         ])
