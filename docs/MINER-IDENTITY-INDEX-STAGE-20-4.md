@@ -69,7 +69,7 @@ After PR merge and `git pull origin main`, run on a consistent
 offline copy, or with the Miner stopped:
 
 ```powershell
-py .\scripts\build-miner-identity-index.py "D:\Documentos\Games\Atlantica Online\Data Mining\Atlantica_Data_Miner_v0.2\AtlanticaDataMiner\atlantica.sqlite3" --snapshot 1 --miner-version "0.2" --private-index ".\Miner_Identity_Index_20_4.json" --report ".\Miner_Review_20_4.json"
+py .\scripts\build-miner-identity-index.py "D:\Documentos\Games\Atlantica Online\Data Mining\Atlantica_Data_Miner_v0.2\AtlanticaDataMiner\atlantica.sqlite3" --snapshot 1 --private-index ".\Miner_Identity_Index_20_4.json" --report ".\Miner_Review_20_4.json"
 
 node .\scripts\validate-game-dataset.mjs ".\Miner_Identity_Index_20_4.json"
 node .\scripts\validate-game-dataset.mjs ".\Miner_Identity_Index_20_4.json" --public
