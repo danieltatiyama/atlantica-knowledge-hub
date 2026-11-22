@@ -37,3 +37,11 @@ Atlantica_Editorial_Review_*_PRIVATE/
 private_drafts/
 Review_Dashboard_PRIVATE.html
 Atl_Event_Editorial_Private_Drafts_*.zip
+
+# Private item/box extraction and probability workbooks
+Atlantica_Items_Boxes_Research_*_PRIVATE/
+Atlantica_Boxes_*_PRIVATE.zip
+Atlantica_Box_Definitions.csv
+Atlantica_Box_Reward_Database.xlsx
+Box_Name_Candidates.csv
+Prism_Carnival_KR_29_Outcomes.csv
