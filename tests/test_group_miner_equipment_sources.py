@@ -134,6 +134,7 @@ class SourceGroupingTests(unittest.TestCase):
         ])
         self.assertEqual(grouped["classification"], "id-collision-different-names")
         self.assertEqual(len(grouped["sourceVariantGroups"]), 0)
+        self.assertEqual([r["recordId"] for r in grouped["matchingBaseSourceRows"]], [600])
         self.assertEqual([r["recordId"] for r in grouped["identityCollisionSourceRows"]], [601])
 
     def test_sparse_general_row_shared_by_two_variants_is_not_attached_arbitrarily(self):
