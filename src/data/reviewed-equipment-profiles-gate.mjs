@@ -47,7 +47,7 @@ export function validateReviewedProfiles(payload, nameRegistry) {
     used.add(item.id);
     if (![null, "wikidot-classic-v1"].includes(item.enchantmentProjectionModel) ||
         (item.enchantmentProjectionModel !== null &&
-          !item.stats.some((row) => row?.enchantLevel === 0))) {
+          (!Array.isArray(item.stats) || !item.stats.some((row) => row?.enchantLevel === 0)))) {
       fail(label + " has uncalibrated or unsupported enchantment prediction model");
     }
     if (item.overview !== null) {
