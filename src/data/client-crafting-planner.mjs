@@ -19,6 +19,11 @@ export function planClientCrafting({
 }){
   if(!valid(itemId))throw new RangeError("Invalid target ItemID");
   const requested=count(quantity);
+  // A player-facing craft plan must never present a recipe-less target as a
+  // purchasable leaf. This also protects future callers that bypass the UI.
+  if(strictTargetBatch&&(!Array.isArray(recipesById[String(itemId)])||
+     recipesById[String(itemId)].length===0))
+    throw new Error("Target item has no parsed client crafting recipe");
   if(strictTargetBatch&&requested>10000n)
     throw new RangeError("Requested output exceeds the 10,000-item planning limit");
   const buy=new Set(buyIds.map(String));
