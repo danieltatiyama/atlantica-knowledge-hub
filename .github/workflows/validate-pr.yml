@@ -77,7 +77,7 @@ jobs:
       - name: Validate Fandom Legendary reference and client-extracted source contracts
         run: |
           node scripts/check-client-equipment-facts.mjs
-          node --test tests/client-first-equipment.test.mjs tests/legendary-client-reconciliation.test.mjs tests/client-source-attributes.test.mjs tests/client-item-stat-summary.test.mjs tests/client-crafting-requirements.test.mjs tests/client-grade-export.test.mjs tests/equipment-catalog-source-index.test.mjs tests/full-client-item-database.test.mjs tests/full-client-stats-tools.test.mjs tests/client-craft-graph.test.mjs tests/full-client-equipment-source.test.mjs tests/client-craft-batch.test.mjs
+          node --test tests/client-first-equipment.test.mjs tests/legendary-client-reconciliation.test.mjs tests/client-source-attributes.test.mjs tests/client-item-stat-summary.test.mjs tests/client-crafting-requirements.test.mjs tests/client-grade-export.test.mjs tests/equipment-catalog-source-index.test.mjs tests/full-client-item-database.test.mjs tests/full-client-stats-tools.test.mjs tests/client-craft-graph.test.mjs tests/full-client-equipment-source.test.mjs tests/client-craft-batch.test.mjs tests/client-monster-views.test.mjs
           node scripts/check-client-item-attributes.mjs
 
       - name: Validate Astro build
@@ -94,6 +94,7 @@ jobs:
           python scripts/validate-full-client-stats.py --candidate public/data/client-items/stats --allow-absent
           python scripts/verify-full-client-reviewed-stats.py --candidate public/data/client-items/stats --allow-absent
           python scripts/verify-full-client-source-hashes.py --candidate public/data/client-items/stats --allow-absent
+          python scripts/validate-client-monster-loot.py --candidate public/data/client-monsters --allow-absent
 
       - name: Validation completed
         if: success()
