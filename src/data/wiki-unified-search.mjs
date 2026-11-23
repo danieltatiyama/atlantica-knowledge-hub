@@ -28,8 +28,7 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
     for(const row of shard.rows){
       if(!validId(row?.[0])||seenMonsters.has(row[0]))throw Error("Duplicate/invalid CharID");
       seenMonsters.add(row[0]);
-      if(!row[1])continue;
-      records.push({kind:"monster",id:row[0],title:row[1],
+      records.push({kind:"monster",id:row[0],title:row[1]||("CharID "+row[0]),
         detail:"Level "+String(row[2]??"—"),href:prefix+"/monsters/?id="+encodeURIComponent(row[0])});
     }
   }
