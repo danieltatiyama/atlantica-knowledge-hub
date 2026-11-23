@@ -1,7 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
-import MonsterItemSources from "./MonsterItemSources.astro";
+import AtlanticaItemInfoPanel from "./AtlanticaItemInfoPanel.astro";
+import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
 import {
   getClientEquipmentSourceProfile,getOriginalClientItemIdentity,
   getSourceItemLink,
@@ -50,6 +51,8 @@ const materialsUnavailable=detail.s.some(s=>s[8]==="unsupported");
 const noRecipeSource=detail.s.some(s=>s[8]==="none");
 const sourceCount=detail.s.length;
 const longSourceRows=(rawStats??[]).map(([sourceRow,values])=>({sourceRow,values:Object.entries(values)}));
+const craftBatch=summarizeCraftBatch(detail.s);
+const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation>0;
 ---
 <BaseLayout lang={lang} title={item.nameEn+" | Atlantica Knowledge Hub"}
   description={(pt?"Equipamento de categoria semelhante extraído dos arquivos do cliente: ":"Equipment-like source item from the client files: ")+item.nameEn}
@@ -77,6 +80,7 @@ const longSourceRows=(rawStats??[]).map(([sourceRow,values])=>({sourceRow,values
       </nav>
     </header>
 
+    <AtlanticaItemInfoPanel lang={lang} itemId={item.id} />
     <section id="base-info">
       <h2>{pt?"Informações do item":"Item overview"}</h2>
       <dl class="facts">
@@ -131,6 +135,24 @@ const longSourceRows=(rawStats??[]).map(([sourceRow,values])=>({sourceRow,values
 
     <section id="crafting">
       <h2>{pt?"Receita de fabricação":"Crafting recipe"}</h2>
+      <div class="craft-batch">
+        <h3>{pt?"Tamanho do batch de produção":"Production batch size"}</h3>
+        {usableBatch?<p>
+          <strong>{fmt.format(craftBatch.batchSize)}</strong>
+          {pt?"unidades por fabricação registrada":"units per source production unit"}
+          <span> · {pt?"Incrementos de":"Steps of"} {fmt.format(craftBatch.increment)}</span>
+          <span> · {pt?"Limite por operação":"Operation limit"} {fmt.format(craftBatch.maxPerOperation)}</span>
+          <span> · {pt?"Máximo de batches":"Maximum batches"} {fmt.format(craftBatch.maxBatchesPerOperation)}</span>
+        </p>:<p class="subtle">{craftBatch.status==="conflict"
+          ?(pt?"Os arquivos apresentam valores de Unit divergentes; não foi selecionado um batch."
+            :"Source files contain different Unit values; no batch was selected.")
+          :(pt?"Tamanho do batch ainda não identificado nos arquivos do cliente."
+            :"No production batch quantity is identified in the available client records.")}</p>}
+        {craftBatch.status==="partial"&&<small>{pt?"Batch informado em apenas parte das definições originais.":"Batch value is present in only some original source records."}</small>}
+        <p class="subtle">{pt
+          ?"Unit é um valor bruto do ItemType. O limite de 10.000 unidades por operação é uma regra de jogo informada pelo jogador, separada dos dados extraídos. A existência da receita não é garantida no servidor atual."
+          :"Unit is a raw ItemType field. The 10,000-output-per-operation limit is a player-reported gameplay rule kept separate from the client-source record. Crafting availability is not confirmed."}</p>
+      </div>
       <p class="subtle">{pt
         ?"Ingredientes e quantidades foram decodificados dos registros ItemType*.ndt. Não comprovam que a receita esteja disponível na interface de fabricação atual. Listas distintas são mantidas separadas."
         :"Ingredients and quantities were parsed from ItemType*.ndt source definitions. These are not confirmation of a usable recipe in the live crafting interface. Distinct ingredient lists remain separate."}</p>
@@ -166,8 +188,6 @@ const longSourceRows=(rawStats??[]).map(([sourceRow,values])=>({sourceRow,values
         ?"Nenhuma fonte de obtenção no servidor atual foi validada para este ID nesta ficha. O índice histórico de drops de monstros será ligado aqui quando as linhas originais de loot forem reimportadas e conciliadas por ID."
         :"No live-server acquisition source has been verified for this ID in this profile. Historical monster-drop links will appear here after original loot source rows are reimported and reconciled by ID."}</p>
     </section>
-
-    <MonsterItemSources lang={lang} itemId={item.id} />
 
     <section id="sources">
       <h2>{pt?"Proveniência dos arquivos do cliente":"Original client file evidence"}</h2>
@@ -213,6 +233,12 @@ const longSourceRows=(rawStats??[]).map(([sourceRow,values])=>({sourceRow,values
   .stat-group dd{text-align:right;margin:0}.stat-group small{display:block;color:var(--color-text-muted);font-size:.72rem}
   .stat-group .conflict{color:var(--color-gold-light)}
   .raw-source{margin:19px 0}.raw-source summary{cursor:pointer;color:var(--color-accent)}
+  .craft-batch{border:1px solid var(--color-border);background:var(--color-surface);
+    padding:12px 16px;border-radius:5px;margin:14px 0}
+  .craft-batch h3{color:var(--color-gold-light);font-size:1rem;margin:0 0 8px}
+  .craft-batch p{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+  .craft-batch strong{font-size:1.15rem;color:var(--color-gold-light)}
+  .craft-batch small{color:var(--color-text-muted);font-size:.78rem}
   .recipe-block{border:1px solid var(--color-border);border-radius:5px;padding:14px;margin:14px 0}
   .recipe-block h3{margin:0;color:var(--color-gold-light);font-size:1rem}
   .table-scroll{overflow:auto;margin:12px 0;border:1px solid var(--color-border);border-radius:5px}
