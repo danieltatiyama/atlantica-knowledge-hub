@@ -753,11 +753,13 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         ?number.format(visible.length)+" dos "+number.format(allRows.length)+" IDs encontrados. "+number.format(manifest?.namedIds??0)+" nomes conciliados."
         :number.format(visible.length)+" of "+number.format(allRows.length)+" IDs found. "+number.format(manifest?.namedIds??0)+" reconciled names.";
     }
-    function addCraftBatchInformation(parent:HTMLElement,data:Detail){
-      const batch=summarizeCraftBatch(data.s);
+    function addCraftBatchInformation(parent:HTMLElement,data:Detail,item:IndexRow){
+      const equipment=equipmentCandidateCategories.has(item[2]??"");
+      const batch=summarizeCraftBatch(data.s,{equipment});
       const hasMaterials=data.s.some(row=>row[9].length>0);
       const ready=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
-      // Avoid a misleading empty 'craft batch' box on non-craft source rows.
+      // A gameplay batch rule alone is not proof that an item has a recipe.
+      if(equipment&&!hasMaterials)return;
       if(!ready&&!hasMaterials&&batch.status==="not-provided")return;
       const section=node("section",undefined,"craft-batch-summary");
       section.append(node("h3",pt?"Quantidade produzida por fabricação":"Crafting batch size"));
@@ -779,12 +781,16 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           :(pt?"A quantidade produzida por lote não está informada com segurança nos arquivos."
             :"The output per batch is not reliably recorded in the client files."),"wiki-help"));
       }
-      if(batch.status==="partial")section.append(node("p",pt
+      if(batch.originalUnitStatus==="partial")section.append(node("p",pt
         ?"A quantidade por lote consta apenas em parte das definições."
         :"Only some source definitions contain the batch quantity.","wiki-source-warning"));
-      section.append(node("p",pt
-        ?"Produção por lote: campo Unit dos arquivos do cliente. O máximo de 10.000 unidades por operação é uma regra informada por jogador, não um dado extraído. A receita pode não estar disponível no jogo atual."
-        :"Output per batch comes from the original client Unit field. The 10,000-item operation limit is player-reported, not extracted. Crafting may not be enabled on the current game server.","wiki-help"));
+      section.append(node("p",equipment
+        ?(pt
+          ?"Equipamentos: 1 por batch e até 20 por operação, conforme regra confirmada pelo jogador. O campo Unit original continua disponível nos registros técnicos."
+          :"Equipment: 1 per batch and up to 20 per operation, according to a player-confirmed rule. The original Unit remains available in technical records.")
+        :(pt
+          ?"Batch baseado no campo Unit original do cliente; limite de 10.000 por operação informado pelo jogador. A disponibilidade no servidor não é comprovada."
+          :"Batch comes from the original client Unit; the 10,000 limit is player-reported. Live-server availability is not proven."),"wiki-help"));
       parent.append(section);
     }
     // Community-facing quick facts are deliberately separated from the
@@ -963,7 +969,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             :(pt?"Abrir ficha do equipamento extraída do cliente":"Open client-source equipment profile")) as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
         addItemOverview(details,row,data);
-        addCraftBatchInformation(details,data);
+        addCraftBatchInformation(details,data,row);
         addCraftRecipeTables(details,data);
         // Reverse links are generated from every one of the 22,702 named-ID
         // source details, not just the originally reviewed 551 profiles.
