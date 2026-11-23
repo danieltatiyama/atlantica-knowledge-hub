@@ -101,6 +101,9 @@ jobs:
       - name: Validate equipment craft gameplay rules and recipe tree
         run: node --test tests/client-crafting-gameplay-tree.test.mjs
 
+      - name: Validate exact craft quantity and source recipe autocomplete
+        run: node --test tests/client-crafting-quantity.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
