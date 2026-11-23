@@ -92,7 +92,7 @@ export function buildCraftLinks(source=SOURCE){
         for(const [materialId,quantity] of recipe.materials){
           if(!backlinks.has(materialId))backlinks.set(materialId,[]);
           backlinks.get(materialId).push([
-            productId,quantity,recipe.sourceRowIds,
+            productId,names.get(productId),quantity,recipe.sourceRowIds,
           ]);
         }
       }
@@ -105,7 +105,7 @@ export function buildCraftLinks(source=SOURCE){
     const bucket=Math.floor(Number(ingredientId)/1000);
     assert(Number.isSafeInteger(bucket)&&bucket>=0&&bucket<=99999999,
       "Unsafe material bucket");
-    usedBy.sort((a,b)=>sortIds(a[0],b[0])||a[1]-b[1]);
+    usedBy.sort((a,b)=>sortIds(a[0],b[0])||a[2]-b[2]);
     backlinksCount+=usedBy.length;
     if(knownIds.has(ingredientId))knownMaterials++;else missingMaterials++;
     if(!buckets.has(bucket))buckets.set(bucket,{});
