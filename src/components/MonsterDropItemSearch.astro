@@ -1,0 +1,349 @@
+---
+/**
+ * A separate client-side index of the 893 ItemIDs with audited source-loot
+ * references. This is source discovery, not probability estimation.
+ */
+interface Props{lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br";
+---
+<section class="ao-drop-finder" id="item-drop-search" data-lang={lang}
+  aria-label={pt?"Buscar fontes de drops pelo item":"Find monster drop references by item"}>
+  <div class="finder-header">
+    <div class="finder-sigil" aria-hidden="true">✦</div>
+    <div>
+      <p class="finder-overline">{pt?"CÓDICE DE OBTENÇÃO":"LOOT CODEX"}</p>
+      <h2>{pt?"Onde encontrar um item?":"Find an item's source"}</h2>
+      <p>{pt
+        ?"Pesquise pelo nome inglês ou ItemID para descobrir criaturas com referências diretas ou por grupo."
+        :"Search English names or exact ItemIDs to find creatures with direct or grouped source references."}</p>
+    </div>
+  </div>
+  <div class="finder-filters">
+    <label for="drop-item-query">{pt?"Item ou ID do cliente":"Original item name or ID"}
+      <input id="drop-item-query" type="search" autocomplete="off" disabled
+        placeholder={pt?"Ex.: Ruby, 5335, Equipment Box":"E.g. Ruby, 5335, Equipment Box"}/>
+    </label>
+    <label for="drop-item-mode">{pt?"Referência do cliente":"Original reference type"}
+      <select id="drop-item-mode" disabled>
+        <option value="">{pt?"Direta ou por grupo":"Direct or grouped"}</option>
+        <option value="direct">{pt?"Com drop direto":"Has direct references"}</option>
+        <option value="group">{pt?"Com drop por grupo":"Has grouped references"}</option>
+      </select>
+    </label>
+  </div>
+  <p class="finder-status" id="drop-item-status" role="status">{pt
+    ?"Carregando índice de itens com referências de loot…"
+    :"Loading indexed source-loot item identities…"}</p>
+  <div id="drop-item-list" class="finder-list" hidden>
+    <div class="finder-list-head">
+      <span>{pt?"Item registrado":"Original item"}</span>
+      <span>{pt?"Referências diretas":"Direct"}</span>
+      <span>{pt?"Por grupos (derivadas)":"Grouped (derived)"}</span>
+    </div>
+    <div id="drop-item-rows"></div>
+    <div class="finder-navigation">
+      <button id="drop-item-prev" type="button" disabled>{pt?"Anterior":"Previous"}</button>
+      <span id="drop-item-pages" aria-live="polite"></span>
+      <button id="drop-item-next" type="button" disabled>{pt?"Próxima":"Next"}</button>
+    </div>
+  </div>
+  <section id="drop-item-result" class="finder-result" hidden>
+    <div class="finder-result-head">
+      <div>
+        <p class="finder-overline">{pt?"REGISTROS DO CLIENTE":"CLIENT SOURCE EVIDENCE"}</p>
+        <h3 id="drop-item-result-name"></h3>
+      </div>
+      <button id="drop-item-close" type="button">{pt?"Fechar":"Close"}</button>
+    </div>
+    <div id="drop-item-result-body"></div>
+  </section>
+  <p class="finder-note">{pt
+    ?"RawRate, grupos e quantidades candidatas são dados dos arquivos do cliente. Não indicam chances verificadas ou drops ativos no servidor atual."
+    :"RawRate, source groups and candidate quantities come from client files. They are not verified odds or active-server drop guarantees."}</p>
+</section>
+<script>
+  const root=document.getElementById("item-drop-search") as HTMLElement|null;
+  if(root){
+    const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const get=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
+    const query=get<HTMLInputElement>("drop-item-query");
+    const mode=get<HTMLSelectElement>("drop-item-mode");
+    const status=get<HTMLElement>("drop-item-status");
+    const list=get<HTMLElement>("drop-item-list");
+    const rows=get<HTMLElement>("drop-item-rows");
+    const prev=get<HTMLButtonElement>("drop-item-prev");
+    const next=get<HTMLButtonElement>("drop-item-next");
+    const pages=get<HTMLElement>("drop-item-pages");
+    const result=get<HTMLElement>("drop-item-result");
+    const resultName=get<HTMLElement>("drop-item-result-name");
+    const resultBody=get<HTMLElement>("drop-item-result-body");
+    const close=get<HTMLButtonElement>("drop-item-close");
+    const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+    const ID=/^[1-9]\d{0,12}$/;
+    const asText=(value:unknown)=>value===null||value===undefined?"—":String(value);
+    const create=(tag:string,content?:string,cls?:string)=>{
+      const el=document.createElement(tag);
+      if(content!==undefined)el.textContent=content;
+      if(cls)el.className=cls;
+      return el;
+    };
+    type ItemRow=[string,string,number,number,number,number];
+    let all:ItemRow[]=[],filtered:ItemRow[]=[],page=0,selected="";
+    const pageSize=40;
+    function nextUrl(itemId:string|null){
+      const url=new URL(location.href);
+      if(itemId){url.searchParams.set("item",itemId);url.searchParams.delete("id");}
+      else url.searchParams.delete("item");
+      return url.pathname+url.search+url.hash;
+    }
+    function renderItems(){
+      rows.replaceChildren();
+      const fragment=document.createDocumentFragment();
+      for(const entry of filtered.slice(page*pageSize,(page+1)*pageSize)){
+        const [id,name,direct,group,directCreatures,groupCreatures]=entry;
+        const row=create("div",undefined,"finder-entry");
+        const button=create("button",undefined,"finder-item-name") as HTMLButtonElement;
+        button.type="button";
+        button.append(create("strong",name),create("small","ItemID #"+id));
+        button.addEventListener("click",()=>void showItem(id,true));
+        row.append(button);
+        row.append(create("span",nf.format(direct)+" · "+nf.format(directCreatures)+" "+
+          (pt?"criaturas":"creatures"),"finder-count"));
+        row.append(create("span",nf.format(group)+" · "+nf.format(groupCreatures)+" "+
+          (pt?"criaturas":"creatures"),"finder-count"));
+        fragment.append(row);
+      }
+      rows.append(fragment);
+      const total=Math.ceil(filtered.length/pageSize);
+      pages.textContent=(pt?"Página ":"Page ")+(total?page+1:0)+" / "+total;
+      prev.disabled=page===0;next.disabled=page+1>=total;
+      status.textContent=nf.format(filtered.length)+" / "+nf.format(all.length)+
+        (pt?" itens com referências de loot":" source-loot ItemIDs");
+    }
+    function apply(){
+      const q=query.value.trim().toLocaleLowerCase();
+      const m=mode.value;
+      filtered=all.filter(row=>
+        (!q||row[0].includes(q)||row[1].toLocaleLowerCase().includes(q))&&
+        (!m||(m==="direct"?row[2]>0:row[3]>0)));
+      page=0;renderItems();
+    }
+    const groupManifest="all-client-monster-loot-original";
+    async function getOriginalSourceItem(itemId:string){
+      const manifestResp=await fetch("/data/client-monsters/manifest.json");
+      if(!manifestResp.ok)throw Error("Original client loot manifest missing");
+      const manifest=await manifestResp.json();
+      if(manifest.schemaVersion!=="1.0"||manifest.snapshotId!==1||
+        manifest.dataset!==groupManifest||!Array.isArray(manifest.files?.itemSources))
+        throw Error("Original client loot manifest incompatible");
+      const bucket=Math.floor(Number(itemId)/1000);
+      const name="item-sources/"+String(bucket).padStart(2,"0")+".json";
+      if(!manifest.files.itemSources.includes(name))return null;
+      const response=await fetch("/data/client-monsters/"+name);
+      if(!response.ok)throw Error("Original item source file missing");
+      const shard=await response.json();
+      if(shard.schemaVersion!=="1.0"||shard.snapshotId!==1||shard.bucket!==bucket)
+        throw Error("Original item source file incompatible");
+      return shard.items?.[itemId]??null;
+    }
+    function appendEvidence(parent:HTMLElement,title:string,sourceRows:unknown[],type:"direct"|"group"){
+      const section=create("section",undefined,"finder-evidence");
+      const header=create("h4",title+" ("+nf.format(sourceRows.length)+")");
+      section.append(header);
+      const info=create("p",type==="direct"?
+        (pt?"Drops diretos registrados na tabela de criaturas.":"Direct references in the original character table."):
+        (pt?"Combinações derivadas entre referência de grupo e item no grupo. Não são rolls independentes.":"Derived character/group and group/item joins; not independent drop rolls."),
+        "finder-evidence-note");
+      section.append(info);
+      const wrapper=create("div",undefined,"finder-scroll");
+      const table=create("table"),head=create("thead"),headRow=create("tr");
+      const headers=type==="direct"
+        ?[pt?"Criatura":"Creature","RawRate",pt?"Qtd. candidata":"Candidate qty",pt?"Linha":"Row"]
+        :[pt?"Criatura":"Creature","GroupID","RawRate ref","RawRate item",
+          pt?"Qtd. candidata":"Candidate qty",pt?"Linhas":"Rows"];
+      headers.forEach(label=>headRow.append(create("th",label)));
+      head.append(headRow);
+      const tbody=create("tbody");table.append(head,tbody);wrapper.append(table);
+      section.append(wrapper);
+      let shown=0;
+      const button=create("button",undefined,"finder-more") as HTMLButtonElement;
+      button.type="button";
+      const show=()=>{
+        const fragment=document.createDocumentFragment();
+        for(const entry of sourceRows.slice(shown,shown+50)){
+          if(!Array.isArray(entry)||!ID.test(String(entry[0])))continue;
+          const [charId,name]=entry;
+          const tr=create("tr");
+          const first=create("td"),link=create("a",name??("CharID #"+charId)) as HTMLAnchorElement;
+          link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
+          first.append(link);
+          if(name)first.append(" (#"+charId+")");
+          tr.append(first);
+          if(type==="direct"){
+            tr.append(create("td",asText(entry[3])),create("td",asText(entry[5])+"–"+asText(entry[6])),
+              create("td","#"+entry[2]));
+          }else{
+            tr.append(create("td",asText(entry[2])),create("td",asText(entry[5])),
+              create("td",asText(entry[6])),create("td",asText(entry[9])+"–"+asText(entry[10])),
+              create("td","#"+entry[3]+" / #"+entry[4]));
+          }
+          fragment.append(tr);
+        }
+        tbody.append(fragment);
+        shown=Math.min(sourceRows.length,shown+50);
+        button.textContent=(pt?"Mostrar mais 50 · ":"Show 50 more · ")+
+          nf.format(shown)+" / "+nf.format(sourceRows.length);
+        if(shown>=sourceRows.length)button.remove();
+      };
+      if(sourceRows.length>50){
+        button.addEventListener("click",show);
+        section.append(button);
+      }
+      show();
+      parent.append(section);
+    }
+    async function showItem(itemId:string,push:boolean){
+      if(!ID.test(itemId))return;
+      const row=all.find(item=>item[0]===itemId);
+      if(!row)return;
+      selected=itemId;result.hidden=false;
+      resultName.textContent=row[1]+" · #"+itemId;
+      resultBody.replaceChildren(create("p",pt?"Consultando fontes originais…":"Loading original source rows…","finder-evidence-note"));
+      if(push)history.pushState({}, "",nextUrl(itemId));
+      try{
+        const source=await getOriginalSourceItem(itemId);
+        if(selected!==itemId)return;
+        const fragment=document.createDocumentFragment();
+        const itemLink=create("a",pt?"Abrir ficha completa do item":"Open full item profile") as HTMLAnchorElement;
+        itemLink.href=prefix+"/items/database/?id="+encodeURIComponent(itemId);
+        fragment.append(itemLink);
+        if(source){
+          const direct=source.direct??[],group=source.group??[];
+          if(!Array.isArray(direct)||!Array.isArray(group)||
+            direct.length!==row[2]||group.length!==row[3])
+            throw Error("Original source index counts mismatch");
+          if(direct.length)appendEvidence(fragment as unknown as HTMLElement,
+            pt?"Referências diretas":"Direct creature references",direct,"direct");
+          if(group.length)appendEvidence(fragment as unknown as HTMLElement,
+            pt?"Referências por grupo":"Derived group references",group,"group");
+        }
+        resultBody.replaceChildren(fragment);
+        result.scrollIntoView({behavior:"smooth",block:"start"});
+      }catch{
+        if(selected===itemId)resultBody.replaceChildren(create("p",pt
+          ?"Não foi possível validar o arquivo de origem do item."
+          :"Original item source file could not be validated.","finder-evidence-note"));
+      }
+    }
+    close.addEventListener("click",()=>{
+      selected="";result.hidden=true;history.pushState({},"",nextUrl(null));
+    });
+    window.addEventListener("popstate",()=>{
+      const id=new URL(location.href).searchParams.get("item");
+      if(id)void showItem(id,false);
+      else{selected="";result.hidden=true;}
+    });
+    prev.addEventListener("click",()=>{if(page>0){page--;renderItems();}});
+    next.addEventListener("click",()=>{if((page+1)*pageSize<filtered.length){page++;renderItems();}});
+    query.addEventListener("input",apply);
+    mode.addEventListener("change",apply);
+    void (async()=>{
+      try{
+        const response=await fetch("/data/client-monsters/item-lookup.json");
+        if(!response.ok)throw Error("Generated source item discovery index missing");
+        const meta=await response.json();
+        if(meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
+          meta.dataset!=="client-monster-drop-item-discovery"||
+          meta.itemIds!==893||meta.rawDirectSourceRows!==9959||
+          meta.derivedGroupReferences!==172120||!Array.isArray(meta.rows))
+          throw Error("Original drop item discovery source mismatch");
+        all=meta.rows;
+        if(all.length!==893||new Set(all.map(r=>r[0])).size!==all.length)
+          throw Error("Original drop ItemIDs incomplete");
+        query.disabled=false;mode.disabled=false;filtered=all;list.hidden=false;
+        renderItems();
+        const selected=new URL(location.href).searchParams.get("item");
+        if(selected)void showItem(selected,false);
+      }catch{
+        status.textContent=pt
+          ?"Índice de itens com drops indisponível ou incompatível com este snapshot."
+          :"Original item drop discovery index is unavailable or mismatched.";
+      }
+    })();
+  }
+</script>
+<style>
+  .ao-drop-finder{
+    --metal:#8b7957;--gold:#e9ce95;
+    position:relative;isolation:isolate;
+    border:1px solid var(--metal);border-radius:5px;
+    background:linear-gradient(125deg,#101822 0%,#151b21 40%,#0d1016 100%);
+    box-shadow:inset 0 0 0 3px #26251e,0 8px 28px #0006;
+    padding:clamp(14px,2.8vw,22px);
+    margin:27px 0;
+  }
+  .ao-drop-finder:before,.ao-drop-finder:after{
+    content:"";position:absolute;top:5px;width:32px;height:1px;background:var(--gold);
+    pointer-events:none
+  }
+  .ao-drop-finder:before{left:7px}.ao-drop-finder:after{right:7px}
+  .finder-header{display:flex;align-items:center;gap:14px;margin-bottom:19px}
+  .finder-sigil{flex:0 0 56px;width:56px;height:56px;display:grid;place-items:center;
+    border:1px solid #ac9061;border-radius:50%;
+    background:radial-gradient(circle,#4a4535 0%,#1a2330 55%,#0d1018);
+    font-family:Georgia,serif;color:#efcf8c;font-size:1.8rem;
+    box-shadow:inset 0 0 14px #000a,0 0 13px #ae854233}
+  .finder-overline{color:#b59a6e;text-transform:uppercase;letter-spacing:.16em;font-size:.65rem;margin:0 0 5px}
+  .finder-header h2,.finder-result h3{font-family:Georgia,"Times New Roman",serif;color:var(--gold);margin:0;font-size:1.5rem}
+  .finder-header p:not(.finder-overline){color:#bfc5cd;font-size:.86rem;line-height:1.5;margin:7px 0 0}
+  .finder-filters{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+  .finder-filters label{display:grid;gap:6px;color:#e2d2b5;font-size:.83rem}
+  .finder-filters input,.finder-filters select{width:100%;padding:11px 12px;
+    background:#0d131c;border:1px solid #716449;color:#eee7d8;border-radius:3px;
+    font:inherit}
+  .finder-filters input:focus-visible,.finder-filters select:focus-visible{
+    outline:2px solid #e2b769;outline-offset:2px}
+  .finder-status,.finder-note{font-size:.8rem;color:#b6bec8;margin:13px 0}
+  .finder-note{padding-top:13px;border-top:1px solid #72644c66;line-height:1.65}
+  .finder-list-head,.ao-drop-finder :global(.finder-entry){
+    display:grid;grid-template-columns:minmax(0,2.4fr) minmax(100px,1fr) minmax(100px,1fr);
+    gap:12px;align-items:center}
+  .finder-list-head{padding:10px 12px;color:#f0cd8b;background:#27251f;font-size:.8rem}
+  .ao-drop-finder :global(.finder-entry){padding:9px 12px;
+    border-bottom:1px solid #83705244;background:#121820}
+  .ao-drop-finder :global(.finder-entry:nth-child(even)){background:#19212a}
+  .ao-drop-finder :global(.finder-item-name){
+    border:0;background:none;color:#f1d89c;text-align:left;cursor:pointer;
+    padding:3px;display:grid;gap:2px;font:inherit}
+  .ao-drop-finder :global(.finder-item-name:hover){text-decoration:underline}
+  .ao-drop-finder :global(.finder-item-name small){color:#aeb3bb;font-size:.72rem}
+  .ao-drop-finder :global(.finder-count){color:#c1c8d1;font-size:.78rem;font-variant-numeric:tabular-nums}
+  .finder-navigation{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:15px}
+  .finder-navigation button,.finder-result button{color:#e4d0a5;background:#24251f;
+    border:1px solid #807050;padding:8px 12px;border-radius:3px;cursor:pointer}
+  .finder-navigation button:disabled{opacity:.4;cursor:not-allowed}
+  .finder-result{margin-top:20px;border:1px solid #746347;padding:14px;background:#10151c}
+  .finder-result-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+  .ao-drop-finder :global(.finder-evidence){margin:16px 0}
+  .ao-drop-finder :global(.finder-evidence h4){color:#edce90;margin:0 0 6px;font-size:1.02rem}
+  .ao-drop-finder :global(.finder-evidence-note){color:#b4bac1;font-size:.83rem}
+  .ao-drop-finder :global(.finder-scroll){overflow:auto;border:1px solid #4e483d}
+  .ao-drop-finder :global(.finder-scroll table){width:100%;border-collapse:collapse;min-width:620px}
+  .ao-drop-finder :global(.finder-scroll th){background:#302b22;color:#e6c886}
+  .ao-drop-finder :global(.finder-scroll td),
+  .ao-drop-finder :global(.finder-scroll th){padding:9px 11px;
+    border-bottom:1px solid #514938;text-align:left;font-size:.82rem}
+  .ao-drop-finder :global(.finder-scroll a),.finder-result a{color:#e4c788}
+  .ao-drop-finder :global(.finder-more){color:#efdaae;background:#29251e;
+    padding:8px 13px;border:1px solid #77694e;margin:12px 0;cursor:pointer}
+  #drop-item-list[hidden],#drop-item-result[hidden]{display:none}
+  @media(max-width:670px){
+    .finder-filters{grid-template-columns:1fr}
+    .finder-sigil{display:none}
+    .finder-list-head{display:none}
+    .ao-drop-finder :global(.finder-entry){grid-template-columns:minmax(0,1fr) 1fr;gap:7px}
+    .ao-drop-finder :global(.finder-item-name){grid-column:1/-1}
+    .ao-drop-finder :global(.finder-count){font-size:.76rem}
+  }
+</style>
