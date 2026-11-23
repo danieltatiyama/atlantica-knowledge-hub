@@ -110,7 +110,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
 
     <section class="detail" id="db-detail" hidden aria-live="polite">
       <div class="detail-header"><div>
-        <p class="eyebrow">{pt?"REGISTROS DO CLIENTE":"ORIGINAL CLIENT RECORDS"}</p>
+        <p class="eyebrow">{pt?"FICHA DO ITEM":"ITEM INFORMATION"}</p>
         <h2 id="db-detail-name"></h2>
         <p id="db-detail-meta"></p>
       </div><button type="button" id="db-detail-close">{pt?"Fechar":"Close"}</button></div>
@@ -775,40 +775,142 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         :"Batch is taken from the original ItemType Unit field. The 10,000-unit operation cap is a separately recorded player-reported rule, not derived from Unit. Original records do not confirm live-server recipe availability.","detail-note"));
       parent.append(section);
     }
-    function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
-      const h=node("h3",pt?"Definições dos arquivos de origem":"Original source-file definitions");parent.append(h);
-      parent.append(node("p",pt
-        ?"Arquivos gerais/específicos e agrupamentos de origem não significam, necessariamente, variantes jogáveis. Nível e grade são campos brutos."
-        :"General/specific files and source record groupings do not necessarily mean playable item variants. Level and grade are raw fields.","subtle"));
-      for(const row of data.s){
-        const [recordId,file,role,cat,level,grade,work,unit,state,materials]=row;
-        const card=node("section",undefined,"definition");
-        card.append(node("h4",`${file} · #${recordId}`));
-        const meta=node("p",`${role} · ${cat} · ${pt?"nível bruto":"raw level"} ${fmtRaw(level)} · ${pt?"grade bruta":"raw grade"} ${fmtRaw(grade)} · Work ${fmtRaw(work)} · Unit ${fmtRaw(unit)}`);
-        card.append(meta);
-        if(materials.length){
-          const table=node("table") as HTMLTableElement;
-          const head=node("thead"),headRow=node("tr");
-          for(const label of [pt?"Material / ID":"Material / ID",pt?"Quantidade":"Quantity"]){headRow.append(node("th",label));}
-          head.append(headRow);table.append(head);
-          const body=node("tbody");
-          for(const [itemId,quantity] of materials){
-            const tr=node("tr"),name=td(tr,"");
-            name.append(linkItem(itemId,nameFor(itemId)??`ID ${itemId}`));
-            td(tr,number.format(quantity));body.append(tr);
-          }
-          table.append(body);card.append(table);
-        }else{
-          card.append(node("p",state==="unsupported"
-            ?(pt?"Expressão de materiais não decodificada":"Material expression not parsed")
-            :(pt?"Nenhuma lista estruturada de materiais no arquivo":"No structured material list in this file"),"subtle"));
+    // Community-facing quick facts are deliberately separated from the
+    // original source rows. Only confirmed client-source identities appear.
+    function addItemOverview(parent:HTMLElement,item:IndexRow,data:Detail){
+      const section=node("section",undefined,"wiki-item-overview");
+      section.append(node("h3",pt?"Informações do item":"About this item"));
+      const note=node("p",pt
+        ?"Informações encontradas nos arquivos do jogo. Nível, categoria e grade são valores cadastrados no cliente, não requisitos ou disponibilidade comprovados no servidor."
+        :"Information found in the game files. Level, category and grade are client records, not verified requirements or current-server availability.","wiki-help");
+      section.append(note);
+      const facts=node("dl",undefined,"wiki-facts");
+      const rows=[
+        [pt?"Item ID":"Item ID",item[0]],
+        [pt?"Categoria":"Category",item[2]??"—"],
+        [pt?"Nível registrado":"Recorded level",fmtRaw(item[3])],
+        [pt?"Grade registrada":"Recorded grade",fmtRaw(item[4])],
+        [pt?"Registros encontrados":"Source records",number.format(data.s.length)],
+      ];
+      for(const [heading,value] of rows){
+        const box=node("div");box.append(node("dt",heading),node("dd",value));facts.append(box);
+      }
+      section.append(facts);parent.append(section);
+    }
+    function addCraftRecipeTables(parent:HTMLElement,data:Detail){
+      const section=node("section",undefined,"wiki-crafting");
+      section.append(node("h3",pt?"Como fabricar":"Crafting materials"));
+      section.append(node("p",pt
+        ?"Receitas extraídas dos arquivos do jogo. As quantidades abaixo são para o lote indicado no registro, quando disponível. A receita pode não estar habilitada no servidor atual."
+        :"Recipes extracted from the game files. Quantities below are for the recorded batch, where available. A recipe may not be enabled on the current server.","wiki-help"));
+      // A general and a specific source record can describe the SAME recipe;
+      // collapse exact material + batch duplicates but retain source row IDs.
+      const recipes=new Map<string,{
+        materials:[string,number][];unit:number|null;sourceRows:number[];
+      }>();
+      for(const source of data.s){
+        const [recordId,,,,,,,unit,state,materials]=source;
+        if(!state.startsWith("parsed-")||!materials.length)continue;
+        const sorted=materials.slice().sort((a,b)=>Number(a[0])-Number(b[0]));
+        const key=JSON.stringify([unit,sorted]);
+        const existing=recipes.get(key);
+        if(existing)existing.sourceRows.push(recordId);
+        else recipes.set(key,{materials:sorted,unit,sourceRows:[recordId]});
+      }
+      const entries=[...recipes.values()];
+      if(entries.length>1)section.append(node("p",pt
+        ?"Os arquivos apresentam mais de uma combinação de materiais ou quantidade produzida. As definições são mostradas separadamente: não são opções confirmadas de fabricação."
+        :"The game files contain different material lists or batch quantities. They are shown separately, not as confirmed in-game crafting options.","wiki-source-warning"));
+      entries.forEach((recipe,i)=>{
+        const block=node("div",undefined,"wiki-recipe");
+        const heading=node("div",undefined,"wiki-recipe-heading");
+        heading.append(node("h4",entries.length>1
+          ?(pt?"Receita registrada ":"Recorded recipe ")+(i+1)
+          :(pt?"Materiais necessários":"Required materials")));
+        const batch=recipe.unit!==null&&recipe.unit>0
+          ?(pt?"Produz "+number.format(recipe.unit)+" por lote":"Produces "+number.format(recipe.unit)+" per batch")
+          :(pt?"Quantidade por lote não informada":"Batch quantity not recorded");
+        heading.append(node("span",batch,"wiki-batch-label"));block.append(heading);
+        const tbl=node("table") as HTMLTableElement,head=node("thead"),throw=node("tr");
+        for(const name of [pt?"Material":"Material",
+          pt?"Quantidade":"Amount",pt?"Onde obter":"Where to find"])
+          throw.append(node("th",name));
+        head.append(throw);tbl.append(head);const body=node("tbody");
+        for(const [materialId,quantity] of recipe.materials){
+          const tr=node("tr"),itemCell=node("td");
+          itemCell.append(linkItem(materialId,nameFor(materialId)??("ID "+materialId)));
+          itemCell.append(node("small","ID "+materialId,"wiki-raw-id"));
+          tr.append(itemCell,node("td",number.format(quantity),"wiki-quantity"));
+          const findCell=node("td"),find=node("a",pt?"Consultar drops":"Find monster drops") as HTMLAnchorElement;
+          find.href=prefix+"/monsters/?item="+encodeURIComponent(materialId);
+          findCell.append(find);tr.append(findCell);body.append(tr);
         }
-        parent.append(card);
+        tbl.append(body);const scroll=node("div",undefined,"wiki-table-scroll");scroll.append(tbl);
+        block.append(scroll);
+        const sourceInfo=node("p",(pt?"Definições de origem: ":"Original source rows: ")+
+          recipe.sourceRows.map(n=>"#"+n).join(", "),"wiki-source-refs");
+        block.append(sourceInfo);section.append(block);
+      });
+      if(entries.length===0)section.append(node("p",pt
+        ?"Não encontramos materiais de fabricação estruturados nos arquivos deste item. Isso não significa que ele não possa ser fabricado."
+        :"No structured crafting materials were found in this item's files. This does not mean it cannot be crafted.","wiki-empty"));
+      if(data.s.some(row=>row[8]==="unsupported"))section.append(node("p",pt
+        ?"Existem materiais que o extrator ainda não conseguiu interpretar."
+        :"Some original material expressions could not be decoded yet.","wiki-source-warning"));
+      parent.append(section);
+    }
+    // Preserve ALL original metadata, but make it an optional audit section
+    // instead of repeating noisy record-by-record mini-cards above the recipe.
+    function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
+      const section=node("details",undefined,"wiki-technical");
+      const summary=node("summary");
+      summary.append(node("span",pt?"Dados originais dos arquivos":"Original client records"),
+        node("span",number.format(data.s.length)+(pt?" registros":" records"),"wiki-tech-count"));
+      section.append(summary);
+      section.append(node("p",pt
+        ?"Para conferir a origem dos dados: cada linha corresponde a uma definição ItemType. Os campos Work e Unit são preservados como extraídos; não confirmam requisitos do jogo."
+        :"For source verification: each row is an ItemType definition. Work and Unit are unchanged client values, not confirmed gameplay requirements.","wiki-help"));
+      const tbl=node("table"),head=node("thead"),throw=node("tr");
+      for(const label of [pt?"Registro":"Record",pt?"Arquivo":"Source file",
+        pt?"Tipo":"Type",pt?"Categoria":"Category",
+        pt?"Nível":"Level",pt?"Grade":"Grade","Work","Unit",
+        pt?"Materiais":"Material state"])throw.append(node("th",label));
+      head.append(throw);tbl.append(head);
+      const body=node("tbody");
+      const stateLabel=(v:string)=>v.startsWith("parsed-")
+        ?(pt?"Identificados":"Parsed")
+        :v==="unsupported"?(pt?"Não decodificados":"Not decoded")
+        :(pt?"Não registrados":"Not recorded");
+      for(const [recordId,file,role,cat,level,grade,work,unit,state] of data.s){
+        const tr=node("tr");
+        for(const value of ["#"+recordId,file,role,cat,fmtRaw(level),
+          fmtRaw(grade),fmtRaw(work),fmtRaw(unit),stateLabel(state)])
+          tr.append(node("td",String(value)));
+        body.append(tr);
       }
+      tbl.append(body);const scroll=node("div",undefined,"wiki-table-scroll");
+      scroll.append(tbl);section.append(scroll);
       if(data.v.length>1){
-        parent.append(node("p",(pt?"Grupos de registros de origem":"Source record groupings")+": "+
-          data.v.map((v,i)=>`${i+1}: ${v.map(id=>"#"+id).join(", ")}`).join(" · "),"subtle"));
+        const group=node("details",undefined,"wiki-source-groupings");
+        group.append(node("summary",pt?"Agrupamentos de registros":"Record groupings"));
+        group.append(node("p",pt
+          ?"Grupos de arquivos de origem, não variantes jogáveis comprovadas."
+          :"Original source groupings, not confirmed playable variants.","wiki-help"));
+        const groupingTable=node("table"),gHead=node("thead"),gtr=node("tr");
+        for(const heading of [pt?"Grupo":"Group",pt?"Registros incluídos":"Included source rows"])
+          gtr.append(node("th",heading));
+        gHead.append(gtr);groupingTable.append(gHead);
+        const gBody=node("tbody");
+        data.v.forEach((records,i)=>{
+          const row=node("tr");
+          row.append(node("td",String(i+1)),node("td",records.map(n=>"#"+n).join(", ")));
+          gBody.append(row);
+        });
+        groupingTable.append(gBody);
+        const gscroll=node("div",undefined,"wiki-table-scroll");
+        gscroll.append(groupingTable);group.append(gscroll);section.append(group);
       }
+      parent.append(section);
     }
     async function openItem(id:string,navigate:boolean){
       if(!/^\d{1,12}$/.test(id))return;
@@ -824,7 +926,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       detailName.textContent=row[1]??`Item ID ${id}`;
       detailMeta.textContent=`ID ${id} · ${row[2]??"—"} · ${pt?"fontes":"sources"}: ${row[5]}`;
       detailNotice.textContent=row[6]==="named"
-        ?(pt?"Os dados abaixo vêm dos arquivos do cliente e não comprovam obtenção ou fabricação atual.":"These are game-client records, not proof of current acquisition or craftability.")
+        ?(pt?"Esta ficha reúne receitas, atributos e possíveis fontes de obtenção identificadas nos arquivos do jogo. Confira as ressalvas de cada seção.":"This page brings together crafting, stats and possible acquisition sources from the game files. See the notes in each section.")
         :(pt?"Nome retido: identidade divergente ou tradução não resolvida. Nenhuma definição foi atribuída a um nome inventado.":"Name withheld: conflicting identity or unresolved translation. No source record was assigned a guessed name.");
       if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
       if(equipmentCandidateCategories.has(row[2]??"")&&row[6]==="named"){
@@ -848,8 +950,9 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             ?(pt?"Abrir ficha revisada do equipamento":"Open reviewed equipment profile")
             :(pt?"Abrir ficha do equipamento extraída do cliente":"Open client-source equipment profile")) as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
+        addItemOverview(details,row,data);
         addCraftBatchInformation(details,data);
-        addDefinitionTable(details,data,id);
+        addCraftRecipeTables(details,data);
         // Reverse links are generated from every one of the 22,702 named-ID
         // source details, not just the originally reviewed 551 profiles.
         void addUsedInTable(details,id);
@@ -868,6 +971,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             ?"Atributos de combate ainda não foram importados para este ID. Não é possível calcular +0 a +10 com segurança sem os valores originais de Items.csv."
             :"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values.","subtle"));
         }
+        addDefinitionTable(details,data,id);
       }catch{
         details.replaceChildren(node("p",pt?"Não foi possível carregar o arquivo deste ID.":"Could not load the client source shard for this ID.","subtle"));
       }
