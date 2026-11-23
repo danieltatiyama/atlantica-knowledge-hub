@@ -30,6 +30,26 @@ test("autocomplete candidates must be named + have source materials, then parsed
  assert.ok(candidates.length>200,"Source should have more than a handful of parsed candidates");
  assert.ok(candidates.length<22702,"Do not show all named items in the recipe autocomplete");
 });
+test("Powerful Spirit Sword #63 is not suggested and cannot become a phantom craft plan",()=>{
+ const row=byId.get("63");
+ assert.deepEqual(row,["63","Powerful Spirit Sword","Weapon","1","NORMAL",1,"named",0,0]);
+ assert.equal(isSourceRecipeCandidate(row),false);
+ const original=detail("63");
+ assert.deepEqual(original.s,[[113391,"ItemTypeWeapon.ndt","general","Weapon","1",
+  "NORMAL",0,null,"none",[]]]);
+ assert.deepEqual(buildClientRecipeViews(original.s),[]);
+ assert.equal(resolveRootCraftBatch({recipes:[],category:"Weapon"}).ready,false);
+ assert.throws(()=>planClientCrafting({
+  itemId:"63",quantity:1,recipesById:{"63":[]},
+  itemCategories:{"63":"Weapon"},strictTargetBatch:true,
+ }),/no parsed client crafting recipe/);
+ const page=readFileSync("src/components/CraftingPlannerPage.astro","utf8");
+ assert.ok(page.includes("if(isSourceRecipeCandidate(row))craftableCandidates.set(row[0],row[1])"));
+ assert.ok(page.includes("if(!craftableCandidates.has(id))"));
+ assert.ok(page.includes("if(variants.length===0)throw Error("));
+ assert.ok(page.includes('if(craftableCandidates.has(requested))'));
+});
+
 test("equipment uses batch=1 and allows desired 1..10000, with 20 per operation",()=>{
  const batch=resolveRootCraftBatch({
   recipes:recipes("18801"),category:"Defence",
