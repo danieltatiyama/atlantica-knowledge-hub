@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Stage 20.33: confirm the exact 29 JSON files from the user's audited ZIP.
 
-Check byte-for-byte SHA-256 against the committed allowlist calculated from the
-original user-supplied ZIP. This is distinct from the aggregate/identity and
+Check SHA-256 against the original user-supplied ZIP, allowing only the
+single terminal CRLF to LF normalization performed by Git on Windows. This is distinct from the aggregate/identity and
 551 reviewed-source comparison gates, which must also pass.
 """
 from __future__ import annotations
@@ -65,16 +65,26 @@ def verify(candidate: Path, approval: Path = APPROVAL) -> dict:
         path = candidate / name
         require(path.is_file() and not path.is_symlink(),
                 "Unexpected candidate source file type: " + name)
-        digest = hashlib.sha256()
-        with path.open("rb") as stream:
-            for chunk in iter(lambda: stream.read(262144), b""):
-                digest.update(chunk)
+        data = path.read_bytes()
+        exact_match = hashlib.sha256(data).hexdigest() == expected_hash
+        # The provided ZIP uses precisely ONE trailing CRLF per JSON.
+        # Git's text normalization may replace only that terminal CRLF
+        # with LF. Reconstitute that original byte sequence and verify
+        # the SAME previously pinned original SHA-256; this does not
+        # allow different JSON content, whitespace, or internal newlines.
+        normalized_lf = (
+            not exact_match
+            and data.endswith(b"\n")
+            and data.count(b"\n") == 1
+            and b"\r" not in data
+            and hashlib.sha256(data[:-1] + b"\r\n").hexdigest() == expected_hash
+        )
         require(
-            digest.hexdigest() == expected_hash,
+            exact_match or normalized_lf,
             "Original ZIP SHA256 mismatch for source file: " + name,
         )
     return {"originalFiles": len(sha), "candidateIds": 7560,
-            "originalSourceRows": 9351, "status": "MATCHES_USER_ZIP_BYTE_FOR_BYTE"}
+            "originalSourceRows": 9351, "status": "MATCHES_USER_ZIP_EXACT_OR_GIT_TERMINAL_LF"}
 
 
 def main(argv=None):
@@ -89,7 +99,7 @@ def main(argv=None):
             return 0
         result = verify(args.candidate)
         print("[IC] SHA-256 verified:", result["originalFiles"],
-              "exact original user-provided JSON files.")
+              "approved original JSON files (exact or Git terminal LF-normalized).")
         return 0
     except (OSError, ValueError, KeyError, TypeError,
             json.JSONDecodeError) as error:

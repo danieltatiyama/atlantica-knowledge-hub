@@ -198,6 +198,39 @@ class ExactHashTests(unittest.TestCase):
             hashes.verify(self.candidate, self.approved)["originalFiles"], 29
         )
 
+
+    def test_git_terminal_crlf_to_lf_keeps_original_source_hash(self):
+        # Original 20.31 ZIP stores one trailing CRLF. Git on Windows may
+        # normalize it to LF without changing any JSON source values.
+        original = b'{"bucket":0}' + bytes([13, 10])
+        normalized = b'{"bucket":0}' + bytes([10])
+        (self.candidate / "00.json").write_bytes(normalized)
+        approval = json.loads(self.approved.read_text(encoding="utf-8"))
+        approval["fileSha256"]["00.json"] = hashlib.sha256(original).hexdigest()
+        self.approved.write_text(json.dumps(approval), encoding="utf-8")
+        result = hashes.verify(self.candidate, self.approved)
+        self.assertEqual(result["originalFiles"], 29)
+
+    def test_git_normalization_cannot_mask_changed_json_fields(self):
+        original = b'{"bucket":0}' + bytes([13, 10])
+        (self.candidate / "00.json").write_bytes(b'{"bucket":7}' + bytes([10]))
+        approval = json.loads(self.approved.read_text(encoding="utf-8"))
+        approval["fileSha256"]["00.json"] = hashlib.sha256(original).hexdigest()
+        self.approved.write_text(json.dumps(approval), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "SHA256 mismatch"):
+            hashes.verify(self.candidate, self.approved)
+
+    def test_internal_newline_change_is_not_accepted(self):
+        original = b'{"bucket":0}' + bytes([13, 10])
+        (self.candidate / "00.json").write_bytes(
+            b'{"bucket":' + bytes([10]) + b'0}' + bytes([10])
+        )
+        approval = json.loads(self.approved.read_text(encoding="utf-8"))
+        approval["fileSha256"]["00.json"] = hashlib.sha256(original).hexdigest()
+        self.approved.write_text(json.dumps(approval), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "SHA256 mismatch"):
+            hashes.verify(self.candidate, self.approved)
+
     def test_changed_byte_fails_even_if_valid_json(self):
         (self.candidate / "00.json").write_text('{"bucket":999}', encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "SHA256 mismatch"):
