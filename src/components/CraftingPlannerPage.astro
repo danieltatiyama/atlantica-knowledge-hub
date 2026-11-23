@@ -58,6 +58,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     <div class="craft-section-heading">
      <h3>{pt?"Árvore de receitas":"Crafting tree"}</h3>
      <div class="craft-tree-tools">
+      <button type="button" id="craft-export-tree" class="craft-export-button">{pt?"Exportar planilha (.xlsx)":"Export spreadsheet (.xlsx)"}</button>
       <button type="button" id="craft-tree-expand">{pt?"Expandir tudo":"Expand all"}</button>
       <button type="button" id="craft-tree-collapse">{pt?"Recolher tudo":"Collapse all"}</button>
      </div>
@@ -76,6 +77,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
        <th scope="col">{pt?"Batches":"Batches"}</th>
        <th scope="col">{pt?"Operações":"Operations"}</th>
        <th scope="col">{pt?"Divisão das operações":"Operation breakdown"}</th>
+       <th scope="col">{pt?"Divisão do consumo":"Consumption breakdown"}</th>
        <th scope="col">{pt?"Ação":"Action"}</th>
       </tr></thead>
       <tbody id="craft-tree-rows"></tbody>
@@ -83,23 +85,62 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     </div>
    </section>
    <div class="craft-result-grid">
-    <div><h3>{pt?"Agenda de fabricação":"Craft schedule"}</h3>
-      <div class="table-scroll"><table><thead><tr>
-       <th>{pt?"Produto":"Product"}</th><th>{pt?"Necessário":"Required"}</th>
-       <th>{pt?"Produzido":"Planned"}</th><th>{pt?"Por batch":"Per batch"}</th>
-       <th>{pt?"Batches":"Batches"}</th><th>{pt?"Operações":"Operations"}</th>
-       <th>{pt?"Limite/op.":"Limit/op."}</th>
-       <th>{pt?"Divisão por operação":"Per-operation split"}</th>
-       <th>{pt?"Sobra":"Excess"}</th>
-      </tr></thead><tbody id="craft-steps"></tbody></table></div>
-    </div>
-    <div><div class="craft-section-heading"><h3>{pt?"Lista de compras":"Shopping list"}</h3><div class="craft-tree-tools"><button type="button" id="craft-copy-shopping">{pt?"Copiar lista":"Copy list"}</button><button type="button" id="craft-export-shopping">{pt?"Exportar CSV":"Export CSV"}</button></div></div>
-      <div class="table-scroll"><table><thead><tr>
-       <th>{pt?"Material":"Material"}</th><th>{pt?"Quantidade":"Quantity"}</th>
-       <th>{pt?"Preço unitário":"Unit price"}</th><th>{pt?"Custo":"Cost"}</th>
-      </tr></thead><tbody id="craft-leaves"></tbody></table></div>
+    <section class="craft-table-panel craft-schedule-panel" aria-labelledby="craft-schedule-heading">
+     <div class="craft-panel-heading">
+      <div class="craft-panel-title">
+       <p class="craft-panel-kicker">{pt?"PLANO DE PRODUÇÃO":"PRODUCTION PLAN"}</p>
+       <h3 id="craft-schedule-heading">{pt?"Agenda de fabricação":"Craft schedule"}</h3>
+       <p>{pt?"Batches completos e quantidade por operação, incluindo produtos intermediários.":"Whole batches and units per operation, including crafted intermediate products."}</p>
+      </div>
+      <div class="craft-panel-stat">
+       <span>{pt?"Operações":"Operations"}</span>
+       <strong id="craft-schedule-count">—</strong>
+      </div>
+     </div>
+     <div class="table-scroll craft-data-scroll">
+      <table class="craft-data-table craft-schedule-table">
+       <thead><tr>
+        <th scope="col">{pt?"Produto":"Product"}</th>
+        <th scope="col">{pt?"Necessário":"Required"}</th>
+        <th scope="col">{pt?"A fabricar":"To craft"}</th>
+        <th scope="col">{pt?"Por batch":"Per batch"}</th>
+        <th scope="col">{pt?"Batches":"Batches"}</th>
+        <th scope="col">{pt?"Operações":"Operations"}</th>
+        <th scope="col">{pt?"Limite/op.":"Limit/op."}</th>
+        <th scope="col">{pt?"Divisão por operação":"Operation breakdown"}</th>
+        <th scope="col">{pt?"Sobra":"Excess"}</th>
+       </tr></thead><tbody id="craft-steps"></tbody>
+      </table>
+     </div>
+     <p class="craft-panel-footnote">{pt?"Os limites de produção são aplicados individualmente em cada receita da árvore.":"Each recipe in the tree respects its own per-operation production limit."}</p>
+    </section>
+    <section class="craft-table-panel craft-shopping-panel" aria-labelledby="craft-shopping-heading">
+     <div class="craft-panel-heading">
+      <div class="craft-panel-title">
+       <p class="craft-panel-kicker">{pt?"MATERIAIS CONSOLIDADOS":"CONSOLIDATED MATERIALS"}</p>
+       <h3 id="craft-shopping-heading">{pt?"Lista de compras":"Shopping list"}</h3>
+       <p>{pt?"Ingredientes finais somados entre todos os ramos, sem duplicações.":"Final ingredients combined across all branches without double-counting."}</p>
+      </div>
+      <div class="craft-tree-tools craft-shopping-actions">
+       <button type="button" id="craft-copy-shopping">{pt?"Copiar lista":"Copy list"}</button>
+       <button type="button" id="craft-export-shopping">{pt?"Exportar CSV":"Export CSV"}</button>
+      </div>
+     </div>
+     <div class="table-scroll craft-data-scroll">
+      <table class="craft-data-table craft-shopping-table">
+       <thead><tr>
+        <th scope="col">{pt?"Material":"Material"}</th>
+        <th scope="col">{pt?"Quantidade":"Quantity"}</th>
+        <th scope="col">{pt?"Preço unitário":"Unit price"}</th>
+        <th scope="col">{pt?"Custo":"Cost"}</th>
+       </tr></thead><tbody id="craft-leaves"></tbody>
+      </table>
+     </div>
+     <div class="craft-cost-summary" aria-live="polite">
       <p id="craft-cost-total"></p>
-    </div>
+      <span id="craft-price-coverage" class="craft-price-coverage">—</span>
+     </div>
+    </section>
    </div>
    <section id="craft-surplus-section" class="craft-surplus-section" hidden><h3>{pt?"Excedentes por batch":"Batch leftovers"}</h3><ul id="craft-surplus"></ul></section>
    <div id="craft-issues" aria-live="polite"></div>
@@ -477,6 +518,17 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       fmt(row.maxOutputPerOperation);
     }else breakdown.textContent="—";
     tr.append(breakdown);
+    const consumption=el("td");
+    consumption.className="craft-tree-consumption";
+    if(row.parentItemId!==null){
+     consumption.textContent=fmt(row.unitsPerParentBatch)+" × "+
+      fmt(row.parentBatches)+" = "+fmt(row.branchQuantity);
+     consumption.title=(pt?"Consumido por ":"Consumed by ")+
+      title(row.parentItemId)+": "+
+      fmt(row.unitsPerParentBatch)+(pt?" por batch × ":" per batch × ")+
+      fmt(row.parentBatches)+(pt?" batches da receita pai":" parent recipe batches");
+    }else consumption.textContent="—";
+    tr.append(consumption);
     const actions=el("td");actions.className="craft-tree-actions";
     if(row.itemId!==selectedId&&activeGraph?.[row.itemId]?.length){
      const purchased=buyIds.has(row.itemId);
