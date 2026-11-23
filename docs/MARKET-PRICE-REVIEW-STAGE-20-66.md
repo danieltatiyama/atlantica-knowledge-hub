@@ -44,4 +44,4 @@ Public historical context:
 
 CI checks the reproducible queue, static EN/PT-BR routes, strict import/export parser and negative cases (forged verification claims, unknown ItemIDs, duplicate entries, bad prices/dates and missing evidence). A browser visual pass after deployment remains advisable.
 
-**Next:** collect a small representative sample of player observations from the 128 entries; confirm which are actually fixed/unlimited offers on the **current Global** server; separately investigate additional server-side sources without inventing IDs or silently applying source prices. Only explicitly reviewed evidence may be considered for a future audited public verification dataset.
+**Update (Stage 20.67, 2026-11-23):** the player stated that **all 128 pending prices match the in-game Market**. This is recorded as a single aggregate player report, not per-item screenshots or independent verification. See `docs/MARKET-PRICE-PLAYER-REPORT-STAGE-20-67.md`. No need to request the same bulk confirmation again. Continue investigating possible Market prices outside the known 421 client entries without assigning guessed prices or ItemIDs.
