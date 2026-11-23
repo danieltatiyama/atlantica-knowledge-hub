@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa concluída:** Stage 20.54  
-**Último PR funcional integrado:** [PR #73](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/73)
+**Última etapa concluída:** Stage 20.55  
+**Último PR funcional:** [PR #75](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/75) (Stage 20.55)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -269,6 +269,20 @@ O usuário revisou visualmente os temas e confirmou que a interface estava funci
 - Fusos IANA fazem transições de horário de verão; a interface indica horas inexistentes e usa a primeira ocorrência de horas repetidas no fim da DST.
 - Testes automatizados aprovados não equivalem a teste visual cross-browser em produção.
 
+### Stage 20.55 — Correções e evolução da calculadora de crafting
+
+A Stage 20.55 corrige a distinção entre informação original do cliente e regra de gameplay confirmada:
+
+- **Todo equipamento:** batch de **1 unidade** e **máximo de 20 unidades por operação** (regra confirmada pelo usuário).
+- **Demais itens:** batch do campo original `Unit` quando confiável; quando ausente, pedir valor explicitamente. Preservar o limite geral de 10.000 por operação informado anteriormente.
+- Aplicar a mesma regra às páginas de equipamentos e à calculadora. Nunca sobrescrever os valores `Unit` brutos no arquivo, inclusive se nulos.
+- Exemplos: Judgment Heavy Armor #645, Unit específico 1, 41 itens resultam em 3 operações; Apocalyptic Heavy Armor #18801, Unit ausente, deve ser calculado com batch 1 e sem pedir input.
+- A interface da calculadora passa a oferecer árvore de dependências expansível, distinção entre fabricar e comprar intermediários, lista de compras, preços informados manualmente e persistidos apenas no navegador, CSV, cópia, resumo de etapas e excedentes. Materiais compartilhados são contabilizados uma única vez por ItemID.
+- Inspiração de experiência na calculadora de Jana4U (projetos MIT), com implementação original baseada no nosso cliente; não reproduzir experiência, tempo ou skills sem fórmulas e fontes verificadas.
+- Código principal: `src/data/client-crafting-gameplay-policy.mjs`, `src/data/client-crafting-planner.mjs`, `src/data/client-craft-batch.mjs`, `src/components/CraftingPlannerPage.astro` e `src/components/ClientCraftingSummary.astro`.
+- Documentação detalhada, referências e checklist: `docs/CRAFTING-CALCULATOR-STAGE-20-55.md`.
+- Testes específicos: `tests/client-crafting-gameplay-tree.test.mjs` e suites históricas de batches/crafting.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -283,6 +297,7 @@ O usuário revisou visualmente os temas e confirmou que a interface estava funci
 | 20.52 | [#71](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/71) | Auditoria de integridade dos índices e hub de ferramentas |
 | 20.53 | [#72](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/72) | Calculadora de crafting multietapas e custos manuais |
 | 20.54 | [#73](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/73) | Nation Dungeon Planner com DST e rotinas semanais |
+| 20.55 | [#75](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/75) | Regra de equipamento 1×20, árvore de crafting, compras, excedentes e custos |
 
 Todos esses PRs foram integrados à `main`.
 
@@ -361,4 +376,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.54 concluída, PR #73 integrado à `main`, validações automatizadas aprovadas. A próxima rodada deverá partir do estado real do GitHub e validar visualmente as novas ferramentas.**
+**Estado documentado: Stage 20.55 implementada no PR #75, com testes automatizados aprovados. Revisar o estado de integração e verificar visualmente a árvore, os preços e o limite de equipamentos no site publicado.**
