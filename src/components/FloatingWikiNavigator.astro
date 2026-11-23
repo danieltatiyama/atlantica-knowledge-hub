@@ -126,7 +126,15 @@ const pt=lang==="pt-br";
       if(element.id)return element.id;
       let id=sectionIds.get(element);
       if(!id){
-        do{id="wiki-section-"+(++seq);}while(document.getElementById(id));
+        // Readable IDs stay stable across revisits and can be copied as links.
+        // Duplicate headings are disambiguated without changing existing IDs.
+        const heading=element.querySelector<HTMLElement>(":scope > h2,:scope > h3,:scope > h4,:scope > summary, h2,h3,h4");
+        const slug=(heading?labelFor(heading):"section").toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+          .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,45);
+        const base="wiki-"+(slug||"section");
+        id=base;
+        while(document.getElementById(id))id=base+"-"+(++seq);
         sectionIds.set(element,id);
       }
       element.id=id;
@@ -200,10 +208,11 @@ const pt=lang==="pt-br";
     }
     const updateActive=()=>{
       if(!entries.length)return;
-      let best=entries[0],distance=Infinity;
+      const threshold=Math.min(240,window.innerHeight*0.3);
+      let best=entries[0];
       for(const entry of entries){
-        const top=entry.element.getBoundingClientRect().top;
-        if(top>=-65&&top<distance){best=entry;distance=top;}
+        if(entry.element.getBoundingClientRect().top<=threshold)best=entry;
+        else break;
       }
       setActive(best.id);
     };
@@ -285,7 +294,10 @@ const pt=lang==="pt-br";
       }
       const unique=new Map<string,Entry>();
       for(const entry of built)if(!unique.has(entry.id))unique.set(entry.id,entry);
-      entries=[...unique.values()];
+      entries=[...unique.values()].sort((a,b)=>{
+        const order=a.element.compareDocumentPosition(b.element);
+        return order&Node.DOCUMENT_POSITION_FOLLOWING?-1:1;
+      });
       const nextSignature=entries.map(entry=>[
         entry.id,entry.label,entry.group,entry.element.dataset.wikiCollapsed??""
       ].join("|")).join(";");
