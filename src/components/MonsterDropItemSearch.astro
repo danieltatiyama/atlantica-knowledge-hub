@@ -1,6 +1,6 @@
 ---
 /**
- * A separate client-side index of the 893 ItemIDs with audited source-loot
+ * A level-filtered client-side index of the 822 ItemIDs with audited source-loot
  * references. This is source discovery, not probability estimation.
  */
 interface Props{lang:"en"|"pt-br";}
@@ -15,8 +15,8 @@ const pt=lang==="pt-br";
       <p class="finder-overline">{pt?"CÓDICE DE OBTENÇÃO":"LOOT CODEX"}</p>
       <h2>{pt?"Onde encontrar um item?":"Find an item's source"}</h2>
       <p>{pt
-        ?"Pesquise pelo nome inglês ou ItemID para descobrir criaturas com referências diretas ou por grupo."
-        :"Search English names or exact ItemIDs to find creatures with direct or grouped source references."}</p>
+        ?"Pesquise pelo nome inglês ou ItemID para descobrir monstros que podem fornecer cada item, considerando as faixas de nível dos arquivos do cliente."
+        :"Search an English name or ItemID to see creatures that may drop it, using the game's original client level brackets."}</p>
     </div>
   </div>
   <div class="finder-filters">
@@ -26,20 +26,20 @@ const pt=lang==="pt-br";
     </label>
     <label for="drop-item-mode">{pt?"Referência do cliente":"Original reference type"}
       <select id="drop-item-mode" disabled>
-        <option value="">{pt?"Direta ou por grupo":"Direct or grouped"}</option>
-        <option value="direct">{pt?"Com drop direto":"Has direct references"}</option>
-        <option value="group">{pt?"Com drop por grupo":"Has grouped references"}</option>
+        <option value="">{pt?"Todas as fontes":"All source types"}</option>
+        <option value="direct">{pt?"Drop direto":"Direct drop"}</option>
+        <option value="group">{pt?"Drop por faixa de nível":"Level-matched drop"}</option>
       </select>
     </label>
   </div>
   <p class="finder-status" id="drop-item-status" role="status">{pt
-    ?"Carregando índice de itens com referências de loot…"
+    ?"Carregando índice de itens com drops por nível…"
     :"Loading indexed source-loot item identities…"}</p>
   <div id="drop-item-list" class="finder-list" hidden>
     <div class="finder-list-head">
       <span>{pt?"Item registrado":"Original item"}</span>
       <span>{pt?"Referências diretas":"Direct"}</span>
-      <span>{pt?"Por grupos (derivadas)":"Grouped (derived)"}</span>
+      <span>{pt?"Por faixa de nível":"Level-matched"}</span>
     </div>
     <div id="drop-item-rows"></div>
     <div class="finder-navigation">
@@ -59,11 +59,12 @@ const pt=lang==="pt-br";
     <div id="drop-item-result-body"></div>
   </section>
   <p class="finder-note">{pt
-    ?"Percentuais estimados usam RawRate ÷ 100 (escala hipotética de 10.000 = 100%). São valores ilustrativos, NÃO chances verificadas. Referência e item de grupo permanecem separados."
-    :"Estimated rates use RawRate ÷ 100 (hypothetical 10,000 = 100% scale). Illustrative ONLY, NOT verified odds. Group-reference and item rates remain separate."}</p>
+    ?"Os drops são filtrados pela faixa correspondente ao nível da criatura nos arquivos do cliente. A porcentagem combinada é uma estimativa, NÃO uma chance confirmada no servidor. Os dados brutos ficam em Ver origem."
+    :"Drops are filtered by the level bracket matching each client creature. The combined percentage is an estimate, NOT verified live-server odds. Original values remain in View source."}</p>
 </section>
 <script>
   import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
+  import {estimatedTwoStagePercent,formatLevelResolvedPercent} from "../data/client-monster-drop-resolver.mjs";
   const root=document.getElementById("item-drop-search") as HTMLElement|null;
   if(root){
     const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
@@ -130,9 +131,9 @@ const pt=lang==="pt-br";
         (!m||(m==="direct"?row[2]>0:row[3]>0)));
       page=0;renderItems();
     }
-    const groupManifest="all-client-monster-loot-original";
+    const groupManifest="level-resolved-client-monster-loot";
     async function getOriginalSourceItem(itemId:string){
-      const manifestResp=await fetch("/data/client-monsters/manifest.json");
+      const manifestResp=await fetch("/data/client-monster-discovery/manifest.json");
       if(!manifestResp.ok)throw Error("Original client loot manifest missing");
       const manifest=await manifestResp.json();
       if(manifest.schemaVersion!=="1.0"||manifest.snapshotId!==1||
@@ -141,10 +142,11 @@ const pt=lang==="pt-br";
       const bucket=Math.floor(Number(itemId)/1000);
       const name="item-sources/"+String(bucket).padStart(2,"0")+".json";
       if(!manifest.files.itemSources.includes(name))return null;
-      const response=await fetch("/data/client-monsters/"+name);
+      const response=await fetch("/data/client-monster-discovery/"+name);
       if(!response.ok)throw Error("Original item source file missing");
       const shard=await response.json();
-      if(shard.schemaVersion!=="1.0"||shard.snapshotId!==1||shard.bucket!==bucket)
+      if(shard.schemaVersion!=="1.0"||shard.snapshotId!==1||
+        shard.dataset!==groupManifest||shard.bucket!==bucket)
         throw Error("Original item source file incompatible");
       return shard.items?.[itemId]??null;
     }
@@ -153,16 +155,14 @@ const pt=lang==="pt-br";
       const header=create("h4",title+" ("+nf.format(sourceRows.length)+")");
       section.append(header);
       const info=create("p",type==="direct"?
-        (pt?"Drops diretos registrados na tabela de criaturas.":"Direct references in the original character table."):
-        (pt?"Combinações derivadas entre referência de grupo e item no grupo. Não são rolls independentes.":"Derived character/group and group/item joins; not independent drop rolls."),
+        (pt?"Drops registrados diretamente para a criatura.":"Source records tied directly to the creature."):
+        (pt?"Itens da faixa de nível selecionada nos arquivos. A chance combinada é estimada; consulte a origem para as duas taxas brutas.":"Items from the selected client level bracket. The combined rate is estimated; source details preserve both original raw rates."),
         "finder-evidence-note");
       section.append(info);
       const wrapper=create("div",undefined,"finder-scroll");
       const table=create("table"),head=create("thead"),headRow=create("tr");
-      const headers=type==="direct"
-        ?[pt?"Criatura":"Creature","RawRate","Est. %",pt?"Qtd. candidata":"Candidate qty",pt?"Linha":"Row"]
-        :[pt?"Criatura":"Creature","GroupID","Band","RawRate ref","Est. ref. %","RawRate item","Est. item %",
-          pt?"Qtd. candidata":"Candidate qty",pt?"Linhas":"Rows"];
+      const headers=[pt?"Criatura":"Creature",pt?"Chance estimada":"Estimated rate",
+        pt?"Quantidade":"Amount",pt?"Origem":"Source"];
       headers.forEach(label=>headRow.append(create("th",label)));
       head.append(headRow);
       const tbody=create("tbody");table.append(head,tbody);wrapper.append(table);
@@ -181,20 +181,26 @@ const pt=lang==="pt-br";
           first.append(link);
           if(name)first.append(" (#"+charId+")");
           tr.append(first);
-          if(type==="direct"){
-            tr.append(create("td",asText(entry[3])),
-              create("td",formatCandidateClientRate(entry[3],pt?"pt-br":"en")),
-              create("td",asText(entry[5])+"–"+asText(entry[6])),
-              create("td","#"+entry[2]));
-          }else{
-            tr.append(create("td",asText(entry[2])),create("td",asText(entry[8])),
-              create("td",asText(entry[5])),
-              create("td",formatCandidateClientRate(entry[5],pt?"pt-br":"en")),
-              create("td",asText(entry[6])),
-              create("td",formatCandidateClientRate(entry[6],pt?"pt-br":"en")),
-              create("td",asText(entry[9])+"–"+asText(entry[10])),
-              create("td","#"+entry[3]+" / #"+entry[4]));
+          const pct=type==="direct"?Number(entry[3])/100:
+            estimatedTwoStagePercent(entry[5],entry[6]);
+          tr.append(create("td",formatLevelResolvedPercent(pct,pt?"pt-br":"en")));
+          tr.append(create("td",type==="direct"
+            ?asText(entry[5])+"–"+asText(entry[6])
+            :asText(entry[9])+"–"+asText(entry[10])));
+          const evidence=create("td"),details=create("details"),summary=create("summary",
+            pt?"Ver origem":"View source");
+          details.append(summary);
+          const sourceLines=type==="direct"
+            ?[["RawRate",entry[3]],[pt?"Linha":"Row",entry[2]],["Slot",entry[4]]]
+            :[["GroupID",entry[2]],["Band",entry[8]],["RawRate ref",entry[5]],
+              ["RawRate item",entry[6]],["Reference row",entry[3]],
+              ["Item row",entry[4]],["Slot",entry[7]]];
+          const dl=create("dl");
+          for(const [label,value] of sourceLines){
+            const d=create("div");d.append(create("dt",String(label)),create("dd",asText(value)));
+            dl.append(d);
           }
+          details.append(dl);evidence.append(details);tr.append(evidence);
           fragment.append(tr);
         }
         tbody.append(fragment);
@@ -262,11 +268,12 @@ const pt=lang==="pt-br";
         const meta=await response.json();
         if(meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
           meta.dataset!=="client-monster-drop-item-discovery"||
-          meta.itemIds!==893||meta.rawDirectSourceRows!==9959||
-          meta.derivedGroupReferences!==172120||!Array.isArray(meta.rows))
+          meta.itemIds!==822||meta.rawDirectSourceRows!==9959||
+          meta.derivedGroupReferences!==23905||meta.unmatchedLevelGroupRefs!==197||
+          !Array.isArray(meta.rows))
           throw Error("Original drop item discovery source mismatch");
         all=meta.rows;
-        if(all.length!==893||new Set(all.map(r=>r[0])).size!==all.length)
+        if(all.length!==822||new Set(all.map(r=>r[0])).size!==all.length)
           throw Error("Original drop ItemIDs incomplete");
         query.disabled=false;mode.disabled=false;filtered=all;list.hidden=false;
         renderItems();

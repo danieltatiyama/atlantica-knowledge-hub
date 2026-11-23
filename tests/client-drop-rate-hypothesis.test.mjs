@@ -83,27 +83,24 @@ test("RawSum in GroupBands is distinct from RawRate and may exceed 10000",()=>{
   assert.equal(candidateClientRatePercent(String(maxRawSum)),null);
 });
 
-test("display labels make hypothesis explicit in all 4 source-evidence interfaces",()=>{
+test("the wiki labels level-matched two-stage probabilities as estimates, never server facts",()=>{
   const monster=read("src/components/MonsterDatabasePage.astro");
   const codex=read("src/components/MonsterDropItemSearch.astro");
   const profile=read("src/components/MonsterItemSources.astro");
   const full=read("src/components/FullClientItemDatabasePage.astro");
   for(const source of [monster,codex,profile,full]){
-    assert.ok(source.includes("formatCandidateClientRate"));
-    assert.ok(source.includes("RawRate"));
-    assert.ok(source.includes("100"));
-    assert.match(source,/(NÃO|NOT).{0,65}(chance|odds|probab|verific)/i);
-  }
-  assert.ok(monster.includes("10.000 = 100%"));
-  assert.ok(codex.includes("10,000 = 100%"));
-  assert.ok(profile.includes("10.000 = 100%"));
-  assert.ok(full.includes("10.000 = 100%"));
-  // We do not implement an overall chance from the two unverified stages.
-  for(const source of [monster,codex,profile,full]){
-    assert.ok(!source.includes("combinedRate"));
+    assert.ok(source.includes("formatLevelResolvedPercent"));
+    assert.match(source,/(NÃO|NOT).{0,90}(chance|odds|probab|verific)/i);
     assert.ok(!source.includes("finalDropChance"));
     assert.ok(!source.includes("GroupBands.RawSum/100"));
   }
+  assert.ok(monster.includes("resolveClientCreatureDrops"));
+  for(const source of [codex,profile,full]){
+    assert.ok(source.includes("estimatedTwoStagePercent"));
+    assert.ok(source.includes("level-resolved-client-monster-loot"));
+  }
+  assert.ok(monster.includes("RawRate"));
+  assert.ok(profile.includes("RawRate"));
 });
 
 test("2540x1440 @ 125% widescreen uses a denser, wide bestiary page without global changes",()=>{

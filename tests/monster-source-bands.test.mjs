@@ -54,28 +54,28 @@ test("Atlantica-style creature profile filters and panels preserve raw fields",(
   const page=read("src/components/MonsterDatabasePage.astro");
   assert.ok(page.includes('id="creature-loot-mode"'));
   assert.ok(page.includes("lootMode.disabled=false"));
-  assert.ok(page.includes("links==="+'"direct"'));
-  assert.ok(page.includes("links==="+'"group"'));
+  assert.ok(page.includes("links==="+'"with"'));
+  assert.ok(page.includes("links==="+'"unresolved"'));
   assert.ok(page.includes('id="creature-fact-direct"'));
   assert.ok(page.includes('id="creature-fact-groups"'));
   assert.ok(page.includes('id="creature-fact-level"'));
   assert.ok(page.includes("source-band-details"));
-  assert.ok(page.includes("groupData.bands"));
-  assert.ok(page.includes("groupData.bands.length"));
+  assert.ok(page.includes("groupData[ref[1]]"));
+  assert.ok(page.includes("selectedBand?selectedBand[1]"));
   for(const field of ["BandKey","EntryCount","RawSum","Band"])
     assert.ok(page.includes(field));
-  assert.ok(page.includes("raw(source[1])"));
-  assert.ok(page.includes("raw(groupRef?.[2])"));
-  assert.ok(page.includes("original configuration values"));
+  assert.ok(page.includes("raw(source.selectedBand.band)"));
+  assert.ok(page.includes("raw(source.groupRef[2])"));
+  assert.ok(page.includes("Technical source groups and level brackets"));
   assert.ok(!page.includes(".innerHTML"));
 });
 
-test("reverse ItemID evidence keeps original Band without combining rate fields",()=>{
+test("reverse ItemID evidence keeps raw group rates behind source disclosures",()=>{
   const finder=read("src/components/MonsterDropItemSearch.astro");
   const item=read("src/components/MonsterItemSources.astro");
   const all=read("src/components/FullClientItemDatabasePage.astro");
-  assert.ok(finder.includes('create("td",asText(entry[8]))'));
-  assert.ok(item.includes('tr.insertCell().textContent=raw(band)'));
-  assert.ok(all.includes('String(row[8]??"—")'));
+  assert.ok(finder.includes('["Band",entry[8]]'));
+  assert.ok(item.includes('["Band",source.row[8]]'));
+  assert.ok(all.includes('["Band",source.row[8]]'));
   for(const src of [finder,item,all])assert.ok(src.includes("RawRate")||src.includes("rawRate"));
 });

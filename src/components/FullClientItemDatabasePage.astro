@@ -134,6 +134,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
   import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
   import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
+  import {formatLevelResolvedPercent,estimatedTwoStagePercent} from "../data/client-monster-drop-resolver.mjs";
   import {RAW_STATS_FIELDS,summarizeRawNumericRows,comparableRawNumber,matchesRawStat,
     compareSourceStats,exportFilteredClientCsv} from "../data/full-client-stats-tools.mjs";
   type IndexRow=[string,string|null,string|null,string|null,string|null,number,"named"|"collision"|"unresolved",number,number];
@@ -286,113 +287,109 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     }
     async function addMonsterSources(parent:HTMLElement,id:string){
       const section=node("section",undefined,"monster-source-links");
-      section.append(node("h3",pt?"Onde conseguir — drops do cliente":"Where to obtain — client monster drops"));
-      const codex=node("a",pt?"Consultar este ItemID no códice de drops":"Look up this ItemID in the monster loot codex") as HTMLAnchorElement;
+      section.append(node("h3",pt?"Quais monstros podem dropar este item?":"Which monsters may drop this item?"));
+      const codex=node("a",pt?"Explorar no códice de drops":"Explore in the monster loot codex") as HTMLAnchorElement;
       codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
       const codexLine=node("p");codexLine.append(codex);section.append(codexLine);
       section.append(node("p",pt
-        ?"Estimativa histórica: RawRate ÷ 100 (escala hipotética de 10.000 = 100%). Percentuais NÃO são chances de drop verificadas no servidor. Etapas de grupos permanecem separadas."
-        :"Historical estimate: RawRate ÷ 100 (hypothetical 10,000 = 100% scale). Percentages are NOT verified live-server odds. Group stages remain separate.","detail-note"));
-      const state=node("p",pt?"Consultando registros originais…":"Checking original source rows…","subtle");
+        ?"Exibimos somente faixas compatíveis com o nível registrado da criatura. Os percentuais combinados são estimativas inferidas, NÃO chances verificadas no servidor."
+        :"Only level-matched source brackets are shown. Combined percentages are inferred estimates, NOT verified live-server drop odds.","detail-note"));
+      const state=node("p",pt?"Consultando monstros…":"Checking monster drops…","subtle");
       section.append(state);parent.append(section);
       try{
         if(!lootSourceManifestPromise){
-          lootSourceManifestPromise=fetchJSON("/data/client-monsters/manifest.json")
+          lootSourceManifestPromise=fetchJSON("/data/client-monster-discovery/manifest.json")
             .catch(()=>null);
         }
         const meta=await lootSourceManifestPromise;
-        if(!meta){
-          state.textContent=pt
-            ?"Base original de drops ainda não publicada. A consulta ficará disponível após importação e revisão."
-            :"Original source drops have not been published yet. Links will appear after audited import.";
-          return;
-        }
-        if(meta.schemaVersion!=="1.0"||meta.snapshotId!==manifest?.snapshotId||
-          meta.dataset!=="all-client-monster-loot-original"||
-          !Array.isArray(meta.files?.itemSources))throw Error("Loot manifest snapshot mismatch");
+        if(!meta||meta.schemaVersion!=="1.0"||meta.snapshotId!==manifest?.snapshotId||
+          meta.dataset!=="level-resolved-client-monster-loot"||
+          meta.levelMatchedGroupRows!==23905||
+          meta.unmatchedLevelGroupRefs!==197||
+          !Array.isArray(meta.files?.itemSources))
+          throw Error("Level-resolved client drop manifest mismatch");
         const bucket=Math.floor(Number(id)/1000);
         const filename="item-sources/"+String(bucket).padStart(2,"0")+".json";
         if(!meta.files.itemSources.includes(filename)){
-          state.textContent=pt
-            ?"Não há referência de drop para este ID no snapshot; isso não comprova ausência no jogo."
-            :"No original drop reference for this ID; this does not prove in-game absence.";
+          state.textContent=pt?"Nenhuma fonte de drop encontrada nesta versão dos arquivos."
+            :"No drop source found in this client snapshot.";
           return;
         }
         if(!itemMonsterSourcesCache.has(bucket)){
-          itemMonsterSourcesCache.set(bucket,fetchJSON("/data/client-monsters/"+filename)
+          itemMonsterSourcesCache.set(bucket,fetchJSON("/data/client-monster-discovery/"+filename)
             .then(data=>{
               if(data.schemaVersion!=="1.0"||data.snapshotId!==manifest?.snapshotId||
-                data.bucket!==bucket)throw Error("Invalid loot item source shard");
+                data.dataset!=="level-resolved-client-monster-loot"||data.bucket!==bucket)
+                throw Error("Level-resolved source shard mismatch");
               return data.items;
             }).catch(error=>{itemMonsterSourcesCache.delete(bucket);throw error;}));
         }
         const entry=(await itemMonsterSourcesCache.get(bucket)!)?.[id];
         if(!entry){
-          state.textContent=pt?"Nenhum registro para este ID.":"No source records for this ID.";
+          state.textContent=pt
+            ?"Nenhuma criatura corresponde à faixa de nível deste item nos arquivos do cliente."
+            :"No creature level bracket matches this item in the client data.";
           return;
         }
-        state.textContent=(pt?"Referências originais: ":"Original loot references: ")+
-          number.format((entry.direct?.length??0)+(entry.group?.length??0));
-        const draw=(title:string,rows:any[],kind:"direct"|"group")=>{
-          if(!rows?.length)return;
-          const body=node("tbody"),thead=node("thead"),heading=node("tr");
-          for(const label of (kind==="direct"?
-            [pt?"Criatura":"Creature","RawRate","Est. %",pt?"Quantidade candidata":"Candidate quantity",pt?"Registro":"Source row"]:
-            [pt?"Criatura":"Creature","GroupID","Band","RawRate ref","Est. ref. %","RawRate item","Est. item %",
-              pt?"Quantidade candidata":"Candidate quantity",pt?"Registros":"Source rows"]))
-            heading.append(node("th",label));
-          thead.append(heading);
-          let cursor=0;
-          const nextChunk=()=>{
-            const end=Math.min(rows.length,cursor+100);
-            for(const row of rows.slice(cursor,end)){
-            const [charId,name]=row;
-            if(!/^[1-9]\d*$/.test(charId))continue;
+        const sources=[
+          ...(entry.direct??[]).map((r:any[])=>({row:r,kind:"direct" as const,
+            pct:Number(r[3])/100,min:r[5],max:r[6]})),
+          ...(entry.group??[]).map((r:any[])=>({row:r,kind:"group" as const,
+            pct:estimatedTwoStagePercent(r[5],r[6]),min:r[9],max:r[10]})),
+        ].sort((a,b)=>(b.pct??-1)-(a.pct??-1));
+        state.textContent=(pt?"Possíveis fontes compatíveis com o nível: ":"Level-matched possible drop sources: ")+
+          number.format(sources.length);
+        const body=node("tbody"),head=node("thead"),h=node("tr");
+        for(const label of [
+          pt?"Criatura":"Creature",pt?"Chance estimada":"Estimated rate",
+          pt?"Quantidade":"Amount",pt?"Origem":"Source"
+        ])h.append(node("th",label));
+        head.append(h);
+        const table=node("table");table.append(head,body);
+        const wrapper=node("div",undefined,"stat-table-scroll");wrapper.append(table);
+        section.append(wrapper);
+        const more=node("button",pt?"Mostrar mais 100":"Show 100 more") as HTMLButtonElement;
+        more.type="button";more.className="monster-more";
+        let cursor=0;
+        const nextChunk=()=>{
+          for(const source of sources.slice(cursor,cursor+100)){
+            const [charId,name]=source.row;
+            if(!/^[1-9]\d*$/.test(String(charId)))continue;
             const tr=node("tr"),first=node("td");
-            const link=node("a",name??("CharID "+charId)) as HTMLAnchorElement;
+            const link=node("a",name??("CharID #"+charId)) as HTMLAnchorElement;
             link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
-            first.append(link);if(name)first.append(" · #"+charId);
-            tr.append(first);
-            if(kind==="direct"){
-              tr.append(node("td",String(row[3]??"—")));
-              tr.append(node("td",formatCandidateClientRate(row[3],pt?"pt-br":"en")));
-              tr.append(node("td",String(row[5]??"—")+"–"+String(row[6]??"—")));
-              tr.append(node("td","#"+row[2]));
-            }else{
-              tr.append(node("td",String(row[2])));
-              tr.append(node("td",String(row[8]??"—")));
-              tr.append(node("td",String(row[5]??"—")));
-              tr.append(node("td",formatCandidateClientRate(row[5],pt?"pt-br":"en")));
-              tr.append(node("td",String(row[6]??"—")));
-              tr.append(node("td",formatCandidateClientRate(row[6],pt?"pt-br":"en")));
-              tr.append(node("td",String(row[9]??"—")+"–"+String(row[10]??"—")));
-              tr.append(node("td","#"+row[3]+" / #"+row[4]));
+            first.append(link);tr.append(first);
+            tr.append(node("td",formatLevelResolvedPercent(source.pct,pt?"pt-br":"en")));
+            tr.append(node("td",String(source.min)+"–"+String(source.max)));
+            const cell=node("td"),audit=node("details");
+            audit.append(node("summary",pt?"Ver origem":"View source"));
+            const fields=source.kind==="direct"
+              ?[["RawRate",source.row[3]],[pt?"Linha":"Row",source.row[2]],
+                ["Slot",source.row[4]]]
+              :[["GroupID",source.row[2]],["Band",source.row[8]],
+                ["RawRate ref",source.row[5]],["RawRate item",source.row[6]],
+                [pt?"Linha referência":"Ref row",source.row[3]],
+                [pt?"Linha item":"Item row",source.row[4]],["Slot",source.row[7]]];
+            const dl=node("dl");
+            for(const [label,value] of fields){
+              const div=node("div");div.append(node("dt",String(label)),node("dd",String(value??"—")));
+              dl.append(div);
             }
-            body.append(tr);
-            }
-            cursor=end;
-            more.textContent=(pt?"Mostrar mais 100 · ":"Show 100 more · ")+
-              number.format(cursor)+"/"+number.format(rows.length);
-            if(cursor>=rows.length)more.remove();
-          };
-          const more=node("button",pt?"Mostrar mais 100":"Show 100 more") as HTMLButtonElement;
-          more.type="button";more.className="monster-more";
-          more.addEventListener("click",nextChunk);
-          const table=node("table");table.append(thead,body);
-          const scroll=node("div",undefined,"stat-table-scroll");scroll.append(table);
-          const details=node("details");details.open=true;
-          details.append(node("summary",title+" ("+number.format(rows.length)+")"),scroll,more);
-          section.append(details);
-          nextChunk();
+            audit.append(dl);cell.append(audit);tr.append(cell);body.append(tr);
+          }
+          cursor=Math.min(sources.length,cursor+100);
+          more.textContent=(pt?"Mostrar mais 100 · ":"Show 100 more · ")+
+            number.format(cursor)+" / "+number.format(sources.length);
+          if(cursor===sources.length)more.remove();
         };
-        draw(pt?"Drops diretos registrados":"Original direct source drops",entry.direct,"direct");
-        draw(pt?"Drops vinculados a grupos":"Group-linked source drops",entry.group,"group");
+        if(sources.length>100){more.addEventListener("click",nextChunk);section.append(more);}
+        nextChunk();
       }catch{
-        state.textContent=pt?"Não foi possível validar os registros de drop."
-          :"Original source drop records failed to load or validate.";
+        state.textContent=pt?"Não foi possível validar os drops por nível."
+          :"Level-matched monster drops could not be validated.";
       }
     }
-    async function numericManifest(){
+        async function numericManifest(){
       if(!statsManifestPromise){
         statsManifestPromise=fetchJSON("/data/client-items/stats/manifest.json")
           .then(data=>{

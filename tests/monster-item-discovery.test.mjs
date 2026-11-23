@@ -6,7 +6,7 @@ import {createMonsterItemDiscovery} from "../scripts/generate-monster-item-disco
 const read=path=>readFileSync(path,"utf8");
 const generated=createMonsterItemDiscovery();
 
-test("source-derived drop discovery covers exactly 893 original named ItemIDs",()=>{
+test("historical all-band audit still covers 893 raw source item IDs",()=>{
   assert.equal(generated.schemaVersion,"1.0");
   assert.equal(generated.snapshotId,1);
   assert.equal(generated.dataset,"client-monster-drop-item-discovery");
@@ -50,7 +50,8 @@ test("bestiary UX links items, source drops, recipes and creature detail using e
   const itemDrops=read("src/components/MonsterItemSources.astro");
   const allItems=read("src/components/FullClientItemDatabasePage.astro");
   assert.ok(finder.includes("client-monster-drop-item-discovery"));
-  assert.ok(finder.includes('meta.itemIds!==893'));
+  assert.ok(finder.includes('meta.itemIds!==822'));
+  assert.ok(finder.includes('meta.derivedGroupReferences!==23905'));
   assert.ok(finder.includes("source.direct"));
   assert.ok(finder.includes("source.group"));
   assert.ok(finder.includes('url.searchParams.set("item",itemId)'));
@@ -75,9 +76,9 @@ test("generated lookup is intentionally excluded from the immutable original 53 
   const ignored=read(".gitignore");
   const packageJSON=JSON.parse(read("package.json"));
   assert.ok(ignored.includes("/public/data/client-monster-discovery/"));
-  assert.ok(packageJSON.scripts.prebuild.includes("generate-monster-item-discovery.mjs"));
-  assert.ok(packageJSON.scripts.predev.includes("generate-monster-item-discovery.mjs"));
+  assert.ok(packageJSON.scripts.prebuild.includes("generate-monster-level-resolved.mjs"));
+  assert.ok(packageJSON.scripts.predev.includes("generate-monster-level-resolved.mjs"));
   assert.equal(packageJSON.scripts["generate:monster-item-lookup"],
-    "node scripts/generate-monster-item-discovery.mjs");
+    "node scripts/generate-monster-level-resolved.mjs");
   assert.ok(existsSync("scripts/verify-client-monster-source-hashes.py"));
 });
