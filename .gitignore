@@ -76,3 +76,8 @@ Miner_ClientFacts_*.json
 Miner_Legendary_Client_*.json
 Miner_ReferenceFields_*.json
 Miner_ClientAttributes_*.json
+
+# Stage 20.31 local raw-stats staging: publish only reviewed /public/data shards
+/Miner_AllStats_PublicCandidate_*/
+/Miner_AllStats_PublicCandidate_*.zip
+/Miner_AllStats_Report_*.json
