@@ -15,10 +15,12 @@ const count=value=>{
 };
 export function planClientCrafting({
   itemId,quantity,recipesById={},choices={},batchOverrides={},
-  itemCategories={},buyIds=[],
+  itemCategories={},buyIds=[],strictTargetBatch=false,
 }){
   if(!valid(itemId))throw new RangeError("Invalid target ItemID");
   const requested=count(quantity);
+  if(strictTargetBatch&&requested>10000n)
+    throw new RangeError("Requested output exceeds the 10,000-item planning limit");
   const buy=new Set(buyIds.map(String));
   if([...buy].some(id=>!valid(id)))throw new RangeError("Invalid purchased ItemID");
   const nodes=new Map(),visiting=new Set(),visited=new Set(),issues=[];
@@ -85,7 +87,10 @@ export function planClientCrafting({
     processed++;
     const needed=demand.get(id)??0n;
     if(node.recipe){
-      const batch=node.batch,batches=(needed+batch-1n)/batch;
+      const batch=node.batch;
+      if(strictTargetBatch&&id===String(itemId)&&needed%batch!==0n)
+        throw new RangeError("Requested output must be an exact multiple of its source batch");
+      const batches=(needed+batch-1n)/batch;
       const produced=batches*batch;
       const maxPerOperation=BigInt(node.policy.maxPerOperation);
       const batchesPerOperation=maxPerOperation/batch;
