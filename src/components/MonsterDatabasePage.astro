@@ -57,6 +57,14 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
           <input id="creature-level" type="number" min="0" step="1"
             placeholder={pt?"Qualquer":"Any"} disabled/>
         </label>
+        <label>{pt?"Tipo de referência":"Loot references"}
+          <select id="creature-loot-mode" disabled>
+            <option value="">{pt?"Todos os registros":"All source characters"}</option>
+            <option value="direct">{pt?"Com drops diretos":"Has direct drops"}</option>
+            <option value="group">{pt?"Com grupos vinculados":"Has linked groups"}</option>
+            <option value="none">{pt?"Sem referências":"Without source links"}</option>
+          </select>
+        </label>
       </div>
       <p class="subtle" id="creature-status" role="status">{pt
         ?"Verificando se os registros originais de monstros já foram publicados…"
@@ -86,6 +94,12 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         <button type="button" id="creature-close">{pt?"Fechar":"Close"}</button>
       </div>
       <p id="creature-detail-meta" class="subtle"></p>
+      <div class="creature-facts" aria-label={pt?"Valores originais registrados":"Original recorded source values"}>
+        <div><span>CharID</span><strong id="creature-fact-id">—</strong></div>
+        <div><span>{pt?"Nível bruto":"Raw level"}</span><strong id="creature-fact-level">—</strong></div>
+        <div><span>{pt?"Registros diretos":"Direct rows"}</span><strong id="creature-fact-direct">—</strong></div>
+        <div><span>{pt?"Referências a grupos":"Group refs"}</span><strong id="creature-fact-groups">—</strong></div>
+      </div>
       <div id="creature-details"></div>
     </section>
   </main>
@@ -98,6 +112,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     const query=$<HTMLInputElement>("creature-query");
     const kind=$<HTMLSelectElement>("creature-kind");
     const level=$<HTMLInputElement>("creature-level");
+    const lootMode=$<HTMLSelectElement>("creature-loot-mode");
     const status=$<HTMLElement>("creature-status");
     const list=$<HTMLElement>("creature-list");
     const rowsEl=$<HTMLTableSectionElement>("creature-rows");
@@ -108,6 +123,10 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     const detail=$<HTMLElement>("creature-detail");
     const detailName=$<HTMLElement>("creature-detail-name");
     const detailMeta=$<HTMLElement>("creature-detail-meta");
+    const factId=$<HTMLElement>("creature-fact-id");
+    const factLevel=$<HTMLElement>("creature-fact-level");
+    const factDirect=$<HTMLElement>("creature-fact-direct");
+    const factGroups=$<HTMLElement>("creature-fact-groups");
     const detailBody=$<HTMLElement>("creature-details");
     const close=$<HTMLButtonElement>("creature-close");
     const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
@@ -170,10 +189,13 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     function applyFilters(){
       const q=query.value.toLocaleLowerCase().trim(),k=kind.value,rawMin=level.value;
       const minimum=rawMin!==""?Number(rawMin):null;
+      const links=lootMode.value;
       visible=all.filter(r=>
         (!q||r[0].includes(q)||(r[1]??"").toLocaleLowerCase().includes(q))&&
         (!k||r[3]===k)&&
-        (minimum===null||(r[2]!==null&&Number.isFinite(Number(r[2]))&&Number(r[2])>=minimum)));
+        (minimum===null||(r[2]!==null&&Number.isFinite(Number(r[2]))&&Number(r[2])>=minimum))&&
+        (!links||(links==="direct"?r[5]>0:
+          links==="group"?r[6]>0:r[5]===0&&r[6]===0)));
       page=0;render();
     }
     function table(columns:string[],records:(string|number|null)[][]){
@@ -192,6 +214,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       const tableNode=node("table"),head=node("thead"),h=node("tr"),body=node("tbody");
       const headers=isGrouped
         ?[pt?"Item do grupo":"Group item","ItemID","GroupID",
+          pt?"Faixa bruta":"Raw band",
           pt?"RawRate da referência":"Reference RawRate",
           pt?"RawRate do item":"Item RawRate",
           pt?"Quantidades candidatas":"Candidate quantities",
@@ -210,6 +233,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         cell(tr,itemId);
         if(isGrouped){
           cell(tr,groupId??"—");
+          cell(tr,raw(source[1]));
           cell(tr,raw(groupRef?.[2]));
           cell(tr,raw(source[4]));
           cell(tr,raw(source[6])+"–"+raw(source[7]));
@@ -233,10 +257,12 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       shownId=id;
       detail.hidden=false;
       detailName.textContent=entity[1]??("CharID "+id);
-      detailMeta.textContent="CharID "+id+" · "+
-        (pt?"Nível bruto":"Raw level")+" "+raw(entity[2])+
-        " · "+(pt?"Tipo do cliente":"Source type")+" "+raw(entity[3])+
-        " · "+(pt?"Identidade":"Identity")+" "+entity[4];
+      detailMeta.textContent=(pt?"Tipo registrado":"Recorded source kind")+": "+raw(entity[3])+
+        " · "+(pt?"Identidade":"Identity")+": "+entity[4];
+      factId.textContent=id;
+      factLevel.textContent=raw(entity[2]);
+      factDirect.textContent=nf.format(entity[5]);
+      factGroups.textContent=nf.format(entity[6]);
       detailBody.replaceChildren(node("p",pt
         ?"Carregando os registros de origem…"
         :"Loading original source records…","subtle"));
@@ -302,6 +328,23 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
             }else block.append(node("p",pt
               ?"Nenhum item estruturado para este grupo."
               :"No structured items listed for this source group.","subtle"));
+            // Original GroupBands.csv is a SEPARATE source table. Its
+            // Band, BandKey, EntryCount and RawSum fields are raw strings;
+            // none imply probabilities or a particular selected band.
+            if(Array.isArray(groupData?.bands)&&groupData.bands.length){
+              const evidence=node("details",undefined,"source-band-details");
+              const label=node("summary",
+                (pt?"Bandas originais do grupo":"Original group band records")+
+                " ("+nf.format(groupData.bands.length)+")");
+              evidence.append(label);
+              evidence.append(node("p",pt
+                ?"Band, BandKey, EntryCount e RawSum são valores originais; não foram convertidos em chance de drop nem associados a um nível do personagem."
+                :"Band, BandKey, EntryCount and RawSum are original configuration values; they have not been translated into drop odds or assumed character-level rules.","subtle"));
+              evidence.append(table([
+                pt?"Registro":"Source row","Band","BandKey","EntryCount","RawSum"
+              ],groupData.bands));
+              block.append(evidence);
+            }
           }
           body.append(block);
         }
@@ -327,6 +370,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     query.addEventListener("input",applyFilters);
     kind.addEventListener("change",applyFilters);
     level.addEventListener("input",applyFilters);
+    lootMode.addEventListener("change",applyFilters);
     void (async()=>{
       try{
         const response=await fetch("/data/client-monsters/manifest.json");
@@ -352,6 +396,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
           option.value=category;kind.append(option);
         }
         query.disabled=false;kind.disabled=false;level.disabled=false;
+        lootMode.disabled=false;
         visible=all;list.hidden=false;pageNav.hidden=false;render();
         const selected=new URL(location.href).searchParams.get("id");
         if(selected)void openCreature(selected,false);
@@ -453,7 +498,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     font-family:Georgia,"Times New Roman",serif;
     font-size:1.38rem;margin:0;color:#eed29a;
   }
-  #creature-db .filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:13px}
+  #creature-db .filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:13px}
   #creature-db label{display:grid;gap:7px;font-size:.82rem;color:#e5d4b7}
   #creature-db input,#creature-db select{
     width:100%;padding:11px 12px;border:1px solid #837153;
@@ -500,15 +545,39 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     margin:13px 0;padding:14px;border:1px solid #77684b;
     border-radius:3px;background:#1a1e23;
   }
+  #creature-db .creature-facts{
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    border:1px solid #806b49;gap:1px;background:#5c513e;margin:14px 0 22px
+  }
+  #creature-db .creature-facts>div{
+    padding:12px 14px;background:linear-gradient(#262a2b,#151b24);display:grid;gap:5px
+  }
+  #creature-db .creature-facts span{color:#adb6c4;font-size:.78rem}
+  #creature-db .creature-facts strong{
+    color:#e9ce96;font-size:1.04rem;font-weight:600;
+    font-variant-numeric:tabular-nums;overflow-wrap:anywhere
+  }
+  #creature-db .source-band-details{
+    border:1px solid #675739;margin-top:12px;background:#171b20;
+    padding:10px 12px
+  }
+  #creature-db .source-band-details summary{
+    color:#e3c58f;cursor:pointer;font-size:.88rem;font-weight:600
+  }
+  #creature-db .source-band-details .creature-table-scroll{margin-top:10px}
   #creature-db .creature-detail{scroll-margin-top:40px}
   #creature-db #creature-list[hidden],
   #creature-db #creature-paging[hidden],
   #creature-db #creature-detail[hidden]{display:none}
   #creature-db .ao-drop-finder #drop-item-list[hidden],
   #creature-db .ao-drop-finder #drop-item-result[hidden]{display:none}
+  @media(max-width:1050px){
+    #creature-db .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
   @media(max-width:700px){
     #creature-db .bestiary-crest{display:none}
     #creature-db .filters{grid-template-columns:1fr}
+    #creature-db .creature-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
     #creature-db .bestiary-stats{gap:4px}
     #creature-db .bestiary-stats strong{font-size:1.15rem}
     #creature-db .bestiary-stats span{font-size:.69rem}
