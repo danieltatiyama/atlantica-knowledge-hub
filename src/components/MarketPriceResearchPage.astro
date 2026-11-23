@@ -155,7 +155,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      record?statuses[record.state]:(pt?"Pendente":"Pending")]){
      const td=node("td",v);tr.append(td);
     }
-    const td=node("td"),button=node("button",pt?"Revisar":"Review");
+    const td=node("td"),button=node("button",pt?"Revisar":"Review") as HTMLButtonElement;
     button.type="button";button.addEventListener("click",()=>select(c.itemId));
     td.append(button);tr.append(td);results.append(tr);
    }
@@ -175,6 +175,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    price.value=previous?.observedGold||"";
    date.value=previous?.observedOn||"";
    notes.value=previous?.notes||"";
+   price.disabled=!state.value.startsWith("fixed-");
    editor.hidden=false;
    editor.scrollIntoView({behavior:"smooth",block:"start"});
   }
@@ -230,7 +231,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     observations=incoming;store();render();close();
     actionStatus.textContent=pt?"Observações importadas.":"Observations imported.";
    }catch(e){
-    actionStatus.textContent=pt?"Importação recusada: ":"Import rejected: "+
+    actionStatus.textContent=(pt?"Importação recusada: ":"Import rejected: ")+
      (e instanceof Error?e.message:String(e));
    }finally{importField.value="";}
   });
