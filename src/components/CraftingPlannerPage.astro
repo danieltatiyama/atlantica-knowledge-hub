@@ -15,16 +15,35 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     :"Plan ingredient requirements across multiple recipe levels using extracted client recipes. Equipment uses the confirmed gameplay rule: batch size 1, maximum 20 per operation. Other items use original client Unit values or explicit manual inputs."}</p>
   <form id="craft-plan-form" class="craft-form">
    <div class="field"><label for="craft-search">{pt?"Nome do item ou ItemID":"Item name or ItemID"}</label>
-    <input id="craft-search" type="search" autocomplete="off" required placeholder={pt?"Digite para encontrar um item":"Start typing to find an item"} aria-controls="craft-suggestions"/>
+    <input id="craft-search" type="search" autocomplete="off" required placeholder={pt?"Buscar itens com receita no cliente":"Search items with client recipes"} aria-controls="craft-suggestions" aria-autocomplete="list"/>
     <ul id="craft-suggestions" aria-label={pt?"Sugestões de itens":"Item suggestions"}></ul>
    </div>
    <div class="field"><label for="craft-quantity">{pt?"Quantidade desejada":"Desired output"}</label>
-    <input id="craft-quantity" type="number" min="1" max="1000000000000" value="1" step="1" required/>
+    <input id="craft-quantity" type="number" min="1" max="10000" value="1" step="1" required disabled/>
    </div>
-   <button type="submit">{pt?"Calcular materiais":"Calculate materials"}</button>
+   <button id="craft-submit" type="submit" disabled>{pt?"Calcular materiais":"Calculate materials"}</button>
+   <div id="craft-quantity-controls" class="craft-quantity-controls" hidden>
+    <div id="craft-root-variant-group" class="craft-root-setting" hidden>
+     <label for="craft-root-variant">{pt?"Versão da receita":"Recipe variant"}</label>
+     <select id="craft-root-variant"><option value="">{pt?"Escolha uma receita":"Choose a recipe"}</option></select>
+    </div>
+    <div id="craft-root-batch-group" class="craft-root-setting" hidden>
+     <label for="craft-root-batch">{pt?"Unidades por batch não identificadas: informe o mínimo":"Batch size not in source: enter the minimum"}</label>
+     <input id="craft-root-batch" type="number" min="1" max="10000" step="1" placeholder="1–10000"/>
+    </div>
+    <div id="craft-slider-group" hidden>
+     <div class="craft-range-heading">
+      <label for="craft-quantity-slider">{pt?"Quantidade de fabricação":"Craft quantity"}</label>
+      <output id="craft-quantity-output" for="craft-quantity-slider craft-quantity">—</output>
+     </div>
+     <input id="craft-quantity-slider" type="range" min="1" max="10000" value="1" step="1" disabled/>
+     <div class="craft-range-ends"><span id="craft-range-min">1</span><span id="craft-range-max">10.000</span></div>
+    </div>
+    <p id="craft-batch-hint" class="craft-muted" role="status" aria-live="polite"></p>
+   </div>
   </form>
   <p id="craft-status" role="status" aria-live="polite">
-   {pt?"Selecione um item para começar.":"Select an item to begin."}
+   {pt?"Somente itens com receitas presentes no cliente aparecem na busca. Isso não comprova disponibilidade no servidor.":"Search shows items with recipes in the client files. This does not verify live-server availability."}
   </p>
   <section id="craft-result" hidden>
    <h2>{pt?"Plano de produção":"Production plan"}</h2>
@@ -74,6 +93,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
 </BaseLayout>
 <script>
  import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
+ import {CRAFT_PLAN_MAX_OUTPUT,isSourceRecipeCandidate,resolveRootCraftBatch,isAllowedCraftQuantity}
+   from "../data/client-crafting-quantity.mjs";
  import {planClientCrafting,priceCraftLeaves} from "../data/client-crafting-planner.mjs";
  const root=document.getElementById("wiki-craft-planner");
  if(root){
@@ -81,7 +102,14 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const $=(id:string)=>document.getElementById(id)!;
   const query=$("craft-search") as HTMLInputElement;
   const amount=$("craft-quantity") as HTMLInputElement;
+  const slider=$("craft-quantity-slider") as HTMLInputElement;
   const form=$("craft-plan-form") as HTMLFormElement;
+  const submit=$("craft-submit") as HTMLButtonElement;
+  const controls=$("craft-quantity-controls");
+  const sliderGroup=$("craft-slider-group"),batchHint=$("craft-batch-hint");
+  const rootVariantGroup=$("craft-root-variant-group"),rootBatchGroup=$("craft-root-batch-group");
+  const rootVariant=$("craft-root-variant") as HTMLSelectElement;
+  const rootBatch=$("craft-root-batch") as HTMLInputElement;
   const suggestions=$("craft-suggestions"),status=$("craft-status");
   const result=$("craft-result"),note=$("craft-result-note");
   const steps=$("craft-steps"),leaves=$("craft-leaves"),issues=$("craft-issues");
@@ -103,7 +131,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   }catch{ /* Local price persistence is optional. */ }
   const detailCache=new Map<number,Promise<any>>();
   let indexPromise:Promise<Map<string,string>>|null=null;
+  const craftableCandidates=new Map<string,string>();
   let selectedId="",activeGraph:Record<string,any[]>|null=null;
+  let rootRecipes:any[]=[],rootConfig:any=null,selectionEpoch=0,lastValidQuantity=1;
   let plan:any=null;
   const el=(tag:string,value?:string)=>{
    const n=document.createElement(tag);if(value!==undefined)n.textContent=value;return n;
@@ -133,9 +163,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      for(const row of shard.rows)if(row[6]==="named"){
       names.set(row[0],row[1]);
       if(typeof row[2]==="string")itemCategories[row[0]]=row[2];
+      if(isSourceRecipeCandidate(row))craftableCandidates.set(row[0],row[1]);
      }
     }
-    if(names.size!==22702)throw Error("Incomplete source name index");
+    if(names.size!==22702||craftableCandidates.size===0)throw Error("Incomplete source name index");
     return names;
    })().catch(error=>{indexPromise=null;throw error;});
    return indexPromise;
