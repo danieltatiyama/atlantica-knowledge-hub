@@ -41,6 +41,8 @@ def sibling(module_name: str, name: str):
 audit = sibling("validate_full_client_stats_20_32", "validate-full-client-stats.py")
 reviewed = sibling("verify_full_client_reviewed_20_33",
                    "verify-full-client-reviewed-stats.py")
+hashes = sibling("verify_full_client_hashes_20_33",
+                 "verify-full-client-source-hashes.py")
 
 
 def safe_name(name: str) -> str:
@@ -102,6 +104,7 @@ def import_stats(archive: Path, *, dry_run: bool = False) -> dict:
         staging = Path(root) / "stats"
         staging.mkdir()
         extract_candidate(archive, staging)
+        hashes.verify(staging)
         result = audit.validate(
             staging, ROOT / "docs/Miner_AllStats_Report_20_31.json",
             ROOT / "public/data/client-items",
