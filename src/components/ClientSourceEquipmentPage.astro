@@ -58,7 +58,7 @@ const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation
 <BaseLayout lang={lang} title={item.nameEn+" | Atlantica Knowledge Hub"}
   description={(pt?"Equipamento de categoria semelhante extraído dos arquivos do cliente: ":"Equipment-like source item from the client files: ")+item.nameEn}
   alternatePaths={{en:"/items/"+item.id+"/", "pt-br":"/pt-br/items/"+item.id+"/"}}>
-  <main class="equipment-source-page">
+  <main class="equipment-source-page" data-wiki-nav-root>
     <nav class="breadcrumbs"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
     <header>
       <p class="eyebrow">ATLANTICA GLOBAL / NA · CLIENT SNAPSHOT 1</p>
