@@ -34,7 +34,7 @@ generated from those originals and the 23,586-ID client item registry.
 Run `npm run generate:monster-item-lookup` or simply `npm run dev` /
 `npm run build`. The predev/prebuild scripts now regenerate
 
-    public/data/client-monsters/item-lookup.json
+    public/data/client-monster-discovery/item-lookup.json
 
 from the published original drop shards and the original item index.
 The new lookup has exactly 893 named ItemIDs, 9,959 direct source
