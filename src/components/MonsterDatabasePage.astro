@@ -212,46 +212,66 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       tbl.append(tbody);wrap.append(tbl);return wrap;
     }
     function appendItemTable(container:HTMLElement,entries:any[][],isGrouped:boolean,groupId?:string,groupRef?:any[]){
+      // Player-first table: practical estimated rate and quantity before
+      // implementation details. Preserve each original field in the
+      // expandable row source record, without combining group-stage rates.
       const tableNode=node("table"),head=node("thead"),h=node("tr"),body=node("tbody");
       const headers=isGrouped
-        ?[pt?"Item do grupo":"Group item","ItemID","GroupID",
-          pt?"Faixa bruta":"Raw band",
-          pt?"RawRate da referência":"Reference RawRate",pt?"Est. ref.":"Ref. est. %",
-          pt?"RawRate do item":"Item RawRate",pt?"Est. item":"Item est. %",
-          pt?"Quantidades candidatas":"Candidate quantities",
-          pt?"Linhas originais":"Original source rows"]
-        :[pt?"Item":"Item","ItemID","RawRate",
-          pt?"Est. %":"Est. %",pt?"Quantidades candidatas":"Candidate quantities",
-          pt?"Registro de origem":"Source row"];
+        ?[pt?"Item que pode aparecer":"Possible item",
+          pt?"Est. % do item":"Item est. %",
+          pt?"Est. % do grupo":"Group est. %",
+          pt?"Quantidade possível":"Possible amount",
+          pt?"Fonte":"Source"]
+        :[pt?"Item que pode aparecer":"Possible item",
+          pt?"Est. %":"Est. %",
+          pt?"Quantidade possível":"Possible amount",
+          pt?"Fonte":"Source"];
       headers.forEach(x=>h.append(node("th",x)));
       head.append(h);tableNode.append(head);
       for(const source of entries){
         const tr=node("tr");
         const itemId=isGrouped?source[2]:source[1];
         const itemName=isGrouped?source[3]:source[2];
-        const first=node("td");first.append(itemLink(itemId,itemName));
+        const first=node("td");
+        first.append(itemLink(itemId,itemName));
+        first.append(node("small","Item ID "+itemId,"client-source-id"));
         tr.append(first);
-        cell(tr,itemId);
+        const itemRate=isGrouped?source[4]:source[3];
+        const percent=node("td",undefined,"client-rate");
+        percent.append(node("strong",formatCandidateClientRate(itemRate,pt?"pt-br":"en")));
+        tr.append(percent);
         if(isGrouped){
-          cell(tr,groupId??"—");
-          cell(tr,raw(source[1]));
-          cell(tr,raw(groupRef?.[2]));
-          cell(tr,formatCandidateClientRate(groupRef?.[2],pt?"pt-br":"en"));
-          cell(tr,raw(source[4]));
-          cell(tr,formatCandidateClientRate(source[4],pt?"pt-br":"en"));
-          cell(tr,raw(source[6])+"–"+raw(source[7]));
-          cell(tr,"#"+groupRef?.[0]+" / #"+source[0]);
-        }else{
-          cell(tr,raw(source[3]));
-          cell(tr,formatCandidateClientRate(source[3],pt?"pt-br":"en"));
-          cell(tr,raw(source[5])+"–"+raw(source[6]));
-          cell(tr,"#"+source[0]);
+          const groupPercent=node("td",undefined,"client-rate");
+          groupPercent.append(node("strong",formatCandidateClientRate(groupRef?.[2],pt?"pt-br":"en")));
+          tr.append(groupPercent);
         }
+        tr.append(node("td",raw(isGrouped?source[6]:source[5])+"–"+
+          raw(isGrouped?source[7]:source[6]),"client-amount"));
+        const technical=node("td");
+        const audit=node("details",undefined,"client-record-row");
+        audit.append(node("summary",pt?"Ver origem":"View source"));
+        const dl=node("dl");
+        const fields=isGrouped
+          ?[["GroupID",raw(groupId)],["Band",raw(source[1])],
+            ["RawRate "+(pt?"grupo":"group"),raw(groupRef?.[2])],
+            ["RawRate "+(pt?"item":"item"),raw(source[4])],
+            [pt?"Linha de referência":"Reference row","#"+raw(groupRef?.[0])],
+            [pt?"Linha do item":"Item source row","#"+raw(source[0])],
+            [pt?"Slot referência":"Reference slot",raw(groupRef?.[3])],
+            [pt?"Slot do item":"Item slot",raw(source[5])]]
+          :[["RawRate",raw(source[3])],
+            [pt?"Linha de origem":"Source row","#"+raw(source[0])],
+            ["Slot",raw(source[4])]];
+        for(const [label,value] of fields){
+          const box=node("div");
+          box.append(node("dt",label),node("dd",value));dl.append(box);
+        }
+        audit.append(dl);technical.append(audit);tr.append(technical);
         body.append(tr);
       }
       tableNode.append(body);
-      const wrap=node("div",undefined,"creature-table-scroll");wrap.append(tableNode);
-      container.append(wrap);
+      const wrap=node("div",undefined,"creature-table-scroll");
+      wrap.append(tableNode);container.append(wrap);
     }
     let shownId="";
     async function openCreature(id:string,navigate:boolean){
@@ -285,41 +305,33 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         body.append(intro);
         const original=character?.items?.[id]?.original??[];
         const miner=character?.items?.[id]?.miner??[];
-        body.append(node("h3",pt?"Registros originais da criatura":"Original character records"));
-        if(original.length)body.append(table(
-          [pt?"Registro":"Source row",pt?"Nome original":"Original name",
-           pt?"Nível bruto":"Raw level",pt?"Tipo bruto":"Raw type"],
-          original));
-        else body.append(node("p",pt?"Sem registros Characters.csv para este ID.":"No Characters.csv records for this ID.","subtle"));
-        if(miner.length){
-          const extra=node("details");extra.append(node("summary",pt
-            ?"Metadados originais adicionais":"Additional Miner source metadata"));
-          extra.append(table(
-            [pt?"Registro":"Row",pt?"Código":"Code",pt?"Nome":"Name",
-            pt?"Arquivo":"File",pt?"Nível":"Level",pt?"Grade":"Grade"],
-            miner));
-          body.append(extra);
-        }
         const rawDirect=loot?.items?.[id]?.direct??[];
-        body.append(node("h3",pt?"Drops diretos registrados":"Original direct drop references"));
-        if(rawDirect.length)appendItemTable(body as unknown as HTMLElement,rawDirect,false);
-        else body.append(node("p",pt
-          ?"Nenhuma referência direta encontrada neste snapshot."
-          :"No direct loot reference was recorded in this client snapshot.","subtle"));
+        const directSection=node("section",undefined,"community-drop-section");
+        directSection.append(node("h3",pt?"Itens que podem aparecer":"Possible monster drops"));
+        directSection.append(node("p",pt
+          ?"Os percentuais são estimados a partir dos arquivos do cliente. Eles não foram medidos no servidor atual."
+          :"Percentages are estimates from client files, not drop rates measured on the current live server.","subtle"));
+        if(rawDirect.length)appendItemTable(directSection,rawDirect,false);
+        else directSection.append(node("p",pt
+          ?"Não encontramos drops diretos para este registro. Isso não comprova que a criatura não tenha drops."
+          :"No direct drops are recorded for this entry. That does not prove this creature has no drops.","subtle"));
+        body.append(directSection);
         const references=loot?.items?.[id]?.groups??[];
-        body.append(node("h3",pt?"Grupos de loot vinculados":"Original linked loot groups"));
-        if(!references.length)body.append(node("p",pt
-          ?"Nenhuma referência de grupo identificada neste snapshot."
-          :"No grouped source reference was found in this client snapshot.","subtle"));
+        const groupsSection=node("section",undefined,"community-drop-section");
+        groupsSection.append(node("h3",pt?"Outros itens possíveis — grupos de drops":"Other possible items — loot groups"));
+        groupsSection.append(node("p",pt
+          ?"O jogo também registra grupos de itens. Mostramos a estimativa do grupo e a do item separadamente, porque ainda não sabemos como o servidor combina essas etapas."
+          :"The client also lists groups of items. Group and item estimates are shown separately because the server's selection rules are not confirmed.","subtle"));
+        if(!references.length)groupsSection.append(node("p",pt
+          ?"Nenhuma referência a grupos encontrada nesta versão dos arquivos."
+          :"No group references were found in this client snapshot.","subtle"));
         for(const ref of references){
           const [refRow,groupId,refRawRate,slot]=ref;
           const block=node("section",undefined,"creature-group");
-          block.append(node("h4","GroupID "+groupId+" · "+(pt?"Referência":"Reference")+" #"+refRow));
-          block.append(node("p","RawRate "+raw(refRawRate)+
-            " · "+(pt?"estimativa":"estimate")+" "+
+          block.append(node("h4",(pt?"Itens associados ao grupo ":"Items linked to group ")+groupId));
+          block.append(node("p",(pt?"Estimativa de referência ao grupo: ":"Estimated group-reference rate: ")+
             formatCandidateClientRate(refRawRate,pt?"pt-br":"en")+
-            (slot?" · "+slot:"")+
-            (pt?" (hipótese, não chance verificada)":" (hypothesis, not verified odds)"),"subtle"));
+            (pt?" · estimativa não confirmada":" · unverified estimate"),"subtle"));
           const path=findFile("groups",groupId);
           if(!path){
             block.append(node("p",pt
@@ -352,8 +364,36 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
               block.append(evidence);
             }
           }
-          body.append(block);
+          groupsSection.append(block);
         }
+        body.append(groupsSection);
+        // Original Miner rows remain fully auditable but no longer interrupt
+        // the player-first path from creature name to possible loot.
+        const audit=node("details",undefined,"community-creature-audit");
+        audit.append(node("summary",(pt?"Registros originais do cliente":"Original client records")+
+          " ("+nf.format(original.length+miner.length)+")"));
+        audit.append(node("p",pt
+          ?"Estes registros servem para conferir as fontes. Campos internos e números de linha não são requisitos do jogador."
+          :"These rows are for checking the source. Internal values and row numbers are not player requirements.","subtle"));
+        if(original.length){
+          audit.append(node("h4",pt?"Definições da criatura":"Creature source definitions"));
+          audit.append(table([
+            pt?"Registro":"Source row",pt?"Nome em inglês":"English name",
+            pt?"Nível registrado":"Recorded level",pt?"Tipo":"Source type"
+          ],original));
+        }else audit.append(node("p",pt
+          ?"Não há registros Characters.csv para este ID."
+          :"No Characters.csv rows were published for this ID.","subtle"));
+        if(miner.length){
+          const extra=node("details",undefined,"source-band-details");
+          extra.append(node("summary",pt?"Outros metadados do Miner":"Additional Miner fields"));
+          extra.append(table([
+            pt?"Linha":"Row",pt?"Código":"Code",pt?"Nome":"Name",
+            pt?"Arquivo":"File",pt?"Nível":"Level",pt?"Grade":"Grade"
+          ],miner));
+          audit.append(extra);
+        }
+        body.append(audit);
         if(shownId!==id)return;
         detailBody.replaceChildren(body);
         detail.scrollIntoView({behavior:"smooth",block:"start"});
