@@ -196,27 +196,7 @@ const relatedGuides = categoryGuides
           <Content />
         </div>
 
-        {tableOfContents.length > 0 && (
-          <aside class="article-sidebar">
-            <nav class="table-of-contents" aria-label={t("article.toc")}>
-              <p class="toc-title">{t("article.toc")}</p>
-
-              <ul>
-                {tableOfContents.map((heading) => (
-                  <li
-                    class:list={{
-                      "toc-nested": heading.depth === 3,
-                    }}
-                  >
-                    <a href={`#${heading.slug}`}>
-                      {heading.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </aside>
-        )}
+        {/* The reusable floating navigator replaces the duplicate article sidebar. */}
       </div>
 
       {(previousGuide || nextGuide) && (
@@ -409,7 +389,7 @@ const relatedGuides = categoryGuides
 
   .article-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(24px, 3vw, 40px);
     align-items: start;
   }
@@ -1055,67 +1035,7 @@ const relatedGuides = categoryGuides
 </style>
 
 <script>
-  const tocLinks = Array.from(
-    document.querySelectorAll<HTMLAnchorElement>(
-      '.table-of-contents a[href^="#"]'
-    )
-  );
-
-  const tocEntries = tocLinks.flatMap((link) => {
-    const id = decodeURIComponent(link.hash.slice(1));
-    const heading = document.getElementById(id);
-
-    return heading ? [{ link, heading }] : [];
-  });
-
-  function updateActiveToc() {
-    if (tocEntries.length === 0) return;
-
-    const offset = 150;
-    let activeId = tocEntries[0].heading.id;
-
-    for (const entry of tocEntries) {
-      if (entry.heading.getBoundingClientRect().top <= offset) {
-        activeId = entry.heading.id;
-      } else {
-        break;
-      }
-    }
-
-    tocEntries.forEach(({ link, heading }) => {
-      const active = heading.id === activeId;
-
-      link.classList.toggle("is-active", active);
-
-      if (active) {
-        link.setAttribute("aria-current", "location");
-      } else {
-        link.removeAttribute("aria-current");
-      }
-    });
-  }
-
-  let animationFrame = 0;
-
-  function scheduleUpdate() {
-    if (animationFrame) return;
-
-    animationFrame = window.requestAnimationFrame(() => {
-      animationFrame = 0;
-      updateActiveToc();
-    });
-  }
-
-  window.addEventListener("scroll", scheduleUpdate, {
-    passive: true,
-  });
-
-  window.addEventListener("resize", scheduleUpdate);
-  window.addEventListener("hashchange", scheduleUpdate);
-  window.addEventListener("load", scheduleUpdate);
-
-  scheduleUpdate();
-  
+  // The site-wide floating navigator owns section navigation.
   document
     .querySelectorAll<HTMLTableElement>(".article-body table")
     .forEach((table) => {
