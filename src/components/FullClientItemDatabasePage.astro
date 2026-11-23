@@ -382,6 +382,99 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       });
       return a;
     }
+    function updateComparisonSelection(){
+      compareEpoch++;
+      compareSelected.replaceChildren();
+      compareSelected.append(node("span",(pt?"Selecionados: ":"Selected: ")+
+        comparedIds.length+"/3","subtle"));
+      for(const id of comparedIds){
+        const chip=node("span",undefined,"compare-chip");
+        chip.append(linkItem(id,nameFor(id)??("ID "+id)));
+        const remove=node("button",pt?"Remover":"Remove") as HTMLButtonElement;
+        remove.type="button";remove.setAttribute("aria-label",(pt?"Remover ID ":"Remove ID ")+id);
+        remove.addEventListener("click",()=>toggleComparison(id));
+        chip.append(remove);compareSelected.append(chip);
+      }
+      compareRun.disabled=comparedIds.length<2;
+      compareClear.disabled=comparedIds.length===0;
+      compareResult.replaceChildren();
+    }
+    function toggleComparison(id:string){
+      const row=namedRows.get(id);
+      if(!row||row[6]!=="named"||
+        !equipmentCandidateCategories.has(row[2]??""))return;
+      const position=comparedIds.indexOf(id);
+      if(position>=0)comparedIds.splice(position,1);
+      else if(comparedIds.length<3)comparedIds.push(id);
+      updateComparisonSelection();
+      renderPage();
+    }
+    async function runComparison(){
+      if(comparedIds.length<2)return;
+      const selected=[...comparedIds],token=++compareEpoch;
+      compareRun.disabled=true;
+      compareResult.replaceChildren(node("p",pt
+        ?"Carregando registros originais para comparação…"
+        :"Loading original source records for comparison…","subtle"));
+      try{
+        // Only selected item buckets are requested, never the full 28-shard
+        // numeric index. Comparison is available without running filters.
+        const source=await Promise.all(selected.map(id=>optionalNumericStats(id)));
+        if(token!==compareEpoch)return;
+        const summaries=source.map(rows=>rows?summarizeRawNumericRows(rows):null);
+        const observed=RAW_STATS_FIELDS.filter(f=>
+          summaries.some(summary=>summary?.fields.has(f.key)));
+        if(!observed.length){
+          compareResult.replaceChildren(node("p",pt
+            ?"Nenhum desses IDs possui valores numéricos publicados."
+            :"None of these IDs has published numeric source fields.","subtle"));
+          return;
+        }
+        const scroller=node("div",undefined,"stat-table-scroll"),table=node("table") as HTMLTableElement;
+        table.className="compare-table";
+        const head=node("thead"),headers=node("tr");
+        headers.append(node("th",pt?"Atributo original":"Original field"));
+        for(const id of selected){
+          headers.append(node("th",(nameFor(id)??("ID "+id))+" · #"+id));
+        }
+        headers.append(node("th",pt?"Amplitude bruta":"Raw spread"));
+        head.append(headers);table.append(head);
+        const body=node("tbody");
+        for(const {key} of observed){
+          const stat=compareSourceStats(summaries,key);
+          if(!stat)continue;
+          const row=node("tr");
+          row.append(node("td",fieldTitle(key)+" ("+key+")"));
+          for(const item of stat.values){
+            const value=item.record;
+            const cell=node("td");
+            if(!value)cell.textContent="—";
+            else{
+              cell.textContent=value.values.join(" / ");
+              if(value.status!=="consistent"){
+                cell.append(node("small",value.status==="conflict"
+                  ?(pt?" · divergente":" · conflict")
+                  :(" · "+(pt?"parcial ":"partial ")+value.observedIn+"/"+value.sourceCount)));
+              }
+            }
+            row.append(cell);
+          }
+          row.append(node("td",stat.difference===null?"—":
+            number.format(stat.difference)));
+          body.append(row);
+        }
+        table.append(body);scroller.append(table);
+        compareResult.replaceChildren(node("p",pt
+          ?"Amplitude = maior valor bruto − menor valor bruto, apenas quando todos os registros concordam. Não é uma classificação de eficiência."
+          :"Spread = maximum minus minimum raw value, only when all source records agree. This is not a gameplay efficiency ranking.","subtle"),scroller);
+      }catch{
+        if(token===compareEpoch)compareResult.replaceChildren(node("p",pt
+          ?"Não foi possível carregar os registros originais para comparação."
+          :"Original numeric rows could not be loaded for comparison.","subtle"));
+      }finally{
+        if(token===compareEpoch)compareRun.disabled=comparedIds.length<2;
+      }
+    }
     function renderPage(){
       results.replaceChildren();
       const start=currentPage*perPage;
@@ -398,6 +491,18 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           nameCell.append(" ",linkItem(id,pt?"Ver estado do ID":"Inspect ID status"));
         }
         td(tr,row[2]??"—");td(tr,fmtRaw(row[3]));td(tr,fmtRaw(row[4]));td(tr,String(row[5]));
+        const choose=td(tr,"");
+        if(row[6]==="named"&&equipmentCandidateCategories.has(row[2]??"")){
+          const selected=comparedIds.includes(id);
+          const button=node("button",selected?(pt?"✓ Selecionado":"✓ Selected"):(pt?"Adicionar":"Add")) as HTMLButtonElement;
+          button.type="button";button.className="compare-row-button";
+          button.setAttribute("aria-pressed",String(selected));
+          button.setAttribute("aria-label",(selected?(pt?"Remover comparação: ":"Remove from comparison: "):
+            (pt?"Adicionar à comparação: ":"Add to comparison: "))+(row[1]??id));
+          button.disabled=!selected&&comparedIds.length>=3;
+          button.addEventListener("click",()=>toggleComparison(id));
+          choose.append(button);
+        }else choose.textContent="—";
         results.append(tr);
       }
       prev.disabled=currentPage===0;
@@ -407,11 +512,43 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         :"0";
     }
     function applyFilters(){
+      const epoch=++filterEpoch;
       const text=query.value.trim().toLocaleLowerCase(),cat=category.value,state=identity.value;
+      const field=statField.value;
+      statMin.disabled=!field;statMax.disabled=!field;
+      const minText=statMin.value.trim(),maxText=statMax.value.trim();
+      const min=field&&minText!==""?Number(minText):null;
+      const max=field&&maxText!==""?Number(maxText):null;
+      if(field&&((min!==null&&!Number.isFinite(min))||
+        (max!==null&&!Number.isFinite(max))||
+        (min!==null&&max!==null&&min>max))){
+        visible=[];currentPage=0;renderPage();exportButton.disabled=true;
+        status.textContent=pt
+          ?"Limites inválidos: o mínimo deve ser menor ou igual ao máximo."
+          :"Invalid bounds: minimum must not exceed maximum.";
+        return;
+      }
+      if(field&&!allStatsReady){
+        visible=[];currentPage=0;renderPage();exportButton.disabled=true;
+        status.textContent=pt
+          ?"Carregando os 28 arquivos de atributos numéricos…"
+          :"Loading 28 original numeric shards…";
+        void loadAllRawStats().then(()=>{
+          if(epoch===filterEpoch)applyFilters();
+        }).catch(()=>{
+          if(epoch===filterEpoch){
+            status.textContent=pt
+              ?"Falha ao carregar atributos: a consulta não foi aplicada."
+              :"Failed to load attributes: numeric filtering was not applied.";
+          }
+        });
+        return;
+      }
       visible=allRows.filter(row=>
         (!text||row[0].includes(text)||(row[1]??"").toLocaleLowerCase().includes(text)) &&
         (!cat||row[2]===cat)&&(!state||row[6]===state)&&
-        (!equipmentOnly.checked||equipmentCandidateCategories.has(row[2]??"")));
+        (!equipmentOnly.checked||equipmentCandidateCategories.has(row[2]??"")) &&
+        (!field||matchesRawStat(indexedStats.get(row[0]),field,min,max)));
       if(sort.value==="name")visible.sort((a,b)=>(a[1]??"~").localeCompare(b[1]??"~","en")||Number(a[0])-Number(b[0]));
       else if(sort.value==="level")visible.sort((a,b)=>{
         const aa=a[3]===null?null:Number(a[3]),bb=b[3]===null?null:Number(b[3]);
@@ -420,9 +557,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         return bb-aa||Number(a[0])-Number(b[0]);
       });
       currentPage=0;renderPage();
+      exportButton.disabled=visible.length===0;
       status.textContent=pt
-        ?`${number.format(visible.length)} dos ${number.format(allRows.length)} IDs encontrados. ${number.format(manifest?.namedIds??0)} nomes conciliados.`
-        :`${number.format(visible.length)} of ${number.format(allRows.length)} IDs found. ${number.format(manifest?.namedIds??0)} reconciled names.`;
+        ?number.format(visible.length)+" dos "+number.format(allRows.length)+" IDs encontrados. "+number.format(manifest?.namedIds??0)+" nomes conciliados."
+        :number.format(visible.length)+" of "+number.format(allRows.length)+" IDs found. "+number.format(manifest?.namedIds??0)+" reconciled names.";
     }
     function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
       const h=node("h3",pt?"Definições dos arquivos de origem":"Original source-file definitions");parent.append(h);
