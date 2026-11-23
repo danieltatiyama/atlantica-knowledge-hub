@@ -142,12 +142,24 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      </div>
     </section>
    </div>
+   <section id="craft-completed-section" class="craft-completed-section" hidden aria-labelledby="craft-completed-heading">
+    <div class="craft-completed-heading">
+     <div>
+      <h3 id="craft-completed-heading">{pt?"Concluídos":"Completed"}</h3>
+      <p>{pt
+       ?"Itens marcados como feitos, com suas dependências removidas do trabalho pendente. Materiais compartilhados continuam onde outras receitas precisam deles."
+       :"Items marked done, with their dependencies removed from pending work. Shared materials remain wherever other unfinished recipes need them."}</p>
+     </div>
+     <button type="button" id="craft-undo-all">{pt?"Desfazer todos":"Undo all"}</button>
+    </div>
+    <ul id="craft-completed-list"></ul>
+   </section>
    <section id="craft-surplus-section" class="craft-surplus-section" hidden><h3>{pt?"Excedentes por batch":"Batch leftovers"}</h3><ul id="craft-surplus"></ul></section>
    <div id="craft-issues" aria-live="polite"></div>
   </section>
   <p class="craft-disclaimer">{pt
-   ?"Os arquivos ItemType*.ndt podem conter receitas desativadas ou variantes históricas. A calculadora não inventa receitas, tamanhos de batch nem preços de mercado. Equipamentos usam batch 1 e máximo 20 por operação; outros itens usam limite de 10.000. Esses limites são regras informadas pelo jogador, não valores extraídos automaticamente."
-   :"ItemType*.ndt files can contain historical or disabled recipes. No missing recipes, batch sizes or market prices are guessed. Equipment uses batch 1 and a maximum of 20 per operation; other items retain the 10,000 limit. These are player-confirmed gameplay rules, not automatically extracted source values."}</p>
+   ?"Os arquivos ItemType*.ndt podem conter receitas desativadas ou variantes históricas. Não inventamos receitas, batches nem preços. Equipamentos: até 20 unidades por operação. Demais itens: até 10.000 unidades produzidas e no máximo 10.000 de cada ingrediente por operação. Os limites são regras informadas pelo jogador."
+   :"ItemType*.ndt may contain historical or disabled recipes. No missing recipes, batches or prices are invented. Equipment: up to 20 output units per operation. Other items: up to 10,000 output units and no more than 10,000 of each ingredient per operation. These are player-reported limits."}</p>
  </main>
 </BaseLayout>
 <script>
@@ -175,6 +187,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const cost=$("craft-cost-total");
   const treeContainer=$("craft-tree"),treeRows=$("craft-tree-rows") as HTMLTableSectionElement;
   const surplus=$("craft-surplus"),surplusSection=$("craft-surplus-section");
+  const completedSection=$("craft-completed-section"),completedList=$("craft-completed-list");
   const collapsedTreePaths=new Set<string>();
   // Keep the snap offset aligned with the actual frozen Item / Recipe column.
   // The table can grow wider than its minimum width on large screens.
@@ -193,6 +206,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    }
   }
   const itemCategories:Record<string,string>=Object.create(null),buyIds=new Set<string>();
+  const doneIds=new Set<string>();
   const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
   const fmt=(n:string|number)=>nf.format(BigInt(n));
   const choices:Record<string,number>={},batchOverrides:Record<string,string>={};
@@ -264,6 +278,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   function resetTarget(){
    ++selectionEpoch;
    selectedId="";rootRecipes=[];rootConfig=null;activeGraph=null;plan=null;
+   doneIds.clear();buyIds.clear();collapsedTreePaths.clear();
    controls.hidden=true;sliderGroup.hidden=true;slider.disabled=true;
    amount.disabled=true;submit.disabled=true;result.hidden=true;
   }
@@ -533,8 +548,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(row.operationGroups?.length){
      breakdown.textContent=row.operationGroups.map((group:any)=>
       fmt(group.operations)+" × "+fmt(group.outputEach)).join(" + ");
-     breakdown.title=(pt?"Unidades produzidas por operação; máximo permitido: ":"Output units per operation; maximum allowed: ")+
-      fmt(row.maxOutputPerOperation);
+     breakdown.title=(pt?"Unidades produzidas por operação; máximo permitido: ":"Output units per operation; effective maximum: ")+
+      fmt(row.maxOutputPerOperation)+(row.limitingIngredients?.length?
+       " · "+(pt?"limite de ingrediente: ":"ingredient limit: ")+
+       row.limitingIngredients.map((x:any)=>title(x.itemId)).join(", "):"");
     }else breakdown.textContent="—";
     tr.append(breakdown);
     const consumption=el("td");
@@ -566,11 +583,43 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(row.mode==="unresolved"){
      const note=el("small",pt?"Pendente":"Pending");actions.append(note);
     }
+    const doneButton=el("button",pt?"Feito":"Done") as HTMLButtonElement;
+    doneButton.type="button";doneButton.className="craft-done-button";
+    doneButton.setAttribute("aria-label",(pt?"Marcar como feito: ":"Mark done: ")+title(row.itemId));
+    doneButton.title=pt
+     ?"Marcar este ItemID como concluído, incluindo suas dependências."
+     :"Mark this ItemID fulfilled, including its dependencies.";
+    doneButton.addEventListener("click",()=>{
+     doneIds.add(row.itemId);
+     redraw();
+    });
+    actions.append(doneButton);
     tr.append(actions);
     treeRows.append(tr);
    }
    updateCraftTreeVisibility();
   }
+  function renderCompleted(){
+   completedList.replaceChildren();
+   if(!plan)return;
+   const rows=plan.completedRows as Array<{itemId:string;quantity:string}>;
+   completedSection.hidden=rows.length===0;
+   const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
+   for(const row of rows){
+    const li=el("li");
+    const label=el("span");label.className="craft-completed-label";
+    label.append(itemLink(row.itemId,title(row.itemId)));
+    label.append(el("small",fmt(row.quantity)+(pt?" unidades atendidas":" units fulfilled")));
+    const undo=el("button",pt?"Desfazer":"Undo") as HTMLButtonElement;
+    undo.type="button";undo.className="craft-completed-undo";
+    undo.setAttribute("aria-label",(pt?"Desfazer conclusão: ":"Undo completion: ")+title(row.itemId));
+    undo.addEventListener("click",()=>{doneIds.delete(row.itemId);redraw();});
+    li.append(label,undo);completedList.append(li);
+   }
+  }
+  $("craft-undo-all").addEventListener("click",()=>{
+   doneIds.clear();redraw();
+  });
   function renderLeftovers(){
    if(!plan)return;
    const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
@@ -653,7 +702,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    try{
     plan=planClientCrafting({itemId:selectedId,quantity:amount.value,
      recipesById:activeGraph,choices,batchOverrides,
-     itemCategories,buyIds:[...buyIds],strictTargetBatch:true});
+     itemCategories,buyIds:[...buyIds],doneIds:[...doneIds],strictTargetBatch:true});
     steps.replaceChildren();leaves.replaceChildren();issues.replaceChildren();
     treeRows.replaceChildren();surplus.replaceChildren();
     const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
@@ -672,7 +721,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      }
      tr.append(name);
      for(const value of [step.requested,step.output,step.batchSize,step.totalBatches,
-       step.operations,step.maxPerOperation]){
+       step.operations,step.maxOutputPerOperation]){
       const td=el("td",fmt(value));td.className="craft-data-number";tr.append(td);
      }
      const breakdown=el("td");breakdown.className="craft-data-operations";
@@ -684,6 +733,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      tr.append(breakdown);
      const excess=el("td",fmt(step.excess));
      excess.className="craft-data-number"+(step.excess!=="0"?" craft-has-excess":"");
+     if(step.limitingIngredients?.length){
+      const limitText=(pt?"Limitado por 10.000 unidades de ingrediente por operação: "
+       :"Limited by 10,000 of each ingredient per operation: ")+
+       step.limitingIngredients.map((x:any)=>title(x.itemId)).join(", ");
+      breakdown.title=limitText;
+     }
      tr.append(excess);steps.append(tr);
     }
     for(const leaf of plan.leaves){
@@ -713,6 +768,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     }
     refreshCosts();
     renderCraftTree();
+    renderCompleted();
     renderLeftovers();
     $("craft-summary-output").textContent=fmt(plan.rootOutput);
     $("craft-summary-batches").textContent=fmt(plan.totalBatches);
@@ -738,6 +794,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
        if(select.value!==""){choices[issue.itemId]=Number(select.value);redraw();}
       });
       wrap.append(select);
+     }else if(issue.kind==="ingredient-over-limit"){
+      wrap.append(el("p",pt
+       ?"Esta receita exige mais de 10.000 unidades de um ingrediente em um único batch. Não existe operação válida com as quantidades originais do cliente."
+       :"This recipe requires over 10,000 of an ingredient in a single batch. No valid operation exists with the original client amounts."));
      }else if(issue.kind==="missing-batch"||issue.kind==="batch-over-limit"){
       wrap.append(el("p",pt
        ?"Tamanho de lote não confirmado ou maior que 10.000. Informe manualmente as unidades por batch (1 a 10.000)."
@@ -853,6 +913,64 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
 </style>
 <style is:global>
 
+ /* Completed stages remain reversible; pending branches disappear only
+    from the current plan, not from original client recipe data. */
+ #wiki-craft-planner .craft-tree-actions .craft-done-button{
+  background:color-mix(in srgb,#3c9e6a 14%,var(--color-surface));
+  color:var(--color-text);
+  border-color:color-mix(in srgb,#3c9e6a 55%,var(--color-border));
+  font-weight:700;
+ }
+ #wiki-craft-planner .craft-tree-actions .craft-done-button:hover{
+  background:color-mix(in srgb,#3c9e6a 24%,var(--color-surface));
+ }
+ #wiki-craft-planner .craft-completed-section{
+  margin:17px 0 20px;padding:15px 18px;
+  border:1px solid var(--color-border);
+  border-left:3px solid #4eab79;
+  border-radius:6px;background:var(--color-surface);
+ }
+ #wiki-craft-planner .craft-completed-section[hidden]{display:none!important;}
+ #wiki-craft-planner .craft-completed-heading{
+  display:flex;justify-content:space-between;gap:14px;
+  align-items:center;flex-wrap:wrap;margin-bottom:12px;
+ }
+ #wiki-craft-planner .craft-completed-heading h3{
+  margin:0 0 5px;color:var(--color-gold-light);
+  font-size:1.15rem;
+ }
+ #wiki-craft-planner .craft-completed-heading p{
+  margin:0;max-width:840px;
+  color:var(--color-text-muted);font-size:.84rem;
+ }
+ #wiki-craft-planner .craft-completed-section button{
+  min-height:34px;padding:6px 11px;cursor:pointer;
+  border:1px solid var(--color-border);border-radius:4px;
+  background:var(--color-background);color:var(--color-text);
+ }
+ #wiki-craft-planner .craft-completed-section button:hover{
+  border-color:var(--color-accent);
+ }
+ #wiki-craft-planner #craft-completed-list{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:8px;
+ }
+ #wiki-craft-planner #craft-completed-list li{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:9px 12px;
+  border-radius:4px;border:1px solid var(--color-border);
+  background:var(--color-background);
+ }
+ #wiki-craft-planner .craft-completed-label{
+  display:flex;min-width:0;flex-direction:column;gap:3px;
+ }
+ #wiki-craft-planner .craft-completed-label a{
+  color:var(--color-text);font-weight:650;
+ }
+ #wiki-craft-planner .craft-completed-label small{
+  color:var(--color-text-muted);font-variant-numeric:tabular-nums;
+ }
  /* Stage 20.59: readable schedule and shopping workspace. */
  #wiki-craft-planner .craft-result-grid{
   display:grid;grid-template-columns:minmax(0,1fr);
@@ -907,6 +1025,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  }
  #wiki-craft-planner .craft-data-table th,
  #wiki-craft-planner .craft-data-table td{
+  text-align:center;
   box-sizing:border-box;
   padding:12px 13px;font-size:.88rem;
   vertical-align:middle;
@@ -918,7 +1037,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   background:color-mix(in srgb,var(--color-accent) 5%,var(--color-surface));
   color:var(--color-text-muted);
   letter-spacing:.035em;font-size:.73rem;font-weight:750;
-  text-transform:uppercase;text-align:right;white-space:normal;
+  text-transform:uppercase;text-align:center;white-space:normal;
   line-height:1.25;border-bottom:2px solid var(--color-border);
  }
  #wiki-craft-planner .craft-data-table thead th:first-child{text-align:left;}
@@ -952,13 +1071,13 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   font-size:.7rem;font-weight:550;white-space:nowrap;
  }
  #wiki-craft-planner .craft-data-number{
-  text-align:right;white-space:nowrap;font-weight:580;
+  text-align:center;white-space:nowrap;font-weight:580;
  }
  #wiki-craft-planner .craft-has-excess{
   color:var(--color-accent);font-weight:750;
  }
  #wiki-craft-planner .craft-data-operations{
-  text-align:left;white-space:normal;
+  text-align:center;white-space:normal;
  }
  #wiki-craft-planner .craft-operation-chip{
   display:inline-block;white-space:nowrap;
@@ -989,7 +1108,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  #wiki-craft-planner .craft-shopping-table :is(th,td):nth-child(3){width:24%;}
  #wiki-craft-planner .craft-shopping-table :is(th,td):nth-child(4){width:16%;}
  #wiki-craft-planner .craft-price-cell{
-  text-align:right;
+  text-align:center;
  }
  #wiki-craft-planner .craft-price-input{
   box-sizing:border-box;max-width:180px;width:100%;
@@ -997,7 +1116,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   padding:6px 10px;
   background:var(--color-background);color:var(--color-text);
   border:1px solid var(--color-border);border-radius:4px;
-  text-align:right;font:inherit;font-variant-numeric:tabular-nums;
+  text-align:center;font:inherit;font-variant-numeric:tabular-nums;
  }
  #wiki-craft-planner .craft-price-input:is(:focus,:focus-visible){
   border-color:var(--color-accent);outline:2px solid
@@ -1157,7 +1276,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  }
  #wiki-craft-planner .craft-tree-table th,
  #wiki-craft-planner .craft-tree-table td{
-  vertical-align:middle;text-align:right;
+  vertical-align:middle;text-align:center;
   padding:9px 10px;
   border-bottom:1px solid var(--color-border);
   font-size:.83rem;white-space:nowrap;
@@ -1201,12 +1320,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(6){min-width:85px;}
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(7){min-width:90px;}
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(8){
-  min-width:175px;text-align:left;
+  min-width:175px;text-align:center;
  }
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(9){
-  min-width:205px;text-align:left;
+  min-width:205px;text-align:center;
  }
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(10){min-width:75px;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(10){min-width:168px;}
  #wiki-craft-planner .craft-tree-consumption{
   color:var(--color-text);font-size:.8rem;line-height:1.45;
   font-variant-numeric:tabular-nums;
@@ -1260,8 +1379,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   display:block;color:var(--color-text-muted);font-size:.72rem;
  }
  #wiki-craft-planner .craft-tree-table .craft-tree-actions{
-  text-align:center;white-space:normal;
+  text-align:center;white-space:nowrap;
  }
+ #wiki-craft-planner .craft-tree-table .craft-tree-actions button{margin:2px 3px;}
  #wiki-craft-planner .craft-tree-actions button{
   min-height:31px;
   border:1px solid var(--color-border);border-radius:4px;

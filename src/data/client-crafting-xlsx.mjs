@@ -239,7 +239,7 @@ export function buildCraftingWorkbook({plan,names={},prices={},locale="en"}){
   const scheduleRows=plan.steps.map(row=>[
     txt(row.itemId),txt(getName(row.itemId)),num(row.requested),num(row.output),
     num(row.batchSize),num(row.totalBatches),num(row.operations),
-    num(row.maxPerOperation),
+    num(row.maxOutputPerOperation),
     txt(row.operationGroups.map(g=>g.operations+" × "+g.outputEach).join(" + ")),
     num(row.excess),
   ]);

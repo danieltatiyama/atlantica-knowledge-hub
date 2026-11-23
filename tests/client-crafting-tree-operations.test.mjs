@@ -50,6 +50,11 @@ test("real client: 10,000 Albert's Special Bait requires 35,000 Dumplings and 35
  });
  assert.equal(p.complete,true);
  assert.deepEqual([step(p,"2319").totalBatches,step(p,"2319").output],["100","10000"]);
+ assert.equal(step(p,"2319").operations,"4");
+ assert.deepEqual(step(p,"2319").operationGroups,[
+  {operations:"3",batchesEach:"28",outputEach:"2800"},
+  {operations:"1",batchesEach:"16",outputEach:"1600"},
+ ]);
  for(const id of ["3305","3310"]){
   const s=step(p,id);
   assert.equal(s.requested,"35000");
@@ -64,7 +69,7 @@ test("real client: 10,000 Albert's Special Bait requires 35,000 Dumplings and 35
  }
  const items=Object.fromEntries(p.leaves.map(x=>[x.itemId,x.quantity]));
  assert.deepEqual(items,{"3200":"5000","3130":"21000","3135":"42000","16000":"14000"});
- assert.equal(p.totalOperations,"9"); // 1 bait, 4 dumpling, 4 grilled pork
+ assert.equal(p.totalOperations,"12"); // 4 bait (ingredient cap), 4 dumpling, 4 grilled pork
  const porkRows=p.tree.filter(x=>x.itemId==="3135");
  assert.equal(porkRows.length,2);
  assert.equal(porkRows.filter(x=>x.sharedReference).length,1);
@@ -74,8 +79,8 @@ test("real client: 10,000 Albert's Special Bait requires 35,000 Dumplings and 35
 });
 test("non-divisor batch caps produce 35,100 for 35,000 demand, across legal chunks",()=>{
  const p=planClientCrafting({
-  itemId:"1",quantity:1,
-  recipesById:{"1":[mk([["2",35000]])],"2":[mk([["3",2]],300)]},
+  itemId:"1",quantity:35000,
+  recipesById:{"1":[mk([["2",1]])],"2":[mk([["3",2]],300)]},
  });
  const item=step(p,"2");
  assert.equal(item.requested,"35000");

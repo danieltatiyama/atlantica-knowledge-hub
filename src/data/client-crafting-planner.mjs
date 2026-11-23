@@ -4,7 +4,7 @@
  * Inspiration: Jana4U's MIT-licensed open-source calculator (linked in docs).
  * This is an independent implementation using our own client data and UI.
  */
-import {craftGameplayPolicy} from "./client-crafting-gameplay-policy.mjs";
+import {craftGameplayPolicy,OTHER_MAX_PER_OPERATION} from "./client-crafting-gameplay-policy.mjs";
 const ID=/^[1-9][0-9]{0,12}$/;
 const POS=/^[1-9][0-9]*$/;
 const valid=id=>ID.test(String(id));
@@ -20,10 +20,23 @@ const count=value=>{
  * Example: requested 250, batch 20 -> 13 batches -> 260 produced;
  * those 13 batches consume ingredients for 260, not for 250.
  */
-export function splitCraftOperations({batches,batchSize,maxPerOperation}){
+export function splitCraftOperations({
+  batches,batchSize,maxPerOperation,ingredients=[],maxIngredientPerOperation=OTHER_MAX_PER_OPERATION,
+}){
   const n=count(batches),unit=count(batchSize),limit=count(maxPerOperation);
+  const ingredientLimit=count(maxIngredientPerOperation);
   if(unit>limit)throw new RangeError("Batch exceeds the per-operation output limit");
-  const batchesPerOperation=limit/unit;
+  let batchesPerOperation=limit/unit;
+  const bounds=[];
+  for(const [itemId,quantityPerBatch] of ingredients){
+    if(!valid(itemId))throw new RangeError("Invalid ingredient ID");
+    const perBatch=count(quantityPerBatch);
+    const cap=ingredientLimit/perBatch;
+    if(cap<1n)throw new RangeError(
+      "Ingredient "+itemId+" exceeds the 10,000-per-ingredient operation limit for a single batch");
+    bounds.push({itemId:String(itemId),perBatch:String(perBatch),batchesMax:String(cap)});
+    if(cap<batchesPerOperation)batchesPerOperation=cap;
+  }
   const complete=n/batchesPerOperation,remainder=n%batchesPerOperation;
   const groups=[];
   if(complete>0n)groups.push({
@@ -35,9 +48,14 @@ export function splitCraftOperations({batches,batchSize,maxPerOperation}){
     operations:"1",batchesEach:String(remainder),outputEach:String(remainder*unit),
   });
   const operations=complete+(remainder>0n?1n:0n);
-  return {operations:String(operations),groups,
+  const limitingIngredients=bounds.filter(x=>BigInt(x.batchesMax)===batchesPerOperation);
+  return {
+    operations:String(operations),groups,
     batchesPerOperation:String(batchesPerOperation),
-    maxOutputPerOperation:String(batchesPerOperation*unit)};
+    maxOutputPerOperation:String(batchesPerOperation*unit),
+    maxIngredientPerOperation:String(ingredientLimit),
+    limitingIngredients,
+  };
 }
 /**
  * Turn a parent's legal operation groups into the actual ingredient
@@ -70,14 +88,15 @@ export function deriveParentConsumptionGroups({
 }
 export function planClientCrafting({
   itemId,quantity,recipesById={},choices={},batchOverrides={},
-  itemCategories={},buyIds=[],strictTargetBatch=false,
+  itemCategories={},buyIds=[],doneIds=[],strictTargetBatch=false,
 }){
   if(!valid(itemId))throw new RangeError("Invalid target ItemID");
   const requested=count(quantity);
   if(strictTargetBatch&&requested>10000n)
     throw new RangeError("Requested output exceeds the 10,000-item planning limit");
-  const buy=new Set(buyIds.map(String));
-  if([...buy].some(id=>!valid(id)))throw new RangeError("Invalid purchased ItemID");
+  const buy=new Set(buyIds.map(String)),done=new Set(doneIds.map(String));
+  if([...buy,...done].some(id=>!valid(id)))
+    throw new RangeError("Invalid purchased/completed ItemID");
   const nodes=new Map(),visiting=new Set(),visited=new Set(),issues=[];
   function walk(id){
     if(visiting.has(id))throw Error("Circular recipe dependency involving ItemID "+id);
@@ -88,7 +107,11 @@ export function planClientCrafting({
     if(!Array.isArray(variants))throw Error("Invalid recipe variants for "+id);
     const policy=craftGameplayPolicy(itemCategories[id]);
     let recipe=null,batch=null,reason=null,manual=false,mode="base",batchSource=null;
-    if(buy.has(id)){
+    if(done.has(id)){
+      // Already fulfilled in this plan: no more crafting, purchasing or
+      // descendant ingredients are needed for this ItemID.
+      mode="done";
+    }else if(buy.has(id)){
       mode="buy";
     }else if(variants.length>1&&!(id in choices)){
       reason="choose-variant";mode="unresolved";
@@ -107,6 +130,8 @@ export function planClientCrafting({
         batch=count(batchOverrides[id]);manual=true;batchSource="manual";
       }else reason="missing-batch";
       if(batch!==null&&batch>BigInt(policy.maxPerOperation))reason="batch-over-limit";
+      if(!reason&&recipe.materials.some(([,qty])=>count(qty)>BigInt(OTHER_MAX_PER_OPERATION)))
+        reason="ingredient-over-limit";
       if(reason)mode="unresolved";
     }
     if(reason){
@@ -151,6 +176,7 @@ export function planClientCrafting({
       const distribution=splitCraftOperations({
         batches:String(batches),batchSize:String(batch),
         maxPerOperation:String(maxPerOperation),
+        ingredients:node.recipe.materials,
       });
       steps.push({itemId:id,requested:String(needed),batchSize:String(batch),
         totalBatches:String(batches),output:String(produced),
@@ -158,6 +184,8 @@ export function planClientCrafting({
         operationGroups:distribution.groups,
         maxBatchesPerOperation:distribution.batchesPerOperation,
         maxOutputPerOperation:distribution.maxOutputPerOperation,
+        maxIngredientPerOperation:distribution.maxIngredientPerOperation,
+        limitingIngredients:distribution.limitingIngredients,
         maxPerOperation:String(maxPerOperation),
         manualBatch:node.manual,batchSource:node.batchSource});
       for(const [child,rawQty] of node.recipe.materials){
@@ -168,16 +196,24 @@ export function planClientCrafting({
         incoming.set(child,incoming.get(child)-1);
         if(incoming.get(child)===0)ready.push(child);
       }
-    }else if(needed>0n){
+    }else if(needed>0n&&node.mode!=="done"){
       leaves.push({itemId:id,quantity:String(needed)});
     }
   }
   if(processed!==nodes.size)throw Error("Circular recipe graph");
   const stepMap=new Map(steps.map(step=>[step.itemId,step]));
+  // Keep a reversible, consolidated record of completed ItemIDs. Its
+  // quantity is the demand that was already covered, not a new purchase.
+  const completedRows=[...nodes.values()]
+    .filter(node=>node.mode==="done"&&(demand.get(node.id)??0n)>0n)
+    .map(node=>({itemId:node.id,quantity:String(demand.get(node.id))}));
   
   const tree=[],visitedTree=new Set();
   function treeWalk(id,depth,branchQty,ancestorPath="",consumption=null){
     const node=nodes.get(id),step=stepMap.get(id);
+    // Remove the completed item AND its subtree from the pending tree.
+    // A shared ingredient required by another unfinished parent remains.
+    if(node.mode==="done")return;
     const parentStep=consumption?stepMap.get(consumption.parentItemId):null;
     const consumptionGroups=consumption?deriveParentConsumptionGroups({
       unitsPerParentBatch:consumption.unitsPerParentBatch,
@@ -205,6 +241,7 @@ export function planClientCrafting({
       operations:step?.operations??null,
       operationGroups:step?.operationGroups??[],
       maxOutputPerOperation:step?.maxOutputPerOperation??null,
+      limitingIngredients:step?.limitingIngredients??[],
       batchSource:step?.batchSource??null,
     });
     if(!repeated&&node.recipe){
@@ -218,8 +255,8 @@ export function planClientCrafting({
   treeWalk(String(itemId),0,requested);
   return {
     targetItemId:String(itemId),requested:String(requested),
-    steps,leaves,issues,tree,
-    complete:issues.length===0&&steps.length>0,
+    steps,leaves,issues,tree,completedRows,
+    complete:issues.length===0&&(steps.length>0||done.has(String(itemId))),
     totalOperations:steps.reduce((sum,row)=>sum+BigInt(row.operations),0n).toString(),
     totalBatches:steps.reduce((sum,row)=>sum+BigInt(row.totalBatches),0n).toString(),
     rootOutput:stepMap.get(String(itemId))?.output??String(requested),

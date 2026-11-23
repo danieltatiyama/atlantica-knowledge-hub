@@ -96,7 +96,7 @@ test("calculator renders Jana4U-style independent tree and shopping tools across
   'renderCraftTree()','renderLeftovers()',
   'itemCategories,buyIds:[...buyIds]','itemCategories[row[0]]=row[2]',
   'buyIds.add(row.itemId)','buyIds.delete(row.itemId)',
-  'maxPerOperation','Equipment',
+  'maxOutputPerOperation','Equipment',
  ];
  for(const key of ui)assert.ok(page.includes(key),key);
  assert.ok(page.includes("atlantica.crafting.prices.v1"));

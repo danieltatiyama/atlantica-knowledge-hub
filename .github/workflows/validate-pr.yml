@@ -116,6 +116,9 @@ jobs:
       - name: Validate parent-operation consumption and dungeon grid readability
         run: node --test tests/crafting-operation-consumption-calendar-readability.test.mjs
 
+      - name: Validate completed subtrees and ingredient-limited crafting operations
+        run: node --test tests/client-crafting-completion-ingredient-cap.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 

@@ -48,7 +48,7 @@ test("intermediate parent with a 10-item batch uses operation quantities rather 
  });
  const dumpling=plan.tree.find(x=>x.itemId==="3305");
  const wheat=plan.tree.find(x=>x.itemId==="3130");
- assert.equal(groupText(dumpling.consumptionGroups),"1 × 35000");
+ assert.equal(groupText(dumpling.consumptionGroups),"3 × 9800 + 1 × 5600");
  assert.equal(groupText(wheat.consumptionGroups),"3 × 6000 + 1 × 3000");
  assert.equal(wheat.branchQuantity,"21000");
  const pork=plan.tree.filter(x=>x.itemId==="3135");
