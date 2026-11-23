@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.63 (pesquisa de preços fixos)  
-**Último PR de pesquisa:** [PR #82](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/82) (Stage 20.63)
+**Última etapa implementada:** Stage 20.64 (investigação da fonte de preços no cliente)  
+**Último PR de pesquisa:** [PR #83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) (Stage 20.64)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -357,6 +357,16 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Dados em `research/market-fixed-prices/jana4u-2025-11-14-crosswalk.csv`; metodologia, atribuição MIT e limites em `research/market-fixed-prices/README.md`. Testes `tests/market-fixed-price-research.test.mjs`.
 - Esta etapa é **de pesquisa apenas**: não aplica preços da fonte 2025 ao Crafting Calculator e não afirma que 100% dos itens com preço fixo atual estejam cobertos. Para ativar, preservar diferença entre preços do cliente/servidor atuais, referência histórica, informação do jogador e preço manual do usuário.
 
+### Stage 20.64 — Fonte candidata de preços atuais e extrator local
+
+- **Fonte técnica específica**: `LANG/ENG/NPCTRADEITEM/NPCTradeItem_ENG.ndt`. O projeto público `neuronet77/atlantica_online_codex`, módulo `etl/build-shop.mjs`, confirma que o arquivo de **cliente** codifica `Unique, Param, Name, Price`: `Param 0` catálogo geral e `Param 1` habitação. Pesquisa de fórum de 2017 relaciona o equivalente do servidor com a edição de preços fixos do Market. **A equivalência de preços de NPC e preços fixos atuais do Market não está comprovada**.
+- Extrator somente leitura `scripts/export-client-trade-prices.py` aceita arquivo NDT v1/v3 (cliente instalado) ou texto já decodificado, usa apenas biblioteca padrão Python, não faz chamadas à internet, não altera cliente do jogo, não acessa contas.
+- Execução local sugerida após `git pull origin main`: `py scripts/export-client-trade-prices.py --game-root "D:\\<PASTA_REAL_DO_JOGO>"` (substituir pelo caminho real da instalação com `LANG`).
+- Resultados locais em `client-fixed-price-investigation/npc-trade-price-candidate.csv` e `npc-trade-price-audit.json`. Sempre marcar `market_fixed_price_verified=false` e distinguir `general/housing`.
+- Benchmarks do jogador de 23/11/2026: **Gold Thread #7070 3.000**, **Colorful Thread #7081 10.000**, **Rice #3000 100**, **Mana Potion [II] #2080 8.000**. Cruzamento adicional com **293 ItemIDs** da fonte histórica de 2025 permite diagnosticar concordâncias, divergências e ausência, sem validar preço atual automaticamente.
+- Documentação técnica e comandos: `research/market-fixed-prices/CLIENT-TRADE-STAGE-20-64.md`. Testes com dados sintéticos, sem ativos do jogo: `tests/test_export_client_trade_prices.py` (executados pelo CI Python já existente).
+- **Dependência de usuário**: a origem real do cliente está na instalação Windows do usuário e não está disponível na integração GitHub. Para concluir a descoberta de quantos itens o cliente atual cobre, precisamos receber os 2 relatórios locais gerados (não os arquivos do jogo). **Não publicar nem autopreencher** os preços históricos ou NPC como preços fixos verificados do Market antes dessa revisão.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -379,6 +389,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.61 | [#80](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/80) | Colunas compactas da árvore, consumo por operação da receita pai, correção visual da grade do calendário |
 | 20.62 | [#81](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/81) | Conclusão reversível de produtos, valores centralizados e limite de 10.000 de cada ingrediente por operação |
 | 20.63 | [#82](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/82) | Catálogo de pesquisa de 1.016 preços fixos históricos, 292 IDs conciliados, Rice reportado pelo jogador, sem modificar preços na interface |
+| 20.64 | [#83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) | Descoberta da fonte candidata NPCTradeItem_ENG.ndt e exportador offline de preços por ItemID/catálogo com 4 benchmarks de validação |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
