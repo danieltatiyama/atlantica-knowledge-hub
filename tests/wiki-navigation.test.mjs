@@ -60,6 +60,9 @@ test("async item/monster detail transitions refresh the index without interferin
   assert.ok(nav.includes('history.replaceState(history.state'));
   assert.ok(nav.includes('entry.element.scrollIntoView'));
   assert.ok(nav.includes('compareDocumentPosition'));
+  assert.ok(nav.includes("initialHash&&!hashRestored"));
+  assert.ok(nav.includes("target.element.scrollIntoView"));
+  assert.ok(nav.includes("Ignore malformed external hashes"));
   assert.ok(!nav.includes(".innerHTML"));
   const item=read("src/components/FullClientItemDatabasePage.astro");
   const monster=read("src/components/MonsterDatabasePage.astro");
@@ -88,5 +91,7 @@ test("collapsible sections preserve children, forms and tables without changing 
   assert.ok(!guide.includes('<aside class="article-sidebar">'),
     "Guide must not show two table-of-contents panels");
   assert.ok(guide.includes('grid-template-columns: minmax(0, 1fr)'));
+  assert.ok(guide.includes('max-width:1000px'));
+
   assert.ok(guide.includes('querySelectorAll<HTMLTableElement>(".article-body table")'));
 });
