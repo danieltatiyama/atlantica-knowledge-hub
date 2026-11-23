@@ -401,35 +401,80 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     (priced.unpricedItems?" · "+priced.unpricedItems+
      (pt?" materiais sem preço":" materials without prices"):"");
   }
+  function updateCraftTreeVisibility(){
+   const rows=plan?.tree as Array<any>|undefined;
+   if(!rows)return;
+   const ancestors:Array<{depth:number;path:string}>=[];
+   for(let i=0;i<rows.length;i++){
+    const row=rows[i];
+    while(ancestors.length&&ancestors[ancestors.length-1].depth>=row.depth)ancestors.pop();
+    const tr=treeRows.children[i] as HTMLTableRowElement|undefined;
+    if(!tr)continue;
+    tr.hidden=ancestors.some(parent=>collapsedTreePaths.has(parent.path));
+    const toggle=tr.querySelector<HTMLButtonElement>(".craft-tree-toggle");
+    if(toggle){
+     const open=!collapsedTreePaths.has(row.path);
+     toggle.textContent=open?"▾":"▸";
+     toggle.setAttribute("aria-expanded",String(open));
+    }
+    if(rows[i+1]?.depth>row.depth)ancestors.push({depth:row.depth,path:row.path});
+   }
+  }
   function renderCraftTree(){
    if(!plan)return;
-   const parents:{depth:number;holder:HTMLElement}[]=[];
-   const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
    const tree=plan.tree as Array<any>;
+   const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
    for(let i=0;i<tree.length;i++){
-    const row=tree[i];
-    while(parents.length&&parents[parents.length-1].depth>=row.depth)parents.pop();
-    const parent=parents.length?parents[parents.length-1].holder:treeContainer;
-    const hasChildren=tree[i+1]?.depth>row.depth;
-    const wrapper=el(hasChildren?"details":"div");
-    wrapper.className="craft-tree-node";
-    if(hasChildren)(wrapper as HTMLDetailsElement).open=true;
-    const line=el(hasChildren?"summary":"div");
-    line.className="craft-tree-row";
-    const first=el("span");first.className="craft-tree-name";
-    first.append(itemLink(row.itemId,title(row.itemId)));
-    if(row.sharedReference)first.append(el("small",pt?" · compartilhado":" · shared"));
-    line.append(first);
-    const properties=el("span");properties.className="craft-tree-numbers";
-    properties.append(el("span",(pt?"Ramo: ":"Branch: ")+fmt(row.branchQuantity)));
-    properties.append(el("span",(pt?"Total: ":"Total: ")+fmt(row.totalRequired)));
-    if(row.output!==null){
-     properties.append(el("span",(pt?"Produção: ":"Output: ")+fmt(row.output)));
-     if(row.excess!=="0")properties.append(el("span",
-       (pt?"Excedente: ":"Leftover: ")+fmt(row.excess)));
+    const row=tree[i],hasChildren=tree[i+1]?.depth>row.depth;
+    const tr=el("tr") as HTMLTableRowElement;
+    tr.className="craft-tree-row craft-tree-depth-"+(row.depth%8);
+    tr.dataset.depth=String(row.depth);
+    const name=el("th") as HTMLTableCellElement;
+    name.scope="row";name.className="craft-tree-name";
+    const label=el("div");label.className="craft-tree-label";
+    label.style.paddingLeft=String(Math.min(row.depth,14)*17+6)+"px";
+    if(hasChildren){
+     const toggle=el("button","▾") as HTMLButtonElement;
+     toggle.type="button";toggle.className="craft-tree-toggle";
+     toggle.setAttribute("aria-label",(pt?"Expandir/recolher ":"Expand/collapse ")+title(row.itemId));
+     toggle.addEventListener("click",()=>{
+      if(collapsedTreePaths.has(row.path))collapsedTreePaths.delete(row.path);
+      else collapsedTreePaths.add(row.path);
+      updateCraftTreeVisibility();
+     });
+     label.append(toggle);
+    }else{
+     const spacer=el("span");spacer.className="craft-tree-toggle-spacer";label.append(spacer);
     }
-    line.append(properties);
-    const actions=el("span");actions.className="craft-tree-actions";
+    label.append(itemLink(row.itemId,title(row.itemId)));
+    if(row.sharedReference){
+     const shared=el("small",pt?"Compartilhado":"Shared");
+     shared.className="craft-tree-shared";
+     shared.title=pt
+      ?"Referência adicional ao mesmo ItemID; os totais são calculados apenas uma vez."
+      :"Another reference to the same ItemID; total demand is calculated only once.";
+     label.append(shared);
+    }
+    name.append(label);
+    tr.append(name,el("td",fmt(row.branchQuantity)),el("td",fmt(row.totalRequired)));
+    const produced=el("td",row.output===null?"—":fmt(row.output));
+    if(row.excess!==null&&row.excess!=="0"){
+     produced.append(el("small",(pt?" +":" +")+fmt(row.excess)+
+      (pt?" sobra":" excess")));
+    }
+    tr.append(produced);
+    tr.append(el("td",row.batchSize===null?"—":fmt(row.batchSize)));
+    tr.append(el("td",row.totalBatches===null?"—":fmt(row.totalBatches)));
+    tr.append(el("td",row.operations===null?"—":fmt(row.operations)));
+    const breakdown=el("td");breakdown.className="craft-tree-breakdown";
+    if(row.operationGroups?.length){
+     breakdown.textContent=row.operationGroups.map((group:any)=>
+      fmt(group.operations)+" × "+fmt(group.outputEach)).join(" + ");
+     breakdown.title=(pt?"Unidades produzidas por operação; máximo permitido: ":"Output units per operation; maximum allowed: ")+
+      fmt(row.maxOutputPerOperation);
+    }else breakdown.textContent="—";
+    tr.append(breakdown);
+    const actions=el("td");actions.className="craft-tree-actions";
     if(row.itemId!==selectedId&&activeGraph?.[row.itemId]?.length){
      const purchased=buyIds.has(row.itemId);
      const toggle=el("button",purchased
@@ -437,26 +482,19 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      toggle.type="button";
      toggle.setAttribute("aria-label",(purchased
       ?(pt?"Fabricar ":"Craft "):(pt?"Comprar ":"Buy "))+title(row.itemId));
-     toggle.addEventListener("click",event=>{
-      event.preventDefault();event.stopPropagation();
+     toggle.addEventListener("click",()=>{
       if(purchased)buyIds.delete(row.itemId);else buyIds.add(row.itemId);
       redraw();
      });
      actions.append(toggle);
     }
-    if(row.mode==="unresolved")actions.append(el("small",pt?"Ver pendências ↓":"See questions ↓"));
-    if(row.batchSource==="confirmed-equipment-rule"){
-     actions.append(el("small",pt?"Equipamento · 1/batch · 20/op.":"Equipment · 1/batch · 20/op."));
+    if(row.mode==="unresolved"){
+     const note=el("small",pt?"Pendente":"Pending");actions.append(note);
     }
-    line.append(actions);
-    wrapper.append(line);
-    parent.append(wrapper);
-    if(hasChildren){
-     const holder=el("div");holder.className="craft-tree-children";
-     wrapper.append(holder);
-     parents.push({depth:row.depth,holder});
-    }
+    tr.append(actions);
+    treeRows.append(tr);
    }
+   updateCraftTreeVisibility();
   }
   function renderLeftovers(){
    if(!plan)return;
@@ -471,10 +509,14 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    }
   }
   $("craft-tree-expand").addEventListener("click",()=>{
-   treeContainer.querySelectorAll<HTMLDetailsElement>("details").forEach(d=>{d.open=true;});
+   collapsedTreePaths.clear();updateCraftTreeVisibility();
   });
   $("craft-tree-collapse").addEventListener("click",()=>{
-   treeContainer.querySelectorAll<HTMLDetailsElement>("details").forEach(d=>{d.open=false;});
+   const rows=plan?.tree as Array<any>|undefined;
+   if(!rows)return;
+   for(let i=0;i<rows.length;i++)if(rows[i+1]?.depth>rows[i].depth)
+    collapsedTreePaths.add(rows[i].path);
+   updateCraftTreeVisibility();
   });
   function shoppingRows(){
    if(!plan)return [];
