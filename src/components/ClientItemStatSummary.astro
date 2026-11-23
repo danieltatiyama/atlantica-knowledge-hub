@@ -22,6 +22,8 @@ const heading={
   other:pt?"Outros bônus do cliente":"Other client bonuses",
 };
 const progressionFields=preview?.fields??[];
+const baselineOnlyFields=preview?.baselineOnlyFields??[];
+const fixedFields=preview?.fixedFields??[];
 ---
 {data && summary && <section class="source-summary" aria-label={pt?"Resumo dos atributos extraídos":"Client attribute summary"}>
   <div class="summary-heading">
@@ -67,27 +69,48 @@ const progressionFields=preview?.fields??[];
         .map(row=>`#${row.sourceRowNumber}: ${row.fieldsRaw[field.key]}`).join(" · ")}</p>)}
   </div>}
   {preview&&preview.rows.length>0&&
-    <details class="historical">
-      <summary>{pt?"Simular progressão histórica (+0 a +10)":"Preview historical enhancement progression (+0 to +10)"}</summary>
+    <details class="historical" open>
+      <summary>{pt?"Tabela de atributos +0 a +10 — modelo histórico":"Equipment stats +0 to +10 — historical model"}</summary>
       <div class="historical-inner">
         <p class="historical-warning">{pt
-          ?"SIMULAÇÃO, NÃO DADOS DO SERVIDOR. O nível +0 abaixo usa os valores brutos extraídos do cliente; de +1 a +10 aplica multiplicadores históricos de outras tabelas comunitárias. Não confirma que este item possa ser aprimorado. Não calcula L, MagicDef, EV, crítico nem habilidades."
-          :"MODEL ONLY, NOT SERVER FACTS. +0 below is the raw extracted client baseline; +1 to +10 uses historical multipliers from other community tables. This does not prove the item can be enhanced. No L, MagicDef, EV, critical or skill effects are calculated."}</p>
+          ?"SIMULAÇÃO HISTÓRICA, NÃO VALORES CONFIRMADOS NO SERVIDOR. +0 utiliza os números brutos de Items.csv; +1 a +10 usam os multiplicadores históricos APENAS em ataque, defesa física e atributos básicos. Defesa mágica (MagicDef), evasão (EV) e velocidade de movimento (MoveSpeed) são mantidas FIXAS em todos os graus. Nenhuma linha L é inferida. Esta tabela não comprova que o item possa ser aprimorado."
+          :"HISTORICAL MODEL, NOT CONFIRMED SERVER STATS. +0 uses raw Items.csv values; +1 to +10 apply historical multipliers ONLY to attack, physical armor and primary attributes. Magic Defense (MagicDef), evasion (EV) and movement speed (MoveSpeed) remain FIXED at all grades. L is never inferred. This table does not prove the item can be upgraded."}</p>
         {preview.excluded.length>0&&<p class="historical-warning">{pt
-          ?"Campos excluídos da simulação por conflitos ou valores fracionários:"
-          :"Fields omitted from preview due to conflicts or fractional values:"}
+          ?"Atributos sem projeção por conflito ou valor fracionário (visíveis nos registros brutos):"
+          :"Fields not projected due to a conflict or fractional value (visible in raw records):"}
           {" "}{preview.excluded.join(", ")}
         </p>}
+        {preview.fixedConflicts.length>0&&<p class="historical-warning">
+          {pt?"Atributos fixos divergentes foram omitidos da tabela:":"Conflicting fixed attributes were omitted from the table:"}
+          {" "}{preview.fixedConflicts.join(", ")}
+        </p>}
+        <p class="model-footer">{pt
+          ?"Colunas com × = progressão calculada. Colunas com = = mesmo valor bruto do cliente em todos os graus; não são multiplicadas. Um valor 0 ou ausente não foi inventado para preencher colunas."
+          :"Columns marked × are historical projections. Columns marked = repeat the exact client source value at all grades; they are never multiplied. Missing or zero values were not invented to fill the table."}</p>
         <div class="table-scroll">
           <table class="progression">
             <thead><tr>
               <th scope="col">{pt?"Grau":"Grade"}</th>
-              {progressionFields.map(field=><th scope="col">{labelForClientField(field,pt)}</th>)}
+              {progressionFields.map(field=><th scope="col">
+                {labelForClientField(field,pt)} <small class="multiplier-mark">×</small>
+              </th>)}
+              {baselineOnlyFields.map(field=><th scope="col" class="baseline-only-header" title={
+                pt?"Valor original em +0; sem projeção de grau":"Original +0 value; no grade projection available"
+              }>{labelForClientField(field,pt)} <small>+0</small></th>)}
+              {fixedFields.map(field=><th scope="col" class="fixed-header" title={
+                pt?"Valor bruto fixo do cliente, não multiplicado":"Unchanged raw client source value, never multiplied"
+              }>{labelForClientField(field.key,pt)} <small class="fixed-mark">=</small>
+                {field.status==="partial"&&<small class="partial-source">{field.observedIn}/{field.sourceCount} {pt?"fontes":"sources"}</small>}
+              </th>)}
               <th scope="col">{pt?"Natureza do valor":"Basis"}</th>
             </tr></thead>
             <tbody>{preview.rows.map(row=><tr class={row.grade===0?"baseline":undefined}>
               <th scope="row">+{row.grade}</th>
               {progressionFields.map(field=><td>{format(row.values[field])}</td>)}
+              {baselineOnlyFields.map(field=><td class="baseline-only-value">
+                {row.values[field]===undefined?"—":format(row.values[field])}
+              </td>)}
+              {fixedFields.map(field=><td class="fixed-value">{row.values[field.key]}</td>)}
               <td class={row.status==="historical-estimate"?"estimated":undefined}>
                 {row.status==="client-raw-baseline"
                   ?(pt?"Extraído do cliente":"Client raw baseline")
@@ -97,8 +120,8 @@ const progressionFields=preview?.fields??[];
           </table>
         </div>
         <p class="model-footer">{pt
-          ?"Modelo: ×1,0; ×1,2; ×1,4; ×1,6; ×1,8; ×2,1; ×2,4; ×2,8; ×3,2; ×3,6; ×4,0. Arredondamento para baixo sobre inteiros. L exige evidência independente e não é inferido."
-          :"Model: ×1.0, ×1.2, ×1.4, ×1.6, ×1.8, ×2.1, ×2.4, ×2.8, ×3.2, ×3.6, ×4.0. Floor rounding for integers. L requires independent evidence and is never inferred."}</p>
+          ?"Modelo das colunas ×: 1,0; 1,2; 1,4; 1,6; 1,8; 2,1; 2,4; 2,8; 3,2; 3,6; 4,0. Valores inteiros são arredondados para baixo. Defesa mágica, evasão e velocidade de movimento conservam seus números de origem. Habilidades, crítico e HitRate não foram projetados. L depende de evidência específica."
+          :"Multipliers for × columns: 1.0; 1.2; 1.4; 1.6; 1.8; 2.1; 2.4; 2.8; 3.2; 3.6; 4.0. Integer results are rounded down. Magic Defense, evasion and movement speed preserve their original values. Skills, critical and HitRate are not projected. L needs item-specific evidence."}</p>
       </div>
     </details>}
   <p class="see-raw">{pt?"Referências e campos completos na seção":"See original source rows and every field in"}
@@ -135,6 +158,12 @@ const progressionFields=preview?.fields??[];
   .historical>summary:hover,.historical>summary:focus-visible{background:var(--color-background)}
   .historical-inner{padding:4px 14px 14px;border-top:1px solid var(--color-border)}
   .historical-warning{color:var(--color-text-muted);font-size:.86rem;line-height:1.55}
+  .baseline-only-header{background:rgba(133,99,54,.14);min-width:110px}
+  .baseline-only-value{background:rgba(133,99,54,.06);color:var(--color-text-muted)}
+  .fixed-header{background:rgba(90,104,120,.14);min-width:110px}
+  .fixed-header .partial-source{display:block;color:var(--color-text-muted);font-size:.68rem}
+  .multiplier-mark,.fixed-mark{font-size:.72rem;opacity:.83}
+  .fixed-value{background:rgba(90,104,120,.08);color:var(--color-text);font-variant-numeric:tabular-nums}
   .table-scroll{overflow-x:auto}
   table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:.85rem}
   th,td{padding:8px 12px;border-bottom:1px solid var(--color-border);text-align:right}

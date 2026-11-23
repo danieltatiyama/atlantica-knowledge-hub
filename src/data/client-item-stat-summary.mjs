@@ -16,7 +16,8 @@ export const CLIENT_FIELDS=Object.freeze([
   {key:"MaxDamage",group:"attack",en:"Max. attack",pt:"Ataque máximo"},
   {key:"AC",group:"defense",en:"Armor / AC",pt:"Defesa / AC"},
   {key:"MagicDef",group:"defense",en:"Magic Defense",pt:"Defesa mágica"},
-  {key:"EV",group:"defense",en:"EV (raw)",pt:"EV (bruto)"},
+  {key:"EV",group:"defense",en:"Evasion / EV (raw)",pt:"Evasão / EV (bruto)"},
+  {key:"MoveSpeed",group:"defense",en:"Movement speed (raw)",pt:"Velocidade de movimento (bruto)"},
   {key:"Str",group:"attributes",en:"Strength",pt:"Força"},
   {key:"Dex",group:"attributes",en:"Dexterity",pt:"Destreza"},
   {key:"Vit",group:"attributes",en:"Vitality",pt:"Vitalidade"},
@@ -28,7 +29,10 @@ export const CLIENT_FIELDS=Object.freeze([
 
 const GROUP_ORDER=Object.freeze(["attack","defense","attributes","other"]);
 const projectedKeys=Object.freeze(["MinDamage","MaxDamage","AC","Str","Dex","Vit","Mag"]);
-const scalable=new Set(projectedKeys);
+// Only these client field names are treated as constant across grade rows.
+// More source fields MUST NOT enter the +0..+10 model without verifying
+// their upgrade mechanics. Missing is never equivalent to zero.
+export const FIXED_ENCHANT_FIELDS=Object.freeze(["MagicDef","EV","MoveSpeed"]);
 const isRawNonnegativeInteger=value=>typeof value==="string" &&
   /^(?:0|[1-9][0-9]*)$/.test(value) &&
   Number.isSafeInteger(Number(value));
@@ -88,10 +92,11 @@ export function summarizeClientRawFields(item){
 }
 
 /**
- * Historical MODEL ONLY: do not project fixed MagicDef, EV, HitRate,
- * critical or other job/skill attributes. Requires a source consensus
- * for each included value. Decimal Mag (e.g. 292.5) remains visible
- * in the raw field table but is deliberately not projected.
+ * Historical MODEL ONLY: scales ONLY base damage, AC and primary attributes.
+ * MagicDef, EV and MoveSpeed are copied UNCHANGED to every grade from the
+ * client; HitRate, crit, skill and job bonuses are not guessed/scaled.
+ * Requires a source consensus for each included value. Decimal Mag (e.g.
+ * 292.5) remains visible in +0 source rows, but does not get projected.
  *
  * `grade:0` is a client RAW baseline, not a live-game +0 observation.
  */
@@ -102,9 +107,31 @@ export function buildHistoricalClientProjection(item){
     return field && field.status!=="conflict" &&
       isRawNonnegativeInteger(field.value) && Number(field.value)>0;
   });
-  // No meaningful scalable source field means the item is not
-  // suitable for even a labeled historical model preview.
-  if(!eligible.length)return {fields:[],rows:[],excluded:[]};
+  // Fractional or negative original primary attributes remain observable
+  // in the +0 row, but never receive a fabricated integer projection.
+  const baselineOnlyFields=projectedKeys.filter(key=>{
+    const field=summary.byKey.get(key);
+    return field&&field.status!=="conflict"&&!eligible.includes(key) &&
+      field.value!=="0" && typeof field.value==="string" &&
+      /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(field.value);
+  });
+  const fixedFields=FIXED_ENCHANT_FIELDS.map(key=>{
+    const field=summary.byKey.get(key);
+    return field&&field.status!=="conflict"&&
+      typeof field.value==="string"&&/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(field.value)
+      ? {key,value:field.value,status:field.status,
+         observedIn:field.observedIn,sourceCount:field.sourceCount,
+         sourceRowNumbers:field.sourceRowNumbers}
+      : null;
+  }).filter(Boolean);
+  const fixedConflicts=FIXED_ENCHANT_FIELDS.filter(key=>
+    summary.byKey.get(key)?.status==="conflict");
+  // All 551 reviewed equipment have at least one positive original
+  // scalable field. In future exports, still show known FIXED fields even
+  // when no numeric scaling baseline is available.
+  if(!eligible.length&&!fixedFields.length&&!baselineOnlyFields.length){
+    return {fields:[],baselineOnlyFields:[],fixedFields:[],rows:[],excluded:[],fixedConflicts};
+  }
   const excluded=projectedKeys.filter(key=>{
     const field=summary.byKey.get(key);
     return field&&(field.status==="conflict"||
@@ -114,12 +141,24 @@ export function buildHistoricalClientProjection(item){
     grade,
     multiplierTenths:multiplier,
     status:grade===0?"client-raw-baseline":"historical-estimate",
-    values:Object.fromEntries(eligible.map(key=>{
-      const initial=Number(summary.byKey.get(key).value);
-      return [key,grade===0?initial:projectClassicStat(initial,grade)];
-    })),
+    values:{
+      ...Object.fromEntries(eligible.map(key=>{
+        const initial=Number(summary.byKey.get(key).value);
+        return [key,grade===0?initial:projectClassicStat(initial,grade)];
+      })),
+      // Fractional/negative original fields belong to the RAW +0 row
+      // only. Later grades have no supported rounding/scaling rule.
+      ...(grade===0
+        ? Object.fromEntries(baselineOnlyFields.map(key=>[
+            key,summary.byKey.get(key).value
+          ]))
+        : {}),
+      // FIXED client values are copied literally from source, never
+      // projected or rounded. Repeated values are NOT "estimated".
+      ...Object.fromEntries(fixedFields.map(field=>[field.key,field.value])),
+    },
   }));
-  return {fields:eligible,rows,excluded};
+  return {fields:eligible,baselineOnlyFields,fixedFields,rows,excluded,fixedConflicts};
 }
 
 export function labelForClientField(key,pt=false){

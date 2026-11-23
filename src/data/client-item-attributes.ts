@@ -4,6 +4,7 @@
 import values from "./client-item-attributes.json";
 import {EQUIPMENT_ITEM_NAMES_EN} from "./equipment-item-names-en";
 import {assertClientItemAttributes} from "./client-item-attributes-gate.mjs";
+import {withClientMovementSpeed} from "./client-movement-speed.mjs";
 
 export interface ClientAttributeSourceRow {
   sourceRowNumber:number;
@@ -16,7 +17,11 @@ export interface ClientItemAttributes {
   sourceRows:ClientAttributeSourceRow[];
 }
 
-const items=assertClientItemAttributes(values,EQUIPMENT_ITEM_NAMES_EN) as ClientItemAttributes[];
+// Validate the original 551 identities first, then attach separately attested
+// MoveSpeed values by the immutable Items.csv source row IDs.
+const items=withClientMovementSpeed(
+  assertClientItemAttributes(values,EQUIPMENT_ITEM_NAMES_EN),values.snapshotId
+) as ClientItemAttributes[];
 const byId=new Map(items.map(item=>[item.id,item]));
 export const CLIENT_ATTRIBUTE_ITEM_COUNT=items.length;
 export const CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT=values.snapshotId;

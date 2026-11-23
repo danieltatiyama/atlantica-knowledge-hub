@@ -25,11 +25,11 @@ class ClientItemAttributesTests(unittest.TestCase):
                 ("Items.csv",1,{"Unique":"1","EnglishName":"Spirit Sword",
                  "MinDamage":"125","MaxDamage":"300","AC":"-9",
                  "MagicDef":"0","Str":"19","Dex":"8","Mag":"292.5",
-                 "CriticalPlus":"0.5","EffectKind":"PRIVATE_TEXT",
+                 "CriticalPlus":"0.5","MoveSpeed":"10","EffectKind":"PRIVATE_TEXT",
                  "rawSourcePath":"C:\\PRIVATE\\SECRET"}),
                 ("Items.csv",2,{"Unique":"1","EnglishName":"Spirit Sword",
                  "MinDamage":"126","MaxDamage":"310","AC":"-8",
-                 "MagicDef":"0","Mag":"292.5"}),
+                 "MagicDef":"0","Mag":"292.5","MoveSpeed":"10"}),
                 ("Items.csv",3,{"Unique":"47","EnglishName":"Judgment Sword",
                  "MinDamage":"999","MaxDamage":"1000","AC":"95"}),
                 ("Items.csv",4,{"Unique":"47","EnglishName":"OTHER IDENTIY",
@@ -69,6 +69,8 @@ class ClientItemAttributesTests(unittest.TestCase):
             self.assertEqual(record["sourceRows"][0]["fieldsRaw"]["CriticalPlus"],"0.5")
             self.assertEqual(record["sourceRows"][0]["fieldsRaw"]["AC"],"-9")
             self.assertEqual(record["sourceRows"][0]["fieldsRaw"]["Mag"],"292.5")
+            self.assertEqual(record["sourceRows"][0]["fieldsRaw"]["MoveSpeed"],"10")
+            self.assertEqual(record["sourceRows"][1]["fieldsRaw"]["MoveSpeed"],"10")
             self.assertEqual(record["sourceRows"][1]["fieldsRaw"]["Mag"],"292.5")
             self.assertNotIn("EffectKind",record["sourceRows"][0]["fieldsRaw"])
             self.assertNotIn("rawSourcePath",record["sourceRows"][0]["fieldsRaw"])
@@ -83,7 +85,7 @@ class ClientItemAttributesTests(unittest.TestCase):
           "MinDamage":"00420","MaxDamage":"12345",
           "AC":"10\nPRIVATE","MagicDef":"1e10","Critical":"50%",
           "HitRate":"99999999999999999999",
-          "Str":"-1","Dex":0,"Mag":"292.5",
+          "Str":"-1","Dex":0,"Mag":"292.5","MoveSpeed":"0",
           "Dodge":" 12 ","Vit":"NaN","Intl":float("inf"),
         }
         safe=module.parse_raw_fields(source)
@@ -99,6 +101,7 @@ class ClientItemAttributesTests(unittest.TestCase):
         self.assertEqual(safe["Dex"],"0")
         self.assertEqual(safe["Dodge"],"12")
         self.assertEqual(safe["Mag"],"292.5")
+        self.assertEqual(safe["MoveSpeed"],"0")
 
     def test_missing_schema_and_snapshot_fail_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
