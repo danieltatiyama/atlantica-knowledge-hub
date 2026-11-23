@@ -34,7 +34,7 @@ test("audit rejects tampered creature counts and reverse item source totals",()=
  const changed={...data,creatureCounts:{...data.creatureCounts,
   rows:data.creatureCounts.rows.map((row,i)=>i===0?[row[0],row[1]+1,row[2]]:row)}};
  assert.throws(()=>inspectSourceQuality(changed),/mismatch/);
- const bad={...data,itemLookup:{...data.itemLookup,rows:data.itemLookup.rows.slice(1)}};
+ const bad={...data,itemLookup:{...data.itemLookup,rows:data.itemLookup.rows.map((row,i)=>i===0?[row[0],row[1],row[2]+1,...row.slice(3)]:row)}};
  assert.throws(()=>inspectSourceQuality(bad),/diverged/);
 });
 test("audit is build-generated and available as bilingual tool",()=>{
