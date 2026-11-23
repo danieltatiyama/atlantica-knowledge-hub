@@ -173,6 +173,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
  import {CRAFT_PLAN_MAX_OUTPUT,isSourceRecipeCandidate,resolveRootCraftBatch,isAllowedCraftQuantity}
    from "../data/client-crafting-quantity.mjs";
+ import {parseClientNPCPriceCatalog,applyMissingClientNPCPrices}
+   from "../data/client-npc-price-reference.mjs";
  import {planClientCrafting,priceCraftLeaves} from "../data/client-crafting-planner.mjs";
  const root=document.getElementById("wiki-craft-planner");
  if(root){
@@ -742,22 +744,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       fetchJSON("/data/client-npc-trade-prices/manifest.json"),
       fetchJSON("/data/client-npc-trade-prices/general.json"),
      ]);
-     if(manifest.schemaVersion!=="1.0"||manifest.snapshotId!==1||
-       manifest.dataset!=="client-npc-trade-price-candidates"||
-       manifest.marketFixedPriceVerified!==false||manifest.generalCount!==421||
-       data.dataset!=="client-npc-trade-general-prices"||data.snapshotId!==1||
-       !Array.isArray(data.rows)||data.rows.length!==421)
-      throw Error("Client NPC price source manifest mismatch");
-     const map=new Map<string,string>();
-     for(const entry of data.rows){
-      if(!Array.isArray(entry)||entry.length!==3)throw Error("Invalid source reference row");
-      const [id,value,line]=entry;
-      if(typeof id!=="string"||!/^[1-9]\d{0,12}$/.test(id)||
-        typeof value!=="string"||!/^[1-9]\d{0,14}$/.test(value)||
-        !Number.isInteger(line)||line<1||map.has(id))
-       throw Error("Invalid source price entry");
-      map.set(id,value);
-     }
+     const map=parseClientNPCPriceCatalog(manifest,data);
      clientNPCPriceMap=map;
      ($("craft-apply-npc-prices") as HTMLButtonElement).hidden=false;
      if(plan)redraw();
@@ -773,15 +760,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   });
   $("craft-apply-npc-prices").addEventListener("click",()=>{
    if(!clientNPCPriceMap||!plan)return;
-   let filled=0;
-   for(const leaf of plan.leaves){
-    const value=clientNPCPriceMap.get(leaf.itemId);
-    if(value&&(!prices[leaf.itemId]||!prices[leaf.itemId].trim())){
-     prices[leaf.itemId]=value;
-     priceOrigins[leaf.itemId]="client-npc-catalog";
-     filled++;
-    }
-   }
+   const filled=applyMissingClientNPCPrices({
+    leaves:plan.leaves,prices,priceOrigins,references:clientNPCPriceMap,
+   });
    if(filled)savePriceState();
    redraw();
    status.textContent=pt
