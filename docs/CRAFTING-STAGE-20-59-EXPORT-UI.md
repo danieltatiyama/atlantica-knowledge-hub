@@ -4,7 +4,9 @@
 
 The Crafting Calculator's **Craft Schedule** and **Shopping List** were visually reorganized into consistent theme-aware panels with readable hierarchy, table headers, aligned numeric quantities, subtle row striping, operation-group badges, price inputs, a visible estimate summary, and responsive horizontal scrolling. These changes preserve the existing recipes, choices, prices, client provenance and six supported Wiki themes.
 
-The **Crafting Tree** adds a new **Consumption breakdown** column next to **Operation breakdown**. It explicitly explains the material requirement imposed by the parent recipe, on each ingredient row:
+The **Crafting Tree** adds a new **Consumption breakdown** column next to **Operation breakdown**. **Stage 20.61 updates its display:** rather than showing the batch-level formula described below, it now groups ingredient consumption by each operation of the parent product (e.g. 1 × 5,000 Anarchy Stone for one operation of 20 Judgment Heavy Armors, or 7 × 5,000 + 1 × 500 for 142 armors). The original source batch-level values remain stored and inspectable. The Excel export uses the same operation-based presentation.
+
+Previously: The **Crafting Tree** adds a new **Consumption breakdown** column next to **Operation breakdown**. It explicitly explains the material requirement imposed by the parent recipe, on each ingredient row:
 
 `original ingredient units per parent batch × parent crafted batches = amount consumed from the parent branch`
 
