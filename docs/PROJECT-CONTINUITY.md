@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.66 (fila auditável de 128 candidatos a preços fixos e registros locais de observação do Market)  
-**Último PR integrado de pesquisa:** [PR #84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) (Stage 20.65). **Stage 20.66:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85), branch `feat/stage-20-66-market-price-verification-workbench` (em revisão).
+**PR de pesquisa mais recente:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) (Stage 20.66). Verificar status de integração e CI antes de continuar.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -489,4 +489,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.66 em branch de implementação, a partir da Stage 20.65 integrada. Validar CI e interface da nova fila de 128 candidatos; preservar as 421 referências gerais apenas como dados NPC do cliente, não como ofertas fixas confirmadas do servidor.**
+**Estado documentado: Stage 20.66 implementada no PR #85, com fila reproduzível de 128 candidatos e interface de observações locais. A execução de validação do PR foi concluída com sucesso; conferir integração na main e revisar visualmente a nova interface. Preservar as 421 referências gerais apenas como dados NPC do cliente, não como ofertas fixas confirmadas do servidor.**
