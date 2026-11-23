@@ -104,13 +104,12 @@ export function planClientCrafting({
         if(incoming.get(child)===0)ready.push(child);
       }
     }else if(needed>0n){
-      leaves.push({itemId:id,quantity:String(needed),mode:node.mode,
-        hasRecipe:node.hasRecipe});
+      leaves.push({itemId:id,quantity:String(needed)});
     }
   }
   if(processed!==nodes.size)throw Error("Circular recipe graph");
   const stepMap=new Map(steps.map(step=>[step.itemId,step]));
-  const leafMap=new Map(leaves.map(row=>[row.itemId,row]));
+  
   const tree=[],visitedTree=new Set();
   function treeWalk(id,depth,branchQty){
     const node=nodes.get(id),step=stepMap.get(id),leaf=leafMap.get(id);
@@ -121,7 +120,7 @@ export function planClientCrafting({
       totalRequired:String(demand.get(id)??0n),
       output:step?.output??null,
       excess:step?.excess??null,
-      mode:leaf?.mode??node.mode,
+      mode:node.mode,
       sharedReference:repeated,
       batchSize:step?.batchSize??null,
       batchSource:step?.batchSource??null,
