@@ -180,6 +180,32 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       }
       return (await statsCache.get(bucket)!)?.[id]??null;
     }
+    function addRawNumericSourceTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
+      // Raw source data is relevant to ALL named IDs, including books and
+      // consumables. Historical enhancement projections are not.
+      parent.append(node("h3",pt?"Atributos numéricos originais — Items.csv":"Original numeric client attributes — Items.csv"));
+      parent.append(node("p",pt
+        ?"Valores extraídos dos registros originais do cliente (snapshot 1), não verificados no servidor. Zero é um valor extraído; campos ausentes não são presumidos como zero. Estes atributos não comprovam que o item seja equipável ou aprimorável."
+        :"Original game-client values (snapshot 1), not verified on the live server. Zero is a real recorded value; missing fields are not assumed to be zero. These attributes do not establish equipment or enhancement eligibility.","detail-note"));
+      const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
+      for(const name of [pt?"Registro de origem":"Source row",pt?"Atributo bruto":"Raw field",pt?"Valor bruto":"Raw value"]){
+        tr.append(node("th",name));
+      }
+      head.append(tr);table.append(head);
+      const body=node("tbody");
+      for(const [sourceRow,raw] of rawRows){
+        for(const [key,value] of Object.entries(raw)){
+          const row=node("tr");
+          row.append(node("td","#"+sourceRow));
+          row.append(node("td",labelForClientField(key,pt)+" ("+key+")"));
+          row.append(node("td",String(value)));
+          body.append(row);
+        }
+      }
+      table.append(body);
+      const scroller=node("div",undefined,"stat-table-scroll");
+      scroller.append(table);parent.append(scroller);
+    }
     function addHistoricalGradeTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
       const model=buildHistoricalClientProjection({sourceRows:rawRows.map(([sourceRowNumber,fieldsRaw])=>({
         sourceRowNumber,fieldsRaw,
@@ -333,18 +359,19 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         if(row[8]===1){const p=node("p");const a=node("a",pt?"Abrir ficha detalhada do equipamento (+0 a +10)":"Open detailed equipment article (+0 through +10)") as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
         addDefinitionTable(details,data,id);
-        if(equipmentCandidateCategories.has(row[2]??"")){
-          const rawStats=await optionalNumericStats(id);
-          if(new URL(location.href).searchParams.get("id")!==id)return;
-          if(rawStats){
-            details.append(node("p",(pt?"Linhas de atributos Items.csv: ":"Original Items.csv numeric rows: ")+
-              rawStats.map(item=>"#"+item[0]).join(", "),"subtle"));
+        // Original raw numeric rows are shown for every named item type.
+        // Only equipment-like source categories may use the explicitly
+        // unverified historical upgrade projection.
+        const rawStats=await optionalNumericStats(id);
+        if(new URL(location.href).searchParams.get("id")!==id)return;
+        if(rawStats){
+          addRawNumericSourceTable(details,rawStats);
+          if(equipmentCandidateCategories.has(row[2]??""))
             addHistoricalGradeTable(details,rawStats);
-          }else if(row[8]!==1){
-            details.append(node("p",pt
-              ?"Atributos de combate ainda não foram importados para este ID. Não é possível calcular +0 a +10 com segurança sem os valores originais de Items.csv."
-              :"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values.","subtle"));
-          }
+        }else if(equipmentCandidateCategories.has(row[2]??"")&&row[8]!==1){
+          details.append(node("p",pt
+            ?"Atributos de combate ainda não foram importados para este ID. Não é possível calcular +0 a +10 com segurança sem os valores originais de Items.csv."
+            :"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values.","subtle"));
         }
       }catch{
         details.replaceChildren(node("p",pt?"Não foi possível carregar o arquivo deste ID.":"Could not load the client source shard for this ID.","subtle"));
