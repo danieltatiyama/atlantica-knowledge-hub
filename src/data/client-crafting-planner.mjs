@@ -13,6 +13,32 @@ const count=value=>{
   if(!POS.test(text)||text.length>36)throw new RangeError("Expected positive integer quantity");
   return BigInt(text);
 };
+/**
+ * Every crafting stage, including intermediate products, is split into
+ * legal per-operation chunks. Grouping keeps even huge plans at <=2 rows.
+ *
+ * Example: requested 250, batch 20 -> 13 batches -> 260 produced;
+ * those 13 batches consume ingredients for 260, not for 250.
+ */
+export function splitCraftOperations({batches,batchSize,maxPerOperation}){
+  const n=count(batches),unit=count(batchSize),limit=count(maxPerOperation);
+  if(unit>limit)throw new RangeError("Batch exceeds the per-operation output limit");
+  const batchesPerOperation=limit/unit;
+  const complete=n/batchesPerOperation,remainder=n%batchesPerOperation;
+  const groups=[];
+  if(complete>0n)groups.push({
+    operations:String(complete),
+    batchesEach:String(batchesPerOperation),
+    outputEach:String(batchesPerOperation*unit),
+  });
+  if(remainder>0n)groups.push({
+    operations:"1",batchesEach:String(remainder),outputEach:String(remainder*unit),
+  });
+  const operations=complete+(remainder>0n?1n:0n);
+  return {operations:String(operations),groups,
+    batchesPerOperation:String(batchesPerOperation),
+    maxOutputPerOperation:String(batchesPerOperation*unit)};
+}
 export function planClientCrafting({
   itemId,quantity,recipesById={},choices={},batchOverrides={},
   itemCategories={},buyIds=[],strictTargetBatch=false,
@@ -93,11 +119,16 @@ export function planClientCrafting({
       const batches=(needed+batch-1n)/batch;
       const produced=batches*batch;
       const maxPerOperation=BigInt(node.policy.maxPerOperation);
-      const batchesPerOperation=maxPerOperation/batch;
-      const operations=(batches+batchesPerOperation-1n)/batchesPerOperation;
+      const distribution=splitCraftOperations({
+        batches:String(batches),batchSize:String(batch),
+        maxPerOperation:String(maxPerOperation),
+      });
       steps.push({itemId:id,requested:String(needed),batchSize:String(batch),
         totalBatches:String(batches),output:String(produced),
-        excess:String(produced-needed),operations:String(operations),
+        excess:String(produced-needed),operations:distribution.operations,
+        operationGroups:distribution.groups,
+        maxBatchesPerOperation:distribution.batchesPerOperation,
+        maxOutputPerOperation:distribution.maxOutputPerOperation,
         maxPerOperation:String(maxPerOperation),
         manualBatch:node.manual,batchSource:node.batchSource});
       for(const [child,rawQty] of node.recipe.materials){
@@ -128,6 +159,10 @@ export function planClientCrafting({
       mode:node.mode,
       sharedReference:repeated,
       batchSize:step?.batchSize??null,
+      totalBatches:step?.totalBatches??null,
+      operations:step?.operations??null,
+      operationGroups:step?.operationGroups??[],
+      maxOutputPerOperation:step?.maxOutputPerOperation??null,
       batchSource:step?.batchSource??null,
     });
     if(!repeated&&node.recipe){
