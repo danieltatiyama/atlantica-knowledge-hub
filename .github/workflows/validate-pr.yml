@@ -104,6 +104,9 @@ jobs:
       - name: Validate exact craft quantity and source recipe autocomplete
         run: node --test tests/client-crafting-quantity.test.mjs
 
+      - name: Validate intermediate batches and crafting tree breakdown
+        run: node --test tests/client-crafting-tree-operations.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
