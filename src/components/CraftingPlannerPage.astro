@@ -1,0 +1,303 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+---
+<BaseLayout lang={lang} title={(pt?"Calculadora de fabricação":"Crafting calculator")+" | Atlantica Knowledge Hub"}
+ alternatePaths={{en:"/tools/crafting/","pt-br":"/pt-br/tools/crafting/"}}>
+ <main id="wiki-craft-planner" class="craft-planner" data-lang={lang}>
+  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <p class="eyebrow">ATLANTICA GLOBAL / NA · ITEMTYPE SOURCE</p>
+  <h1>{pt?"Calculadora de fabricação":"Crafting calculator"}</h1>
+  <p>{pt
+    ?"Calcule materiais de fabricação e dependências em múltiplos níveis usando receitas extraídas do cliente. O tamanho do lote só é aplicado quando identificado no arquivo ou informado por você."
+    :"Plan ingredient requirements across multiple recipe levels using extracted client recipes. Batch sizes are used only when identified in the files or explicitly supplied by you."}</p>
+  <form id="craft-plan-form" class="craft-form">
+   <div class="field"><label for="craft-search">{pt?"Nome do item ou ItemID":"Item name or ItemID"}</label>
+    <input id="craft-search" type="search" autocomplete="off" required placeholder={pt?"Digite para encontrar um item":"Start typing to find an item"} aria-controls="craft-suggestions"/>
+    <ul id="craft-suggestions" aria-label={pt?"Sugestões de itens":"Item suggestions"}></ul>
+   </div>
+   <div class="field"><label for="craft-quantity">{pt?"Quantidade desejada":"Desired output"}</label>
+    <input id="craft-quantity" type="number" min="1" max="1000000000000" value="1" step="1" required/>
+   </div>
+   <button type="submit">{pt?"Calcular materiais":"Calculate materials"}</button>
+  </form>
+  <p id="craft-status" role="status" aria-live="polite">
+   {pt?"Selecione um item para começar.":"Select an item to begin."}
+  </p>
+  <section id="craft-result" hidden>
+   <h2>{pt?"Plano de produção":"Production plan"}</h2>
+   <p id="craft-result-note"></p>
+   <div class="craft-result-grid">
+    <div><h3>{pt?"Etapas e batches":"Steps and batches"}</h3>
+      <div class="table-scroll"><table><thead><tr>
+       <th>{pt?"Produto":"Product"}</th><th>{pt?"Necessário":"Required"}</th>
+       <th>{pt?"Produzido":"Planned"}</th><th>{pt?"Batches":"Batches"}</th>
+       <th>{pt?"Operações":"Operations"}</th>
+      </tr></thead><tbody id="craft-steps"></tbody></table></div>
+    </div>
+    <div><h3>{pt?"Materiais finais e preços manuais":"Base materials and manual prices"}</h3>
+      <div class="table-scroll"><table><thead><tr>
+       <th>{pt?"Material":"Material"}</th><th>{pt?"Quantidade":"Quantity"}</th>
+       <th>{pt?"Preço unitário":"Unit price"}</th><th>{pt?"Custo":"Cost"}</th>
+      </tr></thead><tbody id="craft-leaves"></tbody></table></div>
+      <p id="craft-cost-total"></p>
+    </div>
+   </div>
+   <div id="craft-issues" aria-live="polite"></div>
+  </section>
+  <p class="craft-disclaimer">{pt
+   ?"Os arquivos ItemType*.ndt podem conter receitas desativadas ou variantes históricas. A calculadora não inventa receitas, tamanhos de batch nem preços de mercado. Cada operação respeita o limite de 10.000 unidades, conforme regra informada pelo jogador."
+   :"ItemType*.ndt files can contain historical or disabled recipes. No missing recipes, batch sizes or market prices are guessed. Each operation respects the player-reported 10,000-output limit."}</p>
+ </main>
+</BaseLayout>
+<script>
+ import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
+ import {planClientCrafting,priceCraftLeaves} from "../data/client-crafting-planner.mjs";
+ const root=document.getElementById("wiki-craft-planner");
+ if(root){
+  const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+  const $=(id:string)=>document.getElementById(id)!;
+  const query=$("craft-search") as HTMLInputElement;
+  const amount=$("craft-quantity") as HTMLInputElement;
+  const form=$("craft-plan-form") as HTMLFormElement;
+  const suggestions=$("craft-suggestions"),status=$("craft-status");
+  const result=$("craft-result"),note=$("craft-result-note");
+  const steps=$("craft-steps"),leaves=$("craft-leaves"),issues=$("craft-issues");
+  const cost=$("craft-cost-total");
+  const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+  const fmt=(n:string|number)=>nf.format(BigInt(n));
+  const choices:Record<string,number>={},batchOverrides:Record<string,string>={};
+  const prices:Record<string,string>={};
+  const detailCache=new Map<number,Promise<any>>();
+  let indexPromise:Promise<Map<string,string>>|null=null;
+  let selectedId="",activeGraph:Record<string,any[]>|null=null;
+  let plan:any=null;
+  const el=(tag:string,value?:string)=>{
+   const n=document.createElement(tag);if(value!==undefined)n.textContent=value;return n;
+  };
+  const itemLink=(id:string,title:string)=>{
+   const a=el("a",title) as HTMLAnchorElement;
+   a.href=prefix+"/items/database/?id="+encodeURIComponent(id);return a;
+  };
+  const fetchJSON=async(path:string)=>{
+   const r=await fetch(path,{cache:"force-cache"});
+   if(!r.ok)throw Error("Missing original item source");
+   return r.json();
+  };
+  async function getIndex(){
+   if(indexPromise)return indexPromise;
+   indexPromise=(async()=>{
+    const manifest=await fetchJSON("/data/client-items/manifest.json");
+    if(manifest.snapshotId!==1||manifest.totalIds!==23586||manifest.namedIds!==22702||
+       !Array.isArray(manifest.indexShards)||manifest.indexShards.length!==6)throw Error("Index mismatch");
+    const shards=await Promise.all(manifest.indexShards.map((file:string)=>{
+     if(!/^index-\d{2}\.json$/.test(file))throw Error("Unsafe item path");
+     return fetchJSON("/data/client-items/"+file);
+    }));
+    const names=new Map<string,string>();
+    for(const shard of shards){
+     if(shard.snapshotId!==1||!Array.isArray(shard.rows))throw Error("Index shard mismatch");
+     for(const row of shard.rows)if(row[6]==="named")names.set(row[0],row[1]);
+    }
+    if(names.size!==22702)throw Error("Incomplete source name index");
+    return names;
+   })().catch(error=>{indexPromise=null;throw error;});
+   return indexPromise;
+  }
+  async function getDetails(id:string){
+   const bucket=Math.floor(Number(id)/1000);
+   if(!Number.isSafeInteger(bucket)||bucket<0||bucket>=30)return null;
+   if(!detailCache.has(bucket)){
+    const filename=String(bucket).padStart(2,"0")+".json";
+    detailCache.set(bucket,fetchJSON("/data/client-items/details/"+filename).then(d=>{
+     if(d.snapshotId!==1||d.bucket!==bucket||!d.items)throw Error("Detail shard mismatch");
+     return d.items;
+    }).catch(e=>{detailCache.delete(bucket);throw e;}));
+   }
+   return (await detailCache.get(bucket))?.[id]??null;
+  }
+  let suggestTicket=0;
+  async function suggest(){
+   const ticket=++suggestTicket;
+   selectedId="";activeGraph=null;suggestions.replaceChildren();
+   const text=query.value.trim().toLowerCase();
+   if(text.length<2)return;
+   try{
+    const names=await getIndex();
+    if(ticket!==suggestTicket)return;
+    const matches=[...names].filter(([id,name])=>id===text||
+     name.toLowerCase().includes(text)).slice(0,18);
+    for(const [id,name] of matches){
+     const li=el("li"),button=el("button",name+" (#"+id+")") as HTMLButtonElement;
+     button.type="button";button.addEventListener("click",()=>{
+      selectedId=id;query.value=name+" (#"+id+")";suggestions.replaceChildren();
+     });
+     li.append(button);suggestions.append(li);
+    }
+   }catch{status.textContent=pt?"Falha ao consultar índice de itens.":"Could not load the item index.";}
+  }
+  let debounce:ReturnType<typeof setTimeout>|null=null;
+  query.addEventListener("input",()=>{
+   if(debounce!==null)clearTimeout(debounce);
+   debounce=setTimeout(()=>{void suggest();},170);
+  });
+  async function loadGraph(id:string){
+   const names=await getIndex();
+   const graph:Record<string,any[]>={};
+   const seen=new Set<string>(),stack=[id];
+   while(stack.length){
+    const current=stack.pop()!;
+    if(seen.has(current))continue;
+    if(seen.size>=250)throw Error("Recipe graph exceeds 250 IDs");
+    seen.add(current);
+    const detail=names.has(current)?await getDetails(current):null;
+    const variants=detail?buildClientRecipeViews(detail.s):[];
+    graph[current]=variants;
+    for(const recipe of variants)
+     for(const [materialId] of recipe.materials)
+      if(!seen.has(materialId))stack.push(materialId);
+   }
+   return graph;
+  }
+  function redraw(){
+   if(!activeGraph||!selectedId)return;
+   try{
+    plan=planClientCrafting({itemId:selectedId,quantity:amount.value,
+     recipesById:activeGraph,choices,batchOverrides});
+    steps.replaceChildren();leaves.replaceChildren();issues.replaceChildren();
+    const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
+    for(const step of plan.steps){
+     const tr=el("tr"),td=el("td");
+     td.append(itemLink(step.itemId,title(step.itemId)));
+     if(step.manualBatch)td.append(el("small",pt?" · Batch manual":" · Manual batch"));
+     tr.append(td);
+     for(const value of [step.requested,step.output,step.totalBatches,step.operations])
+      tr.append(el("td",fmt(value)));
+     steps.append(tr);
+    }
+    for(const leaf of plan.leaves){
+     const tr=el("tr"),td=el("td");td.append(itemLink(leaf.itemId,title(leaf.itemId)));
+     tr.append(td,el("td",fmt(leaf.quantity)));
+     const priceCell=el("td"),input=el("input") as HTMLInputElement;
+     input.type="number";input.min="0";input.step="1";input.placeholder="0";input.value=prices[leaf.itemId]??"";
+     input.setAttribute("aria-label",(pt?"Preço unitário ":"Unit price ")+title(leaf.itemId));
+     input.addEventListener("change",()=>{
+      prices[leaf.itemId]=input.value;redraw();
+     });
+     priceCell.append(input);tr.append(priceCell);
+     const totalCell=el("td","—");totalCell.dataset.costFor=leaf.itemId;
+     tr.append(totalCell);leaves.append(tr);
+    }
+    const priced=priceCraftLeaves(plan.leaves,prices);
+    for(const row of priced.rows){
+     const cell=leaves.querySelector<HTMLElement>('[data-cost-for="'+row.itemId+'"]');
+     if(cell)cell.textContent=row.total===null?"—":fmt(row.total);
+    }
+    cost.textContent=(pt?"Total de preços informados: ":"Total priced cost: ")+fmt(priced.knownTotal)+
+     (priced.unpricedItems?" · "+priced.unpricedItems+(pt?" materiais sem preço":" materials without prices"):"");
+    note.textContent=plan.complete
+      ?(pt?"Plano calculado a partir das receitas escolhidas.":"Plan calculated using the selected source recipes.")
+      :(pt?"Plano parcial: verifique receitas e batches abaixo.":"Partial plan: review recipe and batch questions below.");
+    for(const issue of plan.issues){
+     const wrap=el("div"),heading=el("strong",title(issue.itemId)+" (#"+issue.itemId+")");
+     wrap.className="craft-issue";wrap.append(heading);
+     if(issue.kind==="choose-variant"){
+      wrap.append(el("p",pt?"Selecione qual versão da receita utilizar:":"Choose the original recipe variant:"));
+      const select=el("select") as HTMLSelectElement;
+      const placeholder=el("option",pt?"Selecione uma receita":"Select a recipe") as HTMLOptionElement;
+      placeholder.value="";select.append(placeholder);
+      for(const [i,v] of activeGraph[issue.itemId].entries()){
+       const option=el("option",(pt?"Receita ":"Recipe ")+(i+1)+" · #"+v.sourceRows.join(", #")) as HTMLOptionElement;
+       option.value=String(i);select.append(option);
+      }
+      select.addEventListener("change",()=>{
+       if(select.value!==""){choices[issue.itemId]=Number(select.value);redraw();}
+      });
+      wrap.append(select);
+     }else if(issue.kind==="missing-batch"||issue.kind==="batch-over-limit"){
+      wrap.append(el("p",pt
+       ?"Tamanho de lote não confirmado ou maior que 10.000. Informe manualmente as unidades por batch (1 a 10.000)."
+       :"Batch size missing or above 10,000. Supply units per batch manually (1–10,000)."));
+      const input=el("input") as HTMLInputElement;
+      input.type="number";input.min="1";input.max="10000";input.step="1";input.placeholder="Batch size";
+      input.addEventListener("change",()=>{
+       if(input.validity.valid&&Number(input.value)>0){
+        batchOverrides[issue.itemId]=input.value;redraw();
+       }
+      });
+      wrap.append(input);
+     }
+     issues.append(wrap);
+    }
+    result.hidden=false;
+   }catch(error){
+    status.textContent=(pt?"Não foi possível calcular: ":"Could not calculate: ")+
+      (error instanceof Error?error.message:String(error));
+    result.hidden=true;
+   }
+  }
+  let nameCache:Map<string,string>|null=null;
+  form.addEventListener("submit",event=>{
+   event.preventDefault();
+   const match=query.value.trim().match(/^(\d{1,13})$/);
+   const id=selectedId||(match?match[1]:"");
+   if(!id){status.textContent=pt?"Escolha um item da lista ou informe um ItemID.":"Choose an item from suggestions or enter an ItemID.";return;}
+   const desired=amount.value;
+   status.textContent=pt?"Carregando receitas e dependências…":"Loading recipe dependencies…";
+   void (async()=>{
+    try{
+     nameCache=await getIndex();
+     if(!nameCache.has(id))throw Error(pt?"ItemID não encontrado no catálogo.":"ItemID not found in catalog.");
+     selectedId=id;activeGraph=await loadGraph(id);
+     if(!activeGraph||Object.keys(activeGraph).length===0)throw Error("No recipe graph");
+     status.textContent=pt?"Dados carregados.":"Source data loaded.";
+     redraw();
+    }catch(error){
+     status.textContent=(pt?"Falha: ":"Error: ")+(error instanceof Error?error.message:String(error));
+     result.hidden=true;
+    }
+   })();
+  });
+  const requested=new URL(location.href).searchParams.get("id");
+  if(requested&&/^[1-9]\d{0,12}$/.test(requested)){
+   query.value=requested;selectedId=requested;
+  }
+ }
+</script>
+<style>
+ .craft-planner{width:min(var(--content-width),94%);margin:0 auto;padding:30px 0 80px}
+ nav a{color:var(--color-accent)}h1{font-size:clamp(2rem,4vw,3rem)}
+ .eyebrow{color:var(--color-accent);font-size:.76rem;letter-spacing:.13em}
+ .craft-planner>p{max-width:890px;color:var(--color-text-muted)}
+ .craft-form{display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,1fr) auto;
+   gap:14px;align-items:end;padding:18px;border:1px solid var(--color-border);
+   background:var(--color-surface);border-radius:6px}
+ .field{position:relative;min-width:0}
+ label{display:block;color:var(--color-gold-light);font-size:.88rem;margin-bottom:8px}
+ input,.craft-issue select,.craft-form button{width:100%;padding:11px;background:var(--color-background);
+   color:var(--color-text);border:1px solid var(--color-border);border-radius:5px;font:inherit}
+ .craft-form button{background:var(--color-accent);color:var(--color-on-accent);cursor:pointer;font-weight:700}
+ #craft-suggestions{position:absolute;z-index:10;list-style:none;margin:0;padding:0;
+   left:0;right:0;max-height:240px;overflow:auto;background:var(--color-surface);
+   border:1px solid var(--color-border)}
+ #craft-suggestions:empty{display:none}
+ #craft-suggestions button{display:block;width:100%;text-align:left;padding:8px;cursor:pointer;
+   border:0;background:transparent;color:var(--color-text);font:inherit}
+ #craft-suggestions button:is(:hover,:focus-visible){background:var(--color-background)}
+ h2,h3{color:var(--color-gold-light)}
+ .craft-result-grid{display:grid;gap:24px}
+ .table-scroll{overflow:auto;border:1px solid var(--color-border);border-radius:5px}
+ table{border-collapse:collapse;width:100%;min-width:580px}
+ th,td{padding:9px 12px;border-bottom:1px solid var(--color-border);text-align:left;font-size:.85rem}
+ th{background:var(--color-surface);color:var(--color-gold-light)}td a{color:var(--color-accent)}
+ td input{max-width:140px;padding:7px}td small{color:var(--color-text-muted)}
+ #craft-cost-total{font-weight:600}
+ .craft-issue{border-left:3px solid var(--color-bronze);margin:12px 0;padding:12px;
+   background:var(--color-surface)}
+ .craft-issue p{color:var(--color-text-muted)}
+ .craft-issue :is(select,input){width:min(400px,100%)}
+ .craft-disclaimer{border-top:1px solid var(--color-border);padding-top:18px;font-size:.84rem}
+ @media(max-width:740px){.craft-form{grid-template-columns:minmax(0,1fr)}}
+</style>
