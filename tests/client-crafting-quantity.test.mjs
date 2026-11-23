@@ -77,6 +77,14 @@ test("missing and ambiguous source recipes never invent a minimum",()=>{
  assert.equal(missing.reason,"missing-batch");
  assert.equal(resolveRootCraftBatch({recipes:[mk(null)],category:"Etc",manualBatch:"25"}).max,10000);
  assert.equal(resolveRootCraftBatch({recipes:[mk(null)],category:"Etc",manualBatch:"0"}).reason,"invalid-manual-batch");
+ assert.equal(resolveRootCraftBatch({recipes:[mk(50)],category:"Etc",manualBatch:"25"}).step,50,
+  "Known source Unit must take precedence over stale manual input");
+ const engine=planClientCrafting({
+  itemId:"1",quantity:50,recipesById:{"1":[mk(50)]},
+  itemCategories:{"1":"Etc"},batchOverrides:{"1":"25"},strictTargetBatch:true,
+ });
+ assert.equal(engine.steps[0].batchSize,"50");
+ assert.equal(engine.steps[0].totalBatches,"1");
  assert.equal(resolveRootCraftBatch({recipes:[],category:"Etc"}).reason,"no-source-recipe");
 });
 test("strict target rejects broken craft quantities rather than silently rounding",()=>{
