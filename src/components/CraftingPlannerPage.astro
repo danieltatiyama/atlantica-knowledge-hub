@@ -236,6 +236,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   }
   rootVariant.addEventListener("change",()=>{
    if(!selectedId)return;
+   // A manual batch belongs to a specific recipe variant and must never leak.
+   delete batchOverrides[selectedId];rootBatch.value="";
    if(rootVariant.value==="")delete choices[selectedId];
    else choices[selectedId]=Number(rootVariant.value);
    result.hidden=true;configureRootBatch();
