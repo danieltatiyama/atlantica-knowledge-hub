@@ -84,3 +84,8 @@ Miner_ClientAttributes_*.json
 
 # Generated from already-published immutable client item details
 /public/data/client-items/crafting/
+
+# Original Miner monster/loot candidate stays private until audited
+/Miner_MonsterLoot_PublicCandidate_20_38/
+/Miner_MonsterLoot_Report_20_38.json
+/Atlantica_Loot_Investigation_v2.zip
