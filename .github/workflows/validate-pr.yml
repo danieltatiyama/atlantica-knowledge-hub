@@ -113,6 +113,9 @@ jobs:
       - name: Validate snapping and responsive frozen crafting columns
         run: node --test tests/client-crafting-column-snap.test.mjs
 
+      - name: Validate parent-operation consumption and dungeon grid readability
+        run: node --test tests/crafting-operation-consumption-calendar-readability.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
