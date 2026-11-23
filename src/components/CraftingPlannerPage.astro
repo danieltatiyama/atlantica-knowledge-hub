@@ -657,6 +657,59 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  @media(max-width:740px){.craft-form{grid-template-columns:minmax(0,1fr)}}
 </style>
 <style is:global>
+ #wiki-craft-planner .craft-quantity-controls{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:12px;
+  border-top:1px solid var(--color-border);
+  padding-top:14px;margin-top:3px;
+ }
+ #wiki-craft-planner .craft-quantity-controls[hidden],
+ #wiki-craft-planner .craft-root-setting[hidden],
+ #wiki-craft-planner #craft-slider-group[hidden]{display:none!important;}
+ #wiki-craft-planner .craft-root-setting{
+  max-width:min(100%,520px);
+ }
+ #wiki-craft-planner .craft-root-setting :is(input,select){
+  display:block;width:100%;min-height:41px;
+  padding:9px 12px;box-sizing:border-box;
+  border-radius:4px;border:1px solid var(--color-border);
+  color:var(--color-text);background:var(--color-background);
+ }
+ #wiki-craft-planner .craft-range-heading,
+ #wiki-craft-planner .craft-range-ends{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+ }
+ #wiki-craft-planner .craft-range-heading label{margin:0;}
+ #wiki-craft-planner .craft-range-heading output{
+  font-size:1.1rem;font-weight:700;color:var(--color-accent);
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner #craft-quantity-slider{
+  display:block;appearance:auto;accent-color:var(--color-accent);
+  width:100%;height:25px;
+  border:0;padding:0;margin:6px 0;
+  background:transparent;cursor:pointer;
+ }
+ #wiki-craft-planner .craft-range-ends{
+  color:var(--color-text-muted);font-size:.79rem;
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner #craft-batch-hint{
+  margin:0;max-width:none;font-size:.83rem;
+  color:var(--color-text-muted);line-height:1.5;
+ }
+ #wiki-craft-planner #craft-submit:disabled{
+  opacity:.5;cursor:not-allowed;
+ }
+ #wiki-craft-planner #craft-quantity:disabled{
+  opacity:.6;cursor:not-allowed;
+ }
+ #wiki-craft-planner #craft-suggestions .craft-empty-suggestion{
+  padding:10px;color:var(--color-text-muted);font-size:.83rem;
+ }
+
  #wiki-craft-planner .craft-overview{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
   gap:12px;margin:20px 0 26px;
