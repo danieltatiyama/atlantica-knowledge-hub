@@ -467,6 +467,37 @@ html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip .tooltip-disclai
   border-color:var(--color-border);
 }
 
+/* Equipment catalog: previously had a fixed dark-brown table header in
+   every theme, yielding blue text on dark brown in Light/Parchment.
+   Keep Atlantica original; use the active palette elsewhere. */
+html[data-theme]:not([data-theme="atlantica"]) #equipment-catalog .catalog th {
+  background:var(--theme-deep);
+  color:var(--color-accent);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #equipment-catalog .catalog tbody tr:nth-child(even) td {
+  background:var(--theme-row);
+}
+html[data-theme]:not([data-theme="atlantica"]) #equipment-catalog .catalog tbody tr:hover td {
+  background:var(--theme-hover);
+}
+html[data-theme]:not([data-theme="atlantica"]) #equipment-catalog .catalog :is(.table-scroll,.profile-mark) {
+  border-color:var(--color-border);
+}
+
+/* Preserve a readable Legendary-purple distinction in each palette. */
+:root[data-theme="dark"],:root[data-theme="midnight"] { --theme-legendary:#e5c6ff; }
+:root[data-theme="light"] { --theme-legendary:#71348f; }
+:root[data-theme="parchment"] { --theme-legendary:#763a84; }
+:root[data-theme="contrast"] { --theme-legendary:#ffe500; }
+html[data-theme]:not([data-theme="atlantica"]) #equipment-catalog .legendary-link {
+  color:var(--theme-legendary);
+  border-color:var(--theme-legendary);
+}
+html[data-theme]:not([data-theme="atlantica"]) #equipment-catalog .legendary-link:hover {
+  background:var(--theme-highlight);
+}
+
 /* Black/yellow mode: avoid relying on shadows or subtle border differences. */
 html[data-theme="contrast"] :is(
  .site-header,#creature-db .browse,#creature-db .creature-detail,
