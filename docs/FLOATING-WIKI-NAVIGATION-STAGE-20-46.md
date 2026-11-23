@@ -11,7 +11,8 @@ the scope of top-level navigation.
 
 `src/components/FloatingWikiNavigator.astro` is loaded from
 `BaseLayout.astro`, but is shown only when a supported information
-page has at least two section headings. It presents one table of
+page has a meaningful section heading. It remains reachable even if
+collapsing a container temporarily hides its nested sections. It presents one table of
 contents rather than competing navigation panels.
 
 - Choose **Left** or **Right**; the chosen side is saved in the
