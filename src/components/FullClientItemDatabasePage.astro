@@ -148,6 +148,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     const close=$<HTMLButtonElement>("db-detail-close");
     const namedRows=new Map<string,IndexRow>();
     const detailCache=new Map<number,Promise<Record<string,Detail>>>();
+    const craftCache=new Map<number,Promise<Record<string,[string,string,number,number[]][]>>>();
+    let craftManifestPromise:Promise<{files:string[];bucketWidth:number}|null>|null=null;
     const statsCache=new Map<number,Promise<Record<string,[number,Record<string,string>][]>|null>>();
     let statsManifestPromise:Promise<{snapshotId:number;itemIds:number;sourceRows:number;files:string[]}|null>|null=null;
     let allStatsPromise:Promise<Map<string,ReturnType<typeof summarizeRawNumericRows>>>|null=null;
@@ -199,6 +201,73 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       const rows=await detailCache.get(bucket)!;
       if(!rows[id])throw Error("No original source data for ID");
       return rows[id];
+    }
+    async function originalUsedIn(id:string){
+      if(!manifest)return [];
+      if(!craftManifestPromise){
+        craftManifestPromise=fetchJSON("/data/client-items/crafting/manifest.json")
+          .then(data=>{
+            if(data.schemaVersion!=="1.0"||data.snapshotId!==manifest?.snapshotId||
+              data.dataset!=="client-item-crafting-backlinks"||
+              data.itemIndexIds!==manifest?.totalIds||
+              data.bucketWidth!==manifest?.detailBucketWidth||
+              !Array.isArray(data.files))throw Error("Craft backlink snapshot mismatch");
+            return data as {files:string[];bucketWidth:number};
+          });
+      }
+      const meta=await craftManifestPromise;
+      if(!meta)return [];
+      const bucket=Math.floor(Number(id)/meta.bucketWidth);
+      const filename="used-by-"+String(bucket).padStart(2,"0")+".json";
+      if(!meta.files.includes(filename))return [];
+      if(!craftCache.has(bucket)){
+        craftCache.set(bucket,fetchJSON("/data/client-items/crafting/"+filename)
+          .then(data=>{
+            if(data.schemaVersion!=="1.0"||data.snapshotId!==manifest?.snapshotId||
+              data.bucket!==bucket||!data.items||
+              typeof data.items!=="object"||Array.isArray(data.items))
+              throw Error("Craft inverse file mismatch");
+            return data.items as Record<string,[string,string,number,number[]][]>;
+          }).catch(error=>{craftCache.delete(bucket);throw error;}));
+      }
+      return (await craftCache.get(bucket)!)?.[id]??[];
+    }
+    async function addUsedInTable(parent:HTMLElement,id:string){
+      const section=node("section",undefined,"used-in-crafting");
+      section.append(node("h3",pt?"Usado em fabricação":"Used in crafting"));
+      section.append(node("p",pt
+        ?"Relações invertidas das receitas decodificadas de ItemType*.ndt. Fontes do cliente não confirmam disponibilidade da receita no jogo atual."
+        :"Reverse references from parsed ItemType*.ndt recipes. Client source records do not confirm availability in the current live game.","detail-note"));
+      const state=node("p",pt?"Consultando receitas…":"Checking recipes…","subtle");
+      section.append(state);parent.append(section);
+      try{
+        const rows=await originalUsedIn(id);
+        if(rows.length===0){
+          state.textContent=pt
+            ?"Nenhum uso identificado em materiais estruturados neste snapshot; isso não prova que o item nunca seja utilizado."
+            :"No usage found in structured client materials in this snapshot. This does not prove the item is never required.";
+          return;
+        }
+        state.textContent=(pt?"Registros de receita: ":"Recipe references: ")+number.format(rows.length);
+        const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
+        for(const name of [pt?"Item produzido":"Produced item",
+          pt?"Quantidade do material":"Material quantity",
+          pt?"Definições de origem":"Source definition IDs"])tr.append(node("th",name));
+        head.append(tr);table.append(head);const body=node("tbody");
+        for(const [productId,name,quantity,recordIds] of rows){
+          const tr=node("tr"),cell=node("td");
+          cell.append(linkItem(productId,name??nameFor(productId)??("ID "+productId)));
+          cell.append(" · #"+productId);tr.append(cell);
+          tr.append(node("td",number.format(quantity)));
+          tr.append(node("td",recordIds.map(n=>"#"+n).join(", ")));
+          body.append(tr);
+        }
+        table.append(body);const scroller=node("div",undefined,"stat-table-scroll");
+        scroller.append(table);section.append(scroller);
+      }catch{
+        state.textContent=pt?"Não foi possível carregar as referências de fabricação."
+          :"Could not load the original source craft references.";
+      }
     }
     async function numericManifest(){
       if(!statsManifestPromise){
@@ -628,6 +697,9 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         if(row[8]===1){const p=node("p");const a=node("a",pt?"Abrir ficha detalhada do equipamento (+0 a +10)":"Open detailed equipment article (+0 through +10)") as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
         addDefinitionTable(details,data,id);
+        // Reverse links are generated from every one of the 22,702 named-ID
+        // source details, not just the originally reviewed 551 profiles.
+        void addUsedInTable(details,id);
         // Original raw numeric rows are shown for every named item type.
         // Only equipment-like source categories may use the explicitly
         // unverified historical upgrade projection.
