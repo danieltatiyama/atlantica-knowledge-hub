@@ -815,51 +815,130 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  }
  #wiki-craft-planner .craft-tree{
   border:1px solid var(--color-border);
-  border-radius:5px;max-height:72vh;overflow:auto;
+  border-radius:5px;max-height:72vh;
+  overflow:auto;
   background:var(--color-background);
  }
- #wiki-craft-planner .craft-tree-node{
+ #wiki-craft-planner .craft-tree-table{
+  width:100%;min-width:1220px;
+  border-collapse:separate;border-spacing:0;
+  table-layout:fixed;font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-tree-table th,
+ #wiki-craft-planner .craft-tree-table td{
+  vertical-align:middle;text-align:right;
+  padding:9px 11px;
   border-bottom:1px solid var(--color-border);
-  background:transparent;
+  font-size:.83rem;white-space:nowrap;
  }
- #wiki-craft-planner .craft-tree-node:last-child{border-bottom:0;}
- #wiki-craft-planner .craft-tree-node>summary{cursor:pointer;}
- #wiki-craft-planner .craft-tree-row{
-  display:grid;grid-template-columns:minmax(220px,1.4fr) minmax(200px,1fr) auto;
-  align-items:center;gap:12px;padding:9px 12px;min-height:42px;
- }
- #wiki-craft-planner .craft-tree-node>summary.craft-tree-row{
-  display:grid;
- }
- #wiki-craft-planner .craft-tree-row:is(:hover,:focus-within){
+ #wiki-craft-planner .craft-tree-table thead th{
+  position:sticky;top:0;z-index:2;
+  color:var(--color-text);
   background:var(--color-surface);
+  border-bottom:2px solid var(--color-border);
+  font-size:.77rem;
+  font-weight:700;
  }
- #wiki-craft-planner .craft-tree-name{
-  min-width:0;overflow-wrap:anywhere;font-weight:600;
+ #wiki-craft-planner .craft-tree-table :is(th,td):first-child{
+  width:30%;min-width:275px;text-align:left;
+ }
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(2){width:9%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(3){width:11%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(4){width:11%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(5){width:7%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(6){width:7%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(7){width:7%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(8){
+  width:14%;text-align:left;white-space:normal;
+ }
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(9){width:7%;}
+ #wiki-craft-planner .craft-tree-table tbody tr{
+  --craft-level:var(--color-accent);
+  background:color-mix(in srgb,var(--craft-level) 5%,var(--color-background));
+ }
+ #wiki-craft-planner .craft-tree-table tbody tr:hover{
+  background:color-mix(in srgb,var(--craft-level) 14%,var(--color-background));
+ }
+ #wiki-craft-planner .craft-tree-table tbody tr[hidden]{display:none!important;}
+ #wiki-craft-planner .craft-tree-table tbody th[scope=row]{
+  border-left:3px solid var(--craft-level);
+  font-weight:600;
+ }
+ #wiki-craft-planner .craft-tree-label{
+  display:flex;align-items:center;
+  gap:7px;min-height:26px;
+  white-space:normal;overflow-wrap:anywhere;
  }
  #wiki-craft-planner .craft-tree-name a{
-  color:var(--color-accent);text-decoration:none;
+  color:var(--craft-level);text-decoration:none;
+  overflow-wrap:anywhere;font-weight:650;
  }
  #wiki-craft-planner .craft-tree-name a:hover{text-decoration:underline;}
- #wiki-craft-planner .craft-tree-name small,
- #wiki-craft-planner .craft-tree-actions small{
-  color:var(--color-text-muted);font-weight:400;font-size:.77rem;
+ #wiki-craft-planner .craft-tree-toggle{
+  flex:0 0 24px;width:24px;min-height:24px;
+  font:inherit;font-size:1.05rem;
+  line-height:1;border:1px solid var(--color-border);
+  border-radius:4px;background:var(--color-surface);
+  color:var(--craft-level);cursor:pointer;
+  padding:0;
  }
- #wiki-craft-planner .craft-tree-numbers{
-  display:flex;flex-wrap:wrap;gap:5px 14px;
-  color:var(--color-text-muted);font-size:.78rem;
-  font-variant-numeric:tabular-nums;
+ #wiki-craft-planner .craft-tree-toggle-spacer{
+  flex:0 0 24px;width:24px;
  }
- #wiki-craft-planner .craft-tree-actions{
-  display:flex;align-items:center;justify-content:flex-end;
-  flex-wrap:wrap;gap:8px;
+ #wiki-craft-planner .craft-tree-toggle:focus-visible,
+ #wiki-craft-planner .craft-tree-actions button:focus-visible{
+  outline:2px solid var(--color-accent);outline-offset:2px;
  }
- #wiki-craft-planner .craft-tree-children{
-  margin:0 0 0 18px;border-left:2px solid var(--color-border);
-  padding-left:8px;
+ #wiki-craft-planner .craft-tree-name .craft-tree-shared{
+  font-size:.72rem;color:var(--color-text-muted);
+  font-weight:400;
  }
- #wiki-craft-planner .craft-tree-node:not([open])>.craft-tree-children{
-  display:none;
+ #wiki-craft-planner .craft-tree-table td small{
+  display:block;color:var(--color-text-muted);font-size:.72rem;
+ }
+ #wiki-craft-planner .craft-tree-table .craft-tree-actions{
+  text-align:center;white-space:normal;
+ }
+ #wiki-craft-planner .craft-tree-actions button{
+  min-height:31px;
+  border:1px solid var(--color-border);border-radius:4px;
+  padding:6px 9px;background:var(--color-surface);
+  color:var(--color-accent);cursor:pointer;font:inherit;font-size:.78rem;
+ }
+ #wiki-craft-planner .craft-tree-actions button:hover{
+  border-color:var(--color-accent);
+ }
+ /* Eight readable levels repeat for deeper source graphs. */
+ #wiki-craft-planner .craft-tree-depth-0{--craft-level:#e5b05d}
+ #wiki-craft-planner .craft-tree-depth-1{--craft-level:#84bbf8}
+ #wiki-craft-planner .craft-tree-depth-2{--craft-level:#8fd2aa}
+ #wiki-craft-planner .craft-tree-depth-3{--craft-level:#d2a8f5}
+ #wiki-craft-planner .craft-tree-depth-4{--craft-level:#f2a1a5}
+ #wiki-craft-planner .craft-tree-depth-5{--craft-level:#e5d18c}
+ #wiki-craft-planner .craft-tree-depth-6{--craft-level:#80d5d8}
+ #wiki-craft-planner .craft-tree-depth-7{--craft-level:#b2b4fa}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-0,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-0{--craft-level:#855215}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-1,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-1{--craft-level:#275c9b}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-2,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-2{--craft-level:#227450}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-3,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-3{--craft-level:#7950a3}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-4,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-4{--craft-level:#a1364c}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-5,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-5{--craft-level:#75601b}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-6,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-6{--craft-level:#15757b}
+ html[data-theme="light"] #wiki-craft-planner .craft-tree-depth-7,
+ html[data-theme="parchment"] #wiki-craft-planner .craft-tree-depth-7{--craft-level:#4e54a8}
+ html[data-theme="contrast"] #wiki-craft-planner .craft-tree-table tbody tr{
+  --craft-level:#ffe500;
+  background:#000;
+ }
+ html[data-theme="contrast"] #wiki-craft-planner .craft-tree-table tbody tr:hover{
+  background:#202020;
  }
  #wiki-craft-planner .craft-surplus-section{
   margin:20px 0;padding:15px 18px;
@@ -888,15 +967,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  #wiki-craft-planner .craft-tree-row:focus-visible{
   outline:2px solid var(--color-accent);outline-offset:2px;
  }
- @media(max-width:1050px){
-  #wiki-craft-planner .craft-tree-row{
-   grid-template-columns:minmax(0,1fr);gap:5px;
-  }
-  #wiki-craft-planner .craft-tree-actions{justify-content:flex-start;}
- }
  @media(max-width:620px){
   #wiki-craft-planner .craft-overview{grid-template-columns:repeat(2,minmax(0,1fr));}
   #wiki-craft-planner .craft-tree-panel{padding:11px;}
-  #wiki-craft-planner .craft-tree-children{margin-left:8px;padding-left:6px;}
+  #wiki-craft-planner .craft-tree-table{min-width:1150px;}
  }
 </style>
