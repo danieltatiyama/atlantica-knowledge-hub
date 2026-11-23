@@ -228,6 +228,54 @@ def verify_anchors(rows: list[dict]) -> list[dict]:
     return checks
 
 
+def compare_historical_catalog(source: list[dict], csv_file: Path) -> dict:
+    """Compare only known client ItemIDs, not name guesses, and only general catalog.
+
+    This is a diagnostic: Jana4U is a 2025 historical snapshot and even price
+    agreement here cannot prove live Market availability in November 2026.
+    """
+    if not csv_file.is_file():
+        return {"status": "historical-csv-not-found", "comparedCount": 0}
+    prices = {
+        row["itemId"]: row["priceGold"]
+        for row in source if row["catalog"] == "general"
+    }
+    tally = {"matches": 0, "mismatches": 0, "absent": 0}
+    examples = []
+    ids = set()
+    with csv_file.open("r", encoding="utf-8-sig", newline="") as stream:
+        for row in csv.DictReader(stream):
+            item_id = row["client_item_id"]
+            if not item_id:
+                continue
+            if not ID.fullmatch(item_id) or item_id in ids or not INTEGER.fullmatch(
+                    row["fixed_price_gold"]
+            ):
+                raise ValueError("Historic price catalog has duplicate/invalid ItemIDs")
+            ids.add(item_id)
+            historic = int(row["fixed_price_gold"])
+            new = prices.get(item_id)
+            status = "absent" if new is None else (
+                "matches" if new == historic else "mismatches")
+            tally[status] += 1
+            if status == "mismatches" and len(examples) < 25:
+                examples.append({
+                    "itemId": item_id,
+                    "clientNameEn": row["item_name"],
+                    "historicalPriceGold": historic,
+                    "npcTradePriceGold": new,
+                })
+    return {
+        "status": "historical-reference-only",
+        "historicalMappedItemIds": len(ids),
+        "generalCatalogMatches": tally["matches"],
+        "generalCatalogMismatches": tally["mismatches"],
+        "generalCatalogAbsent": tally["absent"],
+        "mismatchExamples": examples,
+        "notice": "Source agreement is not proof of current Global fixed Market pricing.",
+    }
+
+
 def build_candidate(
     source: list[dict], public_items: dict[str, tuple[str, str, str]],
     parsed_stats: dict,
@@ -328,6 +376,8 @@ def main(argv: list[str] | None = None) -> int:
     sources.add_argument("--decoded", type=Path,
                          help="Already decoded NPCTradeItem table (UTF-8/UTF-16)")
     parser.add_argument("--catalog", type=Path, default=Path("public/data/client-items"))
+    parser.add_argument("--historical", type=Path, default=Path(
+        "research/market-fixed-prices/jana4u-2025-11-14-crosswalk.csv"))
     parser.add_argument("--output", type=Path, default=Path("client-fixed-price-investigation"))
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args(argv)
@@ -345,11 +395,17 @@ def main(argv: list[str] | None = None) -> int:
         prices, stats = parse_trade_table(text)
         catalog = load_catalog(args.catalog)
         candidate, report = build_candidate(prices, catalog, stats)
+        report["historicalPriceCrosscheck"] = compare_historical_catalog(
+            prices, args.historical
+        )
         write_results(candidate, report, output, args.overwrite)
         print("[IC] Client trade price candidate rows:", len(candidate))
         print("[IC] Catalog general:", report["generalCatalogCount"])
         print("[IC] Catalog housing:", report["housingCatalogCount"])
         print("[IC] Matched named client ItemIDs:", report["mappedNamedItemIds"])
+        print("[IC] Historical source comparison:",
+              report["historicalPriceCrosscheck"].get("generalCatalogMatches",0),
+              "matching general-catalog IDs")
         for anchor in report["knownPriceComparison"]:
             print("[IC] Example", anchor["clientNameEn"]+":", anchor["comparison"])
         print("[IC] Report:", (output / "npc-trade-price-audit.json").name)
