@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.59  
-**Último PR funcional:** [PR #78](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/78) (Stage 20.59)
+**Última etapa implementada:** Stage 20.60  
+**Último PR funcional:** [PR #79](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/79) (Stage 20.60)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -316,6 +316,16 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Documentação técnica: `docs/CRAFTING-STAGE-20-59-EXPORT-UI.md`. Testes: `tests/client-crafting-xlsx-and-ui.test.mjs`; CI foi configurado em `.github/workflows/validate-pr.yml`.
 - Após CI, conferir no navegador temas, alinhamento em mobile e a abertura do arquivo Excel; dados brutos do cliente e regras anteriores de crafting continuam intactos.
 
+### Stage 20.60 — Scroll snap nas colunas da Crafting Tree
+
+- A tabela `Crafting Tree` aplica **`scroll-snap-type: x proximity`** no contêiner de rolagem horizontal, com pontos de encaixe alinhados aos cabeçalhos de cada coluna de dados.
+- Em telas maiores que 860px, `Item / Recipe` permanece **visível/fixa à esquerda** ao rolar horizontalmente; seu cabeçalho também permanece acima das outras células.
+- `ResizeObserver` acompanha a largura real da primeira coluna e ajusta `scroll-padding-inline-start`, evitando que o conteúdo da coluna seguinte fique escondido sob a coluna fixa.
+- Em telas de até 860px, a primeira coluna **não fica fixa** para não ocupar a área útil de leitura; o scroll snap continua funcionando.
+- Fundo da coluna fixa usa as cores e o nível de profundidade do tema; nenhuma mudança foi feita nos batches, receitas, consumo nem na exportação Excel.
+- Código: `src/components/CraftingPlannerPage.astro`. Testes: `tests/client-crafting-column-snap.test.mjs`, executados no GitHub Actions.
+- A verificação visual deve incluir Firefox e Chrome, modo claro/escuro/contraste e larguras abaixo/acima de 860px.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -334,6 +344,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.56 | [#76](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/76) | Autocomplete de receitas e quantidades estritamente múltiplas do batch (1 a 10.000) |
 | 20.58 | [#77](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/77) | Árvore colorida por profundidade, tabela alinhada e operações de intermediários em batches completos |
 | 20.59 | [#78](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/78) | Visual do Craft Schedule/Shopping List, consumption breakdown por receita pai e exportação XLSX de quatro abas |
+| 20.60 | [#79](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/79) | Scroll snap horizontal e coluna Item/Recipe fixa na Crafting Tree, com tratamento para mobile |
 
 Todos esses PRs foram integrados à `main`.
 
