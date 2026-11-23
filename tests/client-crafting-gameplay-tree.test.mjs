@@ -122,5 +122,5 @@ test("equipment detail summary follows 1×20 without overwriting Unit evidence",
  assert.equal(planCraftBatchOperations(41,1,{equipment:true}).totalOperations,3);
  const summary=readFileSync("src/components/ClientCraftingSummary.astro","utf8");
  assert.ok(summary.includes("summarizeCraftBatch(item.sourceDefinitions,{equipment:true})"));
- assert.ok(summary.includes("batch.originalUnitStatus"));
+ assert.ok(summary.includes("originalUnitStatus"));
 });
