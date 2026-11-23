@@ -158,6 +158,14 @@ test("browser only renders untrusted item names as text (no HTML injection)",()=
   assert.ok(template.includes('id="db-equipment-only"'));
   assert.ok(template.includes("equipmentCandidateCategories"));
   assert.ok(template.includes("buildHistoricalClientProjection"));
+  // All 7,560 source-derived stat candidates may display exact raw numeric
+  // values; only equipment-like source categories get the historic model.
+  assert.ok(template.includes("function addRawNumericSourceTable("));
+  assert.ok(template.includes("addRawNumericSourceTable(details,rawStats)"));
+  assert.ok(template.includes('if(equipmentCandidateCategories.has(row[2]??""))'));
+  assert.ok(template.indexOf("addRawNumericSourceTable(details,rawStats)") <
+    template.lastIndexOf("addHistoricalGradeTable(details,rawStats)"));
+
   assert.ok(template.includes("Math.floor"));
   assert.ok(template.includes("id=\"db-category\""));
   assert.ok(template.includes("data-lang={lang}"));

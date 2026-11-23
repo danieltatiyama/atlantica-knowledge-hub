@@ -92,6 +92,8 @@ jobs:
         run: |
           python -m unittest discover -s tests -p "test_*.py" -v
           python scripts/validate-full-client-stats.py --candidate public/data/client-items/stats --allow-absent
+          python scripts/verify-full-client-reviewed-stats.py --candidate public/data/client-items/stats --allow-absent
+          python scripts/verify-full-client-source-hashes.py --candidate public/data/client-items/stats --allow-absent
 
       - name: Validation completed
         if: success()
