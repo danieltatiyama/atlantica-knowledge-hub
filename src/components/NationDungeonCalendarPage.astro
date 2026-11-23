@@ -254,13 +254,13 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     return td;
    };
    const thead=node("thead"),head=node("tr");
-   const topLeft=node("th",daysOnColumns?(pt?"Hora":"Hour"):(pt?"Dia":"Day"));
+   const topLeft=node("th",daysOnColumns?(pt?"Hora":"Hour"):(pt?"Dia":"Day")) as HTMLTableCellElement;
    topLeft.scope="col";head.append(topLeft);
    const weekdayFormatter=new Intl.DateTimeFormat(pt?"pt-BR":"en-US",{
     weekday:"short",timeZone:"UTC",
    });
    for(const key of (daysOnColumns?dates:hoursList)){
-    const th=node("th");th.scope="col";
+    const th=node("th") as HTMLTableCellElement;th.scope="col";
     if(typeof key==="number"){
      th.textContent=String(key).padStart(2,"0")+":00";
     }else{
@@ -275,14 +275,14 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    const body=node("tbody");
    if(orientation.value==="time-rows"){
     for(const hour of hoursList){
-     const tr=node("tr"),th=node("th",String(hour).padStart(2,"0")+":00");
+     const tr=node("tr"),th=node("th",String(hour).padStart(2,"0")+":00") as HTMLTableCellElement;
      th.scope="row";tr.append(th);
      for(const date of dates)tr.append(makeCell(date,hour));
      body.append(tr);
     }
    }else{
     for(const date of dates){
-     const tr=node("tr"),th=node("th",date.slice(8,10)+"/"+date.slice(5,7));
+     const tr=node("tr"),th=node("th",date.slice(8,10)+"/"+date.slice(5,7)) as HTMLTableCellElement;
      th.scope="row";th.title=date;tr.append(th);
      for(const hour of hoursList)tr.append(makeCell(date,hour));
      body.append(tr);
