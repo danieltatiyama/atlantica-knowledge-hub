@@ -80,6 +80,9 @@ test("collapsible sections preserve children, forms and tables without changing 
   assert.ok(nav.includes('labelFor(heading)'));
   assert.ok(nav.includes('dataset.wikiCollapsed=String(collapsed)'));
   assert.ok(nav.includes('section.firstElementChild?.contains(heading)'));
+  assert.ok(nav.includes('if(entries.length<1)'),"Nav remains available after collapsing a parent section");
+  assert.ok(nav.includes('aria-controls="wiki-float-nav"'));
+
   assert.ok(!nav.includes('.replaceChildren(body)'));
   const guide=read("src/components/GuideArticle.astro");
   assert.ok(!guide.includes('<aside class="article-sidebar">'),
