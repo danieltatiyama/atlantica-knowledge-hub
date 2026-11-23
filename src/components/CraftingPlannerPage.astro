@@ -63,8 +63,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      </div>
     </div>
     <p class="craft-muted">{pt
-     ?"Os valores totais são consolidados por ItemID; itens compartilhados aparecem referenciados nas outras ramificações, sem duplicar os cálculos. Escolha Comprar/Fabricar para cada intermediário."
-     :"Totals are combined by ItemID. Shared materials are referenced under additional branches without double-counting. Choose Buy/Craft for intermediate items."}</p>
+     ?"Cores diferenciam os níveis. Necessário = consumo na receita; a fabricar = produção arredondada para batches inteiros. A divisão mostra quantas operações e quantas unidades em cada uma. Itens compartilhados não são contados duas vezes."
+     :"Colors distinguish levels. Needed is recipe consumption; to produce rounds up to full batches. The split shows how many operations and units per operation. Shared items are counted once."}</p>
     <div id="craft-tree" class="craft-tree" role="region" tabindex="0" aria-label={pt?"Tabela hierárquica de fabricação":"Hierarchical crafting table"}>
      <table class="craft-tree-table">
       <thead><tr>
@@ -86,8 +86,11 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     <div><h3>{pt?"Agenda de fabricação":"Craft schedule"}</h3>
       <div class="table-scroll"><table><thead><tr>
        <th>{pt?"Produto":"Product"}</th><th>{pt?"Necessário":"Required"}</th>
-       <th>{pt?"Produzido":"Planned"}</th><th>{pt?"Batches":"Batches"}</th>
-       <th>{pt?"Operações":"Operations"}</th><th>{pt?"Limite/op.":"Limit/op."}</th>
+       <th>{pt?"Produzido":"Planned"}</th><th>{pt?"Por batch":"Per batch"}</th>
+       <th>{pt?"Batches":"Batches"}</th><th>{pt?"Operações":"Operations"}</th>
+       <th>{pt?"Limite/op.":"Limit/op."}</th>
+       <th>{pt?"Divisão por operação":"Per-operation split"}</th>
+       <th>{pt?"Sobra":"Excess"}</th>
       </tr></thead><tbody id="craft-steps"></tbody></table></div>
     </div>
     <div><div class="craft-section-heading"><h3>{pt?"Lista de compras":"Shopping list"}</h3><div class="craft-tree-tools"><button type="button" id="craft-copy-shopping">{pt?"Copiar lista":"Copy list"}</button><button type="button" id="craft-export-shopping">{pt?"Exportar CSV":"Export CSV"}</button></div></div>
@@ -561,8 +564,11 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      td.append(itemLink(step.itemId,title(step.itemId)));
      if(step.manualBatch)td.append(el("small",pt?" · Batch manual":" · Manual batch"));
      tr.append(td);
-     for(const value of [step.requested,step.output,step.totalBatches,step.operations,step.maxPerOperation])
-      tr.append(el("td",fmt(value)));
+     for(const value of [step.requested,step.output,step.batchSize,step.totalBatches,
+       step.operations,step.maxPerOperation])tr.append(el("td",fmt(value)));
+     tr.append(el("td",step.operationGroups.map((group:any)=>
+       fmt(group.operations)+" × "+fmt(group.outputEach)).join(" + ")));
+     tr.append(el("td",fmt(step.excess)));
      steps.append(tr);
     }
     for(const leaf of plan.leaves){
@@ -853,7 +859,6 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  }
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(9){width:7%;}
  #wiki-craft-planner .craft-tree-table tbody tr{
-  --craft-level:var(--color-accent);
   background:color-mix(in srgb,var(--craft-level) 5%,var(--color-background));
  }
  #wiki-craft-planner .craft-tree-table tbody tr:hover{
