@@ -66,7 +66,7 @@ test("community item detail prioritizes use, crafting and sources before audit d
   const display=page.slice(page.indexOf("        addItemOverview(details,row,data)"),
     page.indexOf("      }catch{",page.indexOf("        addItemOverview(details,row,data)")));
   for(const snippet of ["addItemOverview(details,row,data)",
-    "addCraftBatchInformation(details,data)",
+    "addCraftBatchInformation(details,data,row)",
     "addCraftRecipeTables(details,data)",
     "addUsedInTable(details,id)","addMonsterSources(details,id)",
     "addDefinitionTable(details,data,id)"]){

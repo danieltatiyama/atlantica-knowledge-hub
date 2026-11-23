@@ -11,8 +11,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   <p class="eyebrow">ATLANTICA GLOBAL / NA · ITEMTYPE SOURCE</p>
   <h1>{pt?"Calculadora de fabricação":"Crafting calculator"}</h1>
   <p>{pt
-    ?"Calcule materiais de fabricação e dependências em múltiplos níveis usando receitas extraídas do cliente. O tamanho do lote só é aplicado quando identificado no arquivo ou informado por você."
-    :"Plan ingredient requirements across multiple recipe levels using extracted client recipes. Batch sizes are used only when identified in the files or explicitly supplied by you."}</p>
+    ?"Calcule materiais de fabricação e dependências em múltiplos níveis usando receitas extraídas do cliente. Para equipamentos, usamos a regra confirmada: batch de 1, máximo de 20 por operação. Para outros itens, utilizamos o campo Unit do cliente ou um valor informado manualmente."
+    :"Plan ingredient requirements across multiple recipe levels using extracted client recipes. Equipment uses the confirmed gameplay rule: batch size 1, maximum 20 per operation. Other items use original client Unit values or explicit manual inputs."}</p>
   <form id="craft-plan-form" class="craft-form">
    <div class="field"><label for="craft-search">{pt?"Nome do item ou ItemID":"Item name or ItemID"}</label>
     <input id="craft-search" type="search" autocomplete="off" required placeholder={pt?"Digite para encontrar um item":"Start typing to find an item"} aria-controls="craft-suggestions"/>
@@ -29,15 +29,34 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   <section id="craft-result" hidden>
    <h2>{pt?"Plano de produção":"Production plan"}</h2>
    <p id="craft-result-note"></p>
+   <div id="craft-overview" class="craft-overview" aria-live="polite">
+    <div><span>{pt?"Quantidade planejada":"Planned output"}</span><strong id="craft-summary-output">—</strong></div>
+    <div><span>{pt?"Batches totais":"Total batches"}</span><strong id="craft-summary-batches">—</strong></div>
+    <div><span>{pt?"Operações totais":"Total operations"}</span><strong id="craft-summary-operations">—</strong></div>
+    <div><span>{pt?"Materiais para comprar":"Shopping list items"}</span><strong id="craft-summary-materials">—</strong></div>
+   </div>
+   <section class="craft-tree-panel">
+    <div class="craft-section-heading">
+     <h3>{pt?"Árvore de receitas":"Crafting tree"}</h3>
+     <div class="craft-tree-tools">
+      <button type="button" id="craft-tree-expand">{pt?"Expandir tudo":"Expand all"}</button>
+      <button type="button" id="craft-tree-collapse">{pt?"Recolher tudo":"Collapse all"}</button>
+     </div>
+    </div>
+    <p class="craft-muted">{pt
+     ?"Os valores totais são consolidados por ItemID; itens compartilhados aparecem referenciados nas outras ramificações, sem duplicar os cálculos. Escolha Comprar/Fabricar para cada intermediário."
+     :"Totals are combined by ItemID. Shared materials are referenced under additional branches without double-counting. Choose Buy/Craft for intermediate items."}</p>
+    <div id="craft-tree" class="craft-tree" aria-label={pt?"Dependências de fabricação":"Crafting dependencies"}></div>
+   </section>
    <div class="craft-result-grid">
-    <div><h3>{pt?"Etapas e batches":"Steps and batches"}</h3>
+    <div><h3>{pt?"Agenda de fabricação":"Craft schedule"}</h3>
       <div class="table-scroll"><table><thead><tr>
        <th>{pt?"Produto":"Product"}</th><th>{pt?"Necessário":"Required"}</th>
        <th>{pt?"Produzido":"Planned"}</th><th>{pt?"Batches":"Batches"}</th>
-       <th>{pt?"Operações":"Operations"}</th>
+       <th>{pt?"Operações":"Operations"}</th><th>{pt?"Limite/op.":"Limit/op."}</th>
       </tr></thead><tbody id="craft-steps"></tbody></table></div>
     </div>
-    <div><h3>{pt?"Materiais finais e preços manuais":"Base materials and manual prices"}</h3>
+    <div><div class="craft-section-heading"><h3>{pt?"Lista de compras":"Shopping list"}</h3><div class="craft-tree-tools"><button type="button" id="craft-copy-shopping">{pt?"Copiar lista":"Copy list"}</button><button type="button" id="craft-export-shopping">{pt?"Exportar CSV":"Export CSV"}</button></div></div>
       <div class="table-scroll"><table><thead><tr>
        <th>{pt?"Material":"Material"}</th><th>{pt?"Quantidade":"Quantity"}</th>
        <th>{pt?"Preço unitário":"Unit price"}</th><th>{pt?"Custo":"Cost"}</th>
@@ -45,11 +64,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       <p id="craft-cost-total"></p>
     </div>
    </div>
+   <section id="craft-surplus-section" class="craft-surplus-section" hidden><h3>{pt?"Excedentes por batch":"Batch leftovers"}</h3><ul id="craft-surplus"></ul></section>
    <div id="craft-issues" aria-live="polite"></div>
   </section>
   <p class="craft-disclaimer">{pt
-   ?"Os arquivos ItemType*.ndt podem conter receitas desativadas ou variantes históricas. A calculadora não inventa receitas, tamanhos de batch nem preços de mercado. Cada operação respeita o limite de 10.000 unidades, conforme regra informada pelo jogador."
-   :"ItemType*.ndt files can contain historical or disabled recipes. No missing recipes, batch sizes or market prices are guessed. Each operation respects the player-reported 10,000-output limit."}</p>
+   ?"Os arquivos ItemType*.ndt podem conter receitas desativadas ou variantes históricas. A calculadora não inventa receitas, tamanhos de batch nem preços de mercado. Equipamentos usam batch 1 e máximo 20 por operação; outros itens usam limite de 10.000. Esses limites são regras informadas pelo jogador, não valores extraídos automaticamente."
+   :"ItemType*.ndt files can contain historical or disabled recipes. No missing recipes, batch sizes or market prices are guessed. Equipment uses batch 1 and a maximum of 20 per operation; other items retain the 10,000 limit. These are player-confirmed gameplay rules, not automatically extracted source values."}</p>
  </main>
 </BaseLayout>
 <script>
@@ -66,10 +86,21 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const result=$("craft-result"),note=$("craft-result-note");
   const steps=$("craft-steps"),leaves=$("craft-leaves"),issues=$("craft-issues");
   const cost=$("craft-cost-total");
+  const treeContainer=$("craft-tree"),surplus=$("craft-surplus"),surplusSection=$("craft-surplus-section");
+  const itemCategories:Record<string,string>=Object.create(null),buyIds=new Set<string>();
   const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
   const fmt=(n:string|number)=>nf.format(BigInt(n));
   const choices:Record<string,number>={},batchOverrides:Record<string,string>={};
   const prices:Record<string,string>={};
+  const storedPriceKey="atlantica.crafting.prices.v1";
+  try{
+   const stored=JSON.parse(localStorage.getItem(storedPriceKey)||"{}");
+   if(stored&&typeof stored==="object"&&!Array.isArray(stored)){
+    for(const [id,value] of Object.entries(stored))
+     if(/^[1-9]\d{0,12}$/.test(id)&&/^\d{1,20}$/.test(String(value)))
+      prices[id]=String(value);
+   }
+  }catch{ /* Local price persistence is optional. */ }
   const detailCache=new Map<number,Promise<any>>();
   let indexPromise:Promise<Map<string,string>>|null=null;
   let selectedId="",activeGraph:Record<string,any[]>|null=null;
@@ -99,7 +130,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const names=new Map<string,string>();
     for(const shard of shards){
      if(shard.snapshotId!==1||!Array.isArray(shard.rows))throw Error("Index shard mismatch");
-     for(const row of shard.rows)if(row[6]==="named")names.set(row[0],row[1]);
+     for(const row of shard.rows)if(row[6]==="named"){
+      names.set(row[0],row[1]);
+      if(typeof row[2]==="string")itemCategories[row[0]]=row[2];
+     }
     }
     if(names.size!==22702)throw Error("Incomplete source name index");
     return names;
@@ -161,19 +195,138 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    }
    return graph;
   }
+  function refreshCosts(){
+   if(!plan)return;
+   const priced=priceCraftLeaves(plan.leaves,prices);
+   for(const row of priced.rows){
+    const cell=leaves.querySelector<HTMLElement>('[data-cost-for="'+row.itemId+'"]');
+    if(cell)cell.textContent=row.total===null?"—":fmt(row.total);
+   }
+   cost.textContent=(priced.complete
+    ?(pt?"Custo total: ":"Total cost: ")
+    :(pt?"Custo conhecido (parcial): ":"Known cost (partial): "))+fmt(priced.knownTotal)+
+    (priced.unpricedItems?" · "+priced.unpricedItems+
+     (pt?" materiais sem preço":" materials without prices"):"");
+  }
+  function renderCraftTree(){
+   if(!plan)return;
+   const parents:{depth:number;holder:HTMLElement}[]=[];
+   const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
+   const tree=plan.tree as Array<any>;
+   for(let i=0;i<tree.length;i++){
+    const row=tree[i];
+    while(parents.length&&parents[parents.length-1].depth>=row.depth)parents.pop();
+    const parent=parents.length?parents[parents.length-1].holder:treeContainer;
+    const hasChildren=tree[i+1]?.depth>row.depth;
+    const wrapper=el(hasChildren?"details":"div");
+    wrapper.className="craft-tree-node";
+    if(hasChildren)(wrapper as HTMLDetailsElement).open=true;
+    const line=el(hasChildren?"summary":"div");
+    line.className="craft-tree-row";
+    const first=el("span");first.className="craft-tree-name";
+    first.append(itemLink(row.itemId,title(row.itemId)));
+    if(row.sharedReference)first.append(el("small",pt?" · compartilhado":" · shared"));
+    line.append(first);
+    const properties=el("span");properties.className="craft-tree-numbers";
+    properties.append(el("span",(pt?"Ramo: ":"Branch: ")+fmt(row.branchQuantity)));
+    properties.append(el("span",(pt?"Total: ":"Total: ")+fmt(row.totalRequired)));
+    if(row.output!==null){
+     properties.append(el("span",(pt?"Produção: ":"Output: ")+fmt(row.output)));
+     if(row.excess!=="0")properties.append(el("span",
+       (pt?"Excedente: ":"Leftover: ")+fmt(row.excess)));
+    }
+    line.append(properties);
+    const actions=el("span");actions.className="craft-tree-actions";
+    if(row.itemId!==selectedId&&activeGraph?.[row.itemId]?.length){
+     const purchased=buyIds.has(row.itemId);
+     const toggle=el("button",purchased
+      ?(pt?"Fabricar":"Craft"):(pt?"Comprar":"Buy")) as HTMLButtonElement;
+     toggle.type="button";
+     toggle.setAttribute("aria-label",(purchased
+      ?(pt?"Fabricar ":"Craft "):(pt?"Comprar ":"Buy "))+title(row.itemId));
+     toggle.addEventListener("click",event=>{
+      event.preventDefault();event.stopPropagation();
+      if(purchased)buyIds.delete(row.itemId);else buyIds.add(row.itemId);
+      redraw();
+     });
+     actions.append(toggle);
+    }
+    if(row.mode==="unresolved")actions.append(el("small",pt?"Ver pendências ↓":"See questions ↓"));
+    if(row.batchSource==="confirmed-equipment-rule"){
+     actions.append(el("small",pt?"Equipamento · 1/batch · 20/op.":"Equipment · 1/batch · 20/op."));
+    }
+    line.append(actions);
+    wrapper.append(line);
+    parent.append(wrapper);
+    if(hasChildren){
+     const holder=el("div");holder.className="craft-tree-children";
+     wrapper.append(holder);
+     parents.push({depth:row.depth,holder});
+    }
+   }
+  }
+  function renderLeftovers(){
+   if(!plan)return;
+   const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
+   const rows=plan.leftoverRows as Array<{itemId:string;quantity:string}>;
+   surplusSection.hidden=rows.length===0;
+   for(const row of rows){
+    const li=el("li");
+    li.append(itemLink(row.itemId,title(row.itemId)),
+      el("span",fmt(row.quantity)+" "+(pt?"unidades":"units")));
+    surplus.append(li);
+   }
+  }
+  $("craft-tree-expand").addEventListener("click",()=>{
+   treeContainer.querySelectorAll<HTMLDetailsElement>("details").forEach(d=>{d.open=true;});
+  });
+  $("craft-tree-collapse").addEventListener("click",()=>{
+   treeContainer.querySelectorAll<HTMLDetailsElement>("details").forEach(d=>{d.open=false;});
+  });
+  function shoppingRows(){
+   if(!plan)return [];
+   return priceCraftLeaves(plan.leaves,prices).rows.map(row=>({
+    id:row.itemId,name:nameCache?.get(row.itemId)??("Item #"+row.itemId),
+    quantity:row.quantity,unitPrice:row.unitPrice??"",cost:row.total??"",
+   }));
+  }
+  $("craft-copy-shopping").addEventListener("click",()=>{
+   const lines=shoppingRows().map(row=>
+    row.name+" (#"+row.id+") · "+row.quantity+
+    (row.cost?" · "+(pt?"custo ":"cost ")+row.cost:""));
+   if(!lines.length)return;
+   void navigator.clipboard.writeText(lines.join("\n")).then(()=>{
+    status.textContent=pt?"Lista de compras copiada.":"Shopping list copied.";
+   }).catch(()=>{
+    status.textContent=pt?"Não foi possível copiar.":"Copy unavailable.";
+   });
+  });
+  $("craft-export-shopping").addEventListener("click",()=>{
+   const safe=(value:string)=>'"'+String(value).replace(/^([=+@-])/,"'$1")
+    .replace(/"/g,'""')+'"';
+   const csv=[["ItemID","Name","Quantity","UnitPrice","TotalCost"],
+    ...shoppingRows().map(row=>[row.id,row.name,row.quantity,row.unitPrice,row.cost])]
+    .map(row=>row.map(safe).join(",")).join("\r\n");
+   const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+   const url=URL.createObjectURL(blob),a=el("a") as HTMLAnchorElement;
+   a.href=url;a.download="atlantica-craft-shopping.csv";a.click();
+   setTimeout(()=>URL.revokeObjectURL(url),1500);
+  });
   function redraw(){
    if(!activeGraph||!selectedId)return;
    try{
     plan=planClientCrafting({itemId:selectedId,quantity:amount.value,
-     recipesById:activeGraph,choices,batchOverrides});
+     recipesById:activeGraph,choices,batchOverrides,
+     itemCategories,buyIds:[...buyIds]});
     steps.replaceChildren();leaves.replaceChildren();issues.replaceChildren();
+    treeContainer.replaceChildren();surplus.replaceChildren();
     const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
     for(const step of plan.steps){
      const tr=el("tr"),td=el("td");
      td.append(itemLink(step.itemId,title(step.itemId)));
      if(step.manualBatch)td.append(el("small",pt?" · Batch manual":" · Manual batch"));
      tr.append(td);
-     for(const value of [step.requested,step.output,step.totalBatches,step.operations])
+     for(const value of [step.requested,step.output,step.totalBatches,step.operations,step.maxPerOperation])
       tr.append(el("td",fmt(value)));
      steps.append(tr);
     }
@@ -184,19 +337,21 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      input.type="number";input.min="0";input.step="1";input.placeholder="0";input.value=prices[leaf.itemId]??"";
      input.setAttribute("aria-label",(pt?"Preço unitário ":"Unit price ")+title(leaf.itemId));
      input.addEventListener("change",()=>{
-      prices[leaf.itemId]=input.value;redraw();
+      prices[leaf.itemId]=input.value;
+      try{localStorage.setItem(storedPriceKey,JSON.stringify(prices));}catch{}
+      try{refreshCosts();}catch{status.textContent=pt?"Preço inválido.":"Invalid price.";}
      });
      priceCell.append(input);tr.append(priceCell);
      const totalCell=el("td","—");totalCell.dataset.costFor=leaf.itemId;
      tr.append(totalCell);leaves.append(tr);
     }
-    const priced=priceCraftLeaves(plan.leaves,prices);
-    for(const row of priced.rows){
-     const cell=leaves.querySelector<HTMLElement>('[data-cost-for="'+row.itemId+'"]');
-     if(cell)cell.textContent=row.total===null?"—":fmt(row.total);
-    }
-    cost.textContent=(pt?"Total de preços informados: ":"Total priced cost: ")+fmt(priced.knownTotal)+
-     (priced.unpricedItems?" · "+priced.unpricedItems+(pt?" materiais sem preço":" materials without prices"):"");
+    refreshCosts();
+    renderCraftTree();
+    renderLeftovers();
+    $("craft-summary-output").textContent=fmt(plan.rootOutput);
+    $("craft-summary-batches").textContent=fmt(plan.totalBatches);
+    $("craft-summary-operations").textContent=fmt(plan.totalOperations);
+    $("craft-summary-materials").textContent=fmt(plan.leaves.length);
     note.textContent=plan.complete
       ?(pt?"Plano calculado a partir das receitas escolhidas.":"Plan calculated using the selected source recipes.")
       :(pt?"Plano parcial: verifique receitas e batches abaixo.":"Partial plan: review recipe and batch questions below.");
@@ -300,4 +455,134 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  .craft-issue :is(select,input){width:min(400px,100%)}
  .craft-disclaimer{border-top:1px solid var(--color-border);padding-top:18px;font-size:.84rem}
  @media(max-width:740px){.craft-form{grid-template-columns:minmax(0,1fr)}}
+</style>
+<style is:global>
+ #wiki-craft-planner .craft-overview{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;margin:20px 0 26px;
+ }
+ #wiki-craft-planner .craft-overview>div{
+  display:flex;flex-direction:column;gap:8px;min-height:77px;
+  background:var(--color-surface);border:1px solid var(--color-border);
+  padding:13px;border-radius:5px;
+ }
+ #wiki-craft-planner .craft-overview span{
+  color:var(--color-text-muted);font-size:.84rem;
+ }
+ #wiki-craft-planner .craft-overview strong{
+  font-size:1.3rem;font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-tree-panel{
+  margin:22px 0;padding:17px;
+  background:var(--color-surface);
+  border:1px solid var(--color-border);border-radius:6px;
+ }
+ #wiki-craft-planner .craft-section-heading{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;margin-bottom:9px;
+ }
+ #wiki-craft-planner .craft-section-heading h3{margin:0;}
+ #wiki-craft-planner .craft-tree-tools{
+  display:flex;flex-wrap:wrap;align-items:center;gap:7px;
+ }
+ #wiki-craft-planner .craft-tree-tools button,
+ #wiki-craft-planner .craft-tree-actions button{
+  min-height:33px;padding:6px 11px;
+  background:var(--color-background);color:var(--color-accent);
+  border:1px solid var(--color-border);border-radius:4px;
+  cursor:pointer;font:inherit;font-size:.83rem;
+ }
+ #wiki-craft-planner .craft-tree-tools button:is(:hover,:focus-visible),
+ #wiki-craft-planner .craft-tree-actions button:is(:hover,:focus-visible){
+  border-color:var(--color-accent);outline-color:var(--color-accent);
+ }
+ #wiki-craft-planner .craft-muted{
+  color:var(--color-text-muted);font-size:.83rem;line-height:1.55;margin:5px 0 16px;
+ }
+ #wiki-craft-planner .craft-tree{
+  border:1px solid var(--color-border);
+  border-radius:5px;max-height:72vh;overflow:auto;
+  background:var(--color-background);
+ }
+ #wiki-craft-planner .craft-tree-node{
+  border-bottom:1px solid var(--color-border);
+  background:transparent;
+ }
+ #wiki-craft-planner .craft-tree-node:last-child{border-bottom:0;}
+ #wiki-craft-planner .craft-tree-node>summary{cursor:pointer;}
+ #wiki-craft-planner .craft-tree-row{
+  display:grid;grid-template-columns:minmax(220px,1.4fr) minmax(200px,1fr) auto;
+  align-items:center;gap:12px;padding:9px 12px;min-height:42px;
+ }
+ #wiki-craft-planner .craft-tree-node>summary.craft-tree-row{
+  display:grid;
+ }
+ #wiki-craft-planner .craft-tree-row:is(:hover,:focus-within){
+  background:var(--color-surface);
+ }
+ #wiki-craft-planner .craft-tree-name{
+  min-width:0;overflow-wrap:anywhere;font-weight:600;
+ }
+ #wiki-craft-planner .craft-tree-name a{
+  color:var(--color-accent);text-decoration:none;
+ }
+ #wiki-craft-planner .craft-tree-name a:hover{text-decoration:underline;}
+ #wiki-craft-planner .craft-tree-name small,
+ #wiki-craft-planner .craft-tree-actions small{
+  color:var(--color-text-muted);font-weight:400;font-size:.77rem;
+ }
+ #wiki-craft-planner .craft-tree-numbers{
+  display:flex;flex-wrap:wrap;gap:5px 14px;
+  color:var(--color-text-muted);font-size:.78rem;
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-tree-actions{
+  display:flex;align-items:center;justify-content:flex-end;
+  flex-wrap:wrap;gap:8px;
+ }
+ #wiki-craft-planner .craft-tree-children{
+  margin:0 0 0 18px;border-left:2px solid var(--color-border);
+  padding-left:8px;
+ }
+ #wiki-craft-planner .craft-tree-node:not([open])>.craft-tree-children{
+  display:none;
+ }
+ #wiki-craft-planner .craft-surplus-section{
+  margin:20px 0;padding:15px 18px;
+  background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px;
+ }
+ #wiki-craft-planner .craft-surplus-section[hidden]{display:none;}
+ #wiki-craft-planner .craft-surplus-section ul{
+  display:grid;gap:8px;list-style:none;padding:0;margin:0;
+ }
+ #wiki-craft-planner .craft-surplus-section li{
+  display:flex;justify-content:space-between;gap:12px;
+  border-bottom:1px solid var(--color-border);padding:5px 0;
+ }
+ #wiki-craft-planner .craft-surplus-section a{color:var(--color-accent);}
+ #wiki-craft-planner .craft-issue{
+  background:var(--color-surface);border-left:3px solid var(--color-bronze);
+  padding:15px;margin:12px 0;border-radius:3px;
+ }
+ #wiki-craft-planner .craft-issue :is(input,select){
+  display:block;box-sizing:border-box;padding:9px;min-height:39px;
+  max-width:400px;width:100%;background:var(--color-background);
+  color:var(--color-text);border:1px solid var(--color-border);
+  border-radius:4px;margin-top:9px;
+ }
+ #wiki-craft-planner .craft-issue p{color:var(--color-text-muted);}
+ #wiki-craft-planner .craft-tree-row:focus-visible{
+  outline:2px solid var(--color-accent);outline-offset:2px;
+ }
+ @media(max-width:1050px){
+  #wiki-craft-planner .craft-tree-row{
+   grid-template-columns:minmax(0,1fr);gap:5px;
+  }
+  #wiki-craft-planner .craft-tree-actions{justify-content:flex-start;}
+ }
+ @media(max-width:620px){
+  #wiki-craft-planner .craft-overview{grid-template-columns:repeat(2,minmax(0,1fr));}
+  #wiki-craft-planner .craft-tree-panel{padding:11px;}
+  #wiki-craft-planner .craft-tree-children{margin-left:8px;padding-left:6px;}
+ }
 </style>

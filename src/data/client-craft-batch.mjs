@@ -6,10 +6,11 @@
  * The current client batch limit below is a user-supplied gameplay rule,
  * intentionally separated from the source-extracted unitRaw field.
  */
-export const MAX_CRAFT_OUTPUT_PER_OPERATION=10000;
+import {EQUIPMENT_MAX_PER_OPERATION,OTHER_MAX_PER_OPERATION} from "./client-crafting-gameplay-policy.mjs";
+export const MAX_CRAFT_OUTPUT_PER_OPERATION=OTHER_MAX_PER_OPERATION;
 const GOOD=/^[1-9][0-9]{0,14}$/;
 
-export function summarizeCraftBatch(sourceDefinitions){
+export function summarizeCraftBatch(sourceDefinitions,{equipment=false}={}){
   if(!Array.isArray(sourceDefinitions)||sourceDefinitions.length<1)
     throw new TypeError("Original source item definitions are required");
   const seen=new Set(),observations=[],invalid=[];
@@ -33,25 +34,28 @@ export function summarizeCraftBatch(sourceDefinitions){
     observations.push({rowId,unit:Number(raw)});
   }
   const units=[...new Set(observations.map(x=>x.unit))].sort((a,b)=>a-b);
-  const status=invalid.length?"invalid":units.length>1?"conflict":
+  const originalUnitStatus=invalid.length?"invalid":units.length>1?"conflict":
     units.length===0?"not-provided":
     observations.length<sourceDefinitions.length?"partial":"consistent";
-  const batchSize=(status==="consistent"||status==="partial")?units[0]:null;
+  const batchSize=equipment?1:
+    ((originalUnitStatus==="consistent"||originalUnitStatus==="partial")?units[0]:null);
+  const maxPerOperation=equipment?EQUIPMENT_MAX_PER_OPERATION:MAX_CRAFT_OUTPUT_PER_OPERATION;
+  const status=equipment?"gameplay-rule":originalUnitStatus;
   const maxBatchesPerOperation=batchSize===null?null:
-    Math.floor(MAX_CRAFT_OUTPUT_PER_OPERATION/batchSize);
+    Math.floor(maxPerOperation/batchSize);
   const maxCraftQuantityPerOperation=batchSize===null?null:
     maxBatchesPerOperation*batchSize;
   return {
-    status,batchSize,
+    status,batchSize,originalUnitStatus,
     sourceValues:units,observations,invalid,
     observedIn:observations.length,sourceCount:sourceDefinitions.length,
     minCraftQuantity:batchSize,
     increment:batchSize,
-    maxPerOperation:MAX_CRAFT_OUTPUT_PER_OPERATION,
+    maxPerOperation,
     maxBatchesPerOperation,
     maxCraftQuantityPerOperation,
     ruleSource:"user-reported-gameplay",
-    unitSource:"game-client-itemtype-unitRaw",
+    unitSource:equipment?"user-confirmed-equipment-batch":"game-client-itemtype-unitRaw",
   };
 }
 
@@ -61,13 +65,13 @@ export function summarizeCraftBatch(sourceDefinitions){
  * All quantities are integer units. Rounds desired output UP to batch.
  * For > 10k or non-divisor batches, splits into legal operation sizes.
  */
-export function planCraftBatchOperations(requested,batch){
+export function planCraftBatchOperations(requested,batch,{equipment=false}={}){
   if(!Number.isSafeInteger(requested)||requested<1||
      !Number.isSafeInteger(batch)||batch<1||
-     batch>MAX_CRAFT_OUTPUT_PER_OPERATION)
+     batch>(equipment?EQUIPMENT_MAX_PER_OPERATION:MAX_CRAFT_OUTPUT_PER_OPERATION))
     throw new RangeError("Requested output and source batch must be positive valid integers");
   const batches=Math.ceil(requested/batch);
-  const perOperation=Math.floor(MAX_CRAFT_OUTPUT_PER_OPERATION/batch);
+  const perOperation=Math.floor((equipment?EQUIPMENT_MAX_PER_OPERATION:MAX_CRAFT_OUTPUT_PER_OPERATION)/batch);
   const whole=Math.floor(batches/perOperation);
   const remainder=batches%perOperation;
   const operations=[];

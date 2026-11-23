@@ -9,7 +9,9 @@ const {lang,item}=Astro.props;
 const pt=lang==="pt-br";
 const prefix=pt?"/pt-br":"";
 const source=item?summarizeClientCrafting(item):null;
-const batch=item?summarizeCraftBatch(item.sourceDefinitions):null;
+// This component receives verified equipment candidates only; apply the
+// player-confirmed 1-per-batch, 20-per-operation rule while preserving raw Unit.
+const batch=item?summarizeCraftBatch(item.sourceDefinitions,{equipment:true}):null;
 const batchReady=batch?.batchSize!==null&&batch?.maxBatchesPerOperation>0;
 const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
 const isConflict=source?.status==="different-source-materials";
@@ -31,19 +33,19 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
     <h3>{pt?"Produção em batches":"Production batches"}</h3>
     {batchReady&&batch?<p>
       <strong>{fmt.format(batch.batchSize)}</strong>
-      <span>{pt?"unidades por batch registrado":"units per original batch"}</span>
+      <span>{pt?"unidade por batch (regra do equipamento)":"unit per batch (equipment rule)"}</span>
       <span>{pt?"Incrementos de":"Steps of"} {fmt.format(batch.increment)}</span>
       <span>{pt?"Limite por operação":"Maximum output per operation"}: {fmt.format(batch.maxPerOperation)}</span>
       <span>{pt?"Até":"Up to"} {fmt.format(batch.maxBatchesPerOperation)} batches</span>
     </p>:<p class="note">{batch?.status==="conflict"?
       (pt?"Unit diverge nos arquivos; batch não consolidado.":"Conflicting original Unit values; no canonical batch.") :
       (pt?"Tamanho do batch não identificado nas fontes originais.":"No original batch quantity identified.")}</p>}
-    {batch?.status==="partial"&&<p class="note">{pt
+    {batch?.originalUnitStatus==="partial"&&<p class="note">{pt
       ?"Unit consta somente em parte dos registros ItemType; essa diferença permanece identificada."
       :"Unit is present in only some original ItemType source rows; the partial coverage is preserved."}</p>}
     <small>{pt
-      ?"O valor de batch vem do Unit original do cliente. O limite de 10.000 é uma regra informada pelo jogador; não foi extraído desse campo. A disponibilidade da receita no servidor não está comprovada."
-      :"Batch comes from the original client Unit field. The 10,000 limit is a player-reported rule, not decoded from this field. Live-server recipe availability is unverified."}</small>
+      ?"Para equipamentos, a regra confirmada pelo jogador é 1 unidade por batch e máximo de 20 por operação. O campo Unit original permanece exibido na seção técnica e pode estar ausente. A disponibilidade atual da receita não está comprovada."
+      :"The player-confirmed equipment rule is 1 unit per batch and at most 20 per operation. The original Unit field remains available in the source section and may be missing. Current-server recipe availability is not verified."}</small>
   </div>
   <div class="raw-metadata">
     {[
