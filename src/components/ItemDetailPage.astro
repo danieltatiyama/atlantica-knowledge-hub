@@ -60,6 +60,11 @@ const clientFields = curatedFields ? [
           :"+1..+10 values are historical projections; MagicDef, EV and MoveSpeed stay fixed."}</small>
       </p>
       <p class="full-db-link">
+        <a href={prefix+"/tools/crafting/?id="+item.id}>
+          {pt?"Calcular materiais deste item":"Calculate crafting materials for this item"}
+        </a>
+      </p>
+      <p class="full-db-link">
         <a href={prefix+"/items/database/?id="+item.id}>
           {pt?"Ver todas as definições deste ID no banco completo do cliente":"Inspect this ID in the complete original client database"}
         </a>
