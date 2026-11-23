@@ -172,6 +172,19 @@ import {
       ))}
     </nav>
 
+    <div class="theme-switcher">
+      <label for="site-theme" class="theme-label">{lang === "pt-br" ? "Tema" : "Theme"}</label>
+      <select id="site-theme" class="theme-select"
+        aria-label={lang === "pt-br" ? "Selecionar tema visual" : "Select visual theme"}>
+        <option value="atlantica">Atlantica</option>
+        <option value="dark">{lang === "pt-br" ? "Escuro" : "Dark"}</option>
+        <option value="light">{lang === "pt-br" ? "Claro" : "Light"}</option>
+        <option value="parchment">{lang === "pt-br" ? "Pergaminho" : "Parchment"}</option>
+        <option value="midnight">{lang === "pt-br" ? "Azul noturno" : "Midnight Blue"}</option>
+        <option value="contrast">{lang === "pt-br" ? "Alto contraste" : "High Contrast"}</option>
+      </select>
+    </div>
+
     <div class="language-switcher">
       <label for="site-language" class="language-label">
         Language
@@ -491,9 +504,77 @@ import {
     }
   }
 
+  /* Reader appearance — kept beside the locale picker in every header. */
+  .theme-switcher {
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    flex-shrink:0;
+    min-width:138px;
+  }
+  .theme-label {
+    color:var(--color-text-muted);
+    font-size:.72rem;
+    line-height:1.15;
+    font-weight:600;
+  }
+  .theme-select {
+    min-width:138px;
+    padding:9px 12px;
+    border:1px solid var(--color-border);
+    border-radius:4px;
+    background:var(--color-surface);
+    color:var(--color-text);
+    font:inherit;
+    font-size:.84rem;
+    cursor:pointer;
+  }
+  .theme-select option {
+    background:var(--color-surface);
+    color:var(--color-text);
+  }
+  .theme-select:hover {border-color:var(--color-accent);}
+  .theme-select:focus-visible {
+    outline:2px solid var(--color-accent);
+    outline-offset:3px;
+  }
+  @media (max-width:700px) {
+    .theme-switcher {
+      width:min(260px,100%);
+    }
+    .theme-select {width:100%;}
+  }
+
 </style>
 
 <script>
+  // One site-wide, bilingual appearance selector.
+  // The head bootstrap reads the same key before first paint.
+  const themeSelect = document.querySelector<HTMLSelectElement>("#site-theme");
+  const themes = new Set([
+    "atlantica", "dark", "light", "parchment", "midnight", "contrast"
+  ]);
+  const savedTheme = document.documentElement.dataset.theme || "atlantica";
+  if (themeSelect) {
+    themeSelect.value = themes.has(savedTheme) ? savedTheme : "atlantica";
+    themeSelect.addEventListener("change", () => {
+      const selectedTheme = themeSelect.value;
+      if (!themes.has(selectedTheme)) return;
+      document.documentElement.dataset.theme = selectedTheme;
+      try {
+        localStorage.setItem("atlantica.theme", selectedTheme);
+      } catch {
+        // The selection still works when persistence is unavailable.
+      }
+    });
+    window.addEventListener("storage", (event) => {
+      if (event.key !== "atlantica.theme") return;
+      const next = themes.has(event.newValue) ? event.newValue : "atlantica";
+      document.documentElement.dataset.theme = next;
+      themeSelect.value = next;
+    });
+  }
+
   const languageSelect =
     document.querySelector<HTMLSelectElement>(
       "#site-language"
