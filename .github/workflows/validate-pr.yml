@@ -119,6 +119,9 @@ jobs:
       - name: Validate completed subtrees and ingredient-limited crafting operations
         run: node --test tests/client-crafting-completion-ingredient-cap.test.mjs
 
+      - name: Validate fixed Market price research provenance and client name matches
+        run: node --test tests/market-fixed-price-research.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
