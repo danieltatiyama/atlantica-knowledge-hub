@@ -33,6 +33,15 @@ const sections = [
     href: lang === "en" ? "/events/" : "/pt-br/events/",
   },
   {
+    title: lang === "pt-br" ? "Monstros e Drops" : "Monsters & Drops",
+    description: lang === "pt-br"
+      ? "Explore o catálogo de criaturas e as relações de loot extraídas do cliente, após revisão dos arquivos originais. Taxas brutas não são porcentagens comprovadas."
+      : "Explore original client creature and loot-source records as they pass source review. Raw rates are not confirmed drop percentages.",
+    symbol: "◈",
+    theme: "monsters",
+    href: lang === "en" ? "/monsters/" : "/pt-br/monsters/",
+  },
+  {
     title: lang === "pt-br" ? "Mercenários" : "Mercenaries",
     description: lang === "pt-br"
       ? "Informações e habilidades dos mercenários, com evidências verificadas."
@@ -456,6 +465,11 @@ const sections = [
     isolation: isolate;
   }
 
+  .card-media--monsters {
+    background:
+      radial-gradient(circle, rgba(102, 127, 89, 0.25), transparent 70%),
+      linear-gradient(135deg, #283027, #111418);
+  }
   .card-media--guides {
     background:
       radial-gradient(circle, rgba(100, 119, 135, 0.24), transparent 70%),

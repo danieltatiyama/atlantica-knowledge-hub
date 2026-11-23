@@ -1,0 +1,143 @@
+---
+/**
+ * The source files are not uploaded yet. Show a truthful pending state now,
+ * and automatically render source-exact direct/group references after the
+ * independently audited Miner candidate is published.
+ */
+interface Props {lang:"en"|"pt-br";itemId:string;}
+const {lang,itemId}=Astro.props;
+const pt=lang==="pt-br";
+---
+<section class="monster-item-sources" data-item-id={itemId} data-lang={lang}
+  aria-label={pt?"Drops de monstros nos arquivos do cliente":"Monster drops in client source files"}>
+  <h2>{pt?"Drops de monstros (arquivos do cliente)":"Monster drops (client source files)"}</h2>
+  <p class="drop-disclaimer">{pt
+    ?"Dados de configuração do cliente, não drops confirmados no servidor atual. RawRate da criatura e RawRate do grupo são campos separados; não representam porcentagens verificadas."
+    :"Game-client configuration data, not confirmed live-server drops. Monster RawRate and group RawRate are separate fields and are NOT verified drop percentages."}</p>
+  <p class="monster-item-status" role="status">{pt?"Consultando referências de origem…":"Checking original client source references…"}</p>
+  <div class="monster-item-direct" hidden>
+    <h3>{pt?"Referências diretas":"Direct source drops"}</h3>
+    <div class="monster-scroll"><table><thead><tr>
+      <th>{pt?"Criatura":"Creature"}</th><th>RawRate</th>
+      <th>{pt?"Quantidade candidata":"Candidate quantity"}</th>
+      <th>{pt?"Registro":"Source row"}</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+  <div class="monster-item-group" hidden>
+    <h3>{pt?"Referências por grupo":"Group-linked source drops"}</h3>
+    <p class="drop-disclaimer">{pt
+      ?"Os campos RawRate das duas etapas não são multiplicados nem convertidos em porcentagens."
+      :"The RawRate fields from the two stages are never multiplied or converted to percentages."}</p>
+    <div class="monster-scroll"><table><thead><tr>
+      <th>{pt?"Criatura":"Creature"}</th><th>GroupID</th>
+      <th>{pt?"RawRate referência":"Reference RawRate"}</th>
+      <th>{pt?"RawRate item":"Item RawRate"}</th>
+      <th>{pt?"Quantidade candidata":"Candidate quantity"}</th>
+      <th>{pt?"Registros":"Source rows"}</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+  <p class="monster-catalog-link"><a href={(pt?"/pt-br":"")+"/monsters/"}>
+    {pt?"Explorar o catálogo de criaturas":"Explore the creature catalog"}</a></p>
+</section>
+<script>
+  let manifestPromise:Promise<any>|null=null;
+  const getManifest=()=>{
+    if(!manifestPromise){
+      manifestPromise=fetch("/data/client-monsters/manifest.json")
+        .then(response=>response.ok?response.json():null)
+        .catch(()=>null);
+    }
+    return manifestPromise;
+  };
+  const text=(tag:string,value:string)=>{
+    const node=document.createElement(tag);node.textContent=value;return node;
+  };
+  const raw=(value:unknown)=>value===null||value===undefined?"—":String(value);
+  const qty=(min:unknown,max:unknown)=>raw(min)+"–"+raw(max);
+  function creature(td:HTMLTableCellElement,id:string,name:string|null,prefix:string){
+    const a=text("a",name??("Creature #"+id)) as HTMLAnchorElement;
+    a.href=prefix+"/monsters/?id="+encodeURIComponent(id);
+    td.append(a);
+    if(name)td.append(document.createTextNode(" · #"+id));
+  }
+  for(const section of document.querySelectorAll<HTMLElement>(".monster-item-sources")){
+    const id=section.dataset.itemId??"",pt=section.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const state=section.querySelector<HTMLElement>(".monster-item-status")!;
+    const direct=section.querySelector<HTMLElement>(".monster-item-direct")!;
+    const group=section.querySelector<HTMLElement>(".monster-item-group")!;
+    void (async()=>{
+      if(!/^[1-9]\d{0,12}$/.test(id))return;
+      try{
+        const meta=await getManifest();
+        if(!meta){
+          state.textContent=pt
+            ?"A base original de monstros e drops ainda aguarda importação e revisão."
+            :"The original monster and loot dataset is pending import and review.";
+          return;
+        }
+        if(meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
+          meta.dataset!=="all-client-monster-loot-original"||
+          !Array.isArray(meta.files?.itemSources))
+          throw Error("Unexpected loot source manifest");
+        const bucket=Math.floor(Number(id)/1000);
+        const filename="item-sources/"+String(bucket).padStart(2,"0")+".json";
+        if(!meta.files.itemSources.includes(filename)){
+          state.textContent=pt
+            ?"Nenhuma referência de drop neste snapshot. Isso não prova que o item nunca seja obtido de monstros."
+            :"No client-source loot reference for this ID; that does not prove it never drops.";
+          return;
+        }
+        const response=await fetch("/data/client-monsters/"+filename);
+        if(!response.ok)throw Error("Original item drop shard missing");
+        const source=await response.json();
+        if(source.schemaVersion!=="1.0"||source.snapshotId!==1||
+          source.bucket!==bucket)throw Error("Item drop source snapshot mismatch");
+        const data=source.items?.[id];
+        if(!data){state.textContent=pt?"Nenhum registro de drop encontrado.":"No source drop records found.";return;}
+        for(const row of data.direct??[]){
+          const [charId,name,recordId,rawRate,slot,min,max]=row;
+          if(!/^[1-9]\d{0,12}$/.test(charId))throw Error("Invalid creature ID");
+          const tr=document.createElement("tr");
+          const first=tr.insertCell();creature(first,charId,name,prefix);
+          tr.insertCell().textContent=raw(rawRate);
+          tr.insertCell().textContent=qty(min,max);
+          tr.insertCell().textContent="#"+recordId+(slot?" · "+slot:"");
+          direct.querySelector("tbody")!.append(tr);
+        }
+        for(const row of data.group??[]){
+          const [charId,name,groupId,refRow,dropRow,refRate,dropRate,slot,band,min,max]=row;
+          if(!/^[1-9]\d{0,12}$/.test(charId))throw Error("Invalid creature ID");
+          const tr=document.createElement("tr");
+          creature(tr.insertCell(),charId,name,prefix);
+          tr.insertCell().textContent=raw(groupId);
+          tr.insertCell().textContent=raw(refRate);
+          tr.insertCell().textContent=raw(dropRate);
+          tr.insertCell().textContent=qty(min,max);
+          tr.insertCell().textContent="#"+refRow+" / #"+dropRow+(band?" · "+band:"");
+          group.querySelector("tbody")!.append(tr);
+        }
+        if(data.direct?.length)direct.hidden=false;
+        if(data.group?.length)group.hidden=false;
+        state.textContent=(pt?"Referências originais: ":"Original source links: ")+
+          ((data.direct?.length??0)+(data.group?.length??0));
+      }catch{
+        state.textContent=pt?"Não foi possível validar os arquivos de loot."
+          :"Could not validate or load original loot source files.";
+      }
+    })();
+  }
+</script>
+<style>
+  .monster-item-sources{margin:25px 0;border:1px solid var(--color-border);
+    border-radius:5px;background:var(--color-surface);padding:17px}
+  h2{font-size:1.42rem;color:var(--color-gold-light);margin:0 0 8px}
+  h3{font-size:1.04rem;color:var(--color-gold-light);margin:18px 0 9px}
+  .drop-disclaimer,.monster-item-status{font-size:.85rem;line-height:1.65;color:var(--color-text-muted)}
+  .monster-scroll{overflow:auto}
+  table{border-collapse:collapse;width:100%;min-width:650px}
+  th,td{padding:9px 12px;border-bottom:1px solid var(--color-border);text-align:left;font-size:.86rem}
+  th{color:var(--color-gold-light)}
+  td a,.monster-catalog-link a{color:var(--color-accent)}
+  .monster-item-direct[hidden],.monster-item-group[hidden]{display:none}
+  .monster-catalog-link{font-size:.85rem;margin-bottom:0}
+</style>

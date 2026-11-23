@@ -12,6 +12,7 @@ const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
 const eventsHref = lang === "en" ? "/events/" : `/${lang}/events/`;
 const mercenariesHref = lang === "en" ? "/mercenaries/" : `/${lang}/mercenaries/`;
 const itemsHref = lang === "en" ? "/items/" : `/${lang}/items/`;
+const monstersHref = lang === "en" ? "/monsters/" : `/${lang}/monsters/`;
 
 const navigation = [
   {
@@ -38,6 +39,11 @@ const navigation = [
     label: lang === "pt-br" ? "Itens" : "Items",
     href: itemsHref,
     active: pathname.startsWith(lang === "en" ? "/items/" : `/${lang}/items/`),
+  },
+  {
+    label: lang === "pt-br" ? "Monstros" : "Monsters",
+    href: monstersHref,
+    active: pathname.startsWith(monstersHref),
   },
   {
     label: t("nav.explore"),
@@ -110,6 +116,10 @@ function getLanguageTarget(targetLang: SupportedLang): string {
   }
   if (normalizedPath.startsWith("/items/") || normalizedPath.startsWith("/pt-br/items/")) {
     return `${prefix}${normalizedPath.replace(/^\/pt-br(?=\/)/, "")}`;
+  }
+  if (normalizedPath.startsWith("/monsters/") ||
+      normalizedPath.startsWith("/pt-br/monsters/")) {
+    return `${prefix}/monsters/`;
   }
   // Home or other pages.
   return `${prefix}/`;
@@ -502,9 +512,12 @@ import {
     const isGuideListing =
       currentPath === "/guides/" ||
       currentPath === "/pt-br/guides/";
+    const isMonsterCatalog =
+      currentPath === "/monsters/" ||
+      currentPath === "/pt-br/monsters/";
 
     // Preserve category filters on listings.
-    const query = isGuideListing
+    const query = isGuideListing || isMonsterCatalog
       ? window.location.search
       : "";
 

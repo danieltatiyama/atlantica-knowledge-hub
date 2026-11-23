@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
+import MonsterItemSources from "./MonsterItemSources.astro";
 import AtlanticaItemInfoPanel from "./AtlanticaItemInfoPanel.astro";
 import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
 import {
@@ -188,6 +189,8 @@ const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation
         ?"Nenhuma fonte de obtenção no servidor atual foi validada para este ID nesta ficha. O índice histórico de drops de monstros será ligado aqui quando as linhas originais de loot forem reimportadas e conciliadas por ID."
         :"No live-server acquisition source has been verified for this ID in this profile. Historical monster-drop links will appear here after original loot source rows are reimported and reconciled by ID."}</p>
     </section>
+
+    <MonsterItemSources lang={lang} itemId={item.id} />
 
     <section id="sources">
       <h2>{pt?"Proveniência dos arquivos do cliente":"Original client file evidence"}</h2>
