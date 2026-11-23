@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.65 (preços reais da tabela NPC do cliente e referência opcional)  
-**Último PR de pesquisa:** [PR #84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) (Stage 20.65)
+**Última etapa implementada:** Stage 20.66 (fila auditável de 128 candidatos a preços fixos e registros locais de observação do Market)  
+**Último PR integrado de pesquisa:** [PR #84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) (Stage 20.65). **Stage 20.66:** branch `feat/stage-20-66-market-price-verification-workbench` (PR em preparação).
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -379,6 +379,15 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Implementação: `src/data/client-npc-price-reference.mjs`, `src/components/CraftingPlannerPage.astro`, `src/data/client-crafting-xlsx.mjs`. Testes e CI: `tests/client-npc-trade-prices-stage-20-65.test.mjs`. Metodologia: `research/market-fixed-prices/CLIENT-PRICE-STAGE-20-65.md`.
 - Próximo passo: validar no jogo exemplos dos **128 registros novos** e investigar possível tabela **servidor** com outros preços fixos; não inferir que o Market possua somente 421 preços fixos.
 
+### Stage 20.66 — Fila de verificação manual dos novos preços candidatos
+
+- Dos **421 registros** gerais identificados no NPCTradeItem do cliente, **293** tinham ItemIDs e preços conciliados com o histórico de 2025. Os outros **128** agora formam uma fila reproduzível de revisão em `public/data/client-npc-trade-prices/review-queue.json`, gerada por `scripts/build-market-price-review-queue.mjs` a partir dos CSVs originais imutáveis.
+- Novo workbench bilíngue em `/tools/market-prices/` e `/pt-br/tools/market-prices/`: consulta por nome/categoria/ItemID, filtro de revisados, observações de preço fixo igual/diferente, não encontrado ou inconclusivo, com data e descrição da evidência.
+- As observações existem **somente no navegador do jogador** (`atlantica.marketPriceReview.v1`), com importação/exportação JSON estritamente validadas. Não viram dados oficiais nem alimentam automaticamente a calculadora; qualquer alegação de verificação por servidor é recusada pelo parser de referências do cliente.
+- Pesquisa externa histórica encontrou o mesmo caminho `server/LANG/ENG/NPCTRADEITEM/npctradeitem_eng.ndt` em discussões de servidores privados antigos; **não** foi obtida uma segunda fonte confiável nem o arquivo do atual servidor Global. Não confundir tabela do cliente com disponibilidade atual ou cobertura exaustiva do Market.
+- Novas rotas, validador `src/data/market-price-review.mjs`, testes `tests/market-price-review-stage-20-66.test.mjs` e pipeline de integridade. Consultar `docs/MARKET-PRICE-REVIEW-STAGE-20-66.md`.
+- Próximo passo: coletar amostras verificáveis no **jogo atual**, incluindo imagens e datas, antes de publicar qualquer valor como preço fixo Market confirmado.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -403,6 +412,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.63 | [#82](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/82) | Catálogo de pesquisa de 1.016 preços fixos históricos, 292 IDs conciliados, Rice reportado pelo jogador, sem modificar preços na interface |
 | 20.64 | [#83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) | Descoberta da fonte candidata NPCTradeItem_ENG.ndt e exportador offline de preços por ItemID/catálogo com 4 benchmarks de validação |
 | 20.65 | [#84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) | Extração real 652 preços NPC, 421 gerais nomeados, 293/293 históricos compatíveis; referência opt-in para calculadora |
+| 20.66 | PR em preparação | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -479,4 +489,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.65 implementada no PR #84, com dados reais NPCTradeItem. Conferir status de CI/integração no GitHub e testar visualmente no site o botão Ver referências do cliente, Usar/Preencher somente preços vazios e a origem na planilha exportada. Os preços NPC não foram confirmados como ofertas fixas do Market do servidor.**
+**Estado documentado: Stage 20.66 em branch de implementação, a partir da Stage 20.65 integrada. Validar CI e interface da nova fila de 128 candidatos; preservar as 421 referências gerais apenas como dados NPC do cliente, não como ofertas fixas confirmadas do servidor.**
