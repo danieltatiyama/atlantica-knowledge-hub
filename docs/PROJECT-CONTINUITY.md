@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.66 (fila auditável de 128 candidatos a preços fixos e registros locais de observação do Market)  
-**Último PR integrado de pesquisa:** [PR #84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) (Stage 20.65). **Stage 20.66:** branch `feat/stage-20-66-market-price-verification-workbench` (PR em preparação).
+**Último PR integrado de pesquisa:** [PR #84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) (Stage 20.65). **Stage 20.66:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85), branch `feat/stage-20-66-market-price-verification-workbench` (em revisão).
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -412,7 +412,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.63 | [#82](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/82) | Catálogo de pesquisa de 1.016 preços fixos históricos, 292 IDs conciliados, Rice reportado pelo jogador, sem modificar preços na interface |
 | 20.64 | [#83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) | Descoberta da fonte candidata NPCTradeItem_ENG.ndt e exportador offline de preços por ItemID/catálogo com 4 benchmarks de validação |
 | 20.65 | [#84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) | Extração real 652 preços NPC, 421 gerais nomeados, 293/293 históricos compatíveis; referência opt-in para calculadora |
-| 20.66 | PR em preparação | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
+| 20.66 | [#85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
