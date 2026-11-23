@@ -309,8 +309,12 @@ const pt=lang==="pt-br";
       // Keep the index available even when collapsing a parent section
       // temporarily hides its child entries. At least one remains usable.
       if(entries.length<1){
+        root.classList.remove("wiki-has-floating-nav");
         panel.hidden=true;reopen.hidden=true;signature="";return;
       }
+      // Existing inline anchor pills remain a no-JavaScript fallback,
+      // but disappear when this richer navigation is available.
+      root.classList.add("wiki-has-floating-nav");
       if(nextSignature!==signature){
         signature=nextSignature;
         overview.replaceChildren(...entries.filter(e=>e.group==="overview").map(makeLink));
@@ -430,6 +434,9 @@ const pt=lang==="pt-br";
     outline:2px solid #f0cb81;outline-offset:3px;
   }
   main[data-wiki-nav-root] section[data-wiki-collapsed="true"] > :not(:first-child){
+    display:none!important;
+  }
+  main[data-wiki-nav-root].wiki-has-floating-nav .page-sections{
     display:none!important;
   }
   main[data-wiki-nav-root] .wiki-section-toggle{
