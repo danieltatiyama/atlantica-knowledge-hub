@@ -440,10 +440,13 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(cell)cell.textContent=row.total===null?"—":fmt(row.total);
    }
    cost.textContent=(priced.complete
-    ?(pt?"Custo total: ":"Total cost: ")
-    :(pt?"Custo conhecido (parcial): ":"Known cost (partial): "))+fmt(priced.knownTotal)+
-    (priced.unpricedItems?" · "+priced.unpricedItems+
-     (pt?" materiais sem preço":" materials without prices"):"");
+    ?(pt?"Custo total estimado":"Total estimated cost")
+    :(pt?"Custo conhecido (parcial)":"Known cost (partial)"))+": "+fmt(priced.knownTotal);
+   const coverage=$("craft-price-coverage");
+   coverage.textContent=priced.complete
+    ?(pt?"Todos os materiais precificados":"All materials priced")
+    :fmt(priced.unpricedItems)+(pt?" sem preço":" unpriced");
+   coverage.dataset.complete=String(priced.complete);
   }
   function updateCraftTreeVisibility(){
    const rows=plan?.tree as Array<any>|undefined;
@@ -580,6 +583,32 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     quantity:row.quantity,unitPrice:row.unitPrice??"",cost:row.total??"",
    }));
   }
+  $("craft-export-tree").addEventListener("click",()=>{
+   if(!plan||!selectedId)return;
+   const button=$("craft-export-tree") as HTMLButtonElement;
+   button.disabled=true;
+   status.textContent=pt?"Preparando planilha Excel…":"Preparing Excel workbook…";
+   void (async()=>{
+    try{
+     const {buildCraftingWorkbook}=await import("../data/client-crafting-xlsx.mjs");
+     const names=Object.fromEntries(nameCache?.entries()??[]);
+     const bytes=buildCraftingWorkbook({plan,names,prices,locale:pt?"pt":"en"});
+     const blob=new Blob([bytes],{
+      type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+     });
+     const href=URL.createObjectURL(blob);
+     const link=el("a") as HTMLAnchorElement;
+     link.href=href;
+     link.download="atlantica-crafting-tree-"+selectedId+"-"+plan.requested+".xlsx";
+     link.click();
+     setTimeout(()=>URL.revokeObjectURL(href),2500);
+     status.textContent=pt?"Planilha Excel pronta.":"Excel workbook exported.";
+    }catch(error){
+     status.textContent=(pt?"Falha ao exportar planilha: ":"Workbook export failed: ")+
+      (error instanceof Error?error.message:String(error));
+    }finally{button.disabled=false;}
+   })();
+  });
   $("craft-copy-shopping").addEventListener("click",()=>{
    const lines=shoppingRows().map(row=>
     row.name+" (#"+row.id+") · "+row.quantity+
@@ -612,22 +641,48 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     treeRows.replaceChildren();surplus.replaceChildren();
     const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
     for(const step of plan.steps){
-     const tr=el("tr"),td=el("td");
-     td.append(itemLink(step.itemId,title(step.itemId)));
-     if(step.manualBatch)td.append(el("small",pt?" · Batch manual":" · Manual batch"));
-     tr.append(td);
+     const tr=el("tr") as HTMLTableRowElement;
+     tr.className="craft-data-row"+(step.itemId===selectedId?" is-target":"");
+     const name=el("th") as HTMLTableCellElement;
+     name.scope="row";name.className="craft-data-product";
+     name.append(itemLink(step.itemId,title(step.itemId)));
+     if(step.itemId===selectedId){
+      const tag=el("small",pt?"Produto final":"Target item");
+      tag.className="craft-product-tag";name.append(tag);
+     }else if(step.manualBatch){
+      const tag=el("small",pt?"Batch manual":"Manual batch");
+      tag.className="craft-product-tag";name.append(tag);
+     }
+     tr.append(name);
      for(const value of [step.requested,step.output,step.batchSize,step.totalBatches,
-       step.operations,step.maxPerOperation])tr.append(el("td",fmt(value)));
-     tr.append(el("td",step.operationGroups.map((group:any)=>
-       fmt(group.operations)+" × "+fmt(group.outputEach)).join(" + ")));
-     tr.append(el("td",fmt(step.excess)));
-     steps.append(tr);
+       step.operations,step.maxPerOperation]){
+      const td=el("td",fmt(value));td.className="craft-data-number";tr.append(td);
+     }
+     const breakdown=el("td");breakdown.className="craft-data-operations";
+     for(const [index,group] of step.operationGroups.entries()){
+      if(index)breakdown.append(el("span","+"));
+      const chip=el("span",fmt(group.operations)+" × "+fmt(group.outputEach));
+      chip.className="craft-operation-chip";breakdown.append(chip);
+     }
+     tr.append(breakdown);
+     const excess=el("td",fmt(step.excess));
+     excess.className="craft-data-number"+(step.excess!=="0"?" craft-has-excess":"");
+     tr.append(excess);steps.append(tr);
     }
     for(const leaf of plan.leaves){
-     const tr=el("tr"),td=el("td");td.append(itemLink(leaf.itemId,title(leaf.itemId)));
-     tr.append(td,el("td",fmt(leaf.quantity)));
-     const priceCell=el("td"),input=el("input") as HTMLInputElement;
-     input.type="number";input.min="0";input.step="1";input.placeholder="0";input.value=prices[leaf.itemId]??"";
+     const tr=el("tr") as HTMLTableRowElement;
+     tr.className="craft-data-row";
+     const name=el("th") as HTMLTableCellElement;
+     name.scope="row";name.className="craft-data-product";
+     name.append(itemLink(leaf.itemId,title(leaf.itemId)));
+     tr.append(name);
+     const quantity=el("td",fmt(leaf.quantity));quantity.className="craft-data-number";
+     tr.append(quantity);
+     const priceCell=el("td");priceCell.className="craft-price-cell";
+     const input=el("input") as HTMLInputElement;
+     input.type="number";input.min="0";input.step="1";
+     input.inputMode="numeric";input.placeholder=pt?"Informar preço":"Enter price";
+     input.className="craft-price-input";input.value=prices[leaf.itemId]??"";
      input.setAttribute("aria-label",(pt?"Preço unitário ":"Unit price ")+title(leaf.itemId));
      input.addEventListener("change",()=>{
       prices[leaf.itemId]=input.value;
@@ -636,6 +691,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      });
      priceCell.append(input);tr.append(priceCell);
      const totalCell=el("td","—");totalCell.dataset.costFor=leaf.itemId;
+     totalCell.className="craft-data-number craft-cost-cell";
      tr.append(totalCell);leaves.append(tr);
     }
     refreshCosts();
@@ -644,6 +700,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     $("craft-summary-output").textContent=fmt(plan.rootOutput);
     $("craft-summary-batches").textContent=fmt(plan.totalBatches);
     $("craft-summary-operations").textContent=fmt(plan.totalOperations);
+    $("craft-schedule-count").textContent=fmt(plan.totalOperations);
     $("craft-summary-materials").textContent=fmt(plan.leaves.length);
     note.textContent=plan.complete
       ?(pt?"Plano calculado a partir das receitas escolhidas.":"Plan calculated using the selected source recipes.")
