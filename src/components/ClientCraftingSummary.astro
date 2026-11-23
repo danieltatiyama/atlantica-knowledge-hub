@@ -6,6 +6,7 @@ import {summarizeClientCrafting} from "../data/client-equipment-crafting-summary
 interface Props {lang:"en"|"pt-br"; item?:ClientEquipmentFacts;}
 const {lang,item}=Astro.props;
 const pt=lang==="pt-br";
+const prefix=pt?"/pt-br":"";
 const source=item?summarizeClientCrafting(item):null;
 const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
 const isConflict=source?.status==="different-source-materials";
@@ -54,7 +55,7 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
           <thead><tr><th>{pt?"Material registrado":"Source material"}</th>
             <th>{pt?"ID":"ID"}</th><th>{pt?"Quantidade":"Quantity"}</th></tr></thead>
           <tbody>{recipe.materials.map(material=><tr>
-            <td>{material.nameEn??(pt?"Nome não validado":"Unverified name")}</td>
+            <td><a href={prefix+"/items/database/?id="+encodeURIComponent(material.itemId)}>{material.nameEn??(pt?"Nome não validado":"Unverified name")}</a></td>
             <td><code>{material.itemId}</code></td>
             <td class="quantity">{fmt.format(material.quantity)}</td>
           </tr>)}</tbody>
@@ -102,6 +103,7 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
     font-size:.86rem}
   th{font-weight:600;color:var(--color-gold-light)}
   td{color:var(--color-text)}
+  td a{color:var(--color-accent);text-decoration:underline;text-underline-offset:2px}
   .quantity{text-align:right;font-variant-numeric:tabular-nums}
   .warning{border-left:3px solid var(--color-bronze);padding:10px 12px;
     color:var(--color-text-muted);font-size:.88rem}
