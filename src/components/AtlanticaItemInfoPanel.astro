@@ -1,0 +1,177 @@
+---
+/**
+ * Atlantica-inspired item information panel.
+ * Visual presentation only; all numbers are exact original client-source
+ * fields. No guessed artwork, fake rarity or simulated live tooltip stats.
+ */
+import {getClientEquipmentSourceProfile} from "../data/full-client-equipment-source.mjs";
+import {RAW_STATS_FIELDS} from "../data/full-client-stats-tools.mjs";
+import {labelForClientField} from "../data/client-item-stat-summary.mjs";
+import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
+
+interface Props { lang:"en"|"pt-br"; itemId:string; }
+const {lang,itemId}=Astro.props;
+const pt=lang==="pt-br";
+const profile=getClientEquipmentSourceProfile(itemId);
+if(!profile)throw Error("Atlantica item panel requires an exact existing equipment-like client source ID");
+const {item,summary,detail}=profile;
+const batch=summarizeCraftBatch(detail.s);
+const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const groups=[
+  {id:"attack",heading:pt?"ATAQUE":"ATTACK"},
+  {id:"defense",heading:pt?"DEFESA":"DEFENSE"},
+  {id:"attributes",heading:pt?"ATRIBUTOS":"ATTRIBUTES"},
+  {id:"other",heading:pt?"BÔNUS":"BONUSES"},
+].map(section=>({
+  ...section,
+  fields:RAW_STATS_FIELDS.filter(field=>field.group===section.id&&summary?.fields.has(field.key))
+    .map(field=>({key:field.key,label:labelForClientField(field.key,pt),
+      observation:summary.fields.get(field.key)})),
+})).filter(section=>section.fields.length);
+const showBatch=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
+---
+<aside class="ao-item-tooltip" aria-label={pt?"Painel de informações do item, estilo Atlantica":"Atlantica-style item information panel"}>
+  <div class="tooltip-bracket tooltip-bracket-top" aria-hidden="true"></div>
+  <div class="tooltip-content">
+    <div class="tooltip-topline">
+      <span>{pt?"INFORMAÇÕES DO ITEM":"ITEM INFORMATION"}</span>
+      <span class="client-marker">{pt?"DADOS DO CLIENTE":"CLIENT SOURCE"}</span>
+    </div>
+    <div class="tooltip-identity">
+      <div class="item-emblem" aria-hidden="true"><span>✧</span></div>
+      <div class="item-title">
+        <h2>{item.nameEn}</h2>
+        <p>{item.sourceCategory} <span aria-hidden="true">·</span> ID {item.id}</p>
+      </div>
+    </div>
+    <div class="tooltip-divider" aria-hidden="true"></div>
+    <dl class="tooltip-basic">
+      <div>
+        <dt>{pt?"Nível nos arquivos":"Client-file level"}</dt>
+        <dd>{item.rawLevel??"—"}</dd>
+      </div>
+      <div>
+        <dt>{pt?"Grade original":"Original grade"}</dt>
+        <dd>{item.rawGrade??"—"}</dd>
+      </div>
+      <div>
+        <dt>{pt?"Definições":"Source records"}</dt>
+        <dd>{fmt.format(detail.s.length)}</dd>
+      </div>
+      <div>
+        <dt>{pt?"Situação":"Evidence"}</dt>
+        <dd>{item.reviewed?(pt?"Ficha revisada":"Reviewed article"):
+          (pt?"Extraído do cliente":"Client source only")}</dd>
+      </div>
+    </dl>
+    {groups.length>0&&<div class="tooltip-sections">
+      {groups.map(group=><section class="tooltip-stat-group">
+        <h3><span>{group.heading}</span></h3>
+        <dl>{group.fields.map(field=><div>
+          <dt>{field.label}</dt>
+          <dd class={field.observation.status==="conflict"?"uncertain":undefined}>
+            {field.observation.values.join(" / ")}
+            {field.observation.status!=="consistent"&&
+              <small>{field.observation.status==="conflict"
+                ?(pt?"divergência":"conflict")
+                :(pt?"parcial":"partial")}
+              {" "+field.observation.observedIn+"/"+field.observation.sourceCount}</small>}
+          </dd>
+        </div>)}</dl>
+      </section>)}
+    </div>}
+    {groups.length===0&&<p class="tooltip-empty">{pt
+      ?"Nenhum atributo numérico publicado para este ID."
+      :"No original numeric attributes are published for this ID."}</p>}
+    {showBatch&&<div class="tooltip-batch">
+      <span>{pt?"Produção por batch":"Production per batch"}</span>
+      <strong>{fmt.format(batch.batchSize)}</strong>
+      <small>{pt?"Limite por operação":"Per-operation limit"}: {fmt.format(batch.maxPerOperation)} ·
+        {pt?"até":"up to"} {fmt.format(batch.maxBatchesPerOperation)} batches</small>
+      {batch.status==="partial"&&<small>{pt
+        ?"Unit registrado em parte dos arquivos"
+        :"Unit recorded in only some original source files"}</small>}
+    </div>}
+    {batch.status==="conflict"&&<p class="tooltip-batch-warning">{pt
+      ?"Batch indefinido: valores Unit divergentes nos registros originais."
+      :"Batch withheld: original source Unit values conflict."}</p>}
+    <p class="tooltip-disclaimer">{pt
+      ?"Painel inspirado no visual do jogo. Valores brutos extraídos dos arquivos do cliente, não uma captura de tooltip nem atributos garantidos no servidor. O máximo de 10.000 é uma regra de jogo informada pelo jogador."
+      :"Visual inspired by the game. Values are original client-file data, not a captured in-game tooltip or verified live-server stats. The 10,000 limit is a player-reported gameplay rule."}</p>
+  </div>
+  <div class="tooltip-bracket tooltip-bracket-bottom" aria-hidden="true"></div>
+</aside>
+<style>
+  .ao-item-tooltip{
+    --ao-frame:#77664b;--ao-gold:#ebd0a0;--ao-ink:#0b0d12;
+    position:relative;
+    width:min(100%,710px);
+    margin:22px 0 28px;
+    border:1px solid #8b795f;
+    border-radius:4px;
+    padding:3px;
+    background:linear-gradient(125deg,#a18a61 0%,#443929 13%,#1a1b21 49%,#716046 87%,#ae946b 100%);
+    box-shadow:0 12px 32px #0008,0 0 0 1px #141313,0 0 24px #ad793219;
+    color:#e7e4e1;
+  }
+  .tooltip-content{
+    border:1px solid #443b2b;
+    background:
+      radial-gradient(ellipse at 50% -50%,#5c4c35aa,transparent 55%),
+      linear-gradient(115deg,#111720 0%,#14161b 40%,#0d1016 100%);
+    padding:16px clamp(14px,3vw,24px) 15px;
+  }
+  .tooltip-bracket{position:absolute;left:13px;right:13px;height:2px;
+    background:linear-gradient(90deg,transparent,#c7a76e,transparent);z-index:1}
+  .tooltip-bracket-top{top:4px}.tooltip-bracket-bottom{bottom:4px}
+  .tooltip-topline{display:flex;justify-content:space-between;gap:14px;align-items:center;
+    color:#bba986;font-size:.68rem;letter-spacing:.18em;font-weight:600}
+  .client-marker{letter-spacing:.08em;font-size:.63rem;color:#a4b2c8}
+  .tooltip-identity{display:flex;gap:15px;align-items:center;margin:14px 0 12px}
+  .item-emblem{width:62px;height:62px;flex:0 0 62px;border:2px solid #897454;border-radius:4px;
+    background:radial-gradient(circle at 38% 28%,#48505c,#18202c 58%,#080a0f);
+    display:grid;place-items:center;box-shadow:inset 0 0 14px #000b,0 0 0 1px #24201b}
+  .item-emblem span{font-size:2.2rem;color:#d1b277;font-family:Georgia,serif;
+    text-shadow:0 0 14px #d4a661a6}
+  .item-title{min-width:0}
+  .item-title h2{font-family:Georgia,"Times New Roman",serif;
+    color:#f2dba4;text-shadow:0 1px 2px #000,0 0 9px #b8944747;
+    letter-spacing:.01em;font-size:clamp(1.15rem,2.2vw,1.55rem);margin:0 0 5px;
+    overflow-wrap:anywhere}
+  .item-title p{color:#b8bdc7;font-size:.81rem;margin:0}
+  .item-title p span{color:#a68958;padding:0 3px}
+  .tooltip-divider{height:2px;margin:15px 0;
+    background:linear-gradient(90deg,transparent 0%,#9a7d50 15%,#c7aa74 45%,#564837 80%,transparent 100%)}
+  .tooltip-basic{display:grid;grid-template-columns:1fr 1fr;gap:7px 22px;margin:0}
+  .tooltip-basic div,.tooltip-stat-group dl>div{display:flex;justify-content:space-between;
+    align-items:baseline;gap:12px;min-width:0}
+  .tooltip-basic dt,.tooltip-stat-group dt{color:#c0c5cf;font-size:.84rem}
+  .tooltip-basic dd{color:#f1ede4;font-weight:600;font-size:.85rem;text-align:right}
+  .tooltip-basic dd,.tooltip-stat-group dd{margin:0}
+  .tooltip-sections{margin-top:17px;display:grid;gap:11px}
+  .tooltip-stat-group h3{font-size:.72rem;letter-spacing:.13em;color:#d6bc8b;
+    margin:0 0 8px;display:flex;align-items:center;gap:10px}
+  .tooltip-stat-group h3:after{content:"";height:1px;flex:1;background:#7f71556b}
+  .tooltip-stat-group dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    column-gap:24px;row-gap:7px}
+  .tooltip-stat-group dd{font-size:.86rem;color:#f1c66f;font-variant-numeric:tabular-nums;
+    font-weight:600;text-align:right;overflow-wrap:anywhere}
+  .tooltip-stat-group dd.uncertain{color:#f1a889}
+  .tooltip-stat-group dd small{display:block;color:#bdac9d;font-size:.68rem;font-weight:400}
+  .tooltip-empty{color:#afb3be;font-size:.82rem}
+  .tooltip-batch{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 14px;
+    margin:16px 0 0;padding:12px;border:1px solid #725b37;
+    background:linear-gradient(90deg,#45372155,#1d2023 80%)}
+  .tooltip-batch>span{color:#d6c8a7;font-size:.86rem}
+  .tooltip-batch strong{color:#f1d08a;font-size:1.02rem}
+  .tooltip-batch small{font-size:.73rem;color:#b4bac6}
+  .tooltip-batch-warning{font-size:.8rem;color:#e6b59d}
+  .tooltip-disclaimer{padding-top:12px;margin:15px 0 0;border-top:1px solid #71624765;
+    line-height:1.55;font-size:.73rem;color:#a8aeb9}
+  @media(max-width:600px){
+    .tooltip-content{padding:12px}
+    .item-emblem{width:48px;height:48px;flex-basis:48px}
+    .tooltip-basic,.tooltip-stat-group dl{grid-template-columns:1fr}
+    .tooltip-stat-group dl>div{border-bottom:1px solid #6b635347;padding:4px 0}
+  }
+</style>
