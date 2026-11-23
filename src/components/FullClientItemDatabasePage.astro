@@ -53,6 +53,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           </select>
         </label>
       </div>
+      <label class="equipment-toggle">
+        <input type="checkbox" id="db-equipment-only"/>
+        <span>{pt?"Mostrar somente categorias semelhantes a equipamentos (classificação do cliente, não elegibilidade comprovada)":"Show only equipment-like source categories (not confirmed equip/enhancement eligibility)"}</span>
+      </label>
       <p class="load-status" id="db-status" role="status">{pt?"Carregando índice do cliente…":"Loading client index…"}</p>
       <div class="table-wrap">
         <table aria-label={pt?"Todos os itens do cliente":"All client item IDs"}>
@@ -93,6 +97,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     const $=<T extends HTMLElement>(id:string)=>root.querySelector<T>("#"+id)!;
     const query=$<HTMLInputElement>("db-query"),category=$<HTMLSelectElement>("db-category");
     const identity=$<HTMLSelectElement>("db-identity"),sort=$<HTMLSelectElement>("db-sort");
+    const equipmentOnly=$<HTMLInputElement>("db-equipment-only");
     const status=$<HTMLParagraphElement>("db-status"),results=$<HTMLTableSectionElement>("db-results");
     const pageLabel=$<HTMLSpanElement>("db-page"),prev=$<HTMLButtonElement>("db-prev"),next=$<HTMLButtonElement>("db-next");
     const detail=$<HTMLElement>("db-detail"),details=$<HTMLElement>("db-detail-content");
@@ -248,7 +253,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       const text=query.value.trim().toLocaleLowerCase(),cat=category.value,state=identity.value;
       visible=allRows.filter(row=>
         (!text||row[0].includes(text)||(row[1]??"").toLocaleLowerCase().includes(text)) &&
-        (!cat||row[2]===cat)&&(!state||row[6]===state));
+        (!cat||row[2]===cat)&&(!state||row[6]===state)&&
+        (!equipmentOnly.checked||equipmentCandidateCategories.has(row[2]??"")));
       if(sort.value==="name")visible.sort((a,b)=>(a[1]??"~").localeCompare(b[1]??"~","en")||Number(a[0])-Number(b[0]));
       else if(sort.value==="level")visible.sort((a,b)=>{
         const aa=a[3]===null?null:Number(a[3]),bb=b[3]===null?null:Number(b[3]);
@@ -356,6 +362,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     category.addEventListener("change",applyFilters);
     identity.addEventListener("change",applyFilters);
     sort.addEventListener("change",applyFilters);
+    equipmentOnly.addEventListener("change",applyFilters);
     prev.addEventListener("click",()=>{if(currentPage>0){currentPage--;renderPage();}});
     next.addEventListener("click",()=>{if((currentPage+1)*perPage<visible.length){currentPage++;renderPage();}});
     (async()=>{
@@ -406,6 +413,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   label{display:grid;gap:7px;font-size:.87rem;color:var(--color-gold-light)}
   input,select{width:100%;border:1px solid var(--color-border);background:var(--color-surface);
     color:var(--color-text);border-radius:5px;padding:11px;font:inherit}
+  .equipment-toggle{display:flex;align-items:center;gap:10px;color:var(--color-text-muted);font-size:.86rem}
+  .equipment-toggle input{width:auto;cursor:pointer}
   .load-status{color:var(--color-text-muted)}
   .table-wrap{overflow:auto;border:1px solid var(--color-border);border-radius:5px}
   table{width:100%;min-width:760px;border-collapse:collapse;font-size:.88rem}
