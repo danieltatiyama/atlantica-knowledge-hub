@@ -124,6 +124,20 @@ test("30 lazy-loaded detail buckets cover exactly named items and all their orig
   assert.ok(materials>10000);
 });
 
+test("full database includes equipment-like categories beyond the 551 reviewed box items",()=>{
+  const eligible=new Set([
+    "Weapon","Defence","Sword","Spear","Axe","Bow","Gun","Cannon",
+    "Staff","Guitar","Saw","Whip","Shield","Orb","Armor","Pants",
+    "Boots","Helmet","Glove","Ring","Accessories","Neck","EARRING","BRACELET"
+  ]);
+  const possible=rows.filter(row=>row[6]==="named"&&eligible.has(row[2]));
+  assert.equal(possible.length,2462);
+  assert.equal(possible.filter(row=>row[8]===1).length,551);
+  assert.equal(possible.filter(row=>row[8]===0).length,1911);
+  // Raw categories are candidates, not proof the live server allows
+  // their items to be equipped, crafted or upgraded.
+});
+
 test("original Spirit Sword material and file provenance survives the full source import",()=>{
   const sword=read("details/00.json").items["1"];
   assert.equal(sword.s.length,2);
@@ -141,6 +155,9 @@ test("browser only renders untrusted item names as text (no HTML injection)",()=
   assert.ok(!template.includes(".innerHTML"));
   assert.ok(template.includes("encodeURIComponent(id)"));
   assert.ok(template.includes("detailCache"));
+  assert.ok(template.includes('id="db-equipment-only"'));
+  assert.ok(template.includes("equipmentCandidateCategories"));
+  assert.ok(template.includes("buildHistoricalClientProjection"));
   assert.ok(template.includes("Math.floor"));
   assert.ok(template.includes("id=\"db-category\""));
   assert.ok(template.includes("data-lang={lang}"));
