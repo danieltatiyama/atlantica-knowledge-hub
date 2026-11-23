@@ -95,7 +95,7 @@ test("tree worksheet preserves hierarchy, parent consumption, rounding and share
  for(const part of [
   "Consumption breakdown","Consumed in branch","To craft",
   "Albert&apos;s Special Bait","Dumpling",
-  "1 × 35000",
+  "3 × 9800 + 1 × 5600",
   "3 × 4000 + 1 × 2000","3 × 8000 + 1 × 4000",
   "1000","35000","42000","3 × 10000 + 1 × 5000",
  ])assert.ok(tree.includes(part),part);
