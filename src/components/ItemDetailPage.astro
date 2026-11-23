@@ -55,6 +55,11 @@ const clientFields = curatedFields ? [
           ?"Atributos +1..+10 são projeções históricas; MagicDef, EV e MoveSpeed ficam fixos."
           :"+1..+10 values are historical projections; MagicDef, EV and MoveSpeed stay fixed."}</small>
       </p>
+      <p class="full-db-link">
+        <a href={prefix+"/items/database/?id="+item.id}>
+          {pt?"Ver todas as definições deste ID no banco completo do cliente":"Inspect this ID in the complete original client database"}
+        </a>
+      </p>
       <nav class="page-sections" aria-label={pt ? "Seções do item" : "Item sections"}>
         <a href="#item-stats">{pt ? "Atributos" : "Stats"}</a>
         <a href="#item-sources">{pt ? "Fontes" : "Source"}</a>
@@ -123,6 +128,7 @@ const clientFields = curatedFields ? [
   .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}
   .breadcrumb{padding:26px 0}.breadcrumb a,td a{color:var(--color-accent);text-decoration:none}
   article{max-width:1140px;margin:0 auto}
+  .full-db-link a{color:var(--color-accent);font-size:.89rem}
   .source-export{display:flex;flex-wrap:wrap;gap:7px 15px;align-items:baseline;margin:20px 0 10px}
   .source-export a{color:var(--color-accent);font-weight:600}
   .source-export small{color:var(--color-text-muted);line-height:1.5}
