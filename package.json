@@ -30,10 +30,10 @@
     "validate:client-attributes": "node scripts/check-client-item-attributes.mjs",
     "test:client-views": "node --test tests/client-item-stat-summary.test.mjs",
     "test:client-crafting": "node --test tests/client-crafting-requirements.test.mjs",
-    "prebuild": "node scripts/generate-monster-level-resolved.mjs && node scripts/generate-client-craft-links.mjs && node scripts/generate-client-grade-csv.mjs",
+    "prebuild": "node scripts/generate-monster-level-resolved.mjs && node scripts/generate-client-craft-links.mjs && node scripts/generate-client-grade-csv.mjs && node scripts/audit-wiki-data.mjs",
     "export:client-grades": "node scripts/generate-client-grade-csv.mjs",
     "test:grade-tables": "node --test tests/client-item-stat-summary.test.mjs tests/client-grade-export.test.mjs tests/equipment-catalog-source-index.test.mjs",
-    "predev": "node scripts/generate-monster-level-resolved.mjs && node scripts/generate-client-craft-links.mjs",
+    "predev": "node scripts/generate-monster-level-resolved.mjs && node scripts/generate-client-craft-links.mjs && node scripts/audit-wiki-data.mjs",
     "generate:craft-links": "node scripts/generate-client-craft-links.mjs",
     "generate:monster-item-lookup": "node scripts/generate-monster-level-resolved.mjs"
   },

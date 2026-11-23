@@ -1,0 +1,73 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+---
+<BaseLayout title={(pt?"Qualidade dos dados":"Data quality")+" | Atlantica Knowledge Hub"}
+ lang={lang} alternatePaths={{en:"/tools/data-quality/","pt-br":"/pt-br/tools/data-quality/"}}>
+ <main class="quality-page" id="client-source-quality" data-lang={lang}>
+  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <p class="eyebrow">GLOBAL / NA · SNAPSHOT 1</p>
+  <h1>{pt?"Auditoria dos dados do cliente":"Client data quality audit"}</h1>
+  <p>{pt?"Verificações de integridade entre índices de drops e fabricação. Consistência dos arquivos não comprova mecânicas ou disponibilidade no servidor.":"Integrity checks between loot and crafting source indexes. Internal consistency does not prove current server mechanics or availability."}</p>
+  <p id="source-quality-status" role="status">{pt?"Carregando relatório…":"Loading audit report…"}</p>
+  <div id="source-quality-results" hidden>
+   <section><h2>{pt?"Catálogo de itens":"Item catalog"}</h2><dl id="quality-items"></dl></section>
+   <section><h2>{pt?"Monstros e drops":"Creatures and loot"}</h2><dl id="quality-monsters"></dl></section>
+   <section><h2>{pt?"Fabricação":"Crafting"}</h2><dl id="quality-crafting"></dl></section>
+   <section><h2>{pt?"Ressalvas":"Limitations"}</h2><ul id="quality-warnings"></ul></section>
+  </div>
+ </main>
+</BaseLayout>
+<script>
+ const root=document.getElementById("client-source-quality");
+ if(root){
+  const pt=root.dataset.lang==="pt-br",nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+  const status=document.getElementById("source-quality-status")!;
+  const sections={
+   itemCatalog:[["ids",pt?"IDs de itens":"Item IDs"],["named",pt?"Itens nomeados":"Named items"],["equipmentReviewed",pt?"Equipamentos revisados":"Reviewed equipment"]],
+   monsters:[["ids",pt?"IDs de criaturas":"Creature IDs"],["withMatchedDrops",pt?"Criaturas com drops":"Creatures with matched loot"],
+    ["withoutMatchedDrops",pt?"Sem drops resolvidos":"Without resolved loot"],["directRows",pt?"Registros diretos":"Direct rows"],
+    ["levelMatchedGroupRows",pt?"Registros compatíveis":"Level-matched group rows"],
+    ["matchedItemIds",pt?"IDs com drops elegíveis":"Matched loot item IDs"],["unresolvedGroupReferences",pt?"Referências inconclusivas":"Unresolved group references"]],
+   crafting:[["recipeProducts",pt?"Produtos com receitas":"Recipe products"],["ingredientObservations",pt?"Ingredientes identificados":"Ingredient observations"],
+    ["linkedMaterialIds",pt?"Materiais vinculados":"Linked material IDs"],["unindexedMaterialIds",pt?"Materiais sem nome no índice":"Unindexed material IDs"]],
+  };
+  const create=(tag:string,value:string)=>{const el=document.createElement(tag);el.textContent=value;return el;};
+  void (async()=>{
+   try{
+    const response=await fetch("/data/audits/source-quality.json");
+    if(!response.ok)throw Error("Audit unavailable");
+    const data=await response.json();
+    if(data.schemaVersion!=="1.0"||data.snapshotId!==1||data.dataset!=="atlantica-client-source-quality"||
+      data.status!=="source-consistent"||!data.checks?.forwardReverseMatches||!data.checks?.hugeCrocodileReference)
+      throw Error("Invalid audit");
+    for(const [name,fields] of Object.entries(sections)){
+     const dest=document.getElementById("quality-"+(name==="itemCatalog"?"items":name))!;
+     for(const [key,label] of fields){
+      const value=data[name]?.[key];
+      if(!Number.isSafeInteger(value)||value<0)throw Error("Invalid coverage count");
+      const item=create("div","");item.append(create("dt",label),create("dd",nf.format(value)));dest.append(item);
+     }
+    }
+    const warnings=document.getElementById("quality-warnings")!;
+    for(const note of data.warnings??[])warnings.append(create("li",String(note)));
+    status.textContent=pt?"Índices internos consistentes · Snapshot 1":"Internal source indexes agree · Snapshot 1";
+    document.getElementById("source-quality-results")!.hidden=false;
+   }catch{status.textContent=pt?"Relatório indisponível ou incompatível.":"Audit report unavailable or incompatible.";}
+  })();
+ }
+</script>
+<style>
+ .quality-page{width:min(var(--content-width),92%);margin:0 auto;padding:24px 0 90px}
+ nav a{color:var(--color-accent)}h1{font-size:clamp(2rem,4vw,3rem)}
+ .eyebrow{color:var(--color-accent);letter-spacing:.12em;font-size:.79rem}
+ .quality-page>p{max-width:850px;color:var(--color-text-muted)}
+ section{margin:24px 0;padding:20px;border:1px solid var(--color-border);background:var(--color-surface);border-radius:6px}
+ section h2{font-size:1.35rem;margin:0 0 15px;color:var(--color-gold-light)}
+ dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;margin:0}
+ dl>div{padding:13px;background:var(--color-background);border:1px solid var(--color-border);border-radius:4px}
+ dt{font-size:.83rem;color:var(--color-text-muted)}dd{margin:7px 0 0;font-size:1.3rem;font-weight:700;font-variant-numeric:tabular-nums}
+ li{line-height:1.6;color:var(--color-text-muted);margin:0 0 8px}
+</style>

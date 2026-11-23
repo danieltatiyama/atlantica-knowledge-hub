@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const cards=[
+ {name:pt?"Qualidade dos dados":"Data quality",description:pt?"Cobertura e consistência dos índices do cliente.":"Client source coverage and integrity.",href:prefix+"/tools/data-quality/"},
+ {name:pt?"Calculadora de crafting":"Crafting calculator",description:pt?"Calcule materiais e dependências.":"Plan materials and dependencies.",href:null},
+ {name:pt?"Calendário de Nation Dungeons":"Nation Dungeon calendar",description:pt?"Planeje runs e cooldowns.":"Plan runs and cooldowns.",href:null},
+];
+---
+<BaseLayout title={(pt?"Ferramentas":"Tools")+" | Atlantica Knowledge Hub"}
+ lang={lang} alternatePaths={{en:"/tools/","pt-br":"/pt-br/tools/"}}>
+ <main class="tools-index">
+  <p class="eyebrow">ATLANTICA GLOBAL / NA</p>
+  <h1>{pt?"Ferramentas e calculadoras":"Tools & calculators"}</h1>
+  <p>{pt?"Ferramentas comunitárias baseadas na Wiki.":"Community tools using Wiki data."}</p>
+  <div class="tool-grid">{cards.map(card=>card.href
+    ? <a href={card.href}><h2>{card.name}</h2><p>{card.description}</p></a>
+    : <div class="future-tool"><h2>{card.name}</h2><p>{card.description}</p><small>{pt?"Em desenvolvimento":"Coming soon"}</small></div>
+  )}</div>
+ </main>
+</BaseLayout>
+<style>
+ .tools-index{width:min(var(--content-width),92%);margin:0 auto;padding:36px 0 90px}
+ .eyebrow{font-size:.77rem;letter-spacing:.14em;color:var(--color-accent)}
+ h1{font-size:clamp(2rem,4vw,3rem)}.tools-index>p{color:var(--color-text-muted)}
+ .tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:15px;margin-top:28px}
+ .tool-grid a,.future-tool{display:block;padding:20px;border:1px solid var(--color-border);border-radius:6px;
+   background:var(--color-surface);color:var(--color-text);text-decoration:none}
+ .tool-grid a:is(:hover,:focus-visible){border-color:var(--color-accent);outline-color:var(--color-accent)}
+ .tool-grid h2{margin:0 0 10px;color:var(--color-gold-light);font-size:1.25rem}
+ .tool-grid p{color:var(--color-text-muted);margin:0}
+ .future-tool{opacity:.65}.future-tool small{color:var(--color-text-muted)}
+</style>
