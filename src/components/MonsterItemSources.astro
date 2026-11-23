@@ -1,187 +1,171 @@
 ---
-/**
- * The 53 original source files have been audited and committed. Always
- * validate snapshot identity and preserve raw direct/group provenance.
- */
+/** Player-facing source links filtered by each creature's original level Band. */
 interface Props {lang:"en"|"pt-br";itemId:string;}
 const {lang,itemId}=Astro.props;
 const pt=lang==="pt-br";
 ---
 <section class="monster-item-sources" data-item-id={itemId} data-lang={lang}
-  aria-label={pt?"Drops de monstros nos arquivos do cliente":"Monster drops in client source files"}>
-  <h2>{pt?"Drops de monstros (arquivos do cliente)":"Monster drops (client source files)"}</h2>
+  aria-label={pt?"Onde conseguir este item em monstros":"Monsters that may drop this item"}>
+  <h2>{pt?"Quais monstros podem dropar este item?":"Which monsters may drop this item?"}</h2>
   <p class="drop-disclaimer">{pt
-    ?"Estimativa histórica: RawRate ÷ 100 (escala candidata de 10.000 = 100%). Não são chances verificadas no servidor; mantenha taxas originais e referências de grupo separadas."
-    :"Historical estimate: RawRate ÷ 100 (candidate 10,000 = 100% scale). NOT verified server odds; original raw and grouped stages remain separate."}</p>
-  <p class="monster-item-status" role="status">{pt?"Consultando referências de origem…":"Checking original client source references…"}</p>
-  <div class="monster-item-direct" hidden>
-    <h3>{pt?"Referências diretas":"Direct source drops"}</h3>
-    <div class="monster-scroll"><table><thead><tr>
-      <th>{pt?"Criatura":"Creature"}</th><th>RawRate</th><th>{pt?"Est. %":"Est. %"}</th>
-      <th>{pt?"Quantidade candidata":"Candidate quantity"}</th>
-      <th>{pt?"Registro":"Source row"}</th>
-    </tr></thead><tbody></tbody></table></div>
-  </div>
-  <div class="monster-item-group" hidden>
-    <h3>{pt?"Referências por grupo":"Group-linked source drops"}</h3>
-    <p class="drop-disclaimer">{pt
-      ?"As porcentagens de cada etapa são estimativas independentes da escala numérica; não multiplicamos as etapas para inventar um drop final."
-      :"Percentages for each stage are separate numeric-scale estimates; stages are never multiplied into an invented final drop chance."}</p>
-    <div class="monster-scroll"><table><thead><tr>
-      <th>{pt?"Criatura":"Creature"}</th><th>GroupID</th><th>Band</th>
-      <th>{pt?"RawRate referência":"Reference RawRate"}</th><th>{pt?"Est. referência":"Ref. est. %"}</th>
-      <th>{pt?"RawRate item":"Item RawRate"}</th><th>{pt?"Est. item":"Item est. %"}</th>
-      <th>{pt?"Quantidade candidata":"Candidate quantity"}</th>
-      <th>{pt?"Registros":"Source rows"}</th>
-    </tr></thead><tbody></tbody></table></div>
+    ?"Mostramos apenas os itens das faixas de nível compatíveis com cada criatura nos arquivos do cliente. Os percentuais são estimativas, NÃO taxas verificadas no servidor."
+    :"Only items from the client level bracket matching each creature are shown. Percentages are estimates, NOT verified live-server drop rates."}</p>
+  <p class="monster-item-status" role="status">{pt?"Carregando monstros…":"Loading creature sources…"}</p>
+  <div class="monster-item-results" hidden>
+    <div class="monster-scroll">
+      <table>
+        <thead><tr>
+          <th>{pt?"Criatura":"Creature"}</th>
+          <th>{pt?"Chance estimada":"Estimated rate"}</th>
+          <th>{pt?"Quantidade possível":"Possible amount"}</th>
+          <th>{pt?"Origem":"Source"}</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
   <p class="monster-catalog-link">
     <a href={(pt?"/pt-br":"")+"/monsters/?item="+encodeURIComponent(itemId)}>
-      {pt?"Consultar este item no códice de drops":"Search this ItemID in the loot codex"}</a>
+      {pt?"Explorar este item no códice de drops":"Explore this item in the loot codex"}</a>
     <span aria-hidden="true"> · </span>
     <a href={(pt?"/pt-br":"")+"/monsters/"}>{pt?"Explorar criaturas":"Browse creatures"}</a>
   </p>
 </section>
 <script>
-  import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
+  import {formatLevelResolvedPercent,estimatedTwoStagePercent} from
+    "../data/client-monster-drop-resolver.mjs";
   let manifestPromise:Promise<any>|null=null;
   const getManifest=()=>{
     if(!manifestPromise){
-      manifestPromise=fetch("/data/client-monsters/manifest.json")
-        .then(response=>response.ok?response.json():null)
-        .catch(()=>null);
+      manifestPromise=fetch("/data/client-monster-discovery/manifest.json")
+        .then(response=>response.ok?response.json():null).catch(()=>null);
     }
     return manifestPromise;
   };
-  const text=(tag:string,value:string)=>{
-    const node=document.createElement(tag);node.textContent=value;return node;
+  const node=(tag:string,value?:string)=>{
+    const n=document.createElement(tag);if(value!==undefined)n.textContent=value;return n;
   };
   const raw=(value:unknown)=>value===null||value===undefined?"—":String(value);
-  const qty=(min:unknown,max:unknown)=>raw(min)+"–"+raw(max);
-  function creature(td:HTMLTableCellElement,id:string,name:string|null,prefix:string){
-    const a=text("a",name??("Creature #"+id)) as HTMLAnchorElement;
-    a.href=prefix+"/monsters/?id="+encodeURIComponent(id);
-    td.append(a);
-    if(name)td.append(document.createTextNode(" · #"+id));
-  }
   for(const section of document.querySelectorAll<HTMLElement>(".monster-item-sources")){
     const id=section.dataset.itemId??"",pt=section.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
     const state=section.querySelector<HTMLElement>(".monster-item-status")!;
-    const direct=section.querySelector<HTMLElement>(".monster-item-direct")!;
-    const group=section.querySelector<HTMLElement>(".monster-item-group")!;
+    const container=section.querySelector<HTMLElement>(".monster-item-results")!;
+    const tbody=container.querySelector("tbody")!;
     void (async()=>{
       if(!/^[1-9]\d{0,12}$/.test(id))return;
       try{
         const meta=await getManifest();
-        if(!meta){
-          state.textContent=pt
-            ?"A base original de monstros e drops ainda aguarda importação e revisão."
-            :"The original monster and loot dataset is pending import and review.";
-          return;
-        }
-        if(meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
-          meta.dataset!=="all-client-monster-loot-original"||
+        if(!meta||meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
+          meta.dataset!=="level-resolved-client-monster-loot"||
+          meta.levelMatchedGroupRows!==23905||
+          meta.unmatchedLevelGroupRefs!==197||
           !Array.isArray(meta.files?.itemSources))
-          throw Error("Unexpected loot source manifest");
+          throw Error("Level-resolved client monster source manifest missing or incompatible");
         const bucket=Math.floor(Number(id)/1000);
         const filename="item-sources/"+String(bucket).padStart(2,"0")+".json";
-        if(!meta.files.itemSources.includes(filename)){
+        if(!meta.files.itemSources.includes(filename))return;
+        const response=await fetch("/data/client-monster-discovery/"+filename);
+        if(!response.ok)throw Error("Level-resolved item source shard missing");
+        const shard=await response.json();
+        if(shard.schemaVersion!=="1.0"||shard.snapshotId!==1||
+          shard.dataset!=="level-resolved-client-monster-loot"||shard.bucket!==bucket)
+          throw Error("Level-resolved source shard invalid");
+        const entry=shard.items?.[id];
+        if(!entry){
           state.textContent=pt
-            ?"Nenhuma referência de drop neste snapshot. Isso não prova que o item nunca seja obtido de monstros."
-            :"No client-source loot reference for this ID; that does not prove it never drops.";
+            ?"Nenhum drop compatível com a faixa de nível registrada. Isso não prova ausência no servidor."
+            :"No drop matches the recorded level bracket. This does not prove it cannot drop on the server.";
           return;
         }
-        const response=await fetch("/data/client-monsters/"+filename);
-        if(!response.ok)throw Error("Original item drop shard missing");
-        const source=await response.json();
-        if(source.schemaVersion!=="1.0"||source.snapshotId!==1||
-          source.bucket!==bucket)throw Error("Item drop source snapshot mismatch");
-        const data=source.items?.[id];
-        if(!data){state.textContent=pt?"Nenhum registro de drop encontrado.":"No source drop records found.";return;}
-        // Some ordinary materials have more than 8,000 derived group
-        // references. Never create thousands of DOM rows on page load.
-        const renderPaged=(section:HTMLElement,entries:any[],
-          makeRow:(row:any[])=>HTMLTableRowElement)=>{
-          const tbody=section.querySelector("tbody")!;
-          let cursor=0;
-          const chunkSize=100;
-          const button=document.createElement("button");
-          button.type="button";button.className="monster-more";
-          const showNext=()=>{
-            const fragment=document.createDocumentFragment();
-            for(const row of entries.slice(cursor,cursor+chunkSize))
-              fragment.append(makeRow(row));
-            cursor=Math.min(entries.length,cursor+chunkSize);
-            tbody.append(fragment);
-            button.textContent=(pt?"Mostrar mais 100 · ":"Show 100 more · ")+
-              cursor+"/"+entries.length;
-            if(cursor===entries.length)button.remove();
-          };
-          if(entries.length>chunkSize){
-            button.addEventListener("click",showNext);
-            section.append(button);
+        const sources=[
+          ...(entry.direct??[]).map((r:any[])=>({row:r,kind:"direct" as const,
+            pct:Number(r[3])/100,min:r[5],max:r[6]})),
+          ...(entry.group??[]).map((r:any[])=>({row:r,kind:"group" as const,
+            pct:estimatedTwoStagePercent(r[5],r[6]),min:r[9],max:r[10]})),
+        ].sort((a,b)=>(b.pct??-1)-(a.pct??-1)||String(a.row[1]).localeCompare(String(b.row[1])));
+        let shown=0;
+        const more=node("button") as HTMLButtonElement;
+        more.type="button";more.className="monster-more";
+        const render=()=>{
+          const fragment=document.createDocumentFragment();
+          for(const source of sources.slice(shown,shown+75)){
+            const [charId,name]=source.row;
+            if(!/^[1-9]\d{0,12}$/.test(String(charId)))continue;
+            const tr=node("tr"),creatureCell=node("td");
+            const link=node("a",name??("CharID #"+charId)) as HTMLAnchorElement;
+            link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
+            creatureCell.append(link);
+            creatureCell.append(node("small"," #"+charId));
+            tr.append(creatureCell);
+            tr.append(node("td",formatLevelResolvedPercent(source.pct,pt?"pt-br":"en")));
+            tr.append(node("td",raw(source.min)+"–"+raw(source.max)));
+            const technical=node("td"),details=node("details");
+            details.append(node("summary",pt?"Ver origem":"View source"));
+            const dl=node("dl");
+            const fields=source.kind==="direct"
+              ?[["RawRate",source.row[3]],[pt?"Registro":"Source row",source.row[2]],
+                ["Slot",source.row[4]]]
+              :[["GroupID",source.row[2]],["Band",source.row[8]],
+                ["RawRate ref",source.row[5]],["RawRate item",source.row[6]],
+                [pt?"Linha referência":"Ref row",source.row[3]],
+                [pt?"Linha item":"Item row",source.row[4]],
+                ["Slot",source.row[7]]];
+            for(const [label,value] of fields){
+              const box=node("div");box.append(node("dt",String(label)),node("dd",raw(value)));
+              dl.append(box);
+            }
+            details.append(dl);technical.append(details);tr.append(technical);
+            fragment.append(tr);
           }
-          showNext();
+          tbody.append(fragment);
+          shown=Math.min(sources.length,shown+75);
+          more.textContent=(pt?"Mostrar mais 75 · ":"Show 75 more · ")+
+            shown+" / "+sources.length;
+          if(shown===sources.length)more.remove();
         };
-        renderPaged(direct,data.direct??[],row=>{
-          const [charId,name,recordId,rawRate,slot,min,max]=row;
-          if(!/^[1-9]\d{0,12}$/.test(charId))throw Error("Invalid creature ID");
-          const tr=document.createElement("tr");
-          const first=tr.insertCell();creature(first,charId,name,prefix);
-          tr.insertCell().textContent=raw(rawRate);
-          tr.insertCell().textContent=formatCandidateClientRate(rawRate,pt?"pt-br":"en");
-          tr.insertCell().textContent=qty(min,max);
-          tr.insertCell().textContent="#"+recordId+(slot?" · "+slot:"");
-          return tr;
-        });
-        renderPaged(group,data.group??[],row=>{
-          const [charId,name,groupId,refRow,dropRow,refRate,dropRate,slot,band,min,max]=row;
-          if(!/^[1-9]\d{0,12}$/.test(charId))throw Error("Invalid creature ID");
-          const tr=document.createElement("tr");
-          creature(tr.insertCell(),charId,name,prefix);
-          tr.insertCell().textContent=raw(groupId);
-          tr.insertCell().textContent=raw(band);
-          tr.insertCell().textContent=raw(refRate);
-          tr.insertCell().textContent=formatCandidateClientRate(refRate,pt?"pt-br":"en");
-          tr.insertCell().textContent=raw(dropRate);
-          tr.insertCell().textContent=formatCandidateClientRate(dropRate,pt?"pt-br":"en");
-          tr.insertCell().textContent=qty(min,max);
-          tr.insertCell().textContent="#"+refRow+" / #"+dropRow+(band?" · "+band:"");
-          return tr;
-        });
-        if(data.direct?.length)direct.hidden=false;
-        if(data.group?.length)group.hidden=false;
-        state.textContent=(pt?"Referências originais: ":"Original source links: ")+
-          ((data.direct?.length??0)+(data.group?.length??0));
+        if(sources.length>75){
+          more.addEventListener("click",render);
+          container.append(more);
+        }
+        render();container.hidden=false;
+        state.textContent=(pt?"Referências de drops compatíveis com o nível: ":"Level-matched drop records: ")+
+          sources.length;
       }catch{
-        state.textContent=pt?"Não foi possível validar os arquivos de loot."
-          :"Could not validate or load original loot source files.";
+        state.textContent=pt?"Não foi possível validar os drops por faixa de nível."
+          :"Level-matched creature sources failed to load or validate.";
       }
     })();
   }
 </script>
-<style>
-  .monster-item-sources{margin:25px 0;border:1px solid #847052;
-    border-radius:5px;background:linear-gradient(140deg,#171e25,#12161b);
+<style is:global>
+  .monster-item-sources{
+    margin:25px 0;border:1px solid #847052;border-radius:5px;
+    background:linear-gradient(140deg,#171e25,#12161b);
     box-shadow:inset 0 0 0 3px #292820,0 7px 24px #0004;
-    padding:17px}
-  h2{font-family:Georgia,"Times New Roman",serif;font-size:1.42rem;
-    color:#e7cb96;margin:0 0 8px;padding-bottom:10px;
-    border-bottom:1px solid #79674885}
-  h3{font-size:1.04rem;color:var(--color-gold-light);margin:18px 0 9px}
-  .drop-disclaimer,.monster-item-status{font-size:.85rem;line-height:1.65;color:var(--color-text-muted)}
-  .monster-scroll{overflow:auto}
-  table{border-collapse:collapse;width:100%;min-width:650px}
-  th,td{padding:9px 12px;border-bottom:1px solid var(--color-border);text-align:left;font-size:.86rem}
-  th{color:#e1c48c;background:#2b2821}
-  .monster-item-sources :global(tbody tr:nth-child(even)){background:#222932}
-  .monster-item-sources :global(tbody tr:hover){background:#55452b57}
-  td a,.monster-catalog-link a{color:var(--color-accent)}
-  .monster-item-direct[hidden],.monster-item-group[hidden]{display:none}
-  .monster-item-sources :global(.monster-more){
-    border:1px solid var(--color-border);border-radius:4px;
-    padding:8px 12px;margin:12px 0;background:var(--color-surface);
-    color:var(--color-accent);cursor:pointer;
+    padding:17px;color:#e5e7eb;
   }
-  .monster-catalog-link{font-size:.85rem;margin-bottom:0}
+  .monster-item-sources h2{font-family:Georgia,"Times New Roman",serif;
+    font-size:1.42rem;color:#e7cb96;margin:0 0 8px;padding-bottom:10px;
+    border-bottom:1px solid #79674885}
+  .monster-item-sources .drop-disclaimer,
+  .monster-item-sources .monster-item-status{font-size:.85rem;line-height:1.65;color:#c5ccd2}
+  .monster-item-sources .monster-scroll{overflow:auto}
+  .monster-item-sources table{border-collapse:collapse;width:100%;min-width:560px}
+  .monster-item-sources th,.monster-item-sources td{padding:9px 12px;border-bottom:1px solid #574d3f;text-align:left;font-size:.86rem}
+  .monster-item-sources th{color:#e5c992;background:#302c22}
+  .monster-item-sources tbody tr:nth-child(even){background:#222932}
+  .monster-item-sources tbody tr:hover{background:#55452b57}
+  .monster-item-sources td a,.monster-item-sources .monster-catalog-link a{color:#e9ce93}
+  .monster-item-sources td small{display:block;color:#afb7c4;font-size:.73rem}
+  .monster-item-sources td:nth-child(2){font-weight:600;color:#e8d198;font-variant-numeric:tabular-nums}
+  .monster-item-sources details summary{color:#e7c78d;cursor:pointer}
+  .monster-item-sources details dl{display:grid;grid-template-columns:1fr 1fr;
+    gap:8px;background:#13191e;padding:10px;margin:8px 0;border:1px solid #685943}
+  .monster-item-sources details dt{font-size:.73rem;color:#b4b9c2}
+  .monster-item-sources details dd{margin:3px 0 0;font-size:.83rem;color:#f0dfc0}
+  .monster-item-sources .monster-item-results[hidden]{display:none}
+  .monster-item-sources .monster-more{border:1px solid #8b7958;border-radius:3px;
+    padding:8px 12px;margin:12px 0;background:#28261f;color:#eacb91;cursor:pointer}
+  .monster-item-sources .monster-catalog-link{font-size:.85rem;margin-bottom:0}
+  .monster-item-sources :is(a,summary,button):focus-visible{outline:2px solid #f0c982;outline-offset:2px}
 </style>
