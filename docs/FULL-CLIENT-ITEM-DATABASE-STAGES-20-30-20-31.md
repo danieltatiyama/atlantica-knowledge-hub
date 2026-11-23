@@ -34,6 +34,19 @@ unique strings. Some names (for example *Immortal Bow*) are shared by
 multiple distinct item IDs. Those IDs remain distinct, never
 automatically merged or marked interchangeable.
 
+### Source equipment-like categories (NOT confirmed upgradeable)
+
+The database also offers an optional search filter for **24 original
+ItemType category labels** resembling equipment categories or
+accessories. Exactly **2,462 named IDs** occur in those source
+categories, including the original 551 reviewed equipment and
+**1,911 additional candidate IDs**. These are *client-source
+category classifications only*. A matching category is not
+proof that a server currently allows equipping, enhancing,
+crafting, trading, acquiring or upgrading that item.
+
+The full 23,586-ID search remains unfiltered by default.
+
 The 884 quarantined IDs are included in the searchable index with
 their actual **numeric IDs and identity states only**. No English
 names or original source definitions are silently assigned to them.
