@@ -1,0 +1,292 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+---
+<BaseLayout lang={lang}
+ title={(pt?"Pesquisa de preços do Market":"Market price research")+" | Atlantica Knowledge Hub"}
+ alternatePaths={{en:"/tools/market-prices/","pt-br":"/pt-br/tools/market-prices/"}}>
+ <main class="mpr-page" id="mpr-root" data-lang={lang}>
+  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <p class="mpr-eyebrow">ATLANTICA GLOBAL / NA · CLIENT EVIDENCE</p>
+  <h1>{pt?"Pesquisa de preços do Market":"Market price research"}</h1>
+  <p class="mpr-intro">{pt
+   ?"Revise os 128 itens do catálogo geral NPC que não estavam entre os 293 ItemIDs conciliados com a referência histórica de 2025. Os preços exibidos vêm do cliente e NÃO comprovam ofertas fixas no Market atual."
+   :"Review the 128 NPC general-catalog items outside the 293 ItemIDs matched against the 2025 historical reference. Shown prices come from the client and do NOT prove current fixed-price Market listings."}</p>
+  <p class="mpr-disclaimer">{pt
+   ?"As observações são relatos inseridos por você e ficam somente neste navegador. Não viram preços oficiais da Wiki nem são enviadas automaticamente."
+   :"Observations are your own reports stored only in this browser. They never become official Wiki prices or get uploaded automatically."}</p>
+  <section class="mpr-panel">
+   <h2>{pt?"Candidatos para verificação":"Candidates to check"}</h2>
+   <p class="mpr-description" id="mpr-stats" role="status">{pt?"Carregando candidatos…":"Loading candidates…"}</p>
+   <div class="mpr-toolbar">
+    <label>{pt?"Pesquisar nome ou ItemID":"Search name or ItemID"}
+     <input id="mpr-search" type="search" autocomplete="off" placeholder={pt?"Ex.: Holly ou 2002":"e.g. Holly or 2002"}/>
+    </label>
+    <label>{pt?"Filtrar observações":"Filter observations"}
+     <select id="mpr-filter">
+      <option value="all">{pt?"Todos":"All"}</option>
+      <option value="pending">{pt?"Sem revisão":"Not reviewed"}</option>
+      <option value="reviewed">{pt?"Com observação":"With observation"}</option>
+     </select>
+    </label>
+   </div>
+   <div class="mpr-table-wrap" role="region" tabindex="0" aria-label={pt?"Lista de candidatos":"Candidate list"}>
+    <table>
+     <thead><tr>
+      <th>ItemID</th><th>{pt?"Nome no cliente":"Client name"}</th>
+      <th>{pt?"Categoria":"Category"}</th><th>{pt?"Preço NPC (gold)":"NPC price (gold)"}</th>
+      <th>{pt?"Minha observação":"My observation"}</th><th>{pt?"Ação":"Action"}</th>
+     </tr></thead>
+     <tbody id="mpr-candidates"></tbody>
+    </table>
+   </div>
+   <p id="mpr-visible" class="mpr-description"></p>
+  </section>
+  <section class="mpr-panel" id="mpr-editor" hidden>
+   <h2 id="mpr-selected-title">{pt?"Registrar observação":"Record observation"}</h2>
+   <p class="mpr-description" id="mpr-selected-reference"></p>
+   <form id="mpr-form">
+    <div class="mpr-toolbar">
+     <label>{pt?"Resultado observado no jogo":"What you observed in game"}
+      <select id="mpr-state" required>
+       <option value="inconclusive">{pt?"Inconclusivo":"Inconclusive"}</option>
+       <option value="fixed-match">{pt?"Oferta fixa com mesmo preço":"Fixed listing at client price"}</option>
+       <option value="fixed-different">{pt?"Oferta fixa com preço diferente":"Fixed listing at different price"}</option>
+       <option value="not-listed">{pt?"Não encontrei oferta fixa":"No fixed listing found"}</option>
+      </select>
+     </label>
+     <label>{pt?"Preço observado (gold)":"Observed price (gold)"}
+      <input id="mpr-observed-price" type="text" inputmode="numeric" pattern="[0-9]+" placeholder={pt?"Somente para ofertas observadas":"Only for observed listings"}/>
+     </label>
+     <label>{pt?"Data da observação":"Observation date"}
+      <input id="mpr-observed-date" type="date" required/>
+     </label>
+    </div>
+    <label class="mpr-notes-label">{pt?"Evidência / contexto (10–1000 caracteres)":"Evidence / context (10–1000 characters)"}
+     <textarea id="mpr-notes" rows="3" minlength="10" maxlength="1000" required
+      placeholder={pt?"Ex.: Verifiquei na janela Market, quantidade fixa e preço, servidor Global…":"e.g. Checked the in-game Market fixed listing and quantity on Global…"}></textarea>
+    </label>
+    <p class="mpr-description">{pt
+     ?"Registre exatamente o que você viu. Uma observação local não comprova sozinha a disponibilidade permanente do item."
+     :"Record exactly what you saw. A local observation alone does not prove permanent item availability."}</p>
+    <div class="mpr-actions">
+     <button type="submit">{pt?"Salvar observação local":"Save local observation"}</button>
+     <button type="button" id="mpr-delete">{pt?"Apagar observação":"Delete observation"}</button>
+     <button type="button" id="mpr-cancel">{pt?"Fechar":"Close"}</button>
+    </div>
+   </form>
+  </section>
+  <section class="mpr-panel">
+   <h2>{pt?"Exportar e importar observações":"Export and import observations"}</h2>
+   <p class="mpr-description">{pt
+    ?"Exporte um JSON para compartilhar as evidências manualmente ou restaurar em outro navegador. Importar substitui as observações locais atuais, após confirmação."
+    :"Export a JSON file to share evidence manually or restore it in another browser. Import replaces your current local observations after confirmation."}</p>
+   <div class="mpr-actions">
+    <button type="button" id="mpr-export">{pt?"Exportar observações JSON":"Export observations JSON"}</button>
+    <label class="mpr-upload">{pt?"Importar JSON":"Import JSON"}
+     <input type="file" id="mpr-import" accept=".json,application/json"/>
+    </label>
+   </div>
+   <p id="mpr-action-status" role="status" aria-live="polite"></p>
+  </section>
+  <p class="mpr-description">{pt
+   ?"Origem: NPCTradeItem_ENG.ndt do cliente instalado, extraído em 23/11/2026; comparação histórica Jana4U de 14/11/2025. O arquivo de servidor citado por pesquisas antigas tem o mesmo nome, mas não foi obtido do servidor Global."
+   :"Sources: installed client NPCTradeItem_ENG.ndt, extracted November 23, 2026; Jana4U historical comparison dated November 14, 2025. Older technical references mention a similarly named server file, but the live Global server file was not obtained."}</p>
+ </main>
+</BaseLayout>
+<script>
+ import {REVIEW_STORAGE_KEY,parseMarketPriceReviewQueue,normalizeMarketObservation,
+   validateMarketReviewBundle,buildMarketReviewBundle} from "../data/market-price-review.mjs";
+ type Candidate={itemId:string;name:string;category:string;referenceGold:string;sourceLine:number};
+ type Observation={itemId:string;state:string;observedGold:string|null;observedOn:string;notes:string};
+ const root=document.getElementById("mpr-root");
+ if(root){
+  const pt=root.dataset.lang==="pt-br";
+  const $=(id:string)=>document.getElementById(id)!;
+  const results=$("mpr-candidates"),stats=$("mpr-stats"),visible=$("mpr-visible");
+  const actionStatus=$("mpr-action-status");
+  const editor=$("mpr-editor") as HTMLElement,form=$("mpr-form") as HTMLFormElement;
+  const search=$("mpr-search") as HTMLInputElement;
+  const filter=$("mpr-filter") as HTMLSelectElement;
+  const state=$("mpr-state") as HTMLSelectElement;
+  const price=$("mpr-observed-price") as HTMLInputElement;
+  const date=$("mpr-observed-date") as HTMLInputElement;
+  const notes=$("mpr-notes") as HTMLTextAreaElement;
+  const importField=$("mpr-import") as HTMLInputElement;
+  let candidates:Candidate[]=[];
+  let byId=new Map<string,Candidate>();
+  let observations=new Map<string,Observation>();
+  let selectedId:string|null=null;
+  const gold=(v:string)=>Number(v).toLocaleString(pt?"pt-BR":"en-US");
+  const node=(tag:string,value?:string)=>{
+   const el=document.createElement(tag);
+   if(value!==undefined)el.textContent=value;
+   return el;
+  };
+  const statuses:Record<string,string>=pt?{
+   "fixed-match":"Oferta fixa: mesmo preço","fixed-different":"Oferta fixa: preço diferente",
+   "not-listed":"Não encontrada","inconclusive":"Inconclusivo",
+  }:{
+   "fixed-match":"Fixed: same price","fixed-different":"Fixed: different price",
+   "not-listed":"Not found","inconclusive":"Inconclusive",
+  };
+  function store(){
+   const payload=buildMarketReviewBundle(observations,byId);
+   try{localStorage.setItem(REVIEW_STORAGE_KEY,JSON.stringify(payload));return true;}
+   catch{
+    actionStatus.textContent=pt
+     ?"Não foi possível salvar no navegador. Exporte o JSON para preservar os registros."
+     :"Browser storage unavailable. Export JSON to preserve your records.";
+    return false;
+   }
+  }
+  function render(){
+   const keyword=search.value.trim().toLocaleLowerCase(),mode=filter.value;
+   results.replaceChildren();
+   const shown=candidates.filter(c=>
+    (!keyword||c.name.toLocaleLowerCase().includes(keyword)||
+     c.itemId.includes(keyword)||c.category.toLocaleLowerCase().includes(keyword))&&
+    (mode==="all"||(mode==="reviewed")===observations.has(c.itemId)));
+   for(const c of shown){
+    const tr=node("tr"),record=observations.get(c.itemId);
+    for(const v of [c.itemId,c.name,c.category,gold(c.referenceGold),
+     record?statuses[record.state]:(pt?"Pendente":"Pending")]){
+     const td=node("td",v);tr.append(td);
+    }
+    const td=node("td"),button=node("button",pt?"Revisar":"Review");
+    button.type="button";button.addEventListener("click",()=>select(c.itemId));
+    td.append(button);tr.append(td);results.append(tr);
+   }
+   visible.textContent=(pt?"Exibindo ":"Showing ")+shown.length+
+    (pt?" de 128 candidatos.":" of 128 candidates.");
+   stats.textContent=observations.size+
+    (pt?" / 128 com observação local · 293 itens já reconciliados na pesquisa histórica"
+      :" / 128 with local observations · 293 previously reconciled historical ItemIDs");
+  }
+  function select(id:string){
+   const c=byId.get(id);if(!c)return;
+   selectedId=id;const previous=observations.get(id);
+   $("mpr-selected-title").textContent=c.name+" (#"+id+")";
+   $("mpr-selected-reference").textContent=(pt?"Referência NPC do cliente: ":"Client NPC reference: ")+
+    gold(c.referenceGold)+" gold · "+c.category;
+   state.value=previous?.state||"inconclusive";
+   price.value=previous?.observedGold||"";
+   date.value=previous?.observedOn||"";
+   notes.value=previous?.notes||"";
+   editor.hidden=false;
+   editor.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function close(){selectedId=null;editor.hidden=true;form.reset();}
+  form.addEventListener("submit",event=>{
+   event.preventDefault();if(!selectedId)return;
+   try{
+    const record=normalizeMarketObservation({
+     itemId:selectedId,state:state.value,
+     observedGold:state.value.startsWith("fixed-")?price.value:null,
+     observedOn:date.value,notes:notes.value,
+    },byId) as Observation;
+    observations.set(record.itemId,record);
+    const saved=store();render();close();
+    if(saved)actionStatus.textContent=pt?"Observação salva localmente.":"Observation saved locally.";
+   }catch(e){
+    actionStatus.textContent=e instanceof Error?e.message:String(e);
+   }
+  });
+  $("mpr-cancel").addEventListener("click",close);
+  $("mpr-delete").addEventListener("click",()=>{
+   if(!selectedId)return;
+   observations.delete(selectedId);store();render();close();
+   actionStatus.textContent=pt?"Observação apagada.":"Observation deleted.";
+  });
+  state.addEventListener("change",()=>{
+   const hasPrice=state.value.startsWith("fixed-");
+   price.disabled=!hasPrice;if(!hasPrice)price.value="";
+  });
+  search.addEventListener("input",render);
+  filter.addEventListener("change",render);
+  $("mpr-export").addEventListener("click",()=>{
+   try{
+    const data=buildMarketReviewBundle(observations,byId);
+    const blob=new Blob([JSON.stringify(data,null,2)+"\n"],{type:"application/json"});
+    const url=URL.createObjectURL(blob),a=node("a") as HTMLAnchorElement;
+    a.href=url;a.download="atlantica-market-observations.json";
+    document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    actionStatus.textContent=pt?"JSON exportado.":"JSON exported.";
+   }catch(e){actionStatus.textContent=String(e);}
+  });
+  importField.addEventListener("change",async()=>{
+   const file=importField.files?.[0];if(!file)return;
+   try{
+    if(file.size>150000)throw Error("Import exceeds 150 KB");
+    const bundle=JSON.parse(await file.text());
+    const incoming=validateMarketReviewBundle(bundle,byId) as Map<string,Observation>;
+    const ok=window.confirm(pt
+     ?"Substituir suas observações locais pelas do arquivo?"
+     :"Replace your local observations with the imported file?");
+    if(!ok)return;
+    observations=incoming;store();render();close();
+    actionStatus.textContent=pt?"Observações importadas.":"Observations imported.";
+   }catch(e){
+    actionStatus.textContent=pt?"Importação recusada: ":"Import rejected: "+
+     (e instanceof Error?e.message:String(e));
+   }finally{importField.value="";}
+  });
+  async function start(){
+   try{
+    const response=await fetch("/data/client-npc-trade-prices/review-queue.json");
+    if(!response.ok)throw Error("Review queue unavailable");
+    candidates=parseMarketPriceReviewQueue(await response.json()) as Candidate[];
+    byId=new Map(candidates.map(c=>[c.itemId,c]));
+    try{
+     const saved=localStorage.getItem(REVIEW_STORAGE_KEY);
+     if(saved)observations=validateMarketReviewBundle(JSON.parse(saved),byId) as Map<string,Observation>;
+    }catch{
+     actionStatus.textContent=pt
+      ?"Registro local inválido ou indisponível; nenhuma observação foi carregada."
+      :"Local records invalid or unavailable; no observations were loaded.";
+    }
+    render();
+   }catch(e){
+    stats.textContent=pt?"Falha ao carregar a fila de revisão.":"Failed to load review queue.";
+    actionStatus.textContent=String(e);
+   }
+  }
+  void start();
+ }
+</script>
+<style is:global>
+ .mpr-page{width:min(var(--content-width),94%);margin:0 auto;padding:26px 0 80px;color:var(--color-text)}
+ .mpr-page h1{font-size:clamp(1.8rem,3.5vw,2.6rem);margin:12px 0}
+ .mpr-page h2{font-size:1.35rem;color:var(--color-gold-light);margin:0 0 12px}
+ .mpr-eyebrow{font-size:.76rem;letter-spacing:.12em;color:var(--color-accent)}
+ .mpr-intro{max-width:970px;line-height:1.6}
+ .mpr-disclaimer{padding:13px 17px;border-inline-start:3px solid var(--color-accent);background:var(--color-surface);font-weight:600;line-height:1.5}
+ .mpr-panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:7px;padding:clamp(12px,2vw,23px);margin:22px 0}
+ .mpr-description{color:var(--color-text-muted);font-size:.93rem;line-height:1.5}
+ .mpr-toolbar,.mpr-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:15px 0}
+ .mpr-toolbar label{display:grid;gap:6px;flex:1 1 210px;min-width:180px;font-size:.92rem}
+ .mpr-page :is(input,select,textarea){background:var(--color-background);color:var(--color-text);
+  border:1px solid var(--color-border);border-radius:5px;padding:9px;min-height:40px;font:inherit;width:100%}
+ .mpr-page :is(input,select,textarea):focus-visible{outline:2px solid var(--color-accent)}
+ .mpr-page button,.mpr-upload{display:inline-block;cursor:pointer;border:1px solid var(--color-border);
+  border-radius:5px;background:var(--color-background);color:var(--color-text);
+  padding:8px 12px;min-height:39px;font:inherit;text-align:center}
+ .mpr-page button:hover,.mpr-page button:focus-visible{border-color:var(--color-accent)}
+ .mpr-table-wrap{max-width:100%;overflow:auto;max-height:660px;border:1px solid var(--color-border)}
+ .mpr-page table{width:100%;border-collapse:collapse;min-width:640px;font-size:.92rem}
+ .mpr-page th{position:sticky;top:0;z-index:2;background:var(--color-surface);
+  border-bottom:2px solid var(--color-border);padding:11px 9px;text-align:left}
+ .mpr-page td{padding:9px;border-bottom:1px solid var(--color-border);vertical-align:middle}
+ .mpr-page tbody tr:nth-child(even){background:var(--color-background)}
+ .mpr-page td:nth-child(4){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+ .mpr-page td:first-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+ .mpr-notes-label{display:grid;gap:7px;margin-top:12px}
+ .mpr-upload{position:relative;overflow:hidden}
+ .mpr-upload input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+ .mpr-page [hidden]{display:none!important}
+ #mpr-action-status{min-height:1.3em;font-size:.9rem;color:var(--color-text-muted)}
+ @media(max-width:650px){.mpr-page{padding-top:16px}.mpr-toolbar label{flex-basis:100%}}
+</style>
