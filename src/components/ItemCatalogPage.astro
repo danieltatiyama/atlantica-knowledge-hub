@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { EQUIPMENT_ITEM_CATALOG } from "../data/equipment-item-catalog";
+import {EQUIPMENT_ITEM_CATALOG_BY_ID} from "../data/equipment-item-catalog";
+import {FULL_CLIENT_EQUIPMENT_CATALOG,getClientEquipmentSourceProfile}
+  from "../data/full-client-equipment-source.mjs";
+import {comparableRawNumber} from "../data/full-client-stats-tools.mjs";
 import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_METADATA_COUNT } from "../data/curated-equipment-metadata";
-import { getReviewedItemProfile } from "../data/reviewed-equipment-profiles";
 import {getClientEquipmentFacts} from "../data/client-equipment-facts";
 import {getClientItemAttributes} from "../data/client-item-attributes";
 import {getClientItemSourceOverview}
@@ -12,12 +14,31 @@ interface Props { lang: "en" | "pt-br"; }
 const { lang } = Astro.props;
 const pt = lang === "pt-br";
 const prefix = pt ? "/pt-br" : "";
-const items = EQUIPMENT_ITEM_CATALOG;
-const indexedItems=items.map(item=>({
-  ...item,
-  sourceIndex:getClientItemSourceOverview(item,
-    getClientEquipmentFacts(item.id),getClientItemAttributes(item.id))
-}));
+// All 2,462 named original equipment-like source IDs are indexed. The
+// original 551 reviewed articles/box associations are not changed.
+const items=FULL_CLIENT_EQUIPMENT_CATALOG.map(source=>{
+  const reviewed=EQUIPMENT_ITEM_CATALOG_BY_ID.get(source.id);
+  return {...source,boxReferences:reviewed?.boxReferences??[]};
+});
+const indexedItems=items.map(item=>{
+  if(item.reviewed){
+    return {...item,sourceIndex:getClientItemSourceOverview(item,
+      getClientEquipmentFacts(item.id),getClientItemAttributes(item.id))};
+  }
+  const profile=getClientEquipmentSourceProfile(item.id);
+  const raw=key=>{
+    const n=profile?.summary?comparableRawNumber(profile.summary,key):null;
+    return n===null?null:String(n);
+  };
+  return {...item,sourceIndex:{
+    category:item.sourceCategory,rawLevel:item.rawLevel,
+    minDamage:raw("MinDamage"),maxDamage:raw("MaxDamage"),
+    physicalAC:raw("AC"),magicDef:raw("MagicDef"),evasion:raw("EV"),
+    movement:raw("MoveSpeed"),
+    sourceConflictCount:[...profile?.summary?.fields.values()??[]]
+      .filter(f=>f.status==="conflict").length,
+  }};
+});
 const sourceCategories=[...new Set(indexedItems.map(x=>x.sourceIndex.category))]
   .sort((a,b)=>a.localeCompare(b,"en"));
 const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
@@ -28,8 +49,8 @@ const attackRange=stats=>(stats.minDamage===null||stats.maxDamage===null||
   ?"—":fmt(stats.minDamage)+"–"+fmt(stats.maxDamage);
 const title = pt ? "Catálogo de Equipamentos" : "Equipment Item Catalog";
 const description = pt
-  ? "Consulte os 551 equipamentos com nomes oficiais do cliente em inglês e relações capturadas com Equipment Boxes."
-  : "Browse 551 equipment items with official client English names and captured Equipment Box references.";
+  ? "Explore 2.462 IDs em categorias de equipamento do cliente, com 551 fichas revisadas e 1.911 fichas adicionais com dados originais."
+  : "Explore 2,462 equipment-like source IDs: 551 reviewed profiles plus 1,911 additional client-source profiles.";
 ---
 <BaseLayout lang={lang} title={title + " | Atlantica Knowledge Hub"} description={description}
   alternatePaths={{en:"/items/", "pt-br":"/pt-br/items/"}}>
@@ -42,8 +63,8 @@ const description = pt
       <h1>{title}</h1>
       <p>{description}</p>
       <p class="notice">{pt
-        ? "Estes 551 equipamentos possuem fichas revisadas baseadas em boxes. Para consultar livros, materiais, consumíveis, cosméticos e os demais itens do cliente, use o Banco completo de 23.586 IDs. Nomes ainda não têm tradução oficial revisada para português."
-        : "These 551 equipment items have reviewed box-based profiles. For books, materials, consumables, cosmetics and all other client items, use the full 23,586-ID source database. English names came from the original client."}</p>
+        ? "O catálogo agora inclui todos os 2.462 IDs identificados nas categorias semelhantes a equipamentos. Os 551 perfis anteriores continuam revisados; os outros 1.911 são perfis gerados a partir das definições do cliente, sem confirmação de uso ou obtenção no servidor atual. Para os demais materiais e itens, use o banco completo de 23.586 IDs."
+        : "This catalog now includes all 2,462 identified equipment-like source IDs. The original 551 profiles retain their reviewed evidence; the other 1,911 are client-source profiles, not live-server availability or equippability claims. Browse all 23,586 original IDs in the complete item database."}</p>
       <p class="related-links">
         <a class="related database-link" href={prefix+"/items/database/"}>
           {pt?"Explorar TODOS os 23.586 IDs do cliente":"Browse ALL 23,586 client item IDs"}
@@ -76,6 +97,14 @@ const description = pt
             placeholder={pt?"Qualquer nível":"Any level"}/>
         </div>
         <div>
+          <label for="item-evidence">{pt?"Tipo de ficha":"Profile evidence"}</label>
+          <select id="item-evidence">
+            <option value="">{pt?"Todos os 2.462 IDs":"All 2,462 source IDs"}</option>
+            <option value="reviewed">{pt?"551 perfis revisados":"551 reviewed profiles"}</option>
+            <option value="source">{pt?"1.911 perfis do cliente":"1,911 client-source profiles"}</option>
+          </select>
+        </div>
+        <div>
           <label for="item-sort">{pt?"Ordenar por":"Sort by"}</label>
           <select id="item-sort">
             <option value="name">{pt?"Nome A–Z":"Name A–Z"}</option>
@@ -106,11 +135,14 @@ const description = pt
                 data-search={(item.nameEn+" "+item.id+" "+item.sourceIndex.category).toLocaleLowerCase()}
                 data-sort-name={item.nameEn.toLocaleLowerCase()}
                 data-category={item.sourceIndex.category}
+                data-reviewed={item.reviewed?"reviewed":"source"}
                 data-level={item.sourceIndex.rawLevel??""}
                 data-attack={item.sourceIndex.maxDamage??""}
                 data-ac={item.sourceIndex.physicalAC??""}>
                 <td><a href={prefix + "/items/" + item.id + "/"}>{item.nameEn}</a>
-                  {getReviewedItemProfile(item.id) && <span class="profile-mark">{pt ? "Ficha detalhada" : "Detailed profile"}</span>}</td>
+                  {item.reviewed
+                    ? <span class="profile-mark">{pt?"Ficha revisada":"Reviewed profile"}</span>
+                    : <span class="profile-mark source-only">{pt?"Dados do cliente":"Client source"}</span>}</td>
                 <td><code>{item.id}</code></td>
                 <td>{item.sourceIndex.category}</td>
                 <td>{item.sourceIndex.rawLevel??"—"}</td>
@@ -120,7 +152,7 @@ const description = pt
                 {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
                   <td>{getCuratedEquipmentMetadata(item.id)
                     ? (pt ? "Extraído · Revisado" : "Extracted · Reviewed")
-                    : (pt ? "Pendente" : "Pending")}</td>}
+                    : (pt ? "Fonte do cliente" : "Client source only")}</td>}
               </tr>
             ))}
           </tbody>
@@ -137,6 +169,7 @@ const description = pt
   const search=document.querySelector<HTMLInputElement>("#item-search");
   const category=document.querySelector<HTMLSelectElement>("#item-category");
   const minLevel=document.querySelector<HTMLInputElement>("#item-min-level");
+  const evidence=document.querySelector<HTMLSelectElement>("#item-evidence");
   const sort=document.querySelector<HTMLSelectElement>("#item-sort");
   const tbody=document.querySelector<HTMLTableSectionElement>("#item-table-body");
   const rows=Array.from(document.querySelectorAll<HTMLTableRowElement>("[data-item-row]"));
@@ -145,6 +178,7 @@ const description = pt
   function filterItems(){
     const query=search?.value.toLocaleLowerCase().trim()??"";
     const selectedCategory=category?.value??"";
+    const selectedEvidence=evidence?.value??"";
     const minString=minLevel?.value??"";
     const minimum=minString!==""?Number(minString):null;
     let visible=0;
@@ -152,6 +186,7 @@ const description = pt
       const rawLevel=row.dataset.level??"";
       const match=(row.dataset.search??"").includes(query) &&
         (!selectedCategory||row.dataset.category===selectedCategory) &&
+        (!selectedEvidence||row.dataset.reviewed===selectedEvidence) &&
         (minimum===null||(rawLevel!==""&&Number(rawLevel)>=minimum));
       row.hidden=!match;
       if(match)visible++;
@@ -177,6 +212,7 @@ const description = pt
   }
   search?.addEventListener("input",filterItems);
   category?.addEventListener("change",filterItems);
+  evidence?.addEventListener("change",filterItems);
   minLevel?.addEventListener("input",filterItems);
   sort?.addEventListener("change",filterItems);
 </script>
@@ -209,6 +245,7 @@ const description = pt
   td{color:var(--color-text-muted)}
   td:first-child{font-weight:600}td:first-child a{color:var(--color-text);text-decoration:none}
   td:first-child a:hover{color:var(--color-accent)}
+  .profile-mark.source-only{color:var(--color-text-muted);border-color:var(--color-border)}
   .profile-mark{display:inline-block;font-size:.74rem;letter-spacing:.01em;
     color:var(--color-gold-light);border:1px solid var(--color-card-border);
     border-radius:3px;padding:2px 6px;margin:0 0 0 9px;font-weight:400;
