@@ -326,7 +326,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           const body=node("tbody"),thead=node("thead"),heading=node("tr");
           for(const label of (kind==="direct"?
             [pt?"Criatura":"Creature","RawRate",pt?"Quantidade candidata":"Candidate quantity",pt?"Registro":"Source row"]:
-            [pt?"Criatura":"Creature","GroupID","RawRate ref","RawRate item",
+            [pt?"Criatura":"Creature","GroupID","Band","RawRate ref","RawRate item",
               pt?"Quantidade candidata":"Candidate quantity",pt?"Registros":"Source rows"]))
             heading.append(node("th",label));
           thead.append(heading);
@@ -347,6 +347,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
               tr.append(node("td","#"+row[2]));
             }else{
               tr.append(node("td",String(row[2])));
+              tr.append(node("td",String(row[8]??"—")));
               tr.append(node("td",String(row[5]??"—")));
               tr.append(node("td",String(row[6]??"—")));
               tr.append(node("td",String(row[9]??"—")+"–"+String(row[10]??"—")));
