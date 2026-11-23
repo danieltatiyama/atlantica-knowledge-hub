@@ -683,7 +683,11 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         ?(pt?"Os dados abaixo vêm dos arquivos do cliente e não comprovam obtenção ou fabricação atual.":"These are game-client records, not proof of current acquisition or craftability.")
         :(pt?"Nome retido: identidade divergente ou tradução não resolvida. Nenhuma definição foi atribuída a um nome inventado.":"Name withheld: conflicting identity or unresolved translation. No source record was assigned a guessed name.");
       if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
-      if(row[8]===1){const p=node("p");const a=node("a",pt?"Abrir ficha completa do equipamento":"Open full equipment profile") as HTMLAnchorElement;
+      if(equipmentCandidateCategories.has(row[2]??"")&&row[6]==="named"){
+        const p=node("p");
+        const a=node("a",row[8]===1
+          ?(pt?"Abrir ficha revisada do equipamento":"Open reviewed equipment profile")
+          :(pt?"Abrir ficha do equipamento extraída do cliente":"Open client-source equipment profile")) as HTMLAnchorElement;
         a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
       if(row[6]!=="named"){
         details.append(node("p",label(row[6]),"subtle"));detail.scrollIntoView({behavior:"smooth",block:"start"});return;
@@ -694,7 +698,11 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         // Do not let an earlier slow request overwrite a more recent selection.
         if(new URL(location.href).searchParams.get("id")!==id)return;
         details.replaceChildren();
-        if(row[8]===1){const p=node("p");const a=node("a",pt?"Abrir ficha detalhada do equipamento (+0 a +10)":"Open detailed equipment article (+0 through +10)") as HTMLAnchorElement;
+        if(equipmentCandidateCategories.has(row[2]??"")&&row[6]==="named"){
+          const p=node("p");
+          const a=node("a",row[8]===1
+            ?(pt?"Abrir ficha revisada do equipamento":"Open reviewed equipment profile")
+            :(pt?"Abrir ficha do equipamento extraída do cliente":"Open client-source equipment profile")) as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
         addDefinitionTable(details,data,id);
         // Reverse links are generated from every one of the 22,702 named-ID
