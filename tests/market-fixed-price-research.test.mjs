@@ -24,7 +24,7 @@ function parseRow(line){
  return parts;
 }
 const lines=csv.trimEnd().split(/\r?\n/);
-const headers=parseRow(lines[0]);
+const headers=lines[0].split(","); // Header names are intentionally unquoted.
 const rows=lines.slice(1).map(line=>{
  const fields=parseRow(line);
  assert.equal(fields.length,headers.length);
