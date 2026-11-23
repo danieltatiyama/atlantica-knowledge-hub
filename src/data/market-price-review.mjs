@@ -87,3 +87,29 @@ export function buildMarketReviewBundle(observations,candidates){
   observations:entries,
  };
 }
+
+/**
+ * Stage 20.67: consume a separately sourced, player-reported batch statement.
+ * It is never equivalent to independently verified live Market inventory.
+ * No user storage data may be silently treated as an official confirmation.
+ */
+export function parsePlayerMarketAttestation(source,candidates){
+ if(!source||source.schemaVersion!=="1.0"||
+  source.dataset!=="player-market-price-batch-attestation"||
+  source.candidateDataset!=="client-npc-market-price-review-queue"||
+  source.candidateSnapshotId!==1||
+  source.scope!=="all-128-stage-20-66-candidates"||
+  source.reportedOn!=="2026-11-23"||
+  source.sourceType!=="player-aggregate-statement"||
+  source.matchingClaim!=="player-reported-matches-client-npc-unit-price"||
+  source.marketFixedPriceVerified!==false||
+  source.independentVerification!==false||
+  source.perItemEvidenceSupplied!==false||
+  !(candidates instanceof Map)||candidates.size!==128||
+  !Array.isArray(source.itemIds)||source.itemIds.length!==128)
+  throw Error("Player attestation provenance mismatch");
+ const ids=new Set(source.itemIds);
+ if(ids.size!==128||source.itemIds.some(id=>typeof id!=="string"||!candidates.has(id)))
+  throw Error("Player attestation ItemIDs do not match the archived review queue");
+ return ids;
+}
