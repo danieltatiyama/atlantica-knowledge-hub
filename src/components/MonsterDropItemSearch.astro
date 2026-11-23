@@ -250,7 +250,7 @@ const pt=lang==="pt-br";
     mode.addEventListener("change",apply);
     void (async()=>{
       try{
-        const response=await fetch("/data/client-monsters/item-lookup.json");
+        const response=await fetch("/data/client-monster-discovery/item-lookup.json");
         if(!response.ok)throw Error("Generated source item discovery index missing");
         const meta=await response.json();
         if(meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
