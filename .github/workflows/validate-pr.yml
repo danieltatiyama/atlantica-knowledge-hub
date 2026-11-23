@@ -89,7 +89,9 @@ jobs:
           python-version: "3.13"
 
       - name: Validate Miner read-only tooling
-        run: python -m unittest discover -s tests -p "test_*.py" -v
+        run: |
+          python -m unittest discover -s tests -p "test_*.py" -v
+          python scripts/validate-full-client-stats.py --candidate public/data/client-items/stats --allow-absent
 
       - name: Validation completed
         if: success()
