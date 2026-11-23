@@ -160,7 +160,7 @@ const pt=lang==="pt-br";
       const table=create("table"),head=create("thead"),headRow=create("tr");
       const headers=type==="direct"
         ?[pt?"Criatura":"Creature","RawRate",pt?"Qtd. candidata":"Candidate qty",pt?"Linha":"Row"]
-        :[pt?"Criatura":"Creature","GroupID","RawRate ref","RawRate item",
+        :[pt?"Criatura":"Creature","GroupID","Band","RawRate ref","RawRate item",
           pt?"Qtd. candidata":"Candidate qty",pt?"Linhas":"Rows"];
       headers.forEach(label=>headRow.append(create("th",label)));
       head.append(headRow);
@@ -184,8 +184,9 @@ const pt=lang==="pt-br";
             tr.append(create("td",asText(entry[3])),create("td",asText(entry[5])+"–"+asText(entry[6])),
               create("td","#"+entry[2]));
           }else{
-            tr.append(create("td",asText(entry[2])),create("td",asText(entry[5])),
-              create("td",asText(entry[6])),create("td",asText(entry[9])+"–"+asText(entry[10])),
+            tr.append(create("td",asText(entry[2])),create("td",asText(entry[8])),
+              create("td",asText(entry[5])),create("td",asText(entry[6])),
+              create("td",asText(entry[9])+"–"+asText(entry[10])),
               create("td","#"+entry[3]+" / #"+entry[4]));
           }
           fragment.append(tr);
