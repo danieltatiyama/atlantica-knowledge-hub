@@ -110,6 +110,9 @@ jobs:
       - name: Validate Excel workbook export and per-parent recipe consumption
         run: node --test tests/client-crafting-xlsx-and-ui.test.mjs
 
+      - name: Validate snapping and responsive frozen crafting columns
+        run: node --test tests/client-crafting-column-snap.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
