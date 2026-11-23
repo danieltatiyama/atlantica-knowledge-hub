@@ -57,12 +57,34 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         <input type="checkbox" id="db-equipment-only"/>
         <span>{pt?"Mostrar somente categorias semelhantes a equipamentos (classificação do cliente, não elegibilidade comprovada)":"Show only equipment-like source categories (not confirmed equip/enhancement eligibility)"}</span>
       </label>
+
+      <section class="stats-workbench" aria-label={pt?"Filtrar atributos de origem":"Filter original numeric attributes"}>
+        <h2>{pt?"Atributos numéricos do cliente":"Original client numeric attributes"}</h2>
+        <p class="subtle">{pt
+          ?"Filtro opcional sobre os 7.560 IDs com atributos de Items.csv. Os arquivos de atributos só são carregados quando você escolher um campo. Limites inclusivos usam valores brutos de +0, sem multiplicadores. Valores ausentes ou conflitantes são excluídos do filtro; valores parciais são identificados na ficha."
+          :"Optional filter across 7,560 IDs with Items.csv fields. Numeric shards load only after choosing a field. Inclusive bounds use raw +0 values, never enhancement multipliers. Missing or conflicting fields do not match; partial source values are identified in item details."}</p>
+        <div class="stats-grid">
+          <label>{pt?"Campo numérico":"Numeric field"}
+            <select id="db-stat-field">
+              <option value="">{pt?"Sem filtro numérico":"No numeric field filter"}</option>
+            </select>
+          </label>
+          <label>{pt?"Mínimo bruto":"Raw minimum"}
+            <input id="db-stat-min" type="number" step="any" placeholder={pt?"Sem mínimo":"No minimum"} disabled/>
+          </label>
+          <label>{pt?"Máximo bruto":"Raw maximum"}
+            <input id="db-stat-max" type="number" step="any" placeholder={pt?"Sem máximo":"No maximum"} disabled/>
+          </label>
+          <button type="button" id="db-export" disabled>{pt?"Exportar resultados CSV":"Export filtered CSV"}</button>
+        </div>
+        <p class="subtle" id="db-stat-status" role="status">{pt?"Dados numéricos ainda não carregados.":"Numeric shards have not been loaded."}</p>
+      </section>
       <p class="load-status" id="db-status" role="status">{pt?"Carregando índice do cliente…":"Loading client index…"}</p>
       <div class="table-wrap">
         <table aria-label={pt?"Todos os itens do cliente":"All client item IDs"}>
           <thead><tr><th>ID</th><th>{pt?"Nome oficial em inglês / estado":"Official English name / status"}</th>
             <th>{pt?"Categoria do arquivo":"Source category"}</th><th>{pt?"Nível bruto":"Raw level"}</th>
-            <th>{pt?"Grade bruta":"Raw grade"}</th><th>{pt?"Fontes":"Sources"}</th></tr></thead>
+            <th>{pt?"Grade bruta":"Raw grade"}</th><th>{pt?"Fontes":"Sources"}</th><th>{pt?"Comparar":"Compare"}</th></tr></thead>
           <tbody id="db-results"></tbody>
         </table>
       </div>
@@ -71,6 +93,18 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         <span id="db-page">—</span>
         <button type="button" id="db-next" disabled>{pt?"Próximo":"Next"}</button>
       </div>
+      <section class="compare-workbench" aria-label={pt?"Comparar itens":"Compare items"}>
+        <h2>{pt?"Comparar atributos de equipamentos":"Compare equipment source attributes"}</h2>
+        <p class="subtle">{pt
+          ?"Selecione de 2 a 3 IDs de categorias semelhantes a equipamentos. A comparação mostra apenas números originais, preservando ausência, divergência e cobertura parcial por registro; diferença numérica não indica qual item é melhor."
+          :"Select 2–3 equipment-like source IDs. Comparison shows original numeric fields only, preserving missing, conflicting and partial source observations; a numeric difference is not a gameplay ranking."}</p>
+        <div class="compare-controls">
+          <div id="db-compare-selected" aria-live="polite"></div>
+          <button type="button" id="db-compare-run" disabled>{pt?"Comparar selecionados":"Compare selected"}</button>
+          <button type="button" id="db-compare-clear" disabled>{pt?"Limpar seleção":"Clear selection"}</button>
+        </div>
+        <div id="db-compare-result" aria-live="polite"></div>
+      </section>
       <noscript>{pt?"Ative JavaScript para pesquisar o índice do cliente. As 551 fichas originais continuam acessíveis no catálogo de equipamentos.":"Enable JavaScript to search the client index. The original 551 item pages remain available from the equipment catalog."}</noscript>
     </section>
 
@@ -87,6 +121,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
 </BaseLayout>
 <script>
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
+  import {RAW_STATS_FIELDS,summarizeRawNumericRows,comparableRawNumber,matchesRawStat,
+    compareSourceStats,exportFilteredClientCsv} from "../data/full-client-stats-tools.mjs";
   type IndexRow=[string,string|null,string|null,string|null,string|null,number,"named"|"collision"|"unresolved",number,number];
   type SourceRow=[number,string,string,string,string|number|null,string|number|null,number|null,number|null,string,[string,number][]];
   type Detail={s:SourceRow[];v:number[][]};
@@ -98,6 +134,12 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     const query=$<HTMLInputElement>("db-query"),category=$<HTMLSelectElement>("db-category");
     const identity=$<HTMLSelectElement>("db-identity"),sort=$<HTMLSelectElement>("db-sort");
     const equipmentOnly=$<HTMLInputElement>("db-equipment-only");
+    const statField=$<HTMLSelectElement>("db-stat-field");
+    const statMin=$<HTMLInputElement>("db-stat-min"),statMax=$<HTMLInputElement>("db-stat-max");
+    const statStatus=$<HTMLParagraphElement>("db-stat-status"),exportButton=$<HTMLButtonElement>("db-export");
+    const compareSelected=$<HTMLDivElement>("db-compare-selected");
+    const compareRun=$<HTMLButtonElement>("db-compare-run"),compareClear=$<HTMLButtonElement>("db-compare-clear");
+    const compareResult=$<HTMLDivElement>("db-compare-result");
     const status=$<HTMLParagraphElement>("db-status"),results=$<HTMLTableSectionElement>("db-results");
     const pageLabel=$<HTMLSpanElement>("db-page"),prev=$<HTMLButtonElement>("db-prev"),next=$<HTMLButtonElement>("db-next");
     const detail=$<HTMLElement>("db-detail"),details=$<HTMLElement>("db-detail-content");
@@ -107,7 +149,11 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     const namedRows=new Map<string,IndexRow>();
     const detailCache=new Map<number,Promise<Record<string,Detail>>>();
     const statsCache=new Map<number,Promise<Record<string,[number,Record<string,string>][]>|null>>();
-    let statsManifestPromise:Promise<{snapshotId:number;files:string[]}|null>|null=null;
+    let statsManifestPromise:Promise<{snapshotId:number;itemIds:number;sourceRows:number;files:string[]}|null>|null=null;
+    let allStatsPromise:Promise<Map<string,ReturnType<typeof summarizeRawNumericRows>>>|null=null;
+    let indexedStats=new Map<string,ReturnType<typeof summarizeRawNumericRows>>();
+    let allStatsReady=false,filterEpoch=0,compareEpoch=0;
+    const comparedIds:string[]=[];
     // Categories are ORIGINAL ItemType source labels, not proof that the
     // item is equipped or currently enhanceable on the server.
     const equipmentCandidateCategories=new Set([
@@ -117,6 +163,11 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     ]);
     let allRows:IndexRow[]=[],visible:IndexRow[]=[],currentPage=0,manifest:Manifest|null=null;
     const perPage=100,number=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+    const statLabels={ActivePower:pt?"Poder ativo":"Active Power",
+      BuffUpPercentage:pt?"Bônus de buff (%)":"Buff bonus (%)"} as Record<string,string>;
+    const fieldTitle=(key:string)=>statLabels[key]??labelForClientField(key,pt);
+    const groupNames={attack:pt?"Ataque":"Attack",defense:pt?"Defesa":"Defense",
+      attributes:pt?"Atributos básicos":"Base attributes",other:pt?"Outros":"Other"} as Record<string,string>;
     const label=(key:string)=>({named:pt?"Nome conciliado":"Source name reconciled",
       collision:pt?"Nome divergente entre arquivos":"Identity collision",
       unresolved:pt?"Nome ainda não resolvido":"Name unresolved"} as Record<string,string>)[key]??key;
@@ -149,62 +200,142 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       if(!rows[id])throw Error("No original source data for ID");
       return rows[id];
     }
-    async function optionalNumericStats(id:string) {
-      if(!manifest)return null;
+    async function numericManifest(){
       if(!statsManifestPromise){
-        // No raw Items.csv stats exist yet beyond the original 551 reviewed
-        // profiles. Only the user-run, separately validated import creates
-        // this optional stats/manifest.json. A 404 is an expected state.
         statsManifestPromise=fetchJSON("/data/client-items/stats/manifest.json")
           .then(data=>{
             if(data.snapshotId!==manifest?.snapshotId||
-               data.dataset!=="all-client-item-raw-stats"||
-               !Array.isArray(data.files))return null;
-            return data as {snapshotId:number;files:string[]};
+              data.dataset!=="all-client-item-raw-stats"||
+              !Array.isArray(data.files))return null;
+            return data as {snapshotId:number;itemIds:number;sourceRows:number;files:string[]};
           }).catch(()=>null);
       }
-      const meta=await statsManifestPromise;
-      if(!meta)return null;
-      const bucket=Math.floor(Number(id)/manifest.detailBucketWidth);
+      return statsManifestPromise;
+    }
+    async function numericBucket(bucket:number,meta:{files:string[]}){
       const filename=String(bucket).padStart(2,"0")+".json";
       if(!meta.files.includes(filename))return null;
       if(!statsCache.has(bucket)){
-        statsCache.set(bucket,
-          fetchJSON("/data/client-items/stats/"+filename)
-            .then(data=>data.snapshotId===manifest?.snapshotId&&
-              data.bucket===bucket&&data.schemaVersion==="1.0"
-              ? data.items as Record<string,[number,Record<string,string>][]>
-              :null)
-            .catch(()=>null)
-        );
+        statsCache.set(bucket,fetchJSON("/data/client-items/stats/"+filename)
+          .then(data=>{
+            if(data.snapshotId!==manifest?.snapshotId||
+              data.bucket!==bucket||data.schemaVersion!=="1.0"||
+              !data.items||typeof data.items!=="object"||Array.isArray(data.items))
+              throw Error("Unrecognized original numeric shard");
+            return data.items as Record<string,[number,Record<string,string>][]>;
+          }).catch(err=>{statsCache.delete(bucket);throw err;}));
       }
-      return (await statsCache.get(bucket)!)?.[id]??null;
+      return statsCache.get(bucket)!;
+    }
+    async function optionalNumericStats(id:string){
+      if(!manifest)return null;
+      const meta=await numericManifest();
+      if(!meta)return null;
+      const bucket=Math.floor(Number(id)/manifest.detailBucketWidth);
+      return (await numericBucket(bucket,meta))?.[id]??null;
+    }
+    async function loadAllRawStats(){
+      if(allStatsReady)return indexedStats;
+      if(!allStatsPromise){
+        allStatsPromise=(async()=>{
+          const meta=await numericManifest();
+          if(!meta||meta.itemIds!==7560||meta.sourceRows!==9351||meta.files.length!==28)
+            throw Error("Numeric source manifest is missing or incompatible");
+          // This ~1 MB secondary index loads only after a user explicitly
+          // selects a source field. Regular 23,586-ID searches stay light.
+          const chunks=await Promise.all(meta.files.map(async filename=>{
+            if(!/^[0-2][0-9]\.json$/.test(filename))
+              throw Error("Unexpected numeric shard name");
+            const bucket=Number(filename.slice(0,2));
+            const records=await numericBucket(bucket,meta);
+            if(!records)throw Error("Numeric shard unavailable");
+            return {bucket,records};
+          }));
+          const built=new Map<string,ReturnType<typeof summarizeRawNumericRows>>();
+          let sourceRows=0;
+          for(const {bucket,records} of chunks){
+            for(const [id,rawRows] of Object.entries(records)){
+              const original=namedRows.get(id);
+              if(built.has(id)||!original||original[6]!=="named"||
+                Math.floor(Number(id)/1000)!==bucket)
+                throw Error("Numeric field source ID does not match client index");
+              built.set(id,summarizeRawNumericRows(rawRows));
+              sourceRows+=rawRows.length;
+            }
+          }
+          if(built.size!==meta.itemIds||sourceRows!==meta.sourceRows)
+            throw Error("Partial or duplicate numeric client data");
+          indexedStats=built;
+          allStatsReady=true;
+          statStatus.textContent=pt
+            ?number.format(built.size)+" IDs com atributos carregados. Valores brutos; conflitos preservados."
+            :number.format(built.size)+" numeric source IDs loaded. Raw values; conflicts preserved.";
+          return built;
+        })().catch(err=>{
+          allStatsPromise=null;
+          statStatus.textContent=pt
+            ?"Não foi possível validar os arquivos numéricos. Tente novamente."
+            :"Could not validate numeric client shards. Please retry.";
+          throw err;
+        });
+      }
+      return allStatsPromise;
     }
     function addRawNumericSourceTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
-      // Raw source data is relevant to ALL named IDs, including books and
-      // consumables. Historical enhancement projections are not.
+      // Source evidence may include book/material/etc categories; ZERO is
+      // never replaced with an assumed missing field, and conflicts are not
+      // silently averaged or resolved.
+      const summary=summarizeRawNumericRows(rawRows);
       parent.append(node("h3",pt?"Atributos numéricos originais — Items.csv":"Original numeric client attributes — Items.csv"));
       parent.append(node("p",pt
-        ?"Valores extraídos dos registros originais do cliente (snapshot 1), não verificados no servidor. Zero é um valor extraído; campos ausentes não são presumidos como zero. Estes atributos não comprovam que o item seja equipável ou aprimorável."
-        :"Original game-client values (snapshot 1), not verified on the live server. Zero is a real recorded value; missing fields are not assumed to be zero. These attributes do not establish equipment or enhancement eligibility.","detail-note"));
-      const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
-      for(const name of [pt?"Registro de origem":"Source row",pt?"Atributo bruto":"Raw field",pt?"Valor bruto":"Raw value"]){
-        tr.append(node("th",name));
+        ?"Dados extraídos do cliente, não conferidos no servidor. Zero, ausência, cobertura parcial e divergência entre registros são situações diferentes. Campos com divergência não são usados como um valor único."
+        :"Client-extracted values, not measured on the server. Zero, missing, partial coverage and conflicting source rows are different states. Conflicting fields are never treated as one canonical value.","detail-note"));
+      for(const group of ["attack","defense","attributes","other"]){
+        const fields=RAW_STATS_FIELDS.filter(f=>f.group===group&&summary.fields.has(f.key));
+        if(!fields.length)continue;
+        const section=node("section",undefined,"numeric-group");
+        section.append(node("h4",groupNames[group]));
+        const table=node("table") as HTMLTableElement;
+        const head=node("thead"),heading=node("tr");
+        for(const label of [pt?"Campo original":"Original field",pt?"Valor(es) bruto(s)":"Raw value(s)",
+          pt?"Cobertura e situação":"Coverage and status"])heading.append(node("th",label));
+        head.append(heading);table.append(head);
+        const body=node("tbody");
+        for(const f of fields){
+          const stat=summary.fields.get(f.key)!;
+          const row=node("tr");
+          if(stat.status==="conflict")row.className="numeric-conflict";
+          row.append(node("td",fieldTitle(f.key)+" ("+f.key+")"));
+          row.append(node("td",stat.values.join(" / ")));
+          const situation=stat.status==="conflict"?(pt?"Divergente":"Conflicting"):
+            stat.status==="partial"?(pt?"Parcial":"Partial"):(pt?"Consistente":"Consistent");
+          row.append(node("td",stat.observedIn+"/"+stat.sourceCount+" · "+situation));
+          body.append(row);
+        }
+        table.append(body);
+        const wrap=node("div",undefined,"stat-table-scroll");wrap.append(table);
+        section.append(wrap);parent.append(section);
       }
+      const sourceRows=node("details",undefined,"numeric-original-rows");
+      sourceRows.append(node("summary",pt
+        ?"Ver cada registro original e os números exatos"
+        :"Inspect each original source row and its exact numbers"));
+      const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
+      for(const name of [pt?"Registro de origem":"Source row",pt?"Campo":"Raw field",pt?"Valor":"Raw value"])
+        tr.append(node("th",name));
       head.append(tr);table.append(head);
       const body=node("tbody");
       for(const [sourceRow,raw] of rawRows){
         for(const [key,value] of Object.entries(raw)){
           const row=node("tr");
           row.append(node("td","#"+sourceRow));
-          row.append(node("td",labelForClientField(key,pt)+" ("+key+")"));
+          row.append(node("td",fieldTitle(key)+" ("+key+")"));
           row.append(node("td",String(value)));
           body.append(row);
         }
       }
-      table.append(body);
-      const scroller=node("div",undefined,"stat-table-scroll");
-      scroller.append(table);parent.append(scroller);
+      table.append(body);const wrap=node("div",undefined,"stat-table-scroll");
+      wrap.append(table);sourceRows.append(wrap);parent.append(sourceRows);
     }
     function addHistoricalGradeTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
       const model=buildHistoricalClientProjection({sourceRows:rawRows.map(([sourceRowNumber,fieldsRaw])=>({
@@ -251,6 +382,99 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       });
       return a;
     }
+    function updateComparisonSelection(){
+      compareEpoch++;
+      compareSelected.replaceChildren();
+      compareSelected.append(node("span",(pt?"Selecionados: ":"Selected: ")+
+        comparedIds.length+"/3","subtle"));
+      for(const id of comparedIds){
+        const chip=node("span",undefined,"compare-chip");
+        chip.append(linkItem(id,nameFor(id)??("ID "+id)));
+        const remove=node("button",pt?"Remover":"Remove") as HTMLButtonElement;
+        remove.type="button";remove.setAttribute("aria-label",(pt?"Remover ID ":"Remove ID ")+id);
+        remove.addEventListener("click",()=>toggleComparison(id));
+        chip.append(remove);compareSelected.append(chip);
+      }
+      compareRun.disabled=comparedIds.length<2;
+      compareClear.disabled=comparedIds.length===0;
+      compareResult.replaceChildren();
+    }
+    function toggleComparison(id:string){
+      const row=namedRows.get(id);
+      if(!row||row[6]!=="named"||
+        !equipmentCandidateCategories.has(row[2]??""))return;
+      const position=comparedIds.indexOf(id);
+      if(position>=0)comparedIds.splice(position,1);
+      else if(comparedIds.length<3)comparedIds.push(id);
+      updateComparisonSelection();
+      renderPage();
+    }
+    async function runComparison(){
+      if(comparedIds.length<2)return;
+      const selected=[...comparedIds],token=++compareEpoch;
+      compareRun.disabled=true;
+      compareResult.replaceChildren(node("p",pt
+        ?"Carregando registros originais para comparação…"
+        :"Loading original source records for comparison…","subtle"));
+      try{
+        // Only selected item buckets are requested, never the full 28-shard
+        // numeric index. Comparison is available without running filters.
+        const source=await Promise.all(selected.map(id=>optionalNumericStats(id)));
+        if(token!==compareEpoch)return;
+        const summaries=source.map(rows=>rows?summarizeRawNumericRows(rows):null);
+        const observed=RAW_STATS_FIELDS.filter(f=>
+          summaries.some(summary=>summary?.fields.has(f.key)));
+        if(!observed.length){
+          compareResult.replaceChildren(node("p",pt
+            ?"Nenhum desses IDs possui valores numéricos publicados."
+            :"None of these IDs has published numeric source fields.","subtle"));
+          return;
+        }
+        const scroller=node("div",undefined,"stat-table-scroll"),table=node("table") as HTMLTableElement;
+        table.className="compare-table";
+        const head=node("thead"),headers=node("tr");
+        headers.append(node("th",pt?"Atributo original":"Original field"));
+        for(const id of selected){
+          headers.append(node("th",(nameFor(id)??("ID "+id))+" · #"+id));
+        }
+        headers.append(node("th",pt?"Amplitude bruta":"Raw spread"));
+        head.append(headers);table.append(head);
+        const body=node("tbody");
+        for(const {key} of observed){
+          const stat=compareSourceStats(summaries,key);
+          if(!stat)continue;
+          const row=node("tr");
+          row.append(node("td",fieldTitle(key)+" ("+key+")"));
+          for(const item of stat.values){
+            const value=item.record;
+            const cell=node("td");
+            if(!value)cell.textContent="—";
+            else{
+              cell.textContent=value.values.join(" / ");
+              if(value.status!=="consistent"){
+                cell.append(node("small",value.status==="conflict"
+                  ?(pt?" · divergente":" · conflict")
+                  :(" · "+(pt?"parcial ":"partial ")+value.observedIn+"/"+value.sourceCount)));
+              }
+            }
+            row.append(cell);
+          }
+          row.append(node("td",stat.difference===null?"—":
+            number.format(stat.difference)));
+          body.append(row);
+        }
+        table.append(body);scroller.append(table);
+        compareResult.replaceChildren(node("p",pt
+          ?"Amplitude = maior valor bruto − menor valor bruto, apenas quando todos os registros concordam. Não é uma classificação de eficiência."
+          :"Spread = maximum minus minimum raw value, only when all source records agree. This is not a gameplay efficiency ranking.","subtle"),scroller);
+      }catch{
+        if(token===compareEpoch)compareResult.replaceChildren(node("p",pt
+          ?"Não foi possível carregar os registros originais para comparação."
+          :"Original numeric rows could not be loaded for comparison.","subtle"));
+      }finally{
+        if(token===compareEpoch)compareRun.disabled=comparedIds.length<2;
+      }
+    }
     function renderPage(){
       results.replaceChildren();
       const start=currentPage*perPage;
@@ -267,6 +491,18 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           nameCell.append(" ",linkItem(id,pt?"Ver estado do ID":"Inspect ID status"));
         }
         td(tr,row[2]??"—");td(tr,fmtRaw(row[3]));td(tr,fmtRaw(row[4]));td(tr,String(row[5]));
+        const choose=td(tr,"");
+        if(row[6]==="named"&&equipmentCandidateCategories.has(row[2]??"")){
+          const selected=comparedIds.includes(id);
+          const button=node("button",selected?(pt?"✓ Selecionado":"✓ Selected"):(pt?"Adicionar":"Add")) as HTMLButtonElement;
+          button.type="button";button.className="compare-row-button";
+          button.setAttribute("aria-pressed",String(selected));
+          button.setAttribute("aria-label",(selected?(pt?"Remover comparação: ":"Remove from comparison: "):
+            (pt?"Adicionar à comparação: ":"Add to comparison: "))+(row[1]??id));
+          button.disabled=!selected&&comparedIds.length>=3;
+          button.addEventListener("click",()=>toggleComparison(id));
+          choose.append(button);
+        }else choose.textContent="—";
         results.append(tr);
       }
       prev.disabled=currentPage===0;
@@ -276,11 +512,43 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         :"0";
     }
     function applyFilters(){
+      const epoch=++filterEpoch;
       const text=query.value.trim().toLocaleLowerCase(),cat=category.value,state=identity.value;
+      const field=statField.value;
+      statMin.disabled=!field;statMax.disabled=!field;
+      const minText=statMin.value.trim(),maxText=statMax.value.trim();
+      const min=field&&minText!==""?Number(minText):null;
+      const max=field&&maxText!==""?Number(maxText):null;
+      if(field&&((min!==null&&!Number.isFinite(min))||
+        (max!==null&&!Number.isFinite(max))||
+        (min!==null&&max!==null&&min>max))){
+        visible=[];currentPage=0;renderPage();exportButton.disabled=true;
+        status.textContent=pt
+          ?"Limites inválidos: o mínimo deve ser menor ou igual ao máximo."
+          :"Invalid bounds: minimum must not exceed maximum.";
+        return;
+      }
+      if(field&&!allStatsReady){
+        visible=[];currentPage=0;renderPage();exportButton.disabled=true;
+        status.textContent=pt
+          ?"Carregando os 28 arquivos de atributos numéricos…"
+          :"Loading 28 original numeric shards…";
+        void loadAllRawStats().then(()=>{
+          if(epoch===filterEpoch)applyFilters();
+        }).catch(()=>{
+          if(epoch===filterEpoch){
+            status.textContent=pt
+              ?"Falha ao carregar atributos: a consulta não foi aplicada."
+              :"Failed to load attributes: numeric filtering was not applied.";
+          }
+        });
+        return;
+      }
       visible=allRows.filter(row=>
         (!text||row[0].includes(text)||(row[1]??"").toLocaleLowerCase().includes(text)) &&
         (!cat||row[2]===cat)&&(!state||row[6]===state)&&
-        (!equipmentOnly.checked||equipmentCandidateCategories.has(row[2]??"")));
+        (!equipmentOnly.checked||equipmentCandidateCategories.has(row[2]??"")) &&
+        (!field||matchesRawStat(indexedStats.get(row[0]),field,min,max)));
       if(sort.value==="name")visible.sort((a,b)=>(a[1]??"~").localeCompare(b[1]??"~","en")||Number(a[0])-Number(b[0]));
       else if(sort.value==="level")visible.sort((a,b)=>{
         const aa=a[3]===null?null:Number(a[3]),bb=b[3]===null?null:Number(b[3]);
@@ -289,9 +557,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         return bb-aa||Number(a[0])-Number(b[0]);
       });
       currentPage=0;renderPage();
+      exportButton.disabled=visible.length===0;
       status.textContent=pt
-        ?`${number.format(visible.length)} dos ${number.format(allRows.length)} IDs encontrados. ${number.format(manifest?.namedIds??0)} nomes conciliados.`
-        :`${number.format(visible.length)} of ${number.format(allRows.length)} IDs found. ${number.format(manifest?.namedIds??0)} reconciled names.`;
+        ?number.format(visible.length)+" dos "+number.format(allRows.length)+" IDs encontrados. "+number.format(manifest?.namedIds??0)+" nomes conciliados."
+        :number.format(visible.length)+" of "+number.format(allRows.length)+" IDs found. "+number.format(manifest?.namedIds??0)+" reconciled names.";
     }
     function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
       const h=node("h3",pt?"Definições dos arquivos de origem":"Original source-file definitions");parent.append(h);
@@ -390,6 +659,26 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     identity.addEventListener("change",applyFilters);
     sort.addEventListener("change",applyFilters);
     equipmentOnly.addEventListener("change",applyFilters);
+    statField.addEventListener("change",applyFilters);
+    statMin.addEventListener("input",applyFilters);
+    statMax.addEventListener("input",applyFilters);
+    exportButton.addEventListener("click",()=>{
+      if(!visible.length||statField.value&&!allStatsReady)return;
+      const csv=exportFilteredClientCsv(visible,{
+        pt,field:statField.value,summaries:indexedStats,
+      });
+      const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+      const url=URL.createObjectURL(blob);
+      const a=node("a") as HTMLAnchorElement;
+      a.href=url;a.download="atlantica-client-items-snapshot-1.csv";
+      a.click();
+      window.setTimeout(()=>URL.revokeObjectURL(url),2500);
+    });
+    compareRun.addEventListener("click",()=>{void runComparison();});
+    compareClear.addEventListener("click",()=>{
+      comparedIds.splice(0);updateComparisonSelection();renderPage();
+    });
+    updateComparisonSelection();
     prev.addEventListener("click",()=>{if(currentPage>0){currentPage--;renderPage();}});
     next.addEventListener("click",()=>{if((currentPage+1)*perPage<visible.length){currentPage++;renderPage();}});
     (async()=>{
@@ -413,6 +702,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         }
         for(const cat of [...categoryValues].sort((a,b)=>a.localeCompare(b,"en"))){
           const opt=node("option",cat) as HTMLOptionElement;opt.value=cat;category.append(opt);
+        }
+        for(const {key} of RAW_STATS_FIELDS){
+          const opt=node("option",fieldTitle(key)+" ("+key+")") as HTMLOptionElement;
+          opt.value=key;statField.append(opt);
         }
         applyFilters();
         const deepLink=new URL(location.href).searchParams.get("id");
@@ -442,6 +735,28 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     color:var(--color-text);border-radius:5px;padding:11px;font:inherit}
   .equipment-toggle{display:flex;align-items:center;gap:10px;color:var(--color-text-muted);font-size:.86rem}
   .equipment-toggle input{width:auto;cursor:pointer}
+  .stats-workbench,.compare-workbench{margin:18px 0 22px;padding:16px;
+    border:1px solid var(--color-border);border-radius:6px;background:var(--color-surface)}
+  .stats-workbench h2,.compare-workbench h2{font-size:1.17rem;margin:0 0 8px;
+    color:var(--color-gold-light)}
+  .stats-workbench .subtle,.compare-workbench .subtle{font-size:.87rem;margin:8px 0 15px}
+  .stats-grid{display:grid;grid-template-columns:minmax(200px,2fr) repeat(2,minmax(120px,1fr)) auto;
+    gap:12px;align-items:end}
+  .stats-grid button{min-height:43px}
+  .stats-grid input:disabled{opacity:.48}
+  .compare-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  #db-compare-selected{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex:1 1 280px}
+  .compare-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--color-border);
+    border-radius:4px;padding:4px 7px;font-size:.87rem}
+  .compare-chip a{color:var(--color-accent)}
+  .compare-chip button,.compare-row-button{font-size:.78rem;padding:5px 8px}
+  .compare-row-button[aria-pressed="true"]{border-color:var(--color-accent);color:var(--color-gold-light)}
+  .numeric-group{margin:18px 0}
+  .numeric-group h4{color:var(--color-gold-light);margin:8px 0}
+  .numeric-conflict{outline:1px solid var(--color-bronze);outline-offset:-1px}
+  .numeric-original-rows{margin:20px 0;cursor:pointer}
+  .numeric-original-rows summary{color:var(--color-accent);padding:8px 0}
+  .compare-table small{display:block;color:var(--color-text-muted);white-space:nowrap}
   .load-status{color:var(--color-text-muted)}
   .table-wrap{overflow:auto;border:1px solid var(--color-border);border-radius:5px}
   table{width:100%;min-width:760px;border-collapse:collapse;font-size:.88rem}
@@ -467,5 +782,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   .stat-table-scroll{overflow:auto;margin:16px 0;border:1px solid var(--color-border);border-radius:4px}
   .stat-table-scroll table{min-width:800px;white-space:nowrap}
   .subtle{color:var(--color-text-muted);line-height:1.6}
-  @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:860px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .stats-grid{grid-template-columns:minmax(0,1fr)}.compare-controls{align-items:stretch}}
 </style>
