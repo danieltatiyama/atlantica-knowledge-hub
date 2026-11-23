@@ -46,10 +46,10 @@ export function planClientCrafting({
         throw Error("Invalid source ingredients for "+id);
       if(policy.equipment){
         batch=1n;batchSource="confirmed-equipment-rule";
-      }else if(id in batchOverrides){
-        batch=count(batchOverrides[id]);manual=true;batchSource="manual";
       }else if(recipe.batchSize!==null&&recipe.batchSize!==undefined){
         batch=count(recipe.batchSize);batchSource="original-client-unit";
+      }else if(id in batchOverrides){
+        batch=count(batchOverrides[id]);manual=true;batchSource="manual";
       }else reason="missing-batch";
       if(batch!==null&&batch>BigInt(policy.maxPerOperation))reason="batch-over-limit";
       if(reason)mode="unresolved";
