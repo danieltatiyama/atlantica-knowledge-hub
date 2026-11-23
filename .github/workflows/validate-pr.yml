@@ -107,6 +107,9 @@ jobs:
       - name: Validate intermediate batches and crafting tree breakdown
         run: node --test tests/client-crafting-tree-operations.test.mjs
 
+      - name: Validate Excel workbook export and per-parent recipe consumption
+        run: node --test tests/client-crafting-xlsx-and-ui.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
