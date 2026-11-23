@@ -1,0 +1,220 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
+import {
+  getClientEquipmentSourceProfile,getOriginalClientItemIdentity,
+  getSourceItemLink,
+} from "../data/full-client-equipment-source.mjs";
+import {RAW_STATS_FIELDS} from "../data/full-client-stats-tools.mjs";
+import {labelForClientField} from "../data/client-item-stat-summary.mjs";
+
+interface Props {lang:"en"|"pt-br"; itemId:string;}
+const {lang,itemId}=Astro.props;
+const pt=lang==="pt-br";
+const prefix=pt?"/pt-br":"";
+const profile=getClientEquipmentSourceProfile(itemId);
+if(!profile)throw Error("Missing original source equipment ID");
+const {item,detail,rawStats,summary}=profile;
+if(item.reviewed)throw Error("Reviewed equipment must keep its existing manually curated profile");
+const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const materialStates=["parsed-client-material","parsed-client-recipe"];
+const groupLabels={
+  attack:pt?"Ataque":"Attack",
+  defense:pt?"Defesa e resistência":"Defense and resistance",
+  attributes:pt?"Atributos básicos":"Primary attributes",
+  other:pt?"Outros atributos":"Other source attributes",
+};
+const groups=["attack","defense","attributes","other"]
+  .map(group=>({name:groupLabels[group],
+    fields:RAW_STATS_FIELDS.filter(f=>f.group===group&&summary?.fields.has(f.key))
+      .map(f=>({key:f.key,
+        label:labelForClientField(f.key,pt),obs:summary.fields.get(f.key)}))
+  })).filter(g=>g.fields.length);
+const recipesMap=new Map();
+for(const def of detail.s){
+  const [rowId,file,role,category,level,grade,work,unit,state,ingredients]=def;
+  if(!materialStates.includes(state)||!ingredients.length)continue;
+  const materialPairs=[...ingredients].sort((a,b)=>Number(a[0])-Number(b[0]));
+  const signature=JSON.stringify(materialPairs);
+  if(!recipesMap.has(signature)){
+    recipesMap.set(signature,{materials:materialPairs.map(([id,qty])=>({
+      id,qty,name:getOriginalClientItemIdentity(id)?.nameEn??null,
+      url:getSourceItemLink(id,prefix),
+    })),definitions:[]});
+  }
+  recipesMap.get(signature).definitions.push({rowId,file,role,category,work,unit});
+}
+const recipes=[...recipesMap.values()];
+const materialsUnavailable=detail.s.some(s=>s[8]==="unsupported");
+const noRecipeSource=detail.s.some(s=>s[8]==="none");
+const sourceCount=detail.s.length;
+const longSourceRows=(rawStats??[]).map(([sourceRow,values])=>({sourceRow,values:Object.entries(values)}));
+---
+<BaseLayout lang={lang} title={item.nameEn+" | Atlantica Knowledge Hub"}
+  description={(pt?"Equipamento de categoria semelhante extraído dos arquivos do cliente: ":"Equipment-like source item from the client files: ")+item.nameEn}
+  alternatePaths={{en:"/items/"+item.id+"/", "pt-br":"/pt-br/items/"+item.id+"/"}}>
+  <main class="equipment-source-page">
+    <nav class="breadcrumbs"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
+    <header>
+      <p class="eyebrow">ATLANTICA GLOBAL / NA · CLIENT SNAPSHOT 1</p>
+      <h1>{item.nameEn}</h1>
+      <p class="identity">
+        <span>ID <code>{item.id}</code></span>
+        <span>{item.sourceCategory}</span>
+        <span>{pt?"Ficha baseada nos arquivos do cliente":"Client-source item profile"}</span>
+      </p>
+      <p class="source-caution">{pt
+        ?"Esta ficha foi gerada a partir de definições do cliente e ainda não passou pela revisão editorial dos 551 equipamentos originais. A categoria indica semelhança com equipamentos, mas não comprova que o item esteja equipável, disponível ou fabricável no servidor atual."
+        :"This profile is generated from original client definitions and is not one of the 551 manually reviewed equipment profiles. Its source category is equipment-like, but does not confirm that the item can be equipped, obtained or crafted on the current server."}</p>
+      <nav class="quicklinks" aria-label={pt?"Seções da ficha":"Profile sections"}>
+        <a href="#base-info">{pt?"Informações":"Overview"}</a>
+        <a href="#stats">{pt?"Atributos":"Stats"}</a>
+        <a href="#crafting">{pt?"Fabricação":"Crafting"}</a>
+        <a href="#obtain">{pt?"Obtenção":"How to obtain"}</a>
+        <a href="#sources">{pt?"Fontes":"Source evidence"}</a>
+        <a href="#used-in">{pt?"Usado em receitas":"Used in crafting"}</a>
+      </nav>
+    </header>
+
+    <section id="base-info">
+      <h2>{pt?"Informações do item":"Item overview"}</h2>
+      <dl class="facts">
+        <div><dt>{pt?"ID do cliente":"Client ID"}</dt><dd><code>{item.id}</code></dd></div>
+        <div><dt>{pt?"Categoria de origem":"Source category"}</dt><dd>{item.sourceCategory}</dd></div>
+        <div><dt>{pt?"Nível bruto registrado":"Recorded raw level"}</dt><dd>{item.rawLevel??"—"}</dd></div>
+        <div><dt>{pt?"Grade bruta registrada":"Recorded source grade"}</dt><dd>{item.rawGrade??"—"}</dd></div>
+        <div><dt>{pt?"Definições originais":"Original source definitions"}</dt><dd>{sourceCount}</dd></div>
+        <div><dt>{pt?"Registros de atributos":"Numeric source records"}</dt><dd>{rawStats?.length??0}</dd></div>
+      </dl>
+      <p class="subtle">{pt
+        ?"Nível e grade são propriedades extraídas, não necessariamente requisitos de personagem, regras de melhoria ou confirmações de obtenção."
+        :"Source level and grade are extracted properties, not necessarily character requirements, enhancement rules or availability claims."}</p>
+    </section>
+
+    <section id="stats">
+      <h2>{pt?"Atributos de origem":"Original client attributes"}</h2>
+      {summary&&groups.length?<>
+        <p class="subtle">{pt
+          ?"Valores numéricos brutos de Items.csv; zeros, campos ausentes, cobertura parcial e fontes divergentes são preservados. Não representam necessariamente a ficha exibida no servidor."
+          :"Raw numeric Items.csv fields. Zeros, missing values, partial coverage and source disagreements remain distinct. Not necessarily live-server tooltip values."}</p>
+        <div class="stat-groups">{groups.map(group=><div class="stat-group">
+          <h3>{group.name}</h3>
+          <dl>{group.fields.map(field=><div>
+            <dt>{field.label} <small>{field.key}</small></dt>
+            <dd>
+              <strong>{field.obs.values.join(" / ")}</strong>
+              {field.obs.status!=="consistent"&&<small class={field.obs.status}>
+                {field.obs.status==="conflict"?(pt?"Divergente":"Conflict"):(pt?"Parcial":"Partial")}
+                {" · "+field.obs.observedIn+"/"+field.obs.sourceCount}
+              </small>}
+            </dd>
+          </div>)}</dl>
+        </div>)}</div>
+        <details class="raw-source"><summary>{pt?"Registros numéricos originais e IDs de origem":"Original raw numeric records and source row IDs"}</summary>
+          <div class="table-scroll"><table>
+            <thead><tr><th>{pt?"Registro":"Source row"}</th><th>{pt?"Campo":"Field"}</th><th>{pt?"Valor":"Raw value"}</th></tr></thead>
+            <tbody>{longSourceRows.flatMap(row=>row.values.map(([key,value])=><tr>
+              <td>#{row.sourceRow}</td><td>{key}</td><td>{value}</td>
+            </tr>))}</tbody>
+          </table></div>
+        </details>
+        <p class="subtle"><a href={prefix+"/items/database/?id="+encodeURIComponent(item.id)}>
+          {pt?"Ver modelos históricos +0 a +10 e dados originais no explorador":"Explore historical +0–+10 estimates and complete raw records"}
+        </a>. {pt
+          ?"Projeções são modelos antigos e não comprovam que o item aceita encantamento."
+          :"Any projections are historical models, not proof that this item can be enhanced."}</p>
+      </>:<p class="subtle">{pt
+        ?"Nenhum registro numérico seguro foi identificado para este ID na extração publicada. Dados ausentes não são zero."
+        :"No verified client numeric source rows are published for this ID. Missing source data is not zero."}</p>}
+    </section>
+
+    <section id="crafting">
+      <h2>{pt?"Receita de fabricação":"Crafting recipe"}</h2>
+      <p class="subtle">{pt
+        ?"Ingredientes e quantidades foram decodificados dos registros ItemType*.ndt. Não comprovam que a receita esteja disponível na interface de fabricação atual. Listas distintas são mantidas separadas."
+        :"Ingredients and quantities were parsed from ItemType*.ndt source definitions. These are not confirmation of a usable recipe in the live crafting interface. Distinct ingredient lists remain separate."}</p>
+      {recipes.length?<>
+        {recipes.length>1&&<p class="caution">{pt
+          ?"As fontes registram receitas divergentes. Todas são exibidas sem escolher uma como definitiva."
+          :"The source files contain differing ingredient lists; all are displayed without claiming a canonical gameplay recipe."}</p>}
+        {recipes.map((recipe,index)=><div class="recipe-block">
+          <h3>{pt?"Receita de origem":"Source recipe"} {recipes.length>1?index+1:""}</h3>
+          <p class="subtle">{pt?"Arquivos e registros":"Files and source rows"}: {recipe.definitions.map(d=>d.file+" (#"+d.rowId+")").join(" · ")}</p>
+          <div class="table-scroll"><table>
+            <thead><tr><th>{pt?"Material":"Ingredient"}</th><th>ID</th><th>{pt?"Quantidade":"Quantity"}</th></tr></thead>
+            <tbody>{recipe.materials.map(m=><tr>
+              <td><a href={m.url}>{m.name??(pt?"Nome não conciliado":"Unreconciled name")}</a></td>
+              <td><code>{m.id}</code></td><td>{fmt.format(m.qty)}</td>
+            </tr>)}</tbody>
+          </table></div>
+        </div>)}
+      </>:<p class="subtle">{pt
+        ?"Nenhuma lista de ingredientes estruturada foi encontrada para este item. Isso não demonstra que ele não possa ser fabricado."
+        :"No structured original ingredient list is available for this item. This does not prove that crafting is impossible."}</p>}
+      {materialsUnavailable&&<p class="caution">{pt
+        ?"Algumas definições possuem expressões de materiais ainda não decodificadas."
+        :"Some source definitions contain unparsed material expressions."}</p>}
+      {noRecipeSource&&recipes.length>0&&<p class="caution">{pt
+        ?"Outras definições não registram materiais. A ausência não é uma receita vazia."
+        :"Other source definitions have no material list. Missing does not mean an empty recipe."}</p>}
+    </section>
+
+    <section id="obtain">
+      <h2>{pt?"Onde conseguir":"How to obtain"}</h2>
+      <p class="subtle">{pt
+        ?"Nenhuma fonte de obtenção no servidor atual foi validada para este ID nesta ficha. O índice histórico de drops de monstros será ligado aqui quando as linhas originais de loot forem reimportadas e conciliadas por ID."
+        :"No live-server acquisition source has been verified for this ID in this profile. Historical monster-drop links will appear here after original loot source rows are reimported and reconciled by ID."}</p>
+    </section>
+
+    <section id="sources">
+      <h2>{pt?"Proveniência dos arquivos do cliente":"Original client file evidence"}</h2>
+      <div class="table-scroll"><table>
+        <thead><tr><th>{pt?"Registro":"Source row"}</th><th>{pt?"Arquivo":"File"}</th><th>{pt?"Tipo":"Role"}</th>
+          <th>{pt?"Categoria":"Category"}</th><th>Work</th><th>Unit</th><th>{pt?"Materiais":"Material parser"}</th></tr></thead>
+        <tbody>{detail.s.map(source=><tr>
+          <td>#{source[0]}</td><td>{source[1]}</td><td>{source[2]}</td>
+          <td>{source[3]}</td><td>{source[6]??"—"}</td><td>{source[7]??"—"}</td>
+          <td>{source[8]}</td>
+        </tr>)}</tbody>
+      </table></div>
+      {detail.v.length>1&&<p class="subtle">{pt?"Agrupamentos de registros nos arquivos":"Source file record groupings"}:
+        {detail.v.map((v,i)=><span> {i+1}: {v.map(x=>"#"+x).join(", ")} ·</span>)}
+        {pt?" Não representam variantes equipáveis comprovadas.":" These are not verified playable variants."}</p>}
+    </section>
+
+    <div id="used-in"><ClientCraftingBacklinks lang={lang} itemId={item.id}/></div>
+  </main>
+</BaseLayout>
+<style>
+  .equipment-source-page{width:min(var(--content-width),92%);margin:0 auto;padding:20px 0 85px}
+  .breadcrumbs a,.equipment-source-page a{color:var(--color-accent)}
+  header{padding-bottom:24px;border-bottom:1px solid var(--color-border)}
+  h1{font-size:clamp(2rem,4vw,3.1rem);margin:8px 0 15px;overflow-wrap:anywhere}
+  .eyebrow{letter-spacing:.1em;color:var(--color-accent);font-size:.76rem}
+  .identity{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .identity span{border:1px solid var(--color-border);padding:7px 10px;border-radius:4px;font-size:.87rem}
+  .source-caution,.caution{border-left:3px solid var(--color-bronze);padding:11px 14px;background:var(--color-surface);
+    color:var(--color-text-muted);font-size:.9rem;line-height:1.65}
+  .quicklinks{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 5px}
+  .quicklinks a{border:1px solid var(--color-border);padding:7px 11px;border-radius:4px;text-decoration:none}
+  section{margin:30px 0}h2{color:var(--color-gold-light);font-size:1.4rem}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+  .facts>div{border:1px solid var(--color-border);background:var(--color-surface);padding:12px}
+  dt{color:var(--color-text-muted);font-size:.85rem}
+  dd{margin:6px 0 0} .subtle{font-size:.88rem;line-height:1.65;color:var(--color-text-muted)}
+  .stat-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+  .stat-group{background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px}
+  .stat-group h3{font-size:1rem;padding:8px 12px;margin:0;border-bottom:1px solid var(--color-border)}
+  .stat-group dl{margin:0;padding:8px 13px}.stat-group dl>div{display:flex;justify-content:space-between;
+    gap:10px;border-bottom:1px solid var(--color-border);padding:7px 0}
+  .stat-group dd{text-align:right;margin:0}.stat-group small{display:block;color:var(--color-text-muted);font-size:.72rem}
+  .stat-group .conflict{color:var(--color-gold-light)}
+  .raw-source{margin:19px 0}.raw-source summary{cursor:pointer;color:var(--color-accent)}
+  .recipe-block{border:1px solid var(--color-border);border-radius:5px;padding:14px;margin:14px 0}
+  .recipe-block h3{margin:0;color:var(--color-gold-light);font-size:1rem}
+  .table-scroll{overflow:auto;margin:12px 0;border:1px solid var(--color-border);border-radius:5px}
+  table{border-collapse:collapse;width:100%;min-width:690px;font-size:.88rem}
+  th,td{padding:9px 12px;border-bottom:1px solid var(--color-border);text-align:left}
+  th{background:#29271f;color:var(--color-gold-light)}
+  td{color:var(--color-text)}
+</style>
