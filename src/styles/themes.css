@@ -1,0 +1,415 @@
+/*
+ * Atlantica Knowledge Hub — reader themes.
+ * The original Atlantica palette in global.css is intentionally unchanged.
+ * Only non-default themes receive the page-specific overrides below.
+ * Keep all overrides here so curated pages, bestiary and generated item
+ * profiles share the same readable palette.
+ */
+:root[data-theme="atlantica"] { color-scheme: dark; }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-background:#111923;--color-header:#182331;--color-surface:#202d3c;
+  --color-text:#edf3f9;--color-text-muted:#b8c9d9;
+  --color-accent:#9acaff;--color-on-accent:#0c1b2c;
+  --color-border:#60758b;--color-card-border:#536a80;
+  --color-bronze:#739bc4;--color-gold-light:#c8e2ff;
+  --color-steel:#57748d;--color-parchment:#d0dce8;
+  --theme-panel:#1b2836;--theme-deep:#15202c;
+  --theme-input:#111b27;--theme-row:#263648;--theme-hover:#334e66;
+  --theme-text:#edf3f9;--theme-muted:#b8c9d9;--theme-border:#60758b;
+  --theme-highlight:#293f58;--theme-shadow:rgba(0,0,0,.30);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-background:#f5f7fb;--color-header:#fff;--color-surface:#fff;
+  --color-text:#1c2c3d;--color-text-muted:#4a5c70;
+  --color-accent:#155da3;--color-on-accent:#fff;
+  --color-border:#a9b8c9;--color-card-border:#a9b8c9;
+  --color-bronze:#50789e;--color-gold-light:#174f89;
+  --color-steel:#6a829d;--color-parchment:#4a5c70;
+  --theme-panel:#fff;--theme-deep:#eaf0f7;
+  --theme-input:#fff;--theme-row:#f0f5fa;--theme-hover:#dde9f7;
+  --theme-text:#1c2c3d;--theme-muted:#4a5c70;--theme-border:#a9b8c9;
+  --theme-highlight:#e2edfa;--theme-shadow:rgba(25,45,70,.12);
+}
+:root[data-theme="parchment"] {
+  color-scheme: light;
+  --color-background:#f4eddf;--color-header:#eae0cd;--color-surface:#fff9ed;
+  --color-text:#382e21;--color-text-muted:#62503a;
+  --color-accent:#855017;--color-on-accent:#fffaf0;
+  --color-border:#bdab8a;--color-card-border:#bba47c;
+  --color-bronze:#99672d;--color-gold-light:#7a4614;
+  --color-steel:#8b7b69;--color-parchment:#62503a;
+  --theme-panel:#fff9ed;--theme-deep:#f0e5d0;
+  --theme-input:#fffdf8;--theme-row:#f6eddb;--theme-hover:#e9d6b7;
+  --theme-text:#382e21;--theme-muted:#62503a;--theme-border:#bdab8a;
+  --theme-highlight:#edddbf;--theme-shadow:rgba(76,47,12,.13);
+}
+:root[data-theme="midnight"] {
+  color-scheme: dark;
+  --color-background:#0a1428;--color-header:#111f3a;--color-surface:#172641;
+  --color-text:#ebf3ff;--color-text-muted:#b6c9e1;
+  --color-accent:#8bc5ff;--color-on-accent:#091d37;
+  --color-border:#4d719e;--color-card-border:#54759e;
+  --color-bronze:#5a99dd;--color-gold-light:#c2dfff;
+  --color-steel:#456a96;--color-parchment:#bdcde2;
+  --theme-panel:#152440;--theme-deep:#101d34;
+  --theme-input:#0c1930;--theme-row:#1b3152;--theme-hover:#274870;
+  --theme-text:#ebf3ff;--theme-muted:#b6c9e1;--theme-border:#4d719e;
+  --theme-highlight:#1e3c62;--theme-shadow:rgba(0,0,0,.45);
+}
+:root[data-theme="contrast"] {
+  color-scheme: dark;
+  --color-background:#000;--color-header:#090909;--color-surface:#0f0f0f;
+  --color-text:#fff;--color-text-muted:#f0f0f0;
+  --color-accent:#ffe500;--color-on-accent:#000;
+  --color-border:#fff;--color-card-border:#fff;
+  --color-bronze:#ffe500;--color-gold-light:#ffe500;
+  --color-steel:#fff;--color-parchment:#fff;
+  --theme-panel:#0f0f0f;--theme-deep:#050505;
+  --theme-input:#000;--theme-row:#202020;--theme-hover:#353535;
+  --theme-text:#fff;--theme-muted:#f0f0f0;--theme-border:#fff;
+  --theme-highlight:#272300;--theme-shadow:rgba(0,0,0,.75);
+}
+
+/* The original Atlantica appearance is an opt-in exception to these rules. */
+html[data-theme]:not([data-theme="atlantica"]) body {
+  background:var(--color-background);
+  color:var(--color-text);
+}
+html[data-theme]:not([data-theme="atlantica"]) .site-header {
+  background:var(--color-header);
+  box-shadow:0 3px 15px var(--theme-shadow);
+}
+html[data-theme]:not([data-theme="atlantica"]) .site-header .brand-name {
+  text-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) .site-header .nav-link:is(:hover,:focus-visible,.active){
+  background:var(--theme-highlight);
+  color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) :is(input,select,textarea,button) {
+  accent-color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) :is(a,button,input,select,summary):focus-visible {
+  outline-color:var(--color-accent);
+}
+
+/* Home: keep cards and fantasy motifs, but make their surfaces and symbols legible. */
+html[data-theme]:not([data-theme="atlantica"]) .home-main::before {
+  background:radial-gradient(ellipse at 70% 8%,var(--theme-highlight),transparent 65%),var(--color-background);
+}
+html[data-theme]:not([data-theme="atlantica"]) .home-main .card-media,
+html[data-theme]:not([data-theme="atlantica"]) .home-main .card-media--monsters,
+html[data-theme]:not([data-theme="atlantica"]) .home-main .card-media--guides,
+html[data-theme]:not([data-theme="atlantica"]) .home-main .card-media--dungeons,
+html[data-theme]:not([data-theme="atlantica"]) .home-main .card-media--tools {
+  background:radial-gradient(ellipse at 50% 25%,var(--theme-highlight),transparent 75%),var(--theme-deep);
+}
+html[data-theme]:not([data-theme="atlantica"]) .home-main .card-symbol {
+  background:var(--color-surface);
+  color:var(--color-accent);
+  box-shadow:0 0 16px var(--theme-shadow);
+}
+html[data-theme]:not([data-theme="atlantica"]) .home-main .button {
+  background:var(--color-accent);
+  color:var(--color-on-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) .home-main .card span {
+  color:var(--color-accent);
+}
+
+/* Article tables and the universal item explorer. */
+html[data-theme]:not([data-theme="atlantica"]) .article-body th,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db thead th {
+  background:var(--theme-deep);
+  color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db :is(.wiki-item-overview,.wiki-crafting,.wiki-technical,.reader-guide,.wiki-recipe) {
+  color:var(--color-text);
+  background:var(--theme-panel);
+  border-color:var(--color-border);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db :is(.wiki-item-overview,.wiki-crafting,.reader-guide) :is(h3,summary),
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-technical > summary,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-recipe-heading h4,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-source-groupings summary {
+  color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db :is(.wiki-help,.wiki-empty,.wiki-source-refs,.wiki-raw-id,.wiki-facts dt) {
+  color:var(--color-text-muted);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-facts > div,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-tech-count,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-recipe-heading {
+  color:var(--color-text);
+  background:var(--theme-deep);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-facts dd,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-batch-label {
+  color:var(--color-text);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-table-scroll table,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-table-scroll th {
+  background:var(--theme-deep);
+  color:var(--color-text);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-table-scroll th {
+  color:var(--color-accent);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-table-scroll td {
+  color:var(--color-text);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-table-scroll tbody tr:nth-child(even) {
+  background:var(--theme-row);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-table-scroll tbody tr:is(:hover,:focus-within) {
+  background:var(--theme-hover);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-table-scroll a,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-source-groupings summary {
+  color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db .wiki-source-warning {
+  background:var(--theme-highlight);
+  color:var(--color-text);
+  border-color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db :is(.wiki-source-refs,.wiki-source-groupings) {
+  border-color:var(--color-border);
+}
+
+/* Creature archive + detail: original hardcoded bronze/dark styles need
+   explicit replacements, especially for the light and parchment palettes. */
+html[data-theme]:not([data-theme="atlantica"]) #creature-db {
+  --bestiary-metal:var(--color-border);
+  --bestiary-gold:var(--color-accent);
+  --bestiary-paper:var(--color-text);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .bestiary-header,.browse,.creature-detail,.community-drop-section,
+ .community-creature-audit,.creature-group,.source-band-details
+) {
+  background:var(--theme-panel);
+  border-color:var(--color-border);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .bestiary-header::before,
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .bestiary-header::after {
+  background:linear-gradient(90deg,transparent,var(--color-accent),transparent);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ h1,h2,h3,h4,.bestiary-section-head h2,.community-drop-section h3,
+ .bestiary-stats strong,.creature-facts strong,.eyebrow,
+ .community-creature-audit h4,.community-creature-audit > summary,
+ .source-band-details summary,.client-record-row summary,
+ .community-drop-section .client-rate strong,.section-ornament
+) {
+  color:var(--color-accent);
+  text-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .bestiary-description,.warning,.subtle,.bestiary-stats span,
+ .community-drop-section > .subtle,.community-drop-section .client-source-id,
+ .creature-facts span,.client-record-row dt
+) { color:var(--color-text-muted); }
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .bestiary-stats,.bestiary-stats > div + div,.community-creature-audit[open] > summary
+) { border-color:var(--color-border); }
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(.bestiary-crest,.section-ornament) {
+  background:var(--theme-deep);
+  border-color:var(--color-border);
+  color:var(--color-accent);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .warning {
+  background:var(--theme-highlight);
+  border-color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(label,.client-record-row dd,.browse td,.creature-detail td) {
+  color:var(--color-text);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(input,select) {
+  background:var(--theme-input);
+  color:var(--color-text);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .browse th,.creature-detail th,.community-drop-section th
+) {
+  background:var(--theme-deep);
+  color:var(--color-accent);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .browse td,.creature-detail td,.creature-table-scroll
+) { border-color:var(--color-border); }
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .browse tbody tr:nth-child(even),.creature-detail tbody tr:nth-child(even)
+) { background:var(--theme-row); }
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .browse tbody tr:hover,.creature-detail tbody tr:hover
+) { background:var(--theme-hover); }
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(.browse button,.creature-detail button) {
+  background:var(--theme-deep);
+  color:var(--color-text);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .browse button:hover:not(:disabled),.creature-detail button:hover:not(:disabled)
+) { background:var(--theme-hover); }
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .creature-facts {
+  background:var(--color-border);border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .creature-facts > div {
+  background:var(--theme-deep);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .client-record-row dl {
+  background:var(--theme-deep);border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db a,
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .client-record-row summary {
+  color:var(--color-accent);
+}
+
+/* Loot Codex rendered within the monster archive. */
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .ao-drop-finder,
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .finder-result {
+  --metal:var(--color-border);
+  --gold:var(--color-accent);
+  background:var(--theme-panel);
+  border-color:var(--color-border);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .finder-sigil {
+  background:var(--theme-deep);
+  border-color:var(--color-border);
+  color:var(--color-accent);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .finder-overline,.finder-header p:not(.finder-overline),
+ .finder-filters label,.finder-status,.finder-note,
+ .finder-count,.finder-item-name small,.finder-evidence-note
+) { color:var(--color-text-muted); }
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .finder-filters :is(input,select),
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .finder-entry {
+  background:var(--theme-input);
+  color:var(--color-text);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db .finder-entry:nth-child(even) {
+  background:var(--theme-row);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .finder-list-head,.finder-scroll th
+) {background:var(--theme-deep);color:var(--color-accent);}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .finder-item-name,.finder-evidence h4,.finder-scroll a,.finder-result a
+) {color:var(--color-accent);}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .finder-navigation button,.finder-result button,.finder-more
+) {
+  background:var(--theme-deep);
+  color:var(--color-text);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #creature-db :is(
+ .finder-scroll,.finder-scroll th,.finder-scroll td,.finder-note
+) {border-color:var(--color-border);}
+
+/* The item-page reverse drop listing is used outside #creature-db. */
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources {
+  background:var(--theme-panel);
+  border-color:var(--color-border);
+  color:var(--color-text);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources :is(
+ h2,th,td:nth-child(2),td a,.monster-catalog-link a,
+ details summary
+) {color:var(--color-accent);}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources :is(
+ .drop-disclaimer,.monster-item-status,td small,details dt
+) {color:var(--color-text-muted);}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources th {
+  background:var(--theme-deep);
+}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources :is(th,td,details dl,h2){
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources tbody tr:nth-child(even) {
+  background:var(--theme-row);
+}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources tbody tr:hover {
+  background:var(--theme-hover);
+}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources details dl {
+  background:var(--theme-deep);
+}
+html[data-theme]:not([data-theme="atlantica"]) .monster-item-sources details dd {
+  color:var(--color-text);
+}
+
+/* Floating section navigator and expand/collapse controls, including mobile. */
+html[data-theme]:not([data-theme="atlantica"]) :is(#wiki-float-nav,#wiki-nav-reopen){
+  background:var(--theme-panel);
+  border-color:var(--color-border);
+  color:var(--color-text);
+  box-shadow:0 5px 22px var(--theme-shadow);
+  scrollbar-color:var(--color-border) var(--theme-deep);
+}
+html[data-theme]:not([data-theme="atlantica"]) #wiki-float-nav :is(
+ .wiki-nav-title,.wiki-nav-hint
+) {border-color:var(--color-border);}
+html[data-theme]:not([data-theme="atlantica"]) #wiki-float-nav :is(
+ .wiki-nav-title strong,.wiki-nav-group p
+) {color:var(--color-accent);}
+html[data-theme]:not([data-theme="atlantica"]) #wiki-float-nav :is(
+ .wiki-nav-hint,a
+) {color:var(--color-text-muted);}
+html[data-theme]:not([data-theme="atlantica"]) #wiki-float-nav button{
+  background:var(--theme-deep);
+  color:var(--color-text);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) #wiki-float-nav button[aria-pressed="true"]{
+  background:var(--color-accent);
+  color:var(--color-on-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) #wiki-float-nav a:is(:hover,[aria-current="location"]),
+html[data-theme]:not([data-theme="atlantica"]) #wiki-nav-reopen:hover {
+  background:var(--theme-hover);
+  color:var(--color-text);
+  border-left-color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) main[data-wiki-nav-root] .wiki-section-toggle,
+html[data-theme]:not([data-theme="atlantica"]) #creature-db section button.wiki-section-toggle,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db section button.wiki-section-toggle {
+  background:var(--theme-deep);
+  color:var(--color-accent);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) main[data-wiki-nav-root] .wiki-section-toggle:hover,
+html[data-theme]:not([data-theme="atlantica"]) #creature-db section button.wiki-section-toggle:hover,
+html[data-theme]:not([data-theme="atlantica"]) #full-client-db section button.wiki-section-toggle:hover {
+  background:var(--theme-hover);
+}
+
+/* Black/yellow mode: avoid relying on shadows or subtle border differences. */
+html[data-theme="contrast"] :is(
+ .site-header,#creature-db .browse,#creature-db .creature-detail,
+ #full-client-db .wiki-item-overview,#wiki-float-nav,.monster-item-sources
+) {box-shadow:none;}
+html[data-theme="contrast"] :is(a,button,select,input,summary):focus-visible {
+  outline:3px solid var(--color-accent);
+  outline-offset:3px;
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-theme] * {scroll-behavior:auto;}
+}
