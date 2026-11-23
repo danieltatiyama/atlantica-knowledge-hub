@@ -217,8 +217,8 @@ export function buildCraftingWorkbook({plan,names={},prices={},locale="en"}){
     " | "+plan.issues.length+" unresolved recipe/batch questions.":"");
   const treeRows=plan.tree.map(row=>{
     const parent=row.parentItemId?getName(row.parentItemId)+" (#"+row.parentItemId+")":"—";
-    const consumption=row.parentItemId?String(row.unitsPerParentBatch)+" × "+
-      String(row.parentBatches)+" = "+row.branchQuantity:"—";
+    const consumption=row.parentItemId?(row.consumptionGroups??[]).map(group=>
+      group.operations+" × "+group.consumedEach).join(" + "):"—";
     const operations=(row.operationGroups??[]).map(g=>
       g.operations+" × "+g.outputEach).join(" + ")||"—";
     return [

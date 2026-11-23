@@ -39,6 +39,35 @@ export function splitCraftOperations({batches,batchSize,maxPerOperation}){
     batchesPerOperation:String(batchesPerOperation),
     maxOutputPerOperation:String(batchesPerOperation*unit)};
 }
+/**
+ * Turn a parent's legal operation groups into the actual ingredient
+ * consumption per operation. The raw recipe specifies ingredient units per
+ * PARENT BATCH, not per item and not per entire crafting request.
+ *
+ * Parent: 7 operations of 20 armors and 1 of 2, batch size 1.
+ * Ingredient: 250 stones per armor batch.
+ * Result: 7 × 5000 + 1 × 500 = 35,500 stones.
+ *
+ * Intermediate batches are rounded separately in the planner. This helper
+ * must never round the consumption imposed by the parent recipe.
+ */
+export function deriveParentConsumptionGroups({
+  unitsPerParentBatch,parentBatchSize,parentOperationGroups,
+}){
+  const units=count(unitsPerParentBatch),batch=count(parentBatchSize);
+  if(!Array.isArray(parentOperationGroups))throw new TypeError("Missing parent operation groups");
+  return parentOperationGroups.map(group=>{
+    const operations=count(group.operations),output=count(group.outputEach);
+    if(output%batch!==0n)
+      throw new RangeError("Parent operation output must be a full multiple of its batch");
+    const consumedEach=units*(output/batch);
+    return {
+      operations:String(operations),
+      consumedEach:String(consumedEach),
+      totalConsumed:String(operations*consumedEach),
+    };
+  });
+}
 export function planClientCrafting({
   itemId,quantity,recipesById={},choices={},batchOverrides={},
   itemCategories={},buyIds=[],strictTargetBatch=false,
@@ -149,6 +178,15 @@ export function planClientCrafting({
   const tree=[],visitedTree=new Set();
   function treeWalk(id,depth,branchQty,ancestorPath="",consumption=null){
     const node=nodes.get(id),step=stepMap.get(id);
+    const parentStep=consumption?stepMap.get(consumption.parentItemId):null;
+    const consumptionGroups=consumption?deriveParentConsumptionGroups({
+      unitsPerParentBatch:consumption.unitsPerParentBatch,
+      parentBatchSize:parentStep?.batchSize,
+      parentOperationGroups:parentStep?.operationGroups,
+    }):[];
+    if(consumption&&consumptionGroups.reduce(
+      (sum,group)=>sum+BigInt(group.totalConsumed),0n)!==BigInt(branchQty))
+      throw new Error("Parent operation consumption must match the source recipe branch");
     const repeated=visitedTree.has(id);
     visitedTree.add(id);
     tree.push({
@@ -156,6 +194,7 @@ export function planClientCrafting({
       parentItemId:consumption?.parentItemId??null,
       unitsPerParentBatch:consumption?.unitsPerParentBatch??null,
       parentBatches:consumption?.parentBatches??null,
+      consumptionGroups,
       totalRequired:String(demand.get(id)??0n),
       output:step?.output??null,
       excess:step?.excess??null,

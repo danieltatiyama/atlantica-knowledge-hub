@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.60  
-**Último PR funcional:** [PR #79](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/79) (Stage 20.60)
+**Última etapa implementada:** Stage 20.61  
+**Último PR funcional:** [PR #80](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/80) (Stage 20.61)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -326,6 +326,16 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Código: `src/components/CraftingPlannerPage.astro`. Testes: `tests/client-crafting-column-snap.test.mjs`, executados no GitHub Actions.
 - A verificação visual deve incluir Firefox e Chrome, modo claro/escuro/contraste e larguras abaixo/acima de 860px.
 
+### Stage 20.61 — Crafting Tree compacta, consumo por operação e legibilidade do calendário
+
+- **Crafting Tree:** substituição da largura mínima fixa de 1.460px e das larguras percentuais por colunas de largura orientada ao conteúdo e mínimos compactos. Mantidos scroll snap horizontal e Item/Recipe fixa no desktop, sem grandes espaços vazios entre valores.
+- **Consumption breakdown por operação pai:** cada linha de ingrediente agora representa grupos de **operações de fabricação da receita pai**, não apenas quantidade por batch × total de batches. A fórmula original continua preservada como informação de origem no tooltip e nos campos brutos.
+- Exemplos reais: para 20 Judgment Heavy Armors #645, operação `1 × 20`, Anarchy Stone `1 × 5000`. Para 142 armors, operação `7 × 20 + 1 × 2`, consumo de Anarchy Stone `7 × 5000 + 1 × 500`. Para 10.000 Albert's Special Bait, Dumpling `1 × 35000`, Wheat `3 × 6000 + 1 × 3000`.
+- O cálculo agrega material compartilhado e respeita batches inteiros, mesmo quando um intermediário é produzido em múltiplas operações. O XLSX usa a mesma coluna de consumo por operação da Wiki.
+- **Nation Dungeon Calendar:** identificada falha de escopo no Astro: células e controles criados em JavaScript não recebiam as regras de CSS dos elementos originais. Estilos `<style is:global>` limitados a `#nation-calendar` corrigem a renderização dinâmica da grade: largura de células, cores ready/cooldown, cabeçalhos fixos, fins de semana, legenda, cooldown inputs e runs cadastradas. Dias/horas e a acessibilidade do scroll foram aprimorados.
+- Arquivos centrais: `src/data/client-crafting-planner.mjs`, `src/data/client-crafting-xlsx.mjs`, `src/components/CraftingPlannerPage.astro`, `src/components/NationDungeonCalendarPage.astro`.
+- Testes: `tests/crafting-operation-consumption-calendar-readability.test.mjs` e suíte XLSX ajustada; executar build/CI e conferir no browser, inclusive modos claros/escuros e 7/14/30 dias.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -345,12 +355,11 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.58 | [#77](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/77) | Árvore colorida por profundidade, tabela alinhada e operações de intermediários em batches completos |
 | 20.59 | [#78](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/78) | Visual do Craft Schedule/Shopping List, consumption breakdown por receita pai e exportação XLSX de quatro abas |
 | 20.60 | [#79](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/79) | Scroll snap horizontal e coluna Item/Recipe fixa na Crafting Tree, com tratamento para mobile |
+| 20.61 | [#80](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/80) | Colunas compactas da árvore, consumo por operação da receita pai, correção visual da grade do calendário |
 
 Todos esses PRs foram integrados à `main`.
 
-**Último commit de integração conhecido no momento da elaboração do documento:**
-
-`0d422e251cb99a60f623fa3c466ee279427b97dc`
+**Commit atualizado:** consultar diretamente o HEAD da branch `main` no GitHub; hashes antigos não representam necessariamente a última integração.
 
 Os pipelines do GitHub Actions das Stages 20.50 a 20.54 foram concluídos com sucesso, incluindo os testes novos, validações existentes e build do Astro.
 
@@ -423,4 +432,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.59 implementada no PR #78. Consultar o estado de integração e GitHub Actions para confirmar aprovação; inspecionar visualmente o Craft Schedule, a Shopping List, a coluna de consumo e abrir um XLSX exportado após o deploy.**
+**Estado documentado: Stage 20.61 implementada no PR #80. Verificar integração e pipeline no GitHub. Após deploy, conferir visualmente colunas compactas e snap da Crafting Tree, Consumption breakdown por operação pai, XLSX e grade do Nation Dungeon Calendar nos diferentes temas e orientações.**
