@@ -634,4 +634,85 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
   @media(prefers-reduced-motion:reduce){
     #creature-db *{scroll-behavior:auto!important}
   }
+
+  /* Player-first source layout: detailed Miner fields are optional. */
+  #creature-db .community-drop-section{
+    margin:18px 0;
+    padding:15px;
+    border:1px solid #806c48;
+    border-radius:5px;
+    background:linear-gradient(135deg,#202832,#151a21);
+  }
+  #creature-db .community-drop-section h3{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:1.25rem;margin:0 0 9px;color:#f0d29a;
+  }
+  #creature-db .community-drop-section>.subtle{
+    max-width:1050px;margin:7px 0 13px;
+    font-size:.86rem;color:#bec9d1;
+  }
+  #creature-db .community-drop-section table{min-width:560px}
+  #creature-db .community-drop-section th{
+    background:#332d23;
+    font-size:.84rem;letter-spacing:0;
+  }
+  #creature-db .community-drop-section td{vertical-align:top}
+  #creature-db .community-drop-section .client-source-id{
+    display:block;margin-top:3px;
+    font-size:.73rem;color:#b1bdc6;
+  }
+  #creature-db .community-drop-section .client-rate strong{
+    font-weight:700;color:#f3d69d;
+    white-space:nowrap;font-variant-numeric:tabular-nums;
+  }
+  #creature-db .community-drop-section .client-amount{
+    white-space:nowrap;font-variant-numeric:tabular-nums;
+  }
+  #creature-db .client-record-row{min-width:115px}
+  #creature-db .client-record-row summary{
+    color:#edce93;cursor:pointer;font-size:.82rem;
+    text-underline-offset:3px;
+  }
+  #creature-db .client-record-row dl{
+    display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));
+    gap:9px 13px;min-width:340px;
+    padding:11px;margin:7px 0 0;
+    border:1px solid #786444;background:#121922;
+  }
+  #creature-db .client-record-row dt{
+    font-size:.73rem;color:#b4bbc3;
+  }
+  #creature-db .client-record-row dd{
+    font-size:.82rem;color:#f0dfc0;
+    margin:4px 0 0;
+    overflow-wrap:anywhere;
+    font-variant-numeric:tabular-nums;
+  }
+  #creature-db .community-creature-audit{
+    margin:23px 0;padding:14px 16px;
+    border:1px solid #706448;
+    background:#161d24;border-radius:4px;
+  }
+  #creature-db .community-creature-audit>summary{
+    cursor:pointer;color:#efce93;
+    font-size:1rem;font-weight:600;
+  }
+  #creature-db .community-creature-audit[open]>summary{
+    border-bottom:1px solid #76654a;
+    margin-bottom:10px;padding-bottom:10px;
+  }
+  #creature-db .community-creature-audit h4{
+    margin:14px 0 9px;color:#eacb93;
+  }
+  #creature-db .community-drop-section a:focus-visible,
+  #creature-db .community-creature-audit summary:focus-visible,
+  #creature-db .client-record-row summary:focus-visible{
+    outline:2px solid #f4c978;outline-offset:3px;
+  }
+  @media(max-width:700px){
+    #creature-db .community-drop-section{padding:10px}
+    #creature-db .client-record-row dl{
+      grid-template-columns:1fr;min-width:210px;
+    }
+  }
 </style>
