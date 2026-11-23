@@ -1,6 +1,7 @@
 ---
 
 import { getCollection } from "astro:content";
+import GlobalSearch from "./GlobalSearch.astro";
 import type { CollectionEntry } from "astro:content";
 
 const siteName = "Atlantica Knowledge Hub";
@@ -170,6 +171,10 @@ import {
           {item.label}
         </a>
       ))}
+      <button class="wiki-global-trigger" type="button" data-global-search-open
+        aria-label={lang === "pt-br" ? "Abrir busca global" : "Open global search"}>
+        ⌕ {lang === "pt-br" ? "Buscar" : "Search"}
+      </button>
     </nav>
 
     <div class="header-controls" role="group"
@@ -204,6 +209,7 @@ import {
     </div>
   </div>
 </header>
+<GlobalSearch lang={lang} />
 
 <style>
   .site-header {
