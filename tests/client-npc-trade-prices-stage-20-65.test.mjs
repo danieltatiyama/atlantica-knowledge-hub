@@ -142,10 +142,12 @@ test("crafting calculator keeps NPC prices opt-in, separate from stored manual s
   'attachNPCPriceHint(priceCell,leaf.itemId,input)',
   'buildCraftingWorkbook({plan,names,prices,priceOrigins',
   'pt?"Usar":"Use"',
-  'marketFixedPriceVerified',
  ])assert.ok(src.includes(part),part);
  assert.ok(!src.includes('prices={...clientNPCPriceMap}'),
   "NPC references must not become automatic prices without user action");
+ const parser=readFileSync("src/data/client-npc-price-reference.mjs","utf8");
+ assert.ok(parser.includes("marketFixedPriceVerified!==false"),
+  "NPC client reference must reject any claim of Market verification");
  const xlsx=readFileSync("src/data/client-crafting-xlsx.mjs","utf8");
  assert.ok(xlsx.includes('priceOrigins[row.itemId]==="client-npc-catalog"'));
  assert.ok(xlsx.includes('Client NPC reference (Market unverified)'));
