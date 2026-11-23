@@ -70,14 +70,15 @@ export function deriveParentConsumptionGroups({
 }
 export function planClientCrafting({
   itemId,quantity,recipesById={},choices={},batchOverrides={},
-  itemCategories={},buyIds=[],strictTargetBatch=false,
+  itemCategories={},buyIds=[],doneIds=[],strictTargetBatch=false,
 }){
   if(!valid(itemId))throw new RangeError("Invalid target ItemID");
   const requested=count(quantity);
   if(strictTargetBatch&&requested>10000n)
     throw new RangeError("Requested output exceeds the 10,000-item planning limit");
-  const buy=new Set(buyIds.map(String));
-  if([...buy].some(id=>!valid(id)))throw new RangeError("Invalid purchased ItemID");
+  const buy=new Set(buyIds.map(String)),done=new Set(doneIds.map(String));
+  if([...buy,...done].some(id=>!valid(id)))
+    throw new RangeError("Invalid purchased/completed ItemID");
   const nodes=new Map(),visiting=new Set(),visited=new Set(),issues=[];
   function walk(id){
     if(visiting.has(id))throw Error("Circular recipe dependency involving ItemID "+id);
@@ -88,7 +89,11 @@ export function planClientCrafting({
     if(!Array.isArray(variants))throw Error("Invalid recipe variants for "+id);
     const policy=craftGameplayPolicy(itemCategories[id]);
     let recipe=null,batch=null,reason=null,manual=false,mode="base",batchSource=null;
-    if(buy.has(id)){
+    if(done.has(id)){
+      // Already fulfilled in this plan: no more crafting, purchasing or
+      // descendant ingredients are needed for this ItemID.
+      mode="done";
+    }else if(buy.has(id)){
       mode="buy";
     }else if(variants.length>1&&!(id in choices)){
       reason="choose-variant";mode="unresolved";
@@ -168,16 +173,24 @@ export function planClientCrafting({
         incoming.set(child,incoming.get(child)-1);
         if(incoming.get(child)===0)ready.push(child);
       }
-    }else if(needed>0n){
+    }else if(needed>0n&&node.mode!=="done"){
       leaves.push({itemId:id,quantity:String(needed)});
     }
   }
   if(processed!==nodes.size)throw Error("Circular recipe graph");
   const stepMap=new Map(steps.map(step=>[step.itemId,step]));
+  // Keep a reversible, consolidated record of completed ItemIDs. Its
+  // quantity is the demand that was already covered, not a new purchase.
+  const completedRows=[...nodes.values()]
+    .filter(node=>node.mode==="done"&&(demand.get(node.id)??0n)>0n)
+    .map(node=>({itemId:node.id,quantity:String(demand.get(node.id))}));
   
   const tree=[],visitedTree=new Set();
   function treeWalk(id,depth,branchQty,ancestorPath="",consumption=null){
     const node=nodes.get(id),step=stepMap.get(id);
+    // Remove the completed item AND its subtree from the pending tree.
+    // A shared ingredient required by another unfinished parent remains.
+    if(node.mode==="done")return;
     const parentStep=consumption?stepMap.get(consumption.parentItemId):null;
     const consumptionGroups=consumption?deriveParentConsumptionGroups({
       unitsPerParentBatch:consumption.unitsPerParentBatch,
@@ -218,8 +231,8 @@ export function planClientCrafting({
   treeWalk(String(itemId),0,requested);
   return {
     targetItemId:String(itemId),requested:String(requested),
-    steps,leaves,issues,tree,
-    complete:issues.length===0&&steps.length>0,
+    steps,leaves,issues,tree,completedRows,
+    complete:issues.length===0&&(steps.length>0||done.has(String(itemId))),
     totalOperations:steps.reduce((sum,row)=>sum+BigInt(row.operations),0n).toString(),
     totalBatches:steps.reduce((sum,row)=>sum+BigInt(row.totalBatches),0n).toString(),
     rootOutput:stepMap.get(String(itemId))?.output??String(requested),
