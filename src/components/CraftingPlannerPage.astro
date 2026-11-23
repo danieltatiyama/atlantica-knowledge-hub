@@ -64,8 +64,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      </div>
     </div>
     <p class="craft-muted">{pt
-     ?"Cores diferenciam os níveis. Necessário = consumo na receita; a fabricar = produção arredondada para batches inteiros. A divisão mostra quantas operações e quantas unidades em cada uma. Itens compartilhados não são contados duas vezes."
-     :"Colors distinguish levels. Needed is recipe consumption; to produce rounds up to full batches. The split shows how many operations and units per operation. Shared items are counted once."}</p>
+     ?"Cores diferenciam os níveis. A divisão de operações mostra a produção por operação; a divisão de consumo mostra quanto cada operação da receita pai gasta. Totais compartilhados não são duplicados."
+     :"Colors distinguish levels. Operation breakdown shows output per operation; consumption breakdown shows ingredients used by each parent operation. Shared totals are counted once."}</p>
     <div id="craft-tree" class="craft-tree" role="region" tabindex="0" aria-label={pt?"Tabela de fabricação, com rolagem horizontal e encaixe por coluna":"Crafting table with horizontal scrolling and column snapping"}>
      <table class="craft-tree-table">
       <thead><tr>
@@ -540,12 +540,13 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const consumption=el("td");
     consumption.className="craft-tree-consumption";
     if(row.parentItemId!==null){
-     consumption.textContent=fmt(row.unitsPerParentBatch)+" × "+
-      fmt(row.parentBatches)+" = "+fmt(row.branchQuantity);
-     consumption.title=(pt?"Consumido por ":"Consumed by ")+
+     consumption.textContent=(row.consumptionGroups??[]).map((group:any)=>
+      fmt(group.operations)+" × "+fmt(group.consumedEach)).join(" + ")||"—";
+     consumption.title=(pt?"Consumo por operação de ":"Consumption per operation of ")+
       title(row.parentItemId)+": "+
-      fmt(row.unitsPerParentBatch)+(pt?" por batch × ":" per batch × ")+
-      fmt(row.parentBatches)+(pt?" batches da receita pai":" parent recipe batches");
+      fmt(row.unitsPerParentBatch)+(pt?" por batch da receita pai × ":" per parent batch × ")+
+      fmt(row.parentBatches)+(pt?" batches = ":" batches = ")+fmt(row.branchQuantity)+
+      (pt?" unidades no total.":" units total.");
     }else consumption.textContent="—";
     tr.append(consumption);
     const actions=el("td");actions.className="craft-tree-actions";
@@ -1148,14 +1149,16 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   overscroll-behavior-inline:contain;
  }
  #wiki-craft-planner .craft-tree-table{
-  width:100%;min-width:1460px;
+  /* Content-driven widths keep ordinary recipes compact. The previous
+     fixed 1460px/percentage layout created large empty column gutters. */
+  width:max-content;min-width:0;
   border-collapse:separate;border-spacing:0;
-  table-layout:fixed;font-variant-numeric:tabular-nums;
+  table-layout:auto;font-variant-numeric:tabular-nums;
  }
  #wiki-craft-planner .craft-tree-table th,
  #wiki-craft-planner .craft-tree-table td{
   vertical-align:middle;text-align:right;
-  padding:9px 11px;
+  padding:9px 10px;
   border-bottom:1px solid var(--color-border);
   font-size:.83rem;white-space:nowrap;
  }
@@ -1164,11 +1167,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   color:var(--color-text);
   background:var(--color-surface);
   border-bottom:2px solid var(--color-border);
-  font-size:.77rem;
-  font-weight:700;
+  font-size:.77rem;font-weight:700;
  }
  #wiki-craft-planner .craft-tree-table :is(th,td):first-child{
-  width:25%;min-width:275px;text-align:left;
+  width:285px;min-width:245px;max-width:325px;text-align:left;
  }
  /* The headings define one shared snap position for each data column.
     Keep only one anchor per column to avoid duplicate snap points on rows. */
@@ -1190,19 +1192,21 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  #wiki-craft-planner .craft-tree-table tbody tr:hover th:first-child{
   background:color-mix(in srgb,var(--craft-level) 14%,var(--color-background));
  }
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(2){width:7%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(3){width:8%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(4){width:8%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(5){width:6%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(6){width:6%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(7){width:6%;}
+ /* Fixed compact minima, rather than percentages, preserve snap targets
+    without manufacturing horizontal whitespace between short quantities. */
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(2){min-width:103px;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(3){min-width:105px;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(4){min-width:95px;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(5){min-width:90px;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(6){min-width:85px;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(7){min-width:90px;}
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(8){
-  width:12%;text-align:left;white-space:normal;
+  min-width:175px;text-align:left;
  }
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(9){
-  width:15%;text-align:left;white-space:normal;
+  min-width:205px;text-align:left;
  }
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(10){width:7%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(10){min-width:75px;}
  #wiki-craft-planner .craft-tree-consumption{
   color:var(--color-text);font-size:.8rem;line-height:1.45;
   font-variant-numeric:tabular-nums;
@@ -1337,6 +1341,6 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  @media(max-width:620px){
   #wiki-craft-planner .craft-overview{grid-template-columns:repeat(2,minmax(0,1fr));}
   #wiki-craft-planner .craft-tree-panel{padding:11px;}
-  #wiki-craft-planner .craft-tree-table{min-width:1420px;}
+  #wiki-craft-planner .craft-tree-table{min-width:max-content;}
  }
 </style>
