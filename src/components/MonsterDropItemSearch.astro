@@ -59,10 +59,11 @@ const pt=lang==="pt-br";
     <div id="drop-item-result-body"></div>
   </section>
   <p class="finder-note">{pt
-    ?"RawRate, grupos e quantidades candidatas são dados dos arquivos do cliente. Não indicam chances verificadas ou drops ativos no servidor atual."
-    :"RawRate, source groups and candidate quantities come from client files. They are not verified odds or active-server drop guarantees."}</p>
+    ?"Percentuais estimados usam RawRate ÷ 100 (escala hipotética de 10.000 = 100%). São valores ilustrativos, NÃO chances verificadas. Referência e item de grupo permanecem separados."
+    :"Estimated rates use RawRate ÷ 100 (hypothetical 10,000 = 100% scale). Illustrative ONLY, NOT verified odds. Group-reference and item rates remain separate."}</p>
 </section>
 <script>
+  import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
   const root=document.getElementById("item-drop-search") as HTMLElement|null;
   if(root){
     const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
@@ -159,8 +160,8 @@ const pt=lang==="pt-br";
       const wrapper=create("div",undefined,"finder-scroll");
       const table=create("table"),head=create("thead"),headRow=create("tr");
       const headers=type==="direct"
-        ?[pt?"Criatura":"Creature","RawRate",pt?"Qtd. candidata":"Candidate qty",pt?"Linha":"Row"]
-        :[pt?"Criatura":"Creature","GroupID","Band","RawRate ref","RawRate item",
+        ?[pt?"Criatura":"Creature","RawRate","Est. %",pt?"Qtd. candidata":"Candidate qty",pt?"Linha":"Row"]
+        :[pt?"Criatura":"Creature","GroupID","Band","RawRate ref","Est. ref. %","RawRate item","Est. item %",
           pt?"Qtd. candidata":"Candidate qty",pt?"Linhas":"Rows"];
       headers.forEach(label=>headRow.append(create("th",label)));
       head.append(headRow);
@@ -181,11 +182,16 @@ const pt=lang==="pt-br";
           if(name)first.append(" (#"+charId+")");
           tr.append(first);
           if(type==="direct"){
-            tr.append(create("td",asText(entry[3])),create("td",asText(entry[5])+"–"+asText(entry[6])),
+            tr.append(create("td",asText(entry[3])),
+              create("td",formatCandidateClientRate(entry[3],pt?"pt-br":"en")),
+              create("td",asText(entry[5])+"–"+asText(entry[6])),
               create("td","#"+entry[2]));
           }else{
             tr.append(create("td",asText(entry[2])),create("td",asText(entry[8])),
-              create("td",asText(entry[5])),create("td",asText(entry[6])),
+              create("td",asText(entry[5])),
+              create("td",formatCandidateClientRate(entry[5],pt?"pt-br":"en")),
+              create("td",asText(entry[6])),
+              create("td",formatCandidateClientRate(entry[6],pt?"pt-br":"en")),
               create("td",asText(entry[9])+"–"+asText(entry[10])),
               create("td","#"+entry[3]+" / #"+entry[4]));
           }
@@ -281,16 +287,16 @@ const pt=lang==="pt-br";
     border:1px solid var(--metal);border-radius:5px;
     background:linear-gradient(125deg,#101822 0%,#151b21 40%,#0d1016 100%);
     box-shadow:inset 0 0 0 3px #26251e,0 8px 28px #0006;
-    padding:clamp(14px,2.8vw,22px);
-    margin:27px 0;
+    padding:clamp(12px,1.7vw,19px);
+    margin:14px 0;
   }
   .ao-drop-finder:before,.ao-drop-finder:after{
     content:"";position:absolute;top:5px;width:32px;height:1px;background:var(--gold);
     pointer-events:none
   }
   .ao-drop-finder:before{left:7px}.ao-drop-finder:after{right:7px}
-  .finder-header{display:flex;align-items:center;gap:14px;margin-bottom:19px}
-  .finder-sigil{flex:0 0 56px;width:56px;height:56px;display:grid;place-items:center;
+  .finder-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .finder-sigil{flex:0 0 46px;width:46px;height:46px;display:grid;place-items:center;
     border:1px solid #ac9061;border-radius:50%;
     background:radial-gradient(circle,#4a4535 0%,#1a2330 55%,#0d1018);
     font-family:Georgia,serif;color:#efcf8c;font-size:1.8rem;
@@ -305,13 +311,13 @@ const pt=lang==="pt-br";
     font:inherit}
   .finder-filters input:focus-visible,.finder-filters select:focus-visible{
     outline:2px solid #e2b769;outline-offset:2px}
-  .finder-status,.finder-note{font-size:.8rem;color:#b6bec8;margin:13px 0}
+  .finder-status,.finder-note{font-size:.8rem;color:#b6bec8;margin:9px 0}
   .finder-note{padding-top:13px;border-top:1px solid #72644c66;line-height:1.65}
   .finder-list-head,.ao-drop-finder :global(.finder-entry){
     display:grid;grid-template-columns:minmax(0,2.4fr) minmax(100px,1fr) minmax(100px,1fr);
     gap:12px;align-items:center}
   .finder-list-head{padding:10px 12px;color:#f0cd8b;background:#27251f;font-size:.8rem}
-  .ao-drop-finder :global(.finder-entry){padding:9px 12px;
+  .ao-drop-finder :global(.finder-entry){padding:6px 11px;
     border-bottom:1px solid #83705244;background:#121820}
   .ao-drop-finder :global(.finder-entry:nth-child(even)){background:#19212a}
   .ao-drop-finder :global(.finder-item-name){
@@ -333,7 +339,7 @@ const pt=lang==="pt-br";
   .ao-drop-finder :global(.finder-scroll table){width:100%;border-collapse:collapse;min-width:620px}
   .ao-drop-finder :global(.finder-scroll th){background:#302b22;color:#e6c886}
   .ao-drop-finder :global(.finder-scroll td),
-  .ao-drop-finder :global(.finder-scroll th){padding:9px 11px;
+  .ao-drop-finder :global(.finder-scroll th){padding:7px 10px;
     border-bottom:1px solid #514938;text-align:left;font-size:.82rem}
   .ao-drop-finder :global(.finder-scroll a),.finder-result a{color:#e4c788}
   .ao-drop-finder :global(.finder-more){color:#efdaae;background:#29251e;

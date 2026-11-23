@@ -122,6 +122,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
 <script>
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
   import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
+  import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
   import {RAW_STATS_FIELDS,summarizeRawNumericRows,comparableRawNumber,matchesRawStat,
     compareSourceStats,exportFilteredClientCsv} from "../data/full-client-stats-tools.mjs";
   type IndexRow=[string,string|null,string|null,string|null,string|null,number,"named"|"collision"|"unresolved",number,number];
@@ -279,8 +280,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
       const codexLine=node("p");codexLine.append(codex);section.append(codexLine);
       section.append(node("p",pt
-        ?"RawRate e taxas de grupos são valores brutos do cliente, NÃO probabilidades verificadas ou garantia de disponibilidade no servidor."
-        :"RawRate and group rates are raw client-source fields, NOT verified probabilities or confirmed current-server availability.","detail-note"));
+        ?"Estimativa histórica: RawRate ÷ 100 (escala hipotética de 10.000 = 100%). Percentuais NÃO são chances de drop verificadas no servidor. Etapas de grupos permanecem separadas."
+        :"Historical estimate: RawRate ÷ 100 (hypothetical 10,000 = 100% scale). Percentages are NOT verified live-server odds. Group stages remain separate.","detail-note"));
       const state=node("p",pt?"Consultando registros originais…":"Checking original source rows…","subtle");
       section.append(state);parent.append(section);
       try{
@@ -325,8 +326,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           if(!rows?.length)return;
           const body=node("tbody"),thead=node("thead"),heading=node("tr");
           for(const label of (kind==="direct"?
-            [pt?"Criatura":"Creature","RawRate",pt?"Quantidade candidata":"Candidate quantity",pt?"Registro":"Source row"]:
-            [pt?"Criatura":"Creature","GroupID","Band","RawRate ref","RawRate item",
+            [pt?"Criatura":"Creature","RawRate","Est. %",pt?"Quantidade candidata":"Candidate quantity",pt?"Registro":"Source row"]:
+            [pt?"Criatura":"Creature","GroupID","Band","RawRate ref","Est. ref. %","RawRate item","Est. item %",
               pt?"Quantidade candidata":"Candidate quantity",pt?"Registros":"Source rows"]))
             heading.append(node("th",label));
           thead.append(heading);
@@ -343,13 +344,16 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             tr.append(first);
             if(kind==="direct"){
               tr.append(node("td",String(row[3]??"—")));
+              tr.append(node("td",formatCandidateClientRate(row[3],pt?"pt-br":"en")));
               tr.append(node("td",String(row[5]??"—")+"–"+String(row[6]??"—")));
               tr.append(node("td","#"+row[2]));
             }else{
               tr.append(node("td",String(row[2])));
               tr.append(node("td",String(row[8]??"—")));
               tr.append(node("td",String(row[5]??"—")));
+              tr.append(node("td",formatCandidateClientRate(row[5],pt?"pt-br":"en")));
               tr.append(node("td",String(row[6]??"—")));
+              tr.append(node("td",formatCandidateClientRate(row[6],pt?"pt-br":"en")));
               tr.append(node("td",String(row[9]??"—")+"–"+String(row[10]??"—")));
               tr.append(node("td","#"+row[3]+" / #"+row[4]));
             }
