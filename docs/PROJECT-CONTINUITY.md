@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa concluída:** Stage 20.58  
-**Último PR funcional:** [PR #77](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/77) (Stage 20.58)
+**Última etapa implementada:** Stage 20.59  
+**Último PR funcional:** [PR #78](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/78) (Stage 20.59)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -306,6 +306,16 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Motor `splitCraftOperations` em `src/data/client-crafting-planner.mjs`, interface `src/components/CraftingPlannerPage.astro`, regressão `tests/client-crafting-tree-operations.test.mjs`, documentação `docs/CRAFTING-TREE-STAGE-20-58.md`.
 - A etapa 20.57 foi reservada para uma checagem de print antigo e não foi integrada como mudança funcional. Verificar sempre os PRs reais em vez de assumir etapas sequenciais.
 
+### Stage 20.59 — Visual de Craft e exportação Excel
+
+- `Craft Schedule` e `Shopping List` recebem painéis mais claros visualmente, tabelas com números alinhados, linhas alternadas e destaque para produção final, operações e preços manuais; permanecem responsivos e compatíveis com os seis temas.
+- A árvore exibe **Consumption breakdown** ao lado de **Operation breakdown**, usando a quantidade original do ingrediente **por batch da receita pai** multiplicada pela quantidade de batches realmente produzidos do pai. Cada linha mantém `parentItemId`, `unitsPerParentBatch`, `parentBatches` e `branchQuantity`. Esse cálculo é diferente do `totalRequired` compartilhado de um ItemID.
+- Exemplo: 10.000 Albert's Special Bait exigem 35.000 Dumpling `350 × 100`; 21.000 Wheat para Dumpling `6 × 3500`; Pork compartilhado aparece como 14.000 no ramo Dumpling e 28.000 no ramo Grilled Pork, total agregado 42.000.
+- Botão **Export spreadsheet (.xlsx)** dentro da árvore gera um Excel real no navegador, sem dependências adicionais. Quatro abas: `Crafting Tree`, `Craft Schedule`, `Shopping List` e `Leftovers`. Inclui toda a hierarquia, mesmo se recolhida visualmente, dados do cliente, lotes/operações, fórmulas de custo sobre preços editáveis, estilos, filtros e cabeçalhos congelados.
+- O exportador `src/data/client-crafting-xlsx.mjs` utiliza OOXML/ZIP STORE para evitar chamadas externas, preservar texto contra injeção de fórmula e não arredondar inteiros que ultrapassam a precisão do Excel.
+- Documentação técnica: `docs/CRAFTING-STAGE-20-59-EXPORT-UI.md`. Testes: `tests/client-crafting-xlsx-and-ui.test.mjs`; CI foi configurado em `.github/workflows/validate-pr.yml`.
+- Após CI, conferir no navegador temas, alinhamento em mobile e a abertura do arquivo Excel; dados brutos do cliente e regras anteriores de crafting continuam intactos.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -323,6 +333,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.55 | [#75](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/75) | Regra de equipamento 1×20, árvore de crafting, compras, excedentes e custos |
 | 20.56 | [#76](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/76) | Autocomplete de receitas e quantidades estritamente múltiplas do batch (1 a 10.000) |
 | 20.58 | [#77](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/77) | Árvore colorida por profundidade, tabela alinhada e operações de intermediários em batches completos |
+| 20.59 | [#78](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/78) | Visual do Craft Schedule/Shopping List, consumption breakdown por receita pai e exportação XLSX de quatro abas |
 
 Todos esses PRs foram integrados à `main`.
 
@@ -401,4 +412,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.58 implementada no PR #77; validar o status de integração e as verificações automatizadas no GitHub. Recomenda-se inspeção visual do novo quadro de crafting, cores por profundidade, divisão em operações e operações de compra/fabricação em todos os temas.**
+**Estado documentado: Stage 20.59 implementada no PR #78. Consultar o estado de integração e GitHub Actions para confirmar aprovação; inspecionar visualmente o Craft Schedule, a Shopping List, a coluna de consumo e abrir um XLSX exportado após o deploy.**
