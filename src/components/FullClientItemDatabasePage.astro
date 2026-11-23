@@ -9,7 +9,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
 <BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
   description={pt?"Índice pesquisável dos 23.586 IDs extraídos dos arquivos do cliente Atlantica Global.":"Searchable source index of 23,586 original Atlantica Global game-client item IDs."}
   alternatePaths={{en:"/items/database/", "pt-br":"/pt-br/items/database/"}}>
-  <main class="container" id="full-client-db" data-lang={lang}>
+  <main class="container" id="full-client-db" data-lang={lang} data-wiki-nav-root="true">
     <nav class="breadcrumb"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
     <header>
       <p class="eyebrow">GLOBAL / NA · MINER SNAPSHOT 1</p>
@@ -39,6 +39,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     </section>
 
     <section class="search-panel" aria-label={pt?"Pesquisar itens":"Search items"}>
+      <h2 class="search-title">{pt?"Pesquisar itens":"Find items"}</h2>
       <div class="search-grid">
         <label>{pt?"Nome em inglês ou ID":"English name or ID"}
           <input type="search" id="db-query" autocomplete="off" placeholder={pt?"Ex.: Spirit Sword, Immortal Bow, 24120":"e.g. Spirit Sword, Immortal Bow, 24120"}/>
@@ -871,6 +872,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     // instead of repeating noisy record-by-record mini-cards above the recipe.
     function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
       const section=node("details",undefined,"wiki-technical");
+      section.dataset.wikiNavNative="true";
       const summary=node("summary");
       summary.append(node("span",pt?"Dados originais dos arquivos":"Original client records"),
         node("span",number.format(data.s.length)+(pt?" registros":" records"),"wiki-tech-count"));
@@ -1067,6 +1069,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   .coverage strong{font-size:1.55rem;color:var(--color-gold-light);font-variant-numeric:tabular-nums}
   .coverage small{color:var(--color-text-muted)}
   .search-panel{border-top:1px solid var(--color-border);padding-top:25px}
+  .search-title{font-size:1.3rem;color:var(--color-gold-light);margin:0 0 13px}
   .search-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px;margin-bottom:16px}
   label{display:grid;gap:7px;font-size:.87rem;color:var(--color-gold-light)}
   input,select{width:100%;border:1px solid var(--color-border);background:var(--color-surface);

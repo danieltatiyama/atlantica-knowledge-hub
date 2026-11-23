@@ -1,0 +1,494 @@
+---
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br";
+---
+<aside id="wiki-float-nav" class="wiki-float-nav" data-side="right" data-lang={lang} hidden>
+  <div class="wiki-nav-title">
+    <strong>{pt?"Nesta página":"On this page"}</strong>
+    <button id="wiki-nav-hide" type="button"
+      title={pt?"Esconder navegação":"Hide navigation"}
+      aria-label={pt?"Esconder navegação":"Hide navigation"}>×</button>
+  </div>
+  <div class="wiki-nav-controls" role="group"
+    aria-label={pt?"Posição da navegação":"Navigation position"}>
+    <button id="wiki-nav-left" type="button" aria-pressed="false">
+      <span aria-hidden="true">←</span> {pt?"Esquerda":"Left"}
+    </button>
+    <button id="wiki-nav-right" type="button" aria-pressed="true">
+      {pt?"Direita":"Right"} <span aria-hidden="true">→</span>
+    </button>
+  </div>
+  <nav aria-label={pt?"Índice das seções":"Section table of contents"}>
+    <div class="wiki-nav-group" id="wiki-nav-overview-group">
+      <p>{pt?"Explorar":"Explore"}</p>
+      <ol id="wiki-nav-overview"></ol>
+    </div>
+    <div class="wiki-nav-group" id="wiki-nav-detail-group" hidden>
+      <p>{pt?"Ficha aberta":"Open profile"}</p>
+      <ol id="wiki-nav-detail"></ol>
+    </div>
+  </nav>
+  <p class="wiki-nav-hint">{pt
+    ?"Use +/− nos títulos para recolher ou expandir seções."
+    :"Use +/− beside headings to collapse or expand sections."}</p>
+</aside>
+<button id="wiki-nav-reopen" class="wiki-nav-reopen" type="button" hidden
+  aria-controls="wiki-float-nav"
+  aria-label={pt?"Mostrar navegação de seções":"Show section navigation"}
+  title={pt?"Mostrar navegação de seções":"Show section navigation"}>
+  <span aria-hidden="true">☰</span>
+  <span>{pt?"Índice":"Contents"}</span>
+</button>
+
+<script>
+  const panel=document.getElementById("wiki-float-nav") as HTMLElement|null;
+  const reopen=document.getElementById("wiki-nav-reopen") as HTMLButtonElement|null;
+  const root=document.querySelector<HTMLElement>("main[data-wiki-nav-root]");
+  if(panel&&reopen&&root){
+    const pt=panel.dataset.lang==="pt-br";
+    const left=document.getElementById("wiki-nav-left") as HTMLButtonElement;
+    const right=document.getElementById("wiki-nav-right") as HTMLButtonElement;
+    const hide=document.getElementById("wiki-nav-hide") as HTMLButtonElement;
+    const overview=document.getElementById("wiki-nav-overview") as HTMLOListElement;
+    const detail=document.getElementById("wiki-nav-detail") as HTMLOListElement;
+    const overviewGroup=document.getElementById("wiki-nav-overview-group") as HTMLElement;
+    const detailGroup=document.getElementById("wiki-nav-detail-group") as HTMLElement;
+    const key="atlantica.wiki-navigation.v1";
+    type Preference={side:"left"|"right";visible:boolean};
+    let pref:Preference={side:"right",visible:true};
+    let saved=false;
+    try{
+      const value=JSON.parse(localStorage.getItem(key)||"null");
+      if(value&&(value.side==="left"||value.side==="right")&&typeof value.visible==="boolean"){
+        pref={side:value.side,visible:value.visible};
+        saved=true;
+      }
+    }catch{ /* Can be disabled by privacy settings. */ }
+    // Avoid covering the actual article at narrow desktop widths.
+    if(!saved&&window.matchMedia("(max-width: 1700px)").matches)
+      pref.visible=false;
+    const save=()=>{
+      try{localStorage.setItem(key,JSON.stringify(pref));}
+      catch{ /* Navigation remains fully usable without storage. */ }
+    };
+    const apply=()=>{
+      panel.dataset.side=pref.side;
+      reopen.dataset.side=pref.side;
+      panel.hidden=!pref.visible;
+      reopen.hidden=pref.visible;
+      left.setAttribute("aria-pressed",String(pref.side==="left"));
+      right.setAttribute("aria-pressed",String(pref.side==="right"));
+    };
+    left.addEventListener("click",()=>{pref.side="left";save();apply();});
+    right.addEventListener("click",()=>{pref.side="right";save();apply();});
+    hide.addEventListener("click",()=>{
+      pref.visible=false;save();apply();reopen.focus();
+    });
+    reopen.addEventListener("click",()=>{
+      pref.visible=true;save();apply();hide.focus();
+    });
+    panel.addEventListener("keydown",event=>{
+      if(event.key==="Escape"){
+        pref.visible=false;save();apply();reopen.focus();
+      }
+    });
+
+    type Entry={element:HTMLElement;heading:HTMLElement;id:string;label:string;
+      group:"overview"|"detail";native:boolean};
+    let entries:Entry[]=[];
+    let signature="",seq=0,scheduled=false,scrollPending=false;
+    let initialHash="";
+    try{initialHash=decodeURIComponent(location.hash.slice(1));}
+    catch{ /* Ignore malformed external hashes rather than breaking navigation. */ }
+    let hashRestored=false;
+    const sectionIds=new WeakMap<HTMLElement,string>();
+    const isDisplayed=(el:HTMLElement)=>{
+      if(el.hidden||el.closest("[hidden]"))return false;
+      let ancestor=el.parentElement;
+      while(ancestor&&ancestor!==root){
+        if(ancestor.hasAttribute("hidden")||
+          ancestor.dataset.wikiCollapsed==="true"||
+          (ancestor.tagName==="DETAILS"&&!(ancestor as HTMLDetailsElement).open))
+          return false;
+        ancestor=ancestor.parentElement;
+      }
+      return true;
+    };
+    const labelFor=(heading:HTMLElement)=>{
+      const copy=heading.cloneNode(true) as HTMLElement;
+      copy.querySelectorAll(".wiki-section-toggle").forEach(button=>button.remove());
+      return (copy.textContent??"").replace(/\s+/g," ").trim().slice(0,90);
+    };
+    const getHeading=(section:HTMLElement)=>{
+      const first=section.firstElementChild as HTMLElement|null;
+      if(!first)return null;
+      if(first.matches("h2,h3,h4"))return first;
+      if(first.matches(".wiki-section-body,.wiki-table-scroll"))return null;
+      return first.querySelector<HTMLElement>("h2,h3,h4");
+    };
+    const getId=(element:HTMLElement)=>{
+      if(element.id)return element.id;
+      let id=sectionIds.get(element);
+      if(!id){
+        // Readable IDs stay stable across revisits and can be copied as links.
+        // Duplicate headings are disambiguated without changing existing IDs.
+        const heading=element.querySelector<HTMLElement>(":scope > h2,:scope > h3,:scope > h4,:scope > summary, h2,h3,h4");
+        const slug=(heading?labelFor(heading):"section").toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+          .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,45);
+        const base="wiki-"+(slug||"section");
+        id=base;
+        while(document.getElementById(id))id=base+"-"+(++seq);
+        sectionIds.set(element,id);
+      }
+      element.id=id;
+      return id;
+    };
+    const toggle=(section:HTMLElement,force?:boolean)=>{
+      const collapsed=force??section.dataset.wikiCollapsed!=="true";
+      section.dataset.wikiCollapsed=String(collapsed);
+      const button=section.querySelector<HTMLButtonElement>(".wiki-section-toggle");
+      if(button){
+        const header=section.querySelector<HTMLElement>("h2,h3,h4");
+        button.textContent=collapsed?"+":"−";
+        button.setAttribute("aria-expanded",String(!collapsed));
+        button.setAttribute("aria-label",(collapsed
+          ?(pt?"Expandir ":"Expand "):(pt?"Recolher ":"Collapse "))+
+          (header?labelFor(header):(pt?"seção":"section")));
+        button.title=collapsed?(pt?"Expandir seção":"Expand section")
+          :(pt?"Recolher seção":"Collapse section");
+      }
+      schedule();
+    };
+    const enhance=(section:HTMLElement,heading:HTMLElement)=>{
+      if(section.dataset.wikiFoldable==="false")return;
+      // Collapse works by hiding direct siblings AFTER the heading's
+      // container, never by deleting/moving original tables, inputs or IDs.
+      if(!section.firstElementChild?.contains(heading))return;
+      if(heading.querySelector(".wiki-section-toggle"))return;
+      const btn=document.createElement("button");
+      btn.type="button";btn.className="wiki-section-toggle";
+      heading.append(btn);
+      btn.addEventListener("click",event=>{
+        event.preventDefault();event.stopPropagation();toggle(section);
+      });
+      toggle(section,section.dataset.wikiCollapsed==="true");
+    };
+    const expandAncestors=(element:HTMLElement)=>{
+      let current:HTMLElement|null=element;
+      while(current&&current!==root){
+        if(current.matches("section[data-wiki-collapsed='true']"))toggle(current,false);
+        if(current.tagName==="DETAILS"&&!(current as HTMLDetailsElement).open)
+          (current as HTMLDetailsElement).open=true;
+        current=current.parentElement;
+      }
+    };
+    const go=(entry:Entry)=>{
+      expandAncestors(entry.element);
+      if(entry.native)(entry.element as HTMLDetailsElement).open=true;
+      const url=new URL(location.href);
+      url.hash=entry.id;
+      history.replaceState(history.state,"",url.pathname+url.search+url.hash);
+      entry.element.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+      setActive(entry.id);
+    };
+    const makeLink=(entry:Entry)=>{
+      const li=document.createElement("li"),link=document.createElement("a");
+      link.href="#"+encodeURIComponent(entry.id);
+      link.textContent=entry.label;
+      link.dataset.target=entry.id;
+      link.addEventListener("click",event=>{
+        if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+        event.preventDefault();go(entry);
+      });
+      li.append(link);return li;
+    };
+    function setActive(id:string){
+      panel.querySelectorAll<HTMLAnchorElement>("a[data-target]").forEach(link=>{
+        const active=link.dataset.target===id;
+        if(active)link.setAttribute("aria-current","location");
+        else link.removeAttribute("aria-current");
+      });
+    }
+    const updateActive=()=>{
+      if(!entries.length)return;
+      const threshold=Math.min(240,window.innerHeight*0.3);
+      let best=entries[0];
+      for(const entry of entries){
+        if(entry.element.getBoundingClientRect().top<=threshold)best=entry;
+        else break;
+      }
+      setActive(best.id);
+    };
+    // Markdown guides contain sibling h2/h3 elements rather than sections.
+    // Group their existing siblings only once, keeping all original links,
+    // tables and IDs and letting both heading levels collapse independently.
+    const prepareGuideSections=()=>{
+      const article=root.querySelector<HTMLElement>(".article-body");
+      if(!article||article.dataset.wikiFoldPrepared==="true")return;
+      article.dataset.wikiFoldPrepared="true";
+      const groupHeadings=(host:HTMLElement,tag:"H2"|"H3")=>{
+        const headings=[...host.children].filter(child=>child.tagName===tag) as HTMLElement[];
+        for(const heading of headings){
+          const content=document.createElement("div");
+          content.className="wiki-guide-section-body";
+          content.id=getId(content);
+          heading.after(content);
+          while(content.nextSibling&&
+            !(content.nextSibling instanceof HTMLElement&&
+              content.nextSibling.tagName===tag)){
+            content.append(content.nextSibling);
+          }
+          if(!content.childNodes.length){content.remove();continue;}
+          const btn=document.createElement("button");
+          btn.type="button";btn.className="wiki-section-toggle";
+          btn.textContent="−";btn.title=pt?"Recolher seção":"Collapse section";
+          btn.setAttribute("aria-expanded","true");
+          btn.setAttribute("aria-controls",content.id);
+          btn.setAttribute("aria-label",(pt?"Recolher ":"Collapse ")+labelFor(heading));
+          heading.append(btn);
+          btn.addEventListener("click",()=>{
+            content.hidden=!content.hidden;
+            const collapsed=content.hidden;
+            btn.textContent=collapsed?"+":"−";
+            btn.title=collapsed?(pt?"Expandir seção":"Expand section")
+              :(pt?"Recolher seção":"Collapse section");
+            btn.setAttribute("aria-expanded",String(!collapsed));
+            btn.setAttribute("aria-label",(collapsed
+              ?(pt?"Expandir ":"Expand "):(pt?"Recolher ":"Collapse "))+labelFor(heading));
+            schedule();
+          });
+          if(tag==="H2")groupHeadings(content,"H3");
+        }
+      };
+      groupHeadings(article,"H2");
+      // Guides without h2s may still have h3 sections.
+      groupHeadings(article,"H3");
+    };
+    const render=()=>{
+      scheduled=false;
+      prepareGuideSections();
+      // Native technical disclosures participate in the SAME navigation,
+      // without becoming a second competing menu.
+      const sections=[...root.querySelectorAll<HTMLElement>(
+        "section,details[data-wiki-nav-native]"
+      )];
+      const built:Entry[]=[];
+      for(const section of sections){
+        if(!isDisplayed(section))continue;
+        const native=section.tagName==="DETAILS";
+        const heading=native
+          ?section.querySelector<HTMLElement>(":scope > summary")
+          :getHeading(section);
+        if(!heading)continue;
+        const title=labelFor(heading);
+        if(!title)continue;
+        if(!native)enhance(section,heading);
+        const id=getId(section);
+        const group=section.closest("#db-detail,#creature-detail,#drop-item-result")
+          ?"detail":"overview";
+        built.push({element:section,heading,id,label:title,group,native});
+      }
+      // Optional markdown article headings are links in the same index.
+      // They are not moved/wrapped: preserving guide Markdown is important.
+      for(const heading of root.querySelectorAll<HTMLElement>(".article-body h2[id],.article-body h3[id]")){
+        if(!isDisplayed(heading))continue;
+        built.push({element:heading,heading,id:heading.id,
+          label:labelFor(heading),group:"overview",native:false});
+      }
+      const unique=new Map<string,Entry>();
+      for(const entry of built)if(!unique.has(entry.id))unique.set(entry.id,entry);
+      entries=[...unique.values()].sort((a,b)=>{
+        const order=a.element.compareDocumentPosition(b.element);
+        return order&Node.DOCUMENT_POSITION_FOLLOWING?-1:1;
+      });
+      const nextSignature=entries.map(entry=>[
+        entry.id,entry.label,entry.group,entry.element.dataset.wikiCollapsed??""
+      ].join("|")).join(";");
+      // Keep the index available even when collapsing a parent section
+      // temporarily hides its child entries. At least one remains usable.
+      if(entries.length<1){
+        root.classList.remove("wiki-has-floating-nav");
+        panel.hidden=true;reopen.hidden=true;signature="";return;
+      }
+      // Existing inline anchor pills remain a no-JavaScript fallback,
+      // but disappear when this richer navigation is available.
+      root.classList.add("wiki-has-floating-nav");
+      if(nextSignature!==signature){
+        signature=nextSignature;
+        overview.replaceChildren(...entries.filter(e=>e.group==="overview").map(makeLink));
+        detail.replaceChildren(...entries.filter(e=>e.group==="detail").map(makeLink));
+        overviewGroup.hidden=!overview.childElementCount;
+        detailGroup.hidden=!detail.childElementCount;
+      }
+      apply();
+      // A shared link may point to a section that does not exist until
+      // an async ItemID/CharID profile has finished loading.
+      if(initialHash&&!hashRestored){
+        const target=entries.find(entry=>entry.id===initialHash);
+        if(target){
+          hashRestored=true;
+          expandAncestors(target.element);
+          if(target.native)(target.element as HTMLDetailsElement).open=true;
+          requestAnimationFrame(()=>target.element.scrollIntoView({
+            behavior:"auto",block:"start"
+          }));
+        }
+      }
+      updateActive();
+    };
+    function schedule(){
+      if(scheduled)return;
+      scheduled=true;
+      requestAnimationFrame(render);
+    }
+    const observer=new MutationObserver(schedule);
+    observer.observe(root,{
+      subtree:true,childList:true,attributes:true,
+      attributeFilter:["hidden","open","data-wiki-collapsed"]
+    });
+    window.addEventListener("scroll",()=>{
+      if(scrollPending)return;
+      scrollPending=true;
+      requestAnimationFrame(()=>{scrollPending=false;updateActive();});
+    },{passive:true});
+    // Selecting an item/monster creates new sections asynchronously.
+    // MutationObserver updates the existing index on each such transition.
+    schedule();
+  }
+</script>
+
+<style is:global>
+  #wiki-float-nav,#wiki-nav-reopen{
+    z-index:150;
+    font-family:var(--font-primary);
+    color:#e8e2d5;
+    background:linear-gradient(145deg,#222a32,#12181e);
+    border:1px solid #9a7c4d;
+    box-shadow:inset 0 0 0 2px #393328,0 7px 28px #0009;
+  }
+  #wiki-float-nav[hidden],#wiki-nav-reopen[hidden]{display:none!important}
+  #wiki-float-nav{
+    position:fixed;top:clamp(80px,17vh,180px);
+    width:206px;max-height:min(72dvh,760px);
+    overflow-y:auto;overscroll-behavior:contain;
+    border-radius:5px;padding:12px;
+    scrollbar-color:#746044 #20242a;
+  }
+  #wiki-float-nav[data-side="left"],#wiki-nav-reopen[data-side="left"]{left:10px;right:auto}
+  #wiki-float-nav[data-side="right"],#wiki-nav-reopen[data-side="right"]{right:10px;left:auto}
+  #wiki-float-nav .wiki-nav-title{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:7px;border-bottom:1px solid #756448;padding-bottom:8px;
+  }
+  #wiki-float-nav .wiki-nav-title strong{
+    color:#f3d596;font-size:.92rem;font-weight:600;line-height:1.3;
+  }
+  #wiki-float-nav button{
+    cursor:pointer;min-height:30px;padding:4px 7px;
+    border:1px solid #746343;border-radius:3px;
+    color:#e9dbbb;background:#292b29;font:inherit;font-size:.78rem;
+  }
+  #wiki-float-nav #wiki-nav-hide{
+    font-size:1.2rem;line-height:1;min-width:30px;
+  }
+  #wiki-float-nav button[aria-pressed="true"]{
+    color:#211608;background:#e5c789;border-color:#f1d59b;
+  }
+  #wiki-float-nav .wiki-nav-controls{
+    display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:10px 0;
+  }
+  #wiki-float-nav .wiki-nav-group p{
+    font-size:.69rem;font-weight:700;color:#b6a17f;
+    text-transform:uppercase;letter-spacing:.09em;
+    margin:13px 0 4px;
+  }
+  #wiki-float-nav .wiki-nav-group ol{
+    list-style:none;padding:0;margin:0;display:grid;gap:2px;
+  }
+  #wiki-float-nav a{
+    display:block;padding:5px 7px;
+    color:#d8d9da;text-decoration:none;font-size:.79rem;line-height:1.35;
+    overflow-wrap:anywhere;border-left:2px solid transparent;
+    border-radius:2px;
+  }
+  #wiki-float-nav a:hover,#wiki-float-nav a[aria-current="location"]{
+    background:#4b402d;color:#ffe4af;border-left-color:#ecc981;
+  }
+  #wiki-float-nav .wiki-nav-hint{
+    font-size:.72rem;line-height:1.4;color:#afb6be;
+    margin:11px 0 0;padding-top:10px;border-top:1px solid #5c5547;
+  }
+  #wiki-nav-reopen{
+    cursor:pointer;
+    position:fixed;top:clamp(95px,17vh,195px);
+    border-radius:5px;padding:10px 8px;
+    display:flex;align-items:center;gap:5px;
+    font-size:.77rem;writing-mode:vertical-rl;
+  }
+  #wiki-nav-reopen:hover{background:#3b3b2f}
+  #wiki-nav-reopen span:first-child{font-size:1rem}
+  #wiki-float-nav :is(a,button):focus-visible,
+  #wiki-nav-reopen:focus-visible{
+    outline:2px solid #f0cb81;outline-offset:3px;
+  }
+  main[data-wiki-nav-root] section[data-wiki-collapsed="true"] > :not(:first-child){
+    display:none!important;
+  }
+  main[data-wiki-nav-root].wiki-has-floating-nav .page-sections{
+    display:none!important;
+  }
+  main[data-wiki-nav-root] .wiki-section-toggle{
+    display:inline-flex;align-items:center;justify-content:center;
+    float:right;vertical-align:middle;
+    width:30px;height:30px;min-width:30px;
+    border:1px solid #b08d56;border-radius:4px;
+    margin:0 0 5px 9px;padding:0;
+    color:#f4d59a;background:#2f2b24;
+    font-family:Arial,sans-serif;font-size:1.2rem;font-weight:600;
+    line-height:1;cursor:pointer;
+  }
+  main[data-wiki-nav-root] .wiki-section-toggle:hover{
+    background:#4b3e2b;border-color:#e2c188;
+  }
+  main[data-wiki-nav-root] .wiki-section-toggle:focus-visible{
+    outline:2px solid #f1d090;outline-offset:3px;
+  }
+  main[data-wiki-nav-root] section{
+    scroll-margin-top:25px;
+  }
+  /* The bestiary has ID-scoped button styles; ensure the compact
+     heading toggle wins against those without changing other buttons. */
+  #creature-db section button.wiki-section-toggle,
+  #full-client-db section button.wiki-section-toggle{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;min-width:30px;line-height:1;
+    float:right;padding:0;margin:0 0 5px 9px;
+    border:1px solid #b08d56;border-radius:4px;
+    color:#f4d59a;background:#2f2b24;
+    font:600 1.2rem/1 Arial,sans-serif;
+  }
+  #creature-db section button.wiki-section-toggle:hover:not(:disabled),
+  #full-client-db section button.wiki-section-toggle:hover:not(:disabled){
+    background:#4b3e2b;border-color:#e2c188;
+  }
+  main[data-wiki-nav-root] .article-body .wiki-guide-section-body[hidden]{
+    display:none!important;
+  }
+  main[data-wiki-nav-root] .article-body .wiki-guide-section-body{
+    min-width:0;
+  }
+  main[data-wiki-nav-root] .article-body h2,
+  main[data-wiki-nav-root] .article-body h3{
+    clear:both;
+  }
+  @media(max-width:700px){
+    #wiki-float-nav{width:min(280px,calc(100vw - 42px));
+      max-height:65dvh;top:80px}
+    #wiki-nav-reopen{top:100px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #wiki-float-nav *{scroll-behavior:auto!important}
+  }
+</style>

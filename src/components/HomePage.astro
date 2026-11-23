@@ -15,13 +15,22 @@ const siteName = "Atlantica Knowledge Hub";
 
 const sections = [
   {
-    title: lang === "pt-br" ? "Itens e Boxes" : "Items & Boxes",
+    title: lang === "pt-br" ? "Equipamentos e Boxes" : "Equipment & Boxes",
     description: lang === "pt-br"
-      ? "Conteúdos de boxes, recompensas e chances verificadas por região."
-      : "Box contents, rewards and verified region-specific probabilities.",
+      ? "Catálogo de 2.462 IDs semelhantes a equipamentos, boxes e fichas com dados extraídos do cliente."
+      : "Equipment catalog with 2,462 equipment-like IDs, boxes, and source-backed item profiles.",
     symbol: "◈",
     theme: "items",
     href: lang === "en" ? "/items/" : "/pt-br/items/",
+  },
+  {
+    title: lang === "pt-br" ? "Todos os itens" : "All Items",
+    description: lang === "pt-br"
+      ? "Pesquise 23.586 IDs do cliente, incluindo materiais, consumíveis e equipamentos. Consulte fabricação, usos e possíveis drops."
+      : "Search 23,586 client item IDs, including materials, consumables and equipment. Explore crafting, uses and possible drops.",
+    symbol: "✦",
+    theme: "items",
+    href: lang === "en" ? "/items/database/" : "/pt-br/items/database/",
   },
   {
     title: lang === "pt-br" ? "Eventos e Atualizações" : "Events & Updates",
