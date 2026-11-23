@@ -34,6 +34,7 @@ const pt=lang==="pt-br";
     :"Use +/− beside headings to collapse or expand sections."}</p>
 </aside>
 <button id="wiki-nav-reopen" class="wiki-nav-reopen" type="button" hidden
+  aria-controls="wiki-float-nav"
   aria-label={pt?"Mostrar navegação de seções":"Show section navigation"}
   title={pt?"Mostrar navegação de seções":"Show section navigation"}>
   <span aria-hidden="true">☰</span>
@@ -301,7 +302,9 @@ const pt=lang==="pt-br";
       const nextSignature=entries.map(entry=>[
         entry.id,entry.label,entry.group,entry.element.dataset.wikiCollapsed??""
       ].join("|")).join(";");
-      if(entries.length<2){
+      // Keep the index available even when collapsing a parent section
+      // temporarily hides its child entries. At least one remains usable.
+      if(entries.length<1){
         panel.hidden=true;reopen.hidden=true;signature="";return;
       }
       if(nextSignature!==signature){
