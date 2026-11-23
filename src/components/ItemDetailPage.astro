@@ -10,6 +10,7 @@ import {getClientItemAttributes} from "../data/client-item-attributes";
 import ClientItemAttributesSection from "./ClientItemAttributesSection.astro";
 import ClientItemStatSummary from "./ClientItemStatSummary.astro";
 import ClientCraftingSummary from "./ClientCraftingSummary.astro";
+import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
 import ClientRawRequirementsSection from "./ClientRawRequirementsSection.astro";
 
 interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
@@ -64,6 +65,7 @@ const clientFields = curatedFields ? [
         <a href="#item-stats">{pt ? "Atributos" : "Stats"}</a>
         <a href="#item-sources">{pt ? "Fontes" : "Source"}</a>
         <a href="#item-crafting">{pt ? "Fabricação" : "Crafting"}</a>
+        <a href="#item-used-in">{pt ? "Usado em receitas" : "Used in crafting"}</a>
         {sourceFacts && <a href="#client-crafting">{pt?"Materiais do cliente":"Client materials"}</a>}
         {sourceAttributes && <a href="#client-requirements">{pt?"Requisitos brutos":"Raw requirements"}</a>}
         {sourceFacts && <a href="#client-facts">{pt ? "Arquivos do jogo" : "Game files"}</a>}
@@ -97,6 +99,7 @@ const clientFields = curatedFields ? [
       </section>
       <ItemKnowledgeSections lang={lang} profile={profile} section="crafting" />
       <ClientCraftingSummary lang={lang} item={sourceFacts} />
+      <div id="item-used-in"><ClientCraftingBacklinks lang={lang} itemId={item.id} /></div>
       <ClientRawRequirementsSection lang={lang} itemId={item.id} />
       <ClientEquipmentFactsSection lang={lang} item={sourceFacts} />
       <ClientItemAttributesSection lang={lang} data={sourceAttributes} />
