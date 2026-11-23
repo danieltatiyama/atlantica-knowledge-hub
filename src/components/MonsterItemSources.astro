@@ -28,7 +28,7 @@ const pt=lang==="pt-br";
       ?"Os campos RawRate das duas etapas não são multiplicados nem convertidos em porcentagens."
       :"The RawRate fields from the two stages are never multiplied or converted to percentages."}</p>
     <div class="monster-scroll"><table><thead><tr>
-      <th>{pt?"Criatura":"Creature"}</th><th>GroupID</th>
+      <th>{pt?"Criatura":"Creature"}</th><th>GroupID</th><th>Band</th>
       <th>{pt?"RawRate referência":"Reference RawRate"}</th>
       <th>{pt?"RawRate item":"Item RawRate"}</th>
       <th>{pt?"Quantidade candidata":"Candidate quantity"}</th>
@@ -138,6 +138,7 @@ const pt=lang==="pt-br";
           const tr=document.createElement("tr");
           creature(tr.insertCell(),charId,name,prefix);
           tr.insertCell().textContent=raw(groupId);
+          tr.insertCell().textContent=raw(band);
           tr.insertCell().textContent=raw(refRate);
           tr.insertCell().textContent=raw(dropRate);
           tr.insertCell().textContent=qty(min,max);
