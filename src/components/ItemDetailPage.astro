@@ -10,6 +10,7 @@ import {getClientItemAttributes} from "../data/client-item-attributes";
 import ClientItemAttributesSection from "./ClientItemAttributesSection.astro";
 import ClientItemStatSummary from "./ClientItemStatSummary.astro";
 import ClientCraftingSummary from "./ClientCraftingSummary.astro";
+import AtlanticaItemInfoPanel from "./AtlanticaItemInfoPanel.astro";
 import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
 import ClientRawRequirementsSection from "./ClientRawRequirementsSection.astro";
 
@@ -48,6 +49,7 @@ const clientFields = curatedFields ? [
           ? "Nome associado a partir de arquivos de equipamento e localização em inglês do cliente. Ainda não há tradução oficial em português verificada."
           : "English name reconciled from client equipment definitions and NA localization. This does not establish equipment stats or current item availability."}</p>
       </header>
+      <AtlanticaItemInfoPanel lang={lang} itemId={item.id} />
       <p class="source-export">
         <a href="/data/client-equipment-grades.csv" download>{pt
           ?"Exportar CSV: tabelas +0 a +10 dos 551 equipamentos"
