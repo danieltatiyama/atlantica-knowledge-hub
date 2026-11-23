@@ -70,7 +70,7 @@ class ClientTradePricesTest(unittest.TestCase):
             mod.decode_ndt_bytes(fixture_blob(CLIENT_TABLE, mod.VERSION_1)[:4]+
                                  b"\xff\xff\xff\xff"+
                                  fixture_blob(CLIENT_TABLE, mod.VERSION_1)[8:])
-        with self.assertRaisesRegex(ValueError, "markers"):
+        with self.assertRaisesRegex(ValueError, "not an NPCTradeItem table"):
             mod.decode_plain_file("not a price file".encode("utf-8"))
 
     def test_source_duplicate_and_conflicting_price_quarantines_item_catalog_pair(self):
