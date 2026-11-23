@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa concluída:** Stage 20.56  
-**Último PR funcional:** [PR #76](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/76) (Stage 20.56)
+**Última etapa concluída:** Stage 20.58  
+**Último PR funcional:** [PR #77](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/77) (Stage 20.58)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -295,6 +295,17 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Arquivos: `src/data/client-crafting-quantity.mjs`, `src/data/client-crafting-planner.mjs`, `src/components/CraftingPlannerPage.astro` e `tests/client-crafting-quantity.test.mjs`.
 - Documentação técnica e limites estão em `docs/CRAFTING-CALCULATOR-STAGE-20-55.md`. Check no GitHub Actions e inspeção visual em produção após integração.
 
+### Stage 20.58 — Árvore e batches de produtos intermediários
+
+- A árvore de crafting usa **oito cores por profundidade**, respeitando os temas Atlantica, Dark, Light, Parchment, Midnight e High Contrast.
+- A antiga área de números à direita foi substituída por **uma tabela alinhada** com necessidade no ramo, necessidade total agregada, produção real, unidades por batch, número de batches, total de operações e divisão agrupada das operações (`3 × 10.000 + 1 × 5.000`). Mantidos expandir/recolher e Comprar/Fabricar.
+- Todos os itens intermediários aplicam os mesmos limites: batch sempre inteiro; equipamentos no máximo 20 unidades por operação, demais itens no máximo 10.000 unidades por operação. Intermediários acima de 10.000 podem ser produzidos em várias operações, independentemente do limite de 10.000 do slider do produto principal.
+- Se um produto intermediário precisar de 250 unidades e o batch for 20, produzir **260 em 13 batches**, manter **10 de sobra** e consumir ingredientes referentes aos **13 batches completos**. Nunca calcular material para apenas 250 unidades.
+- As necessidades de um mesmo ItemID que aparece em vários ramos são **somadas antes do arredondamento**, evitando dupla contagem e batches desnecessários.
+- Verificação com dados reais do cliente: 10.000 Albert's Special Bait #2319 exigem 35.000 Dumpling #3305 e 35.000 Grilled Pork #3310, com batch 10 e quatro operações para cada subproduto. Pork é compartilhado e totaliza 42.000.
+- Motor `splitCraftOperations` em `src/data/client-crafting-planner.mjs`, interface `src/components/CraftingPlannerPage.astro`, regressão `tests/client-crafting-tree-operations.test.mjs`, documentação `docs/CRAFTING-TREE-STAGE-20-58.md`.
+- A etapa 20.57 foi reservada para uma checagem de print antigo e não foi integrada como mudança funcional. Verificar sempre os PRs reais em vez de assumir etapas sequenciais.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -311,6 +322,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.54 | [#73](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/73) | Nation Dungeon Planner com DST e rotinas semanais |
 | 20.55 | [#75](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/75) | Regra de equipamento 1×20, árvore de crafting, compras, excedentes e custos |
 | 20.56 | [#76](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/76) | Autocomplete de receitas e quantidades estritamente múltiplas do batch (1 a 10.000) |
+| 20.58 | [#77](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/77) | Árvore colorida por profundidade, tabela alinhada e operações de intermediários em batches completos |
 
 Todos esses PRs foram integrados à `main`.
 
@@ -389,4 +401,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.56 implementada no PR #76, com testes automatizados aprovados. Conferir o estado de integração e verificar visualmente filtro de receitas, slider e sincronização do campo de quantidade, inclusive fusos/temas da Wiki.**
+**Estado documentado: Stage 20.58 implementada no PR #77; validar o status de integração e as verificações automatizadas no GitHub. Recomenda-se inspeção visual do novo quadro de crafting, cores por profundidade, divisão em operações e operações de compra/fabricação em todos os temas.**
