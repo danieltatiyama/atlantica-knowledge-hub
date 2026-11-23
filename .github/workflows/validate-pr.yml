@@ -130,6 +130,9 @@ jobs:
           node scripts/build-market-price-review-queue.mjs --check
           node --test tests/market-price-review-stage-20-66.test.mjs
 
+      - name: Validate player-reported Market attestation, distinct from independent verification
+        run: node --test tests/market-price-player-attestation-stage-20-67.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 

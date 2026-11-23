@@ -18,6 +18,13 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    ?"As observações são relatos inseridos por você e ficam somente neste navegador. Não viram preços oficiais da Wiki nem são enviadas automaticamente."
    :"Observations are your own reports stored only in this browser. They never become official Wiki prices or get uploaded automatically."}</p>
   <section class="mpr-panel">
+   <h2>{pt?"Confirmação relatada por jogador":"Player-reported confirmation"}</h2>
+   <p class="mpr-description" id="mpr-player-report-status" role="status">{pt?"Carregando registro da confirmação…":"Loading confirmation record…"}</p>
+   <p class="mpr-description">{pt
+    ?"Em 23/11/2026, o jogador responsável pela conferência informou que todos os 128 preços pendentes correspondiam aos exibidos no Market. É um relato consolidado, não 128 capturas individuais nem uma auditoria independente. Os valores originais do cliente permanecem inalterados."
+    :"On November 23, 2026, the reviewing player reported that all 128 pending prices matched the in-game Market. This is a single aggregate report, not 128 individual screenshots or an independent audit. Original client prices remain unchanged."}</p>
+  </section>
+  <section class="mpr-panel">
    <h2>{pt?"Candidatos para verificação":"Candidates to check"}</h2>
    <p class="mpr-description" id="mpr-stats" role="status">{pt?"Carregando candidatos…":"Loading candidates…"}</p>
    <div class="mpr-toolbar">
@@ -27,8 +34,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     <label>{pt?"Filtrar observações":"Filter observations"}
      <select id="mpr-filter">
       <option value="all">{pt?"Todos":"All"}</option>
-      <option value="pending">{pt?"Sem revisão":"Not reviewed"}</option>
-      <option value="reviewed">{pt?"Com observação":"With observation"}</option>
+      <option value="pending">{pt?"Sem observação local":"No local observation"}</option>
+      <option value="reviewed">{pt?"Com observação local":"With local observation"}</option>
      </select>
     </label>
    </div>
@@ -37,6 +44,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      <thead><tr>
       <th>ItemID</th><th>{pt?"Nome no cliente":"Client name"}</th>
       <th>{pt?"Categoria":"Category"}</th><th>{pt?"Preço NPC (gold)":"NPC price (gold)"}</th>
+      <th>{pt?"Relato do jogador":"Player report"}</th>
       <th>{pt?"Minha observação":"My observation"}</th><th>{pt?"Ação":"Action"}</th>
      </tr></thead>
      <tbody id="mpr-candidates"></tbody>
@@ -98,7 +106,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
 </BaseLayout>
 <script>
  import {REVIEW_STORAGE_KEY,parseMarketPriceReviewQueue,normalizeMarketObservation,
-   validateMarketReviewBundle,buildMarketReviewBundle} from "../data/market-price-review.mjs";
+   validateMarketReviewBundle,buildMarketReviewBundle,parsePlayerMarketAttestation} from "../data/market-price-review.mjs";
  type Candidate={itemId:string;name:string;category:string;referenceGold:string;sourceLine:number};
  type Observation={itemId:string;state:string;observedGold:string|null;observedOn:string;notes:string};
  const root=document.getElementById("mpr-root");
@@ -117,6 +125,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const importField=$("mpr-import") as HTMLInputElement;
   let candidates:Candidate[]=[];
   let byId=new Map<string,Candidate>();
+  let reportedIds=new Set<string>();
   let observations=new Map<string,Observation>();
   let selectedId:string|null=null;
   const gold=(v:string)=>Number(v).toLocaleString(pt?"pt-BR":"en-US");
@@ -152,7 +161,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    for(const c of shown){
     const tr=node("tr"),record=observations.get(c.itemId);
     for(const v of [c.itemId,c.name,c.category,gold(c.referenceGold),
-     record?statuses[record.state]:(pt?"Pendente":"Pending")]){
+     reportedIds.has(c.itemId)?(pt?"Coincidente (relato)":"Match (player report)"):(pt?"Sem relato":"No report"),
+     record?statuses[record.state]:(pt?"Sem observação local":"No local observation")]){
      const td=node("td",v);tr.append(td);
     }
     const td=node("td"),button=node("button",pt?"Revisar":"Review") as HTMLButtonElement;
@@ -162,8 +172,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    visible.textContent=(pt?"Exibindo ":"Showing ")+shown.length+
     (pt?" de 128 candidatos.":" of 128 candidates.");
    stats.textContent=observations.size+
-    (pt?" / 128 com observação local · 293 itens já reconciliados na pesquisa histórica"
-      :" / 128 with local observations · 293 previously reconciled historical ItemIDs");
+    (pt?" / 128 com observação local · "+reportedIds.size+" relatos de coincidência (jogador)"
+      :" / 128 with local observations · "+reportedIds.size+" player-reported matches");
   }
   function select(id:string){
    const c=byId.get(id);if(!c)return;
@@ -237,10 +247,24 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   });
   async function start(){
    try{
-    const response=await fetch("/data/client-npc-trade-prices/review-queue.json");
+    const [response,attestationResponse]=await Promise.all([
+     fetch("/data/client-npc-trade-prices/review-queue.json"),
+     fetch("/data/client-npc-trade-prices/player-report-2026-11-23.json"),
+    ]);
     if(!response.ok)throw Error("Review queue unavailable");
     candidates=parseMarketPriceReviewQueue(await response.json()) as Candidate[];
     byId=new Map(candidates.map(c=>[c.itemId,c]));
+    try{
+     if(!attestationResponse.ok)throw Error("Player report unavailable");
+     reportedIds=parsePlayerMarketAttestation(await attestationResponse.json(),byId);
+     $("mpr-player-report-status").textContent=pt
+      ?"128/128 preços informados como coincidentes com o Market · fonte: relato do jogador, 23/11/2026"
+      :"128/128 prices reported as matching the Market · source: player statement, Nov 23, 2026";
+    }catch{
+     $("mpr-player-report-status").textContent=pt
+      ?"Não foi possível validar o registro do relato; os preços do cliente continuam disponíveis."
+      :"Could not validate the player report; client reference prices remain available.";
+    }
     try{
      const saved=localStorage.getItem(REVIEW_STORAGE_KEY);
      if(saved)observations=validateMarketReviewBundle(JSON.parse(saved),byId) as Map<string,Observation>;

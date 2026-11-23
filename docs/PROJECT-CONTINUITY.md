@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.66 (fila auditável de 128 candidatos a preços fixos e registros locais de observação do Market)  
-**PR de pesquisa mais recente:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) (Stage 20.66). Verificar status de integração e CI antes de continuar.
+**Última etapa implementada:** Stage 20.67 (relato de coincidência dos 128 preços do Market registrado com proveniência separada)  
+**Último PR integrado:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) (Stage 20.66). **Stage 20.67:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86), verificar CI e integração.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -386,7 +386,16 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - As observações existem **somente no navegador do jogador** (`atlantica.marketPriceReview.v1`), com importação/exportação JSON estritamente validadas. Não viram dados oficiais nem alimentam automaticamente a calculadora; qualquer alegação de verificação por servidor é recusada pelo parser de referências do cliente.
 - Pesquisa externa histórica encontrou o mesmo caminho `server/LANG/ENG/NPCTRADEITEM/npctradeitem_eng.ndt` em discussões de servidores privados antigos; **não** foi obtida uma segunda fonte confiável nem o arquivo do atual servidor Global. Não confundir tabela do cliente com disponibilidade atual ou cobertura exaustiva do Market.
 - Novas rotas, validador `src/data/market-price-review.mjs`, testes `tests/market-price-review-stage-20-66.test.mjs` e pipeline de integridade. Consultar `docs/MARKET-PRICE-REVIEW-STAGE-20-66.md`.
-- Próximo passo: coletar amostras verificáveis no **jogo atual**, incluindo imagens e datas, antes de publicar qualquer valor como preço fixo Market confirmado.
+- Atualização de 23/11/2026: o jogador informou que **todos os 128 preços pendentes correspondem ao Market**. Essa afirmação está registrada separadamente na Stage 20.67, sem pressupor capturas individuais nem auditoria independente.
+
+### Stage 20.67 — Confirmação agregada dos 128 candidatos pelo jogador
+
+- Após a Stage 20.66, o jogador afirmou: **“Todas pendencias estao corretas de acordo com o mercado do jogo”**, em 23/11/2026. Interpretação limitada à lista de **128** ItemIDs pendentes: o jogador informa que seus preços coincidem com o Market. **É um único relato agregado, não 128 capturas individuais, nem auditoria independente**.
+- Registo de origem pública `public/data/client-npc-trade-prices/player-report-2026-11-23.json`: contém exatamente os 128 ItemIDs da fila e metadados claros (`sourceType=player-aggregate-statement`, `independentVerification=false`, `marketFixedPriceVerified=false`). Não duplica preços nem muda fontes imutáveis do cliente.
+- `parsePlayerMarketAttestation` valida o conjunto exato de IDs, a data do relato e as flags de proveniência; a interface EN/PT-BR mostra **128/128 coincidências relatadas pelo jogador**, separadas das observações locais editáveis. A calculadora continua sem aplicar automaticamente preços NPC.
+- Os **293** preços coincidentes com a fonte histórica continuam classificados como comparação entre fontes, **não** como verificação individual adicional pelo jogador. Os **421** registros gerais não comprovam cobertura exaustiva do Market; itens de housing e identidades ambíguas continuam fora.
+- Próximo passo: não repetir a coleta da mesma confirmação agregada; investigar possíveis preços fixos fora dos 421 itens gerais e, quando necessária evidência mais forte, recolher capturas datadas ou outra fonte independente.
+- Documentação: `docs/MARKET-PRICE-PLAYER-REPORT-STAGE-20-67.md`. Regressão: `tests/market-price-player-attestation-stage-20-67.test.mjs`.
 
 ## 7. Histórico das etapas recentes
 
@@ -413,6 +422,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.64 | [#83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) | Descoberta da fonte candidata NPCTradeItem_ENG.ndt e exportador offline de preços por ItemID/catálogo com 4 benchmarks de validação |
 | 20.65 | [#84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) | Extração real 652 preços NPC, 421 gerais nomeados, 293/293 históricos compatíveis; referência opt-in para calculadora |
 | 20.66 | [#85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
+| 20.67 | [#86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -489,4 +499,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.66 implementada no PR #85, com fila reproduzível de 128 candidatos e interface de observações locais. A execução de validação do PR foi concluída com sucesso; conferir integração na main e revisar visualmente a nova interface. Preservar as 421 referências gerais apenas como dados NPC do cliente, não como ofertas fixas confirmadas do servidor.**
+**Estado documentado: Stage 20.67 implementada no PR #86, com declaração agregada do jogador para todos os 128 candidatos da Stage 20.66 e exibição explicitamente atribuída. Conferir CI e integração na main. Preservar a distinção entre relato de jogador, dados NPC originais e verificação independente do servidor.**
