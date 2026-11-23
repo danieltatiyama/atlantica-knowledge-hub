@@ -125,6 +125,11 @@ jobs:
       - name: Validate actual client NPC price snapshot, historical crosscheck and opt-in UI
         run: node --test tests/client-npc-trade-prices-stage-20-65.test.mjs
 
+      - name: Validate Market price candidates and browser-local evidence workbench
+        run: |
+          node scripts/build-market-price-review-queue.mjs --check
+          node --test tests/market-price-review-stage-20-66.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
