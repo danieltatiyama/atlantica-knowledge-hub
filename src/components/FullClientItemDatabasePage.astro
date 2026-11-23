@@ -121,6 +121,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
 </BaseLayout>
 <script>
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
+  import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
   import {RAW_STATS_FIELDS,summarizeRawNumericRows,comparableRawNumber,matchesRawStat,
     compareSourceStats,exportFilteredClientCsv} from "../data/full-client-stats-tools.mjs";
   type IndexRow=[string,string|null,string|null,string|null,string|null,number,"named"|"collision"|"unresolved",number,number];
@@ -631,6 +632,38 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         ?number.format(visible.length)+" dos "+number.format(allRows.length)+" IDs encontrados. "+number.format(manifest?.namedIds??0)+" nomes conciliados."
         :number.format(visible.length)+" of "+number.format(allRows.length)+" IDs found. "+number.format(manifest?.namedIds??0)+" reconciled names.";
     }
+    function addCraftBatchInformation(parent:HTMLElement,data:Detail){
+      const batch=summarizeCraftBatch(data.s);
+      const section=node("section",undefined,"craft-batch-summary");
+      section.append(node("h3",pt?"Produção por batch":"Production per batch"));
+      const ready=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
+      if(ready){
+        section.append(node("p",
+          (pt?"Batch mínimo / incremento: ":"Source batch / increment: ")+
+          number.format(batch.batchSize)+" · "+
+          (pt?"Limite por operação: ":"Output cap per operation: ")+
+          number.format(batch.maxPerOperation)+" · "+
+          (pt?"Máximo de batches: ":"Max batches per operation: ")+
+          number.format(batch.maxBatchesPerOperation)+" · "+
+          (pt?"Produção máxima viável: ":"Maximum batch-aligned output: ")+
+          number.format(batch.maxCraftQuantityPerOperation),
+          "craft-batch-value"));
+      }else{
+        section.append(node("p",batch.status==="conflict"
+          ?(pt?"Unit divergente entre arquivos; nenhum batch foi escolhido."
+             :"Conflicting original Unit fields; no batch has been selected.")
+          :(pt?"Batch não identificado com segurança nos arquivos originais."
+             :"Batch size could not be identified safely from original source rows."),
+          "subtle"));
+      }
+      if(batch.status==="partial")section.append(node("p",
+        pt?"Valor Unit presente apenas em parte das definições."
+          :"Original Unit is present in only some source definitions.","subtle"));
+      section.append(node("p",pt
+        ?"O tamanho do batch vem do campo Unit do ItemType. O limite de 10.000 unidades por operação é uma regra informada pelo jogador e armazenada separadamente. Valores históricos não comprovam disponibilidade da receita no jogo atual."
+        :"Batch is taken from the original ItemType Unit field. The 10,000-unit operation cap is a separately recorded player-reported rule, not derived from Unit. Original records do not confirm live-server recipe availability.","detail-note"));
+      parent.append(section);
+    }
     function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
       const h=node("h3",pt?"Definições dos arquivos de origem":"Original source-file definitions");parent.append(h);
       parent.append(node("p",pt
@@ -704,6 +737,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             ?(pt?"Abrir ficha revisada do equipamento":"Open reviewed equipment profile")
             :(pt?"Abrir ficha do equipamento extraída do cliente":"Open client-source equipment profile")) as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
+        addCraftBatchInformation(details,data);
         addDefinitionTable(details,data,id);
         // Reverse links are generated from every one of the 22,702 named-ID
         // source details, not just the originally reviewed 551 profiles.
@@ -831,6 +865,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   .compare-chip a{color:var(--color-accent)}
   .compare-chip button,.compare-row-button{font-size:.78rem;padding:5px 8px}
   .compare-row-button[aria-pressed="true"]{border-color:var(--color-accent);color:var(--color-gold-light)}
+  .craft-batch-summary{margin:20px 0;padding:14px;border:1px solid var(--color-border);
+    border-left:3px solid var(--color-bronze);background:var(--color-surface);border-radius:4px}
+  .craft-batch-summary h3{margin:0 0 8px;color:var(--color-gold-light)}
+  .craft-batch-value{font-weight:600;color:var(--color-text)}
   .numeric-group{margin:18px 0}
   .numeric-group h4{color:var(--color-gold-light);margin:8px 0}
   .numeric-conflict{outline:1px solid var(--color-bronze);outline-offset:-1px}
