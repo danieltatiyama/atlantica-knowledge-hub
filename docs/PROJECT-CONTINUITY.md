@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.67 (relato de coincidência dos 128 preços do Market registrado com proveniência separada)  
-**Último PR integrado:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) (Stage 20.66). A Stage 20.67 está em desenvolvimento; consultar o GitHub para o PR correspondente.
+**Último PR integrado:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) (Stage 20.66). **Stage 20.67:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86), verificar CI e integração.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -422,7 +422,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.64 | [#83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) | Descoberta da fonte candidata NPCTradeItem_ENG.ndt e exportador offline de preços por ItemID/catálogo com 4 benchmarks de validação |
 | 20.65 | [#84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) | Extração real 652 preços NPC, 421 gerais nomeados, 293/293 históricos compatíveis; referência opt-in para calculadora |
 | 20.66 | [#85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
-| 20.67 | Em desenvolvimento | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
+| 20.67 | [#86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -499,4 +499,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.67 implementada na branch de desenvolvimento, com declaração agregada do jogador para todos os 128 candidatos da Stage 20.66 e exibição explicitamente atribuída. Validar CI, registrar PR e conferir integração na main. Preservar a distinção entre relato de jogador, dados NPC originais e verificação independente do servidor.**
+**Estado documentado: Stage 20.67 implementada no PR #86, com declaração agregada do jogador para todos os 128 candidatos da Stage 20.66 e exibição explicitamente atribuída. Conferir CI e integração na main. Preservar a distinção entre relato de jogador, dados NPC originais e verificação independente do servidor.**
