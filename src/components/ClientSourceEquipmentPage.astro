@@ -167,7 +167,10 @@ const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation
           <div class="table-scroll"><table>
             <thead><tr><th>{pt?"Material":"Ingredient"}</th><th>ID</th><th>{pt?"Quantidade":"Quantity"}</th></tr></thead>
             <tbody>{recipe.materials.map(m=><tr>
-              <td><a href={m.url}>{m.name??(pt?"Nome não conciliado":"Unreconciled name")}</a></td>
+              <td>
+                <a href={m.url}>{m.name??(pt?"Nome não conciliado":"Unreconciled name")}</a>
+                <small class="ingredient-obtain"><a href={prefix+"/monsters/?item="+encodeURIComponent(m.id)}>{pt?"Ver fontes de drop":"Find monster sources"}</a></small>
+              </td>
               <td><code>{m.id}</code></td><td>{fmt.format(m.qty)}</td>
             </tr>)}</tbody>
           </table></div>
@@ -186,8 +189,8 @@ const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation
     <section id="obtain">
       <h2>{pt?"Onde conseguir":"How to obtain"}</h2>
       <p class="subtle">{pt
-        ?"Nenhuma fonte de obtenção no servidor atual foi validada para este ID nesta ficha. O índice histórico de drops de monstros será ligado aqui quando as linhas originais de loot forem reimportadas e conciliadas por ID."
-        :"No live-server acquisition source has been verified for this ID in this profile. Historical monster-drop links will appear here after original loot source rows are reimported and reconciled by ID."}</p>
+        ?"A base de drops extraídos do cliente já foi importada. Consulte as referências por criatura e por grupo abaixo; elas não comprovam drops ativos nem probabilidades no servidor atual."
+        :"Original client-source monster drops have been imported. Browse direct and grouped references below; these do not establish active drops or probabilities on the current server."}</p>
     </section>
 
     <MonsterItemSources lang={lang} itemId={item.id} />
@@ -244,6 +247,8 @@ const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation
   .craft-batch small{color:var(--color-text-muted);font-size:.78rem}
   .recipe-block{border:1px solid var(--color-border);border-radius:5px;padding:14px;margin:14px 0}
   .recipe-block h3{margin:0;color:var(--color-gold-light);font-size:1rem}
+  .ingredient-obtain{display:block;margin-top:6px;font-size:.76rem}
+  .ingredient-obtain a{color:var(--color-text-muted);text-decoration:underline;text-underline-offset:2px}
   .table-scroll{overflow:auto;margin:12px 0;border:1px solid var(--color-border);border-radius:5px}
   table{border-collapse:collapse;width:100%;min-width:690px;font-size:.88rem}
   th,td{padding:9px 12px;border-bottom:1px solid var(--color-border);text-align:left}
