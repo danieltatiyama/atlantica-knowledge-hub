@@ -489,7 +489,16 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   }
   function attachNPCPriceHint(priceCell:HTMLElement,itemId:string,input:HTMLInputElement){
    const value=clientNPCPriceMap?.get(itemId);
-   if(!value)return;
+   if(!value){
+    if(priceOrigins[itemId]==="client-npc-catalog"){
+     const note=el("small",pt
+      ?"Preço aplicado anteriormente da referência NPC; Market não verificado."
+      :"Previously applied NPC reference; not Market verified.");
+     note.className="craft-npc-applied-label";
+     priceCell.append(note);
+    }
+    return;
+   }
    const hint=el("div");hint.className="craft-client-price-reference";
    const caption=el("small",(pt?"Referência NPC: ":"NPC reference: ")+fmt(value)+" gold");
    caption.title=pt
@@ -1219,6 +1228,33 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  #wiki-craft-planner .craft-price-cell{
   text-align:center;
  }
+
+ #wiki-craft-planner .craft-npc-price-caption{
+  color:var(--color-text-muted);line-height:1.4;
+  font-size:.8rem;margin:8px 0 12px;
+ }
+ #wiki-craft-planner .craft-client-price-reference{
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+  gap:5px;margin:5px auto 0;max-width:230px;
+ }
+ #wiki-craft-planner .craft-client-price-reference small,
+ #wiki-craft-planner .craft-npc-applied-label{
+  color:var(--color-text-muted);font-size:.72rem;
+ }
+ #wiki-craft-planner .craft-client-price-reference button{
+  padding:2px 7px;min-height:27px;
+  border-radius:4px;border:1px solid var(--color-border);
+  background:var(--color-surface);color:var(--color-accent);
+  cursor:pointer;font:inherit;font-size:.74rem;
+ }
+ #wiki-craft-planner .craft-client-price-reference button:disabled{
+  opacity:.45;cursor:default;
+ }
+ #wiki-craft-planner #craft-load-npc-prices,
+ #wiki-craft-planner #craft-apply-npc-prices{
+  background:color-mix(in srgb,var(--color-accent) 8%,var(--color-surface));
+ }
+ #wiki-craft-planner #craft-apply-npc-prices[hidden]{display:none!important;}
  #wiki-craft-planner .craft-price-input{
   box-sizing:border-box;max-width:180px;width:100%;
   min-height:38px;
