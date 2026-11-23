@@ -6,6 +6,7 @@ import {planClientCrafting,priceCraftLeaves}
   from "../src/data/client-crafting-planner.mjs";
 import {craftGameplayPolicy,isEquipmentSourceCategory}
   from "../src/data/client-crafting-gameplay-policy.mjs";
+import {summarizeCraftBatch,planCraftBatchOperations} from "../src/data/client-craft-batch.mjs";
 const json=path=>JSON.parse(readFileSync(path,"utf8"));
 const recipe=id=>{
   const bucket=String(Math.floor(Number(id)/1000)).padStart(2,"0");
@@ -103,4 +104,23 @@ test("calculator renders Jana4U-style independent tree and shopping tools across
  assert.ok(page.includes('pt?"Fabricar":"Craft"'));
  const legacy=readFileSync("tests/client-crafting-planner.test.mjs","utf8");
  assert.ok(legacy.includes("shared intermediate demand"));
+});
+
+test("equipment detail summary follows 1×20 without overwriting Unit evidence",()=>{
+ const judgment=json("public/data/client-items/details/00.json").items["645"].s;
+ const apocalyptic=json("public/data/client-items/details/18.json").items["18801"].s;
+ const judgement=summarizeCraftBatch(judgment,{equipment:true});
+ const missing=summarizeCraftBatch(apocalyptic,{equipment:true});
+ assert.equal(judgement.batchSize,1);
+ assert.equal(judgement.maxPerOperation,20);
+ assert.equal(judgement.maxBatchesPerOperation,20);
+ assert.equal(judgement.sourceValues[0],1);
+ assert.equal(missing.batchSize,1);
+ assert.equal(missing.maxPerOperation,20);
+ assert.equal(missing.originalUnitStatus,"not-provided");
+ assert.deepEqual(missing.sourceValues,[]);
+ assert.equal(planCraftBatchOperations(41,1,{equipment:true}).totalOperations,3);
+ const summary=readFileSync("src/components/ClientCraftingSummary.astro","utf8");
+ assert.ok(summary.includes("summarizeCraftBatch(item.sourceDefinitions,{equipment:true})"));
+ assert.ok(summary.includes("batch.originalUnitStatus"));
 });
