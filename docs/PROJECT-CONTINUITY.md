@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.67 (relato de coincidência dos 128 preços do Market registrado com proveniência separada)  
-**Último PR integrado:** [PR #85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) (Stage 20.66). **Stage 20.67:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86), verificar CI e integração.
+**Último PR integrado de funcionalidade:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) (Stage 20.67; CI aprovado e integrado à `main`).
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -499,4 +499,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.67 implementada no PR #86, com declaração agregada do jogador para todos os 128 candidatos da Stage 20.66 e exibição explicitamente atribuída. Conferir CI e integração na main. Preservar a distinção entre relato de jogador, dados NPC originais e verificação independente do servidor.**
+**Estado documentado: Stage 20.67 integrada à `main` no PR #86, com CI concluído com sucesso. A declaração agregada do jogador cobre os 128 candidatos da Stage 20.66, sem ser uma auditoria independente; a interface EN/PT-BR distingue o relato das observações locais. Manter fontes NPC originais imutáveis. Conferir a interface visualmente após o deploy e procurar outras possíveis fontes de preços fora dos 421 registros gerais.**
