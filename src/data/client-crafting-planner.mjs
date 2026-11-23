@@ -4,7 +4,7 @@
  * Inspiration: Jana4U's MIT-licensed open-source calculator (linked in docs).
  * This is an independent implementation using our own client data and UI.
  */
-import {craftGameplayPolicy} from "./client-crafting-gameplay-policy.mjs";
+import {craftGameplayPolicy,OTHER_MAX_PER_OPERATION} from "./client-crafting-gameplay-policy.mjs";
 const ID=/^[1-9][0-9]{0,12}$/;
 const POS=/^[1-9][0-9]*$/;
 const valid=id=>ID.test(String(id));
@@ -20,10 +20,23 @@ const count=value=>{
  * Example: requested 250, batch 20 -> 13 batches -> 260 produced;
  * those 13 batches consume ingredients for 260, not for 250.
  */
-export function splitCraftOperations({batches,batchSize,maxPerOperation}){
+export function splitCraftOperations({
+  batches,batchSize,maxPerOperation,ingredients=[],maxIngredientPerOperation=OTHER_MAX_PER_OPERATION,
+}){
   const n=count(batches),unit=count(batchSize),limit=count(maxPerOperation);
+  const ingredientLimit=count(maxIngredientPerOperation);
   if(unit>limit)throw new RangeError("Batch exceeds the per-operation output limit");
-  const batchesPerOperation=limit/unit;
+  let batchesPerOperation=limit/unit;
+  const bounds=[];
+  for(const [itemId,quantityPerBatch] of ingredients){
+    if(!valid(itemId))throw new RangeError("Invalid ingredient ID");
+    const perBatch=count(quantityPerBatch);
+    const cap=ingredientLimit/perBatch;
+    if(cap<1n)throw new RangeError(
+      "Ingredient "+itemId+" exceeds the 10,000-per-ingredient operation limit for a single batch");
+    bounds.push({itemId:String(itemId),perBatch:String(perBatch),batchesMax:String(cap)});
+    if(cap<batchesPerOperation)batchesPerOperation=cap;
+  }
   const complete=n/batchesPerOperation,remainder=n%batchesPerOperation;
   const groups=[];
   if(complete>0n)groups.push({
@@ -35,9 +48,14 @@ export function splitCraftOperations({batches,batchSize,maxPerOperation}){
     operations:"1",batchesEach:String(remainder),outputEach:String(remainder*unit),
   });
   const operations=complete+(remainder>0n?1n:0n);
-  return {operations:String(operations),groups,
+  const limitingIngredients=bounds.filter(x=>BigInt(x.batchesMax)===batchesPerOperation);
+  return {
+    operations:String(operations),groups,
     batchesPerOperation:String(batchesPerOperation),
-    maxOutputPerOperation:String(batchesPerOperation*unit)};
+    maxOutputPerOperation:String(batchesPerOperation*unit),
+    maxIngredientPerOperation:String(ingredientLimit),
+    limitingIngredients,
+  };
 }
 /**
  * Turn a parent's legal operation groups into the actual ingredient
@@ -112,6 +130,8 @@ export function planClientCrafting({
         batch=count(batchOverrides[id]);manual=true;batchSource="manual";
       }else reason="missing-batch";
       if(batch!==null&&batch>BigInt(policy.maxPerOperation))reason="batch-over-limit";
+      if(!reason&&recipe.materials.some(([,qty])=>count(qty)>BigInt(OTHER_MAX_PER_OPERATION)))
+        reason="ingredient-over-limit";
       if(reason)mode="unresolved";
     }
     if(reason){
@@ -156,6 +176,7 @@ export function planClientCrafting({
       const distribution=splitCraftOperations({
         batches:String(batches),batchSize:String(batch),
         maxPerOperation:String(maxPerOperation),
+        ingredients:node.recipe.materials,
       });
       steps.push({itemId:id,requested:String(needed),batchSize:String(batch),
         totalBatches:String(batches),output:String(produced),
@@ -163,6 +184,8 @@ export function planClientCrafting({
         operationGroups:distribution.groups,
         maxBatchesPerOperation:distribution.batchesPerOperation,
         maxOutputPerOperation:distribution.maxOutputPerOperation,
+        maxIngredientPerOperation:distribution.maxIngredientPerOperation,
+        limitingIngredients:distribution.limitingIngredients,
         maxPerOperation:String(maxPerOperation),
         manualBatch:node.manual,batchSource:node.batchSource});
       for(const [child,rawQty] of node.recipe.materials){
@@ -218,6 +241,7 @@ export function planClientCrafting({
       operations:step?.operations??null,
       operationGroups:step?.operationGroups??[],
       maxOutputPerOperation:step?.maxOutputPerOperation??null,
+      limitingIngredients:step?.limitingIngredients??[],
       batchSource:step?.batchSource??null,
     });
     if(!repeated&&node.recipe){
