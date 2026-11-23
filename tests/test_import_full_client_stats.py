@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -22,6 +23,7 @@ def import_source(filename, module_name):
 
 imp = import_source("import-full-client-stats.py", "import_20_33")
 reviewed = import_source("verify-full-client-reviewed-stats.py", "review_20_33")
+hashes = import_source("verify-full-client-source-hashes.py", "hash_20_33")
 
 
 class ImportZipTests(unittest.TestCase):
@@ -79,6 +81,7 @@ class ImportZipTests(unittest.TestCase):
         self.make_zip()
         self.target.parent.mkdir(parents=True)
         with patch.object(imp, "IMPORT_TARGET", self.target), \
+             patch.object(imp.hashes, "verify", return_value={"originalFiles": 29}), \
              patch.object(imp.audit, "validate", return_value={
                  "candidateIds": 7560, "sourceRows": 9351
              }) as first, \
@@ -100,6 +103,7 @@ class ImportZipTests(unittest.TestCase):
         self.make_zip()
         self.target.parent.mkdir(parents=True)
         with patch.object(imp, "IMPORT_TARGET", self.target), \
+             patch.object(imp.hashes, "verify", return_value={"originalFiles": 29}), \
              patch.object(imp.audit, "validate", side_effect=ValueError("blocked")):
             with self.assertRaisesRegex(ValueError, "blocked"):
                 imp.import_stats(self.zip)
@@ -159,6 +163,50 @@ class ReviewedSourceTests(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(ValueError, "row count differs"):
             reviewed.verify(self.candidate, self.baseline)
+
+
+class ExactHashTests(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.base = Path(tmp.name)
+        self.candidate = self.base / "candidate"
+        self.candidate.mkdir()
+        self.approved = self.base / "hashes.json"
+        values = {
+            "manifest.json": b'{"schemaVersion":"1.0"}'
+        }
+        for i in range(28):
+            values[f"{i:02d}.json"] = ('{"bucket":' + str(i) + '}').encode()
+        for name, content in values.items():
+            (self.candidate / name).write_bytes(content)
+        self.hashes = {
+            name: hashlib.sha256(content).hexdigest()
+            for name, content in values.items()
+        }
+        self.approved.write_text(json.dumps({
+            "schemaVersion": "20.33-sha256",
+            "dataset": "all-client-item-raw-stats",
+            "snapshotId": 1,
+            "source": "synthetic test fixture",
+            "approvedFiles": 29, "items": 7560, "sourceRows": 9351,
+            "zipSha256": "0" * 64, "fileSha256": self.hashes
+        }), encoding="utf-8")
+
+    def test_exact_original_file_bytes_pass(self):
+        self.assertEqual(
+            hashes.verify(self.candidate, self.approved)["originalFiles"], 29
+        )
+
+    def test_changed_byte_fails_even_if_valid_json(self):
+        (self.candidate / "00.json").write_text('{"bucket":999}', encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "SHA256 mismatch"):
+            hashes.verify(self.candidate, self.approved)
+
+    def test_extra_unapproved_file_fails(self):
+        (self.candidate / "private.txt").write_text("private", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "differ from"):
+            hashes.verify(self.candidate, self.approved)
 
 
 if __name__ == "__main__":
