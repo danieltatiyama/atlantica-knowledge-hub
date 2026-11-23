@@ -86,10 +86,21 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const result=$("craft-result"),note=$("craft-result-note");
   const steps=$("craft-steps"),leaves=$("craft-leaves"),issues=$("craft-issues");
   const cost=$("craft-cost-total");
+  const treeContainer=$("craft-tree"),surplus=$("craft-surplus"),surplusSection=$("craft-surplus-section");
+  const itemCategories:Record<string,string>=Object.create(null),buyIds=new Set<string>();
   const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
   const fmt=(n:string|number)=>nf.format(BigInt(n));
   const choices:Record<string,number>={},batchOverrides:Record<string,string>={};
   const prices:Record<string,string>={};
+  const storedPriceKey="atlantica.crafting.prices.v1";
+  try{
+   const stored=JSON.parse(localStorage.getItem(storedPriceKey)||"{}");
+   if(stored&&typeof stored==="object"&&!Array.isArray(stored)){
+    for(const [id,value] of Object.entries(stored))
+     if(/^[1-9]\d{0,12}$/.test(id)&&/^\d{1,20}$/.test(String(value)))
+      prices[id]=String(value);
+   }
+  }catch{ /* Local price persistence is optional. */ }
   const detailCache=new Map<number,Promise<any>>();
   let indexPromise:Promise<Map<string,string>>|null=null;
   let selectedId="",activeGraph:Record<string,any[]>|null=null;
@@ -119,7 +130,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const names=new Map<string,string>();
     for(const shard of shards){
      if(shard.snapshotId!==1||!Array.isArray(shard.rows))throw Error("Index shard mismatch");
-     for(const row of shard.rows)if(row[6]==="named")names.set(row[0],row[1]);
+     for(const row of shard.rows)if(row[6]==="named"){
+      names.set(row[0],row[1]);
+      if(typeof row[2]==="string")itemCategories[row[0]]=row[2];
+     }
     }
     if(names.size!==22702)throw Error("Incomplete source name index");
     return names;
@@ -185,15 +199,17 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    if(!activeGraph||!selectedId)return;
    try{
     plan=planClientCrafting({itemId:selectedId,quantity:amount.value,
-     recipesById:activeGraph,choices,batchOverrides});
+     recipesById:activeGraph,choices,batchOverrides,
+     itemCategories,buyIds:[...buyIds]});
     steps.replaceChildren();leaves.replaceChildren();issues.replaceChildren();
+    treeContainer.replaceChildren();surplus.replaceChildren();
     const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
     for(const step of plan.steps){
      const tr=el("tr"),td=el("td");
      td.append(itemLink(step.itemId,title(step.itemId)));
      if(step.manualBatch)td.append(el("small",pt?" · Batch manual":" · Manual batch"));
      tr.append(td);
-     for(const value of [step.requested,step.output,step.totalBatches,step.operations])
+     for(const value of [step.requested,step.output,step.totalBatches,step.operations,step.maxPerOperation])
       tr.append(el("td",fmt(value)));
      steps.append(tr);
     }
@@ -204,19 +220,21 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      input.type="number";input.min="0";input.step="1";input.placeholder="0";input.value=prices[leaf.itemId]??"";
      input.setAttribute("aria-label",(pt?"Preço unitário ":"Unit price ")+title(leaf.itemId));
      input.addEventListener("change",()=>{
-      prices[leaf.itemId]=input.value;redraw();
+      prices[leaf.itemId]=input.value;
+      try{localStorage.setItem(storedPriceKey,JSON.stringify(prices));}catch{}
+      try{refreshCosts();}catch{status.textContent=pt?"Preço inválido.":"Invalid price.";}
      });
      priceCell.append(input);tr.append(priceCell);
      const totalCell=el("td","—");totalCell.dataset.costFor=leaf.itemId;
      tr.append(totalCell);leaves.append(tr);
     }
-    const priced=priceCraftLeaves(plan.leaves,prices);
-    for(const row of priced.rows){
-     const cell=leaves.querySelector<HTMLElement>('[data-cost-for="'+row.itemId+'"]');
-     if(cell)cell.textContent=row.total===null?"—":fmt(row.total);
-    }
-    cost.textContent=(pt?"Total de preços informados: ":"Total priced cost: ")+fmt(priced.knownTotal)+
-     (priced.unpricedItems?" · "+priced.unpricedItems+(pt?" materiais sem preço":" materials without prices"):"");
+    refreshCosts();
+    renderCraftTree();
+    renderLeftovers();
+    $("craft-summary-output").textContent=fmt(plan.rootOutput);
+    $("craft-summary-batches").textContent=fmt(plan.totalBatches);
+    $("craft-summary-operations").textContent=fmt(plan.totalOperations);
+    $("craft-summary-materials").textContent=fmt(plan.leaves.length);
     note.textContent=plan.complete
       ?(pt?"Plano calculado a partir das receitas escolhidas.":"Plan calculated using the selected source recipes.")
       :(pt?"Plano parcial: verifique receitas e batches abaixo.":"Partial plan: review recipe and batch questions below.");
