@@ -74,7 +74,7 @@ test("bestiary UX links items, source drops, recipes and creature detail using e
 test("generated lookup is intentionally excluded from the immutable original 53 JSONs",()=>{
   const ignored=read(".gitignore");
   const packageJSON=JSON.parse(read("package.json"));
-  assert.ok(ignored.includes("/public/data/client-monsters/item-lookup.json"));
+  assert.ok(ignored.includes("/public/data/client-monster-discovery/"));
   assert.ok(packageJSON.scripts.prebuild.includes("generate-monster-item-discovery.mjs"));
   assert.ok(packageJSON.scripts.predev.includes("generate-monster-item-discovery.mjs"));
   assert.equal(packageJSON.scripts["generate:monster-item-lookup"],
