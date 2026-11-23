@@ -48,13 +48,28 @@ test("every source-backed item profile and item explorer attaches original direc
   assert.ok(!widget.includes(".innerHTML"));
 });
 
-test("empty original monster data leads to honest pending state, not invented drops",()=>{
+test("published audited monster data remains source-only; missing data still has an honest fallback",()=>{
   const widget=read("src/components/MonsterItemSources.astro");
   const listing=read("src/components/MonsterDatabasePage.astro");
   assert.match(widget,/pending import and review/);
   assert.match(listing,/Original data import pending/);
-  assert.ok(!existsSync("public/data/client-monsters/manifest.json"),
-    "First client-only PR must not commit unvalidated original monster data");
+  const path="public/data/client-monsters/manifest.json";
+  if(existsSync(path)){
+    const manifest=JSON.parse(read(path));
+    assert.equal(manifest.schemaVersion,"1.0");
+    assert.equal(manifest.snapshotId,1);
+    assert.equal(manifest.dataset,"all-client-monster-loot-original");
+    assert.equal(manifest.catalogMonsterIds,4351);
+    assert.equal(manifest.directSourceRows,9959);
+    assert.equal(manifest.groupReferenceRows,5784);
+    assert.equal(manifest.groupDropRows,3076);
+    assert.equal(manifest.groupBandRows,572);
+    assert.equal(manifest.reverseItemIds,893);
+    assert.equal(manifest.groupSourceJoins,172120);
+    assert.equal(manifest.files.index.length,3);
+    assert.equal(manifest.files.itemSources.length,30);
+    assert.match(manifest.notice,/NOT verified probabilities/);
+  }
 });
 
 test("header and home expose the bilingual client monster source catalog",()=>{

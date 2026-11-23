@@ -95,6 +95,7 @@ jobs:
           python scripts/verify-full-client-reviewed-stats.py --candidate public/data/client-items/stats --allow-absent
           python scripts/verify-full-client-source-hashes.py --candidate public/data/client-items/stats --allow-absent
           python scripts/validate-client-monster-loot.py --candidate public/data/client-monsters --allow-absent
+          python scripts/verify-client-monster-source-hashes.py --candidate public/data/client-monsters --allow-absent
 
       - name: Validation completed
         if: success()

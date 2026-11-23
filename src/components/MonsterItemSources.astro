@@ -94,7 +94,32 @@ const pt=lang==="pt-br";
           source.bucket!==bucket)throw Error("Item drop source snapshot mismatch");
         const data=source.items?.[id];
         if(!data){state.textContent=pt?"Nenhum registro de drop encontrado.":"No source drop records found.";return;}
-        for(const row of data.direct??[]){
+        // Some ordinary materials have more than 8,000 derived group
+        // references. Never create thousands of DOM rows on page load.
+        const renderPaged=(section:HTMLElement,entries:any[],
+          makeRow:(row:any[])=>HTMLTableRowElement)=>{
+          const tbody=section.querySelector("tbody")!;
+          let cursor=0;
+          const chunkSize=100;
+          const button=document.createElement("button");
+          button.type="button";button.className="monster-more";
+          const showNext=()=>{
+            const fragment=document.createDocumentFragment();
+            for(const row of entries.slice(cursor,cursor+chunkSize))
+              fragment.append(makeRow(row));
+            cursor=Math.min(entries.length,cursor+chunkSize);
+            tbody.append(fragment);
+            button.textContent=(pt?"Mostrar mais 100 · ":"Show 100 more · ")+
+              cursor+"/"+entries.length;
+            if(cursor===entries.length)button.remove();
+          };
+          if(entries.length>chunkSize){
+            button.addEventListener("click",showNext);
+            section.append(button);
+          }
+          showNext();
+        };
+        renderPaged(direct,data.direct??[],row=>{
           const [charId,name,recordId,rawRate,slot,min,max]=row;
           if(!/^[1-9]\d{0,12}$/.test(charId))throw Error("Invalid creature ID");
           const tr=document.createElement("tr");
@@ -102,9 +127,9 @@ const pt=lang==="pt-br";
           tr.insertCell().textContent=raw(rawRate);
           tr.insertCell().textContent=qty(min,max);
           tr.insertCell().textContent="#"+recordId+(slot?" · "+slot:"");
-          direct.querySelector("tbody")!.append(tr);
-        }
-        for(const row of data.group??[]){
+          return tr;
+        });
+        renderPaged(group,data.group??[],row=>{
           const [charId,name,groupId,refRow,dropRow,refRate,dropRate,slot,band,min,max]=row;
           if(!/^[1-9]\d{0,12}$/.test(charId))throw Error("Invalid creature ID");
           const tr=document.createElement("tr");
@@ -114,8 +139,8 @@ const pt=lang==="pt-br";
           tr.insertCell().textContent=raw(dropRate);
           tr.insertCell().textContent=qty(min,max);
           tr.insertCell().textContent="#"+refRow+" / #"+dropRow+(band?" · "+band:"");
-          group.querySelector("tbody")!.append(tr);
-        }
+          return tr;
+        });
         if(data.direct?.length)direct.hidden=false;
         if(data.group?.length)group.hidden=false;
         state.textContent=(pt?"Referências originais: ":"Original source links: ")+
@@ -139,5 +164,10 @@ const pt=lang==="pt-br";
   th{color:var(--color-gold-light)}
   td a,.monster-catalog-link a{color:var(--color-accent)}
   .monster-item-direct[hidden],.monster-item-group[hidden]{display:none}
+  .monster-item-sources :global(.monster-more){
+    border:1px solid var(--color-border);border-radius:4px;
+    padding:8px 12px;margin:12px 0;background:var(--color-surface);
+    color:var(--color-accent);cursor:pointer;
+  }
   .monster-catalog-link{font-size:.85rem;margin-bottom:0}
 </style>

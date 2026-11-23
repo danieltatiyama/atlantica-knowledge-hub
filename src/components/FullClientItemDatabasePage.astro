@@ -327,7 +327,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
               pt?"Quantidade candidata":"Candidate quantity",pt?"Registros":"Source rows"]))
             heading.append(node("th",label));
           thead.append(heading);
-          for(const row of rows){
+          let cursor=0;
+          const nextChunk=()=>{
+            const end=Math.min(rows.length,cursor+100);
+            for(const row of rows.slice(cursor,end)){
             const [charId,name]=row;
             if(!/^[1-9]\d*$/.test(charId))continue;
             const tr=node("tr"),first=node("td");
@@ -347,12 +350,21 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
               tr.append(node("td","#"+row[3]+" / #"+row[4]));
             }
             body.append(tr);
-          }
+            }
+            cursor=end;
+            more.textContent=(pt?"Mostrar mais 100 · ":"Show 100 more · ")+
+              number.format(cursor)+"/"+number.format(rows.length);
+            if(cursor>=rows.length)more.remove();
+          };
+          const more=node("button",pt?"Mostrar mais 100":"Show 100 more") as HTMLButtonElement;
+          more.type="button";more.className="monster-more";
+          more.addEventListener("click",nextChunk);
           const table=node("table");table.append(thead,body);
           const scroll=node("div",undefined,"stat-table-scroll");scroll.append(table);
           const details=node("details");details.open=true;
-          details.append(node("summary",title+" ("+number.format(rows.length)+")"),scroll);
+          details.append(node("summary",title+" ("+number.format(rows.length)+")"),scroll,more);
           section.append(details);
+          nextChunk();
         };
         draw(pt?"Drops diretos registrados":"Original direct source drops",entry.direct,"direct");
         draw(pt?"Drops vinculados a grupos":"Group-linked source drops",entry.group,"group");
@@ -965,6 +977,11 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   .monster-source-links h3{color:var(--color-gold-light)}
   .monster-source-links details{margin:10px 0;border:1px solid var(--color-border)}
   .monster-source-links summary{padding:10px;cursor:pointer;color:var(--color-accent)}
+  .monster-source-links .monster-more{
+    background:var(--color-surface);color:var(--color-accent);
+    border:1px solid var(--color-border);padding:8px 12px;margin:9px;
+    border-radius:4px;cursor:pointer;
+  }
   .numeric-group{margin:18px 0}
   .numeric-group h4{color:var(--color-gold-light);margin:8px 0}
   .numeric-conflict{outline:1px solid var(--color-bronze);outline-offset:-1px}
