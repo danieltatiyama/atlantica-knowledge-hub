@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa concluída:** Stage 20.49  
-**Último PR integrado:** [PR #67](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/67)
+**Última etapa concluída:** Stage 20.54  
+**Último PR funcional integrado:** [PR #73](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/73)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -245,6 +245,30 @@ A Stage 20.49 — PR #67 corrigiu:
 
 O usuário revisou visualmente os temas e confirmou que a interface estava funcionando corretamente antes da última correção de alinhamento. Posteriormente, informou que estava tudo certo.
 
+### Funcionalidades adicionadas nas Stages 20.50–20.54
+
+**Busca global (20.50):** pesquisa unificada de ItemIDs, CharIDs e guias publicados, acessível no cabeçalho e na Home, com filtros por categoria, atalhos `Ctrl/Cmd+K` e `/`, carregamento sob demanda dos índices originais e links para perfis já existentes. Arquivos: `src/components/GlobalSearch.astro` e `src/data/wiki-unified-search.mjs`.
+
+**Perfis (20.51):** atalhos para visão geral, fabricação, itens usados em receitas, monstros e registros técnicos nas páginas do catálogo completo; no bestiário, ações diretas para drops e evidências originais. Preservadas as mesmas regras de drops e receitas.
+
+**Auditoria (20.52):** script `scripts/audit-wiki-data.mjs`, verificador `src/data/wiki-source-audit.mjs` e relatório derivado `public/data/audits/source-quality.json`. O relatório compara índices diretos e reversos por CharID/ItemID, mantém as 197 referências inconclusivas e confere o Huge Crocodile. A interface fica em `/tools/data-quality/`. O relatório é gerado nos scripts `prebuild` e `predev`, após a geração dos índices necessários.
+
+**Calculadora de crafting (20.53):** `/tools/crafting/`, com entrada por nome ou ItemID, expansão recursiva de receitas do cliente, agregação de materiais intermediários antes do arredondamento por batch, limite de 10.000 unidades por operação, escolha explícita entre receitas alternativas, batch manual quando o cliente não possui valor seguro e preços informados pelo usuário. Arquivos: `src/data/client-crafting-planner.mjs` e `src/components/CraftingPlannerPage.astro`. Não converter receitas sem evidência em fatos do servidor.
+
+**Nation Dungeon Planner (20.54):** `/tools/nation-dungeons/`, calendário de 7, 14 e 30 dias com vistas Horas×Dias / Dias×Horas, runs individuais e fixas semanais editáveis, cooldowns configuráveis, armazenamento local, exportação/importação JSON e links compartilháveis. Utiliza `America/Los_Angeles` com reset de 06:00 e conversão IANA para horário local, PST/PDT, UTC, São Paulo, Paris e Tóquio. Os valores iniciais configuráveis são: Avalon 60h, Babel 20h, Yggdrasil 40h, Alcatraz 40h, Pirate 20h. A interface não deve interpretar uma run em cooldown como executada. Arquivos: `src/data/nation-dungeon-calendar.mjs` e `src/components/NationDungeonCalendarPage.astro`.
+
+**Navegação:** hub de ferramentas em `/tools/` e variantes `/pt-br/tools/`, `/pt-br/tools/data-quality/`, `/pt-br/tools/crafting/` e `/pt-br/tools/nation-dungeons/`. Mudanças de idioma e tema devem continuar compatíveis com as novas páginas.
+
+**Testes principais adicionados:** `tests/wiki-unified-search.test.mjs`, `tests/wiki-profile-navigation.test.mjs`, `tests/wiki-source-audit.test.mjs`, `tests/client-crafting-planner.test.mjs` e `tests/nation-dungeon-calendar.test.mjs`.
+
+### Limitações a não esquecer
+
+- Dados extraídos do cliente e cálculos sobre eles não são prova de que o recurso esteja ativo no servidor atual.
+- A calculadora não escolhe automaticamente variantes conflitantes e não atribui batch fictício quando a fonte é inconclusiva.
+- O calendário considera horários cadastrados pelo usuário, não eventos sincronizados com o servidor. A persistência padrão é local ao navegador; o compartilhamento exige envio manual do JSON ou link.
+- Fusos IANA fazem transições de horário de verão; a interface indica horas inexistentes e usa a primeira ocorrência de horas repetidas no fim da DST.
+- Testes automatizados aprovados não equivalem a teste visual cross-browser em produção.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -254,16 +278,21 @@ O usuário revisou visualmente os temas e confirmou que a interface estava funci
 | 20.47 | [#65](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/65) | Correção dos drops por faixas de nível e links reversos |
 | 20.48 | [#66](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/66) | Seletor global de seis temas |
 | 20.49 | [#67](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/67) | Alinhamento do cabeçalho e correções de contraste |
+| 20.50 | [#69](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/69) | Busca global de itens, monstros e guias |
+| 20.51 | [#70](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/70) | Navegação player-first entre seções dos perfis |
+| 20.52 | [#71](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/71) | Auditoria de integridade dos índices e hub de ferramentas |
+| 20.53 | [#72](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/72) | Calculadora de crafting multietapas e custos manuais |
+| 20.54 | [#73](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/73) | Nation Dungeon Planner com DST e rotinas semanais |
 
 Todos esses PRs foram integrados à `main`.
 
 **Último commit de integração conhecido no momento da elaboração do documento:**
 
-`17dfda96ab678af080e8b4f37c345be6d65ad9d8`
+`0d422e251cb99a60f623fa3c466ee279427b97dc`
 
-O pipeline do GitHub Actions da Stage 20.49 foi concluído com sucesso, incluindo testes automatizados, validações de dados e build do Astro.
+Os pipelines do GitHub Actions das Stages 20.50 a 20.54 foram concluídos com sucesso, incluindo os testes novos, validações existentes e build do Astro.
 
-Não havia, ao final da etapa 20.49, uma alteração funcional pendente especificamente solicitada pelo usuário.
+As cinco frentes da rodada 20.50–20.54 foram implementadas e integradas. A verificação visual das novas interfaces em produção continua sendo recomendada, mesmo com os testes automatizados aprovados.
 
 ## 8. Como trabalhar nas próximas conversas
 
@@ -314,7 +343,7 @@ Possíveis frentes futuras incluem:
 
 **Melhoria da experiência de uso:** evolução das páginas de itens e monstros, mecanismos de busca, filtros, navegação, responsividade e apresentação dos dados.
 
-**Novas funcionalidades:** ferramentas, calculadoras e sistemas interativos relacionados ao jogo, incluindo funcionalidades para gerenciamento de Nation Dungeons e nações.
+**Novas funcionalidades:** evolução das ferramentas existentes, compartilhamento colaborativo de calendários, futuras funcionalidades de nações e relatórios de revisão de fontes. O calendário de Nation Dungeons e a calculadora de crafting já possuem versões iniciais publicadas no código.
 
 Esses são possíveis caminhos, não tarefas já autorizadas para implementação. A próxima atividade deve ser determinada pela continuação da conversa.
 
@@ -332,4 +361,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.49 concluída, PR #67 integrado à `main`, validações aprovadas e nenhuma nova tarefa funcional pendente nesse momento.**
+**Estado documentado: Stage 20.54 concluída, PR #73 integrado à `main`, validações automatizadas aprovadas. A próxima rodada deverá partir do estado real do GitHub e validar visualmente as novas ferramentas.**
