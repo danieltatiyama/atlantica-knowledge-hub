@@ -831,11 +831,11 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           ?(pt?"Produz "+number.format(recipe.unit)+" por lote":"Produces "+number.format(recipe.unit)+" per batch")
           :(pt?"Quantidade por lote não informada":"Batch quantity not recorded");
         heading.append(node("span",batch,"wiki-batch-label"));block.append(heading);
-        const tbl=node("table") as HTMLTableElement,head=node("thead"),throw=node("tr");
+        const tbl=node("table") as HTMLTableElement,head=node("thead"),headingRow=node("tr");
         for(const name of [pt?"Material":"Material",
           pt?"Quantidade":"Amount",pt?"Onde obter":"Where to find"])
-          throw.append(node("th",name));
-        head.append(throw);tbl.append(head);const body=node("tbody");
+          headingRow.append(node("th",name));
+        head.append(headingRow);tbl.append(head);const body=node("tbody");
         for(const [materialId,quantity] of recipe.materials){
           const tr=node("tr"),itemCell=node("td");
           itemCell.append(linkItem(materialId,nameFor(materialId)??("ID "+materialId)));
@@ -870,12 +870,12 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       section.append(node("p",pt
         ?"Para conferir a origem dos dados: cada linha corresponde a uma definição ItemType. Os campos Work e Unit são preservados como extraídos; não confirmam requisitos do jogo."
         :"For source verification: each row is an ItemType definition. Work and Unit are unchanged client values, not confirmed gameplay requirements.","wiki-help"));
-      const tbl=node("table"),head=node("thead"),throw=node("tr");
+      const tbl=node("table"),head=node("thead"),headingRow=node("tr");
       for(const label of [pt?"Registro":"Record",pt?"Arquivo":"Source file",
         pt?"Tipo":"Type",pt?"Categoria":"Category",
         pt?"Nível":"Level",pt?"Grade":"Grade","Work","Unit",
-        pt?"Materiais":"Material state"])throw.append(node("th",label));
-      head.append(throw);tbl.append(head);
+        pt?"Materiais":"Material state"])headingRow.append(node("th",label));
+      head.append(headingRow);tbl.append(head);
       const body=node("tbody");
       const stateLabel=(v:string)=>v.startsWith("parsed-")
         ?(pt?"Identificados":"Parsed")
