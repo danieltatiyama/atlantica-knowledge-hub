@@ -112,6 +112,6 @@ test("game-inspired tooltip is source-only and appears for 551 and 1911 equipmen
   assert.ok(additional.includes('<AtlanticaItemInfoPanel lang={lang} itemId={item.id} />'));
   assert.ok(crafting.includes("batch.maxBatchesPerOperation"));
   assert.ok(additional.includes("craftBatch.maxBatchesPerOperation"));
-  assert.ok(database.includes("addCraftBatchInformation(details,data)"));
-  assert.ok(database.includes("summarizeCraftBatch(data.s)"));
+  assert.ok(database.includes("addCraftBatchInformation(details,data,row)"));
+  assert.ok(database.includes("summarizeCraftBatch(data.s,{equipment})"));
 });
