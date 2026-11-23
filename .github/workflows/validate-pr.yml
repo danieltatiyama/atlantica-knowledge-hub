@@ -98,6 +98,9 @@ jobs:
       - name: Validate nation dungeon calendar rules
         run: node --test tests/nation-dungeon-calendar.test.mjs
 
+      - name: Validate equipment craft gameplay rules and recipe tree
+        run: node --test tests/client-crafting-gameplay-tree.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
