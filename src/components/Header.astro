@@ -172,39 +172,35 @@ import {
       ))}
     </nav>
 
-    <div class="theme-switcher">
-      <label for="site-theme" class="theme-label">{lang === "pt-br" ? "Tema" : "Theme"}</label>
-      <select id="site-theme" class="theme-select"
-        aria-label={lang === "pt-br" ? "Selecionar tema visual" : "Select visual theme"}>
-        <option value="atlantica">Atlantica</option>
-        <option value="dark">{lang === "pt-br" ? "Escuro" : "Dark"}</option>
-        <option value="light">{lang === "pt-br" ? "Claro" : "Light"}</option>
-        <option value="parchment">{lang === "pt-br" ? "Pergaminho" : "Parchment"}</option>
-        <option value="midnight">{lang === "pt-br" ? "Azul noturno" : "Midnight Blue"}</option>
-        <option value="contrast">{lang === "pt-br" ? "Alto contraste" : "High Contrast"}</option>
-      </select>
-    </div>
+    <div class="header-controls" role="group"
+      aria-label={lang === "pt-br" ? "Preferências de aparência e idioma" : "Appearance and language preferences"}>
+      <div class="theme-switcher header-control-group">
+        <label for="site-theme" class="theme-label header-control-label">
+          {lang === "pt-br" ? "Tema" : "Theme"}
+        </label>
+        <select id="site-theme" class="theme-select header-control-select"
+          aria-label={lang === "pt-br" ? "Selecionar tema visual" : "Select visual theme"}>
+          <option value="atlantica">Atlantica</option>
+          <option value="dark">{lang === "pt-br" ? "Escuro" : "Dark"}</option>
+          <option value="light">{lang === "pt-br" ? "Claro" : "Light"}</option>
+          <option value="parchment">{lang === "pt-br" ? "Pergaminho" : "Parchment"}</option>
+          <option value="midnight">{lang === "pt-br" ? "Azul noturno" : "Midnight Blue"}</option>
+          <option value="contrast">{lang === "pt-br" ? "Alto contraste" : "High Contrast"}</option>
+        </select>
+      </div>
 
-    <div class="language-switcher">
-      <label for="site-language" class="language-label">
-        Language
-      </label>
-        <select
-          id="site-language"
-          class="language-select"
-          aria-label="Select language"
+      <div class="language-switcher header-control-group">
+        <label for="site-language" class="language-label header-control-label">
+          {lang === "pt-br" ? "Idioma" : "Language"}
+        </label>
+        <select id="site-language" class="language-select header-control-select"
+          aria-label={lang === "pt-br" ? "Selecionar idioma" : "Select language"}
           data-target-en={getLanguageTarget("en")}
-          data-target-pt-br={getLanguageTarget("pt-br")}
-        >
-
-        <option value="en" selected={lang === "en"}>
-          English
-        </option>
-
-        <option value="pt-br" selected={lang === "pt-br"}>
-          Português (Brasil)
-        </option>
-      </select>
+          data-target-pt-br={getLanguageTarget("pt-br")}>
+          <option value="en" selected={lang === "en"}>English</option>
+          <option value="pt-br" selected={lang === "pt-br"}>Português (Brasil)</option>
+        </select>
+      </div>
     </div>
   </div>
 </header>
@@ -243,16 +239,14 @@ import {
 
   .header-content {
     width: min(1600px, 94%);
-    min-height: 112px;
+    min-height: 96px;
     margin: 0 auto;
-
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto minmax(316px, 1fr);
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+    column-gap: clamp(12px, 1.5vw, 28px);
   }
 
-    
   /* Original typography-based branding */
 
   .brand-wordmark {
@@ -365,42 +359,43 @@ import {
     outline-offset: 3px;
   }
 
-  /* Leave room for both language and theme selectors on smaller desktops. */
-  @media (max-width: 1700px) {
+  /* Wrap only when the three columns no longer fit comfortably. */
+  @media (max-width: 1560px) {
     .header-content {
-      flex-wrap: wrap;
+      grid-template-columns: minmax(0, 1fr) auto;
       padding: 12px 0;
-      row-gap: 7px;
+      row-gap: 9px;
     }
+    .brand { grid-column: 1; grid-row: 1; }
+    .header-controls { grid-column: 2; grid-row: 1; }
     .main-nav {
-      order: 3;
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-self: stretch;
       width: 100%;
       justify-content: center;
       flex-wrap: wrap;
-      margin-left: 0;
     }
     .nav-link { padding: 8px 11px; }
-    .nav-link::after { left:11px;right:11px;bottom:2px; }
+    .nav-link::after { left: 11px; right: 11px; bottom: 2px; }
   }
-
-  /* Responsive */
 
   @media (max-width: 700px) {
     .header-content {
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 14px 0;
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: center;
       gap: 12px;
+      padding: 14px 0;
     }
-
-    .main-nav {
-      justify-content: center;
-      flex-wrap: wrap;
+    .brand { grid-column: 1; grid-row: 1; }
+    .header-controls {
+      grid-column: 1;
+      grid-row: 2;
+      justify-self: center;
+      width: min(100%, 380px);
     }
-
-    .nav-link {
-      padding: 9px 12px;
-    }
+    .main-nav { grid-column: 1; grid-row: 3; }
+    .nav-link { padding: 8px 10px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -433,116 +428,89 @@ import {
     }
   }
     
-  /* Atlantica Classic - Language Selector */
-
+  /* Keep the nav centred and the preferences together in one grid area. */
   .main-nav {
-    margin-left: auto;
+    justify-self: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
   }
+  .nav-link { padding: 10px 12px; white-space: nowrap; }
 
-  .language-switcher {
+  .header-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 148px) minmax(0, 170px);
+    align-items: end;
+    gap: 12px;
+    justify-self: end;
+    min-width: 0;
+  }
+  .header-control-group {
     display: flex;
-    align-items: center;
-    flex-shrink: 0;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+    gap: 5px;
   }
-
-  .language-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
+  .header-control-label {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
     padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
     border: 0;
+    color: var(--color-text-muted);
+    font-size: .72rem;
+    font-weight: 600;
+    line-height: 1.2;
   }
-
-  .language-select {
-    min-width: 160px;
-    padding: 10px 14px;
-
-    color: var(--color-gold-light);
-    background: var(--color-surface);
-
+  .header-control-select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    margin: 0;
+    padding: 0 11px;
     border: 1px solid var(--color-border);
     border-radius: 4px;
-
+    background: var(--color-surface);
+    color: var(--color-gold-light);
     font-family: var(--font-primary);
-    font-size: 0.85rem;
-
+    font-size: .85rem;
+    line-height: normal;
     cursor: pointer;
   }
-
-  .language-select option {
+  .header-control-select option {
     color: var(--color-text);
     background: var(--color-surface);
   }
-
-  .language-select:hover {
-    border-color: var(--color-accent);
-  }
-
-  .language-select:focus-visible {
-    outline: 2px solid var(--color-gold-light);
+  .header-control-select:hover { border-color: var(--color-accent); }
+  .header-control-select:focus-visible {
+    outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
 
-  /* Mobile */
-
   @media (max-width: 700px) {
-    .main-nav {
-      margin-left: 0;
-    }
-
-    .language-switcher {
-      justify-content: center;
-      width: 100%;
-    }
-
-    .language-select {
-      width: min(260px, 100%);
+    .header-controls {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
-
-  /* Reader appearance — kept beside the locale picker in every header. */
-  .theme-switcher {
-    display:flex;
-    flex-direction:column;
-    gap:3px;
-    flex-shrink:0;
-    min-width:138px;
-  }
-  .theme-label {
-    color:var(--color-text-muted);
-    font-size:.72rem;
-    line-height:1.15;
-    font-weight:600;
-  }
-  .theme-select {
-    min-width:138px;
-    padding:9px 12px;
-    border:1px solid var(--color-border);
-    border-radius:4px;
-    background:var(--color-surface);
-    color:var(--color-text);
-    font:inherit;
-    font-size:.84rem;
-    cursor:pointer;
-  }
-  .theme-select option {
-    background:var(--color-surface);
-    color:var(--color-text);
-  }
-  .theme-select:hover {border-color:var(--color-accent);}
-  .theme-select:focus-visible {
-    outline:2px solid var(--color-accent);
-    outline-offset:3px;
-  }
-  @media (max-width:700px) {
-    .theme-switcher {
-      width:min(260px,100%);
+  @media (max-width: 340px) {
+    .header-controls {
+      grid-template-columns: minmax(0, 1fr);
     }
-    .theme-select {width:100%;}
+  }
+  /* Keep responsive rules after the base component rules in the cascade. */
+  @media (max-width: 1560px) {
+    .main-nav { justify-self: stretch; }
+    .nav-link { padding: 8px 11px; }
+  }
+  @media (max-width: 700px) {
+    .nav-link { padding: 8px 10px; }
   }
 
 </style>
