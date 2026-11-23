@@ -299,7 +299,21 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         const selected=resolveClientCreatureDrops(entity,rawLoot,groupData);
         factDirect.textContent=nf.format(selected.rows.length);
         factGroups.textContent=nf.format(selected.unresolved.length);
+        const quickActions=node("nav",undefined,"creature-profile-actions");
+        quickActions.setAttribute("aria-label",pt?"Navegação do monstro":"Creature navigation");
+        const dropsLink=node("a",pt?"Ver drops":"See possible drops") as HTMLAnchorElement;
+        dropsLink.href="#creature-drop-"+id;
+        quickActions.append(dropsLink);
+        const evidenceBtn=node("button",pt?"Mostrar fontes originais":"View original sources") as HTMLButtonElement;
+        evidenceBtn.type="button";
+        evidenceBtn.addEventListener("click",()=>{
+          const originalSources=detailBody.querySelector<HTMLDetailsElement>(".community-creature-audit");
+          if(originalSources){originalSources.open=true;originalSources.scrollIntoView({behavior:"smooth",block:"start"});}
+        });
+        quickActions.append(evidenceBtn);
+        body.append(quickActions);
         const directSection=node("section",undefined,"community-drop-section");
+        directSection.id="creature-drop-"+id;
         directSection.append(node("h3",
           (pt?"Itens que podem aparecer":"Possible monster drops")+
           " ("+nf.format(selected.rows.length)+")"));
@@ -696,6 +710,20 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
   #creature-db .client-record-row summary:focus-visible{
     outline:2px solid #f4c978;outline-offset:3px;
   }
+  #creature-db .creature-profile-actions {
+    display:flex;flex-wrap:wrap;gap:9px;margin:14px 0;
+  }
+  #creature-db .creature-profile-actions :is(a,button) {
+    display:inline-flex;align-items:center;min-height:36px;
+    border:1px solid var(--color-border);border-radius:4px;
+    background:var(--color-surface);color:var(--color-accent);
+    padding:6px 12px;font:inherit;font-size:.86rem;font-weight:600;
+    text-decoration:none;cursor:pointer;
+  }
+  #creature-db .creature-profile-actions :is(a,button):is(:hover,:focus-visible){
+    border-color:var(--color-accent);outline-color:var(--color-accent);
+  }
+  #creature-db .community-drop-section{scroll-margin-top:22px;}
   @media(max-width:700px){
     #creature-db .community-drop-section{padding:10px}
     #creature-db .client-record-row dl{
