@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.62  
-**Último PR funcional:** [PR #81](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/81) (Stage 20.62)
+**Última etapa implementada:** Stage 20.63 (pesquisa de preços fixos)  
+**Último PR de pesquisa:** [PR #82](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/82) (Stage 20.63)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -348,6 +348,15 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Os valores numéricos das tabelas Crafting Tree, Craft Schedule e Shopping List são centralizados; títulos de itens ficam alinhados à esquerda. O limite exibido no Craft Schedule e XLSX é a capacidade efetiva por operação, inclusive quando limitado por ingrediente.
 - Código `src/data/client-crafting-planner.mjs`, `src/components/CraftingPlannerPage.astro`, `src/data/client-crafting-xlsx.mjs`. Novos testes `tests/client-crafting-completion-ingredient-cap.test.mjs`; testes históricos de materiais, operações e consumo atualizados. Detalhes em `docs/CRAFTING-STAGE-20-62-COMPLETION-INGREDIENT-CAPS.md`.
 
+### Stage 20.63 — Investigação de preços fixos do Market
+
+- **Fonte histórica identificada:** projeto open-source `jana4u/atlantica_online_craft_calculator`, arquivo `data/items.yml`, campo `fixed_price`. Metadados `data/info.yml`: 14/11/2025, versão do jogo 462580, não confirmação de preços atuais no servidor Global 2026.
+- **1.016 registros históricos** com `fixed_price`; correspondência por nome oficial inglês estritamente igual (case-insensitive) com os **23.586 ItemIDs** da nossa base extraída: **292 ItemIDs com correspondência única**, **724 nomes históricos sem correspondência exata**. Não tentar atribuir ID para nomes não conciliados por suposição.
+- Exemplo do usuário adicional: **Rice #3000 = 100 gold** informado pelo jogador e ausente na fonte Jana4U; total do CSV = **1.017 registros**, com **293 registros ligados a ItemID**.
+- Três âncoras presentes no `fixed_price` da fonte: **Gold Thread #7070 = 3.000**, **Colorful Thread #7081 = 10.000**, **Mana Potion [II] #2080 = 8.000**. Não confundir **Colorful Thread** (10.000) com **Colorful Fabric** (50.000).
+- Dados em `research/market-fixed-prices/jana4u-2025-11-14-crosswalk.csv`; metodologia, atribuição MIT e limites em `research/market-fixed-prices/README.md`. Testes `tests/market-fixed-price-research.test.mjs`.
+- Esta etapa é **de pesquisa apenas**: não aplica preços da fonte 2025 ao Crafting Calculator e não afirma que 100% dos itens com preço fixo atual estejam cobertos. Para ativar, preservar diferença entre preços do cliente/servidor atuais, referência histórica, informação do jogador e preço manual do usuário.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -369,6 +378,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.60 | [#79](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/79) | Scroll snap horizontal e coluna Item/Recipe fixa na Crafting Tree, com tratamento para mobile |
 | 20.61 | [#80](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/80) | Colunas compactas da árvore, consumo por operação da receita pai, correção visual da grade do calendário |
 | 20.62 | [#81](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/81) | Conclusão reversível de produtos, valores centralizados e limite de 10.000 de cada ingrediente por operação |
+| 20.63 | [#82](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/82) | Catálogo de pesquisa de 1.016 preços fixos históricos, 292 IDs conciliados, Rice reportado pelo jogador, sem modificar preços na interface |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
