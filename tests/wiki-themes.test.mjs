@@ -78,3 +78,68 @@ test("theme feature never modifies source data or client drop calculations",()=>
   assert.ok(!layout.includes("RawRate"));
   assert.ok(!themes.includes("GroupBands"));
 });
+
+test("header keeps appearance and language in one aligned control group",()=>{
+  const controls=header.slice(header.indexOf('class="header-controls"'),header.indexOf('</header>'));
+  assert.ok(controls.includes('role="group"'));
+  assert.ok(controls.includes('for="site-theme"'));
+  assert.ok(controls.includes('for="site-language"'));
+  assert.ok(controls.includes('class="theme-label header-control-label"'));
+  assert.ok(controls.includes('class="language-label header-control-label"'));
+  assert.ok(controls.includes('class="theme-select header-control-select"'));
+  assert.ok(controls.includes('class="language-select header-control-select"'));
+  assert.ok(controls.includes('"Idioma" : "Language"'));
+  assert.ok(controls.includes('data-target-en={getLanguageTarget("en")}'));
+  assert.ok(header.includes('display: grid;'));
+  assert.ok(header.includes('grid-template-columns: minmax(180px, 1fr) auto minmax(316px, 1fr)'));
+  assert.ok(header.includes('height: 40px'));
+  assert.ok(header.includes('@media (max-width: 1560px)'));
+  assert.ok(header.includes('@media (max-width: 700px)'));
+  assert.ok(header.includes('@media (max-width: 340px)'));
+  // The existing locale and theme event handlers must remain functional.
+  assert.ok(header.includes('languageSelect?.addEventListener("change"'));
+  assert.ok(header.includes('themeSelect.addEventListener("change"'));
+});
+
+test("equipment table headings and Legendary links follow the selected palette",()=>{
+  const catalog=read("src/components/ItemCatalogPage.astro");
+  assert.ok(catalog.includes('<main class="container" id="equipment-catalog">'));
+  const themed=themes.slice(themes.indexOf("/* Equipment catalog:"));
+  assert.ok(themed.includes('#equipment-catalog .catalog th'));
+  assert.ok(themed.includes('background:var(--theme-deep)'));
+  assert.ok(themed.includes('color:var(--color-accent)'));
+  assert.ok(themed.includes('#equipment-catalog .catalog tbody tr:nth-child(even) td'));
+  assert.ok(themed.includes('#equipment-catalog .legendary-link'));
+  assert.ok(themed.includes('color:var(--theme-legendary)'));
+  assert.ok(themed.includes('html[data-theme]:not([data-theme="atlantica"])'));
+  for(const name of ["light","parchment","dark","midnight","contrast"])
+    assert.ok(themed.includes(':root[data-theme="'+name+'"]'),name);
+});
+
+test("light-theme accent headings have accessible contrast on themed table backgrounds",()=>{
+  function palette(name){
+    const start=themes.indexOf(':root[data-theme="'+name+'"] {');
+    const end=themes.indexOf("\\n}",start);
+    assert.ok(start>=0&&end>start,name);
+    return themes.slice(start,end);
+  }
+  function value(text,name){
+    const match=text.match(new RegExp('--'+name+':(#[0-9a-fA-F]{6})'));
+    assert.ok(match,name);
+    return match[1];
+  }
+  const luminance=hex=>{
+    const channels=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255)
+      .map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4);
+    return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;
+  };
+  const contrast=(a,b)=>{
+    const x=luminance(a),y=luminance(b);
+    return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);
+  };
+  for(const name of ["light","parchment"]){
+    const tokens=palette(name);
+    assert.ok(contrast(value(tokens,"color-accent"),value(tokens,"theme-deep"))>=4.5,
+      name+" table header text must reach WCAG AA contrast");
+  }
+});
