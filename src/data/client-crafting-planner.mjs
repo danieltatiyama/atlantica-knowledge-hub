@@ -147,12 +147,12 @@ export function planClientCrafting({
   const stepMap=new Map(steps.map(step=>[step.itemId,step]));
   
   const tree=[],visitedTree=new Set();
-  function treeWalk(id,depth,branchQty){
+  function treeWalk(id,depth,branchQty,ancestorPath=""){
     const node=nodes.get(id),step=stepMap.get(id);
     const repeated=visitedTree.has(id);
     visitedTree.add(id);
     tree.push({
-      itemId:id,depth,branchQuantity:String(branchQty),
+      itemId:id,depth,path:ancestorPath+"/"+id,branchQuantity:String(branchQty),
       totalRequired:String(demand.get(id)??0n),
       output:step?.output??null,
       excess:step?.excess??null,
@@ -168,7 +168,7 @@ export function planClientCrafting({
     if(!repeated&&node.recipe){
       const batches=BigInt(step.totalBatches);
       for(const [child,rawQty] of node.recipe.materials)
-        treeWalk(child,depth+1,count(rawQty)*batches);
+        treeWalk(child,depth+1,count(rawQty)*batches,ancestorPath+"/"+id);
     }
   }
   treeWalk(String(itemId),0,requested);
