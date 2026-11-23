@@ -53,6 +53,11 @@ const navigation = [
     active: pathname.startsWith(monstersHref),
   },
   {
+    label: lang === "pt-br" ? "Ferramentas" : "Tools",
+    href: lang === "pt-br" ? "/pt-br/tools/" : "/tools/",
+    active: pathname.startsWith(lang === "pt-br" ? "/pt-br/tools/" : "/tools/"),
+  },
+  {
     label: t("nav.explore"),
     href: `${homeHref}#topics`,
     active: false,
