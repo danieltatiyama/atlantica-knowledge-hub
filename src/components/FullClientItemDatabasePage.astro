@@ -82,6 +82,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   </main>
 </BaseLayout>
 <script>
+  import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
   type IndexRow=[string,string|null,string|null,string|null,string|null,number,"named"|"collision"|"unresolved",number,number];
   type SourceRow=[number,string,string,string,string|number|null,string|number|null,number|null,number|null,string,[string,number][]];
   type Detail={s:SourceRow[];v:number[][]};
@@ -100,6 +101,15 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     const close=$<HTMLButtonElement>("db-detail-close");
     const namedRows=new Map<string,IndexRow>();
     const detailCache=new Map<number,Promise<Record<string,Detail>>>();
+    const statsCache=new Map<number,Promise<Record<string,[number,Record<string,string>][]>|null>>();
+    let statsManifestPromise:Promise<{snapshotId:number;files:string[]}|null>|null=null;
+    // Categories are ORIGINAL ItemType source labels, not proof that the
+    // item is equipped or currently enhanceable on the server.
+    const equipmentCandidateCategories=new Set([
+      "Weapon","Defence","Sword","Spear","Axe","Bow","Gun","Cannon",
+      "Staff","Guitar","Saw","Whip","Shield","Orb","Armor","Pants",
+      "Boots","Helmet","Glove","Ring","Accessories","Neck","EARRING","BRACELET"
+    ]);
     let allRows:IndexRow[]=[],visible:IndexRow[]=[],currentPage=0,manifest:Manifest|null=null;
     const perPage=100,number=new Intl.NumberFormat(pt?"pt-BR":"en-US");
     const label=(key:string)=>({named:pt?"Nome conciliado":"Source name reconciled",
@@ -133,6 +143,73 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       const rows=await detailCache.get(bucket)!;
       if(!rows[id])throw Error("No original source data for ID");
       return rows[id];
+    }
+    async function optionalNumericStats(id:string) {
+      if(!manifest)return null;
+      if(!statsManifestPromise){
+        // No raw Items.csv stats exist yet beyond the original 551 reviewed
+        // profiles. Only the user-run, separately validated import creates
+        // this optional stats/manifest.json. A 404 is an expected state.
+        statsManifestPromise=fetchJSON("/data/client-items/stats/manifest.json")
+          .then(data=>{
+            if(data.snapshotId!==manifest?.snapshotId||
+               data.dataset!=="all-client-item-raw-stats"||
+               !Array.isArray(data.files))return null;
+            return data as {snapshotId:number;files:string[]};
+          }).catch(()=>null);
+      }
+      const meta=await statsManifestPromise;
+      if(!meta)return null;
+      const bucket=Math.floor(Number(id)/manifest.detailBucketWidth);
+      const filename=String(bucket).padStart(2,"0")+".json";
+      if(!meta.files.includes(filename))return null;
+      if(!statsCache.has(bucket)){
+        statsCache.set(bucket,
+          fetchJSON("/data/client-items/stats/"+filename)
+            .then(data=>data.snapshotId===manifest?.snapshotId&&
+              data.bucket===bucket&&data.schemaVersion==="1.0"
+              ? data.items as Record<string,[number,Record<string,string>][]>
+              :null)
+            .catch(()=>null)
+        );
+      }
+      return (await statsCache.get(bucket)!)?.[id]??null;
+    }
+    function addHistoricalGradeTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
+      const model=buildHistoricalClientProjection({sourceRows:rawRows.map(([sourceRowNumber,fieldsRaw])=>({
+        sourceRowNumber,fieldsRaw,
+      }))});
+      if(model.rows.length!==11)return;
+      const scalable=model.fields,baselineOnly=model.baselineOnlyFields??[];
+      const fixed=model.fixedFields.map((field:{key:string})=>field.key);
+      const cols=[...scalable,...baselineOnly,...fixed];
+      if(!cols.length)return;
+      const heading=node("h3",pt?"Progressão +0 a +10 — modelo histórico":"Enhancement +0 to +10 — historical model");
+      parent.append(heading);
+      parent.append(node("p",pt
+        ?"SIMULAÇÃO. +0 = valores brutos de Items.csv; +1 a +10 = multiplicadores históricos somente em ataque, AC e atributos básicos. Defesa mágica, evasão e velocidade de movimento permanecem FIXAS. Isso não comprova que o equipamento possa ser aprimorado. Nenhum grau L é inferido."
+        :"MODEL ONLY. +0 = raw Items.csv client data; +1..+10 = historical factors for attack, physical AC and base stats only. Magic Defense, EV and MoveSpeed remain FIXED. Upgrade eligibility is not proven. No Legendary grade is inferred.","detail-note"));
+      const table=node("table") as HTMLTableElement;
+      const head=node("thead"),headRow=node("tr");
+      headRow.append(node("th",pt?"Grau":"Grade"));
+      for(const key of cols){
+        const label=labelForClientField(key,pt) +
+          (fixed.includes(key)?" =":baselineOnly.includes(key)?" (+0)":" ×");
+        headRow.append(node("th",label));
+      }
+      headRow.append(node("th",pt?"Origem":"Basis"));head.append(headRow);table.append(head);
+      const body=node("tbody");
+      for(const row of model.rows){
+        const tr=node("tr");tr.append(node("td","+"+row.grade));
+        for(const key of cols)tr.append(node("td",String(row.values[key]??"—")));
+        tr.append(node("td",row.grade===0?(pt?"Extraído":"Client raw"):(pt?"Estimativa":"Estimated")));
+        body.append(tr);
+      }
+      table.append(body);
+      const scroller=node("div",undefined,"stat-table-scroll");scroller.append(table);parent.append(scroller);
+      if(model.fixedConflicts?.length)parent.append(node("p",pt
+        ?"Campos fixos divergentes não foram projetados: "+model.fixedConflicts.join(", ")
+        :"Conflicting fixed fields omitted: "+model.fixedConflicts.join(", "),"subtle"));
     }
     function linkItem(id:string,title:string){
       const a=node("a",title) as HTMLAnchorElement;
@@ -250,6 +327,19 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         if(row[8]===1){const p=node("p");const a=node("a",pt?"Abrir ficha detalhada do equipamento (+0 a +10)":"Open detailed equipment article (+0 through +10)") as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
         addDefinitionTable(details,data,id);
+        if(equipmentCandidateCategories.has(row[2]??"")){
+          const rawStats=await optionalNumericStats(id);
+          if(new URL(location.href).searchParams.get("id")!==id)return;
+          if(rawStats){
+            details.append(node("p",(pt?"Linhas de atributos Items.csv: ":"Original Items.csv numeric rows: ")+
+              rawStats.map(item=>"#"+item[0]).join(", "),"subtle"));
+            addHistoricalGradeTable(details,rawStats);
+          }else if(row[8]!==1){
+            details.append(node("p",pt
+              ?"Atributos de combate ainda não foram importados para este ID. Não é possível calcular +0 a +10 com segurança sem os valores originais de Items.csv."
+              :"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values.","subtle"));
+          }
+        }
       }catch{
         details.replaceChildren(node("p",pt?"Não foi possível carregar o arquivo deste ID.":"Could not load the client source shard for this ID.","subtle"));
       }
@@ -338,6 +428,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   .definition h4{margin:0 0 8px;color:var(--color-gold-light);overflow-wrap:anywhere}
   .definition p{color:var(--color-text-muted);font-size:.87rem;line-height:1.5;overflow-wrap:anywhere}
   .definition table{min-width:300px}
+  .stat-table-scroll{overflow:auto;margin:16px 0;border:1px solid var(--color-border);border-radius:4px}
+  .stat-table-scroll table{min-width:800px;white-space:nowrap}
   .subtle{color:var(--color-text-muted);line-height:1.6}
   @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
