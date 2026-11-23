@@ -11,6 +11,8 @@ The user confirmed in-game:
 | Equipment | 1 item | 20 items | Player-confirmed gameplay |
 | Other crafting products | Original source `Unit` where valid; otherwise ask the player | 10,000 items | Original client and separate player-reported rule |
 
+The equipment rule is now displayed in three places: the crafting calculator, the equipment detail view, and the full client item database. Original Unit values remain untouched.
+
 Equipment recognition uses the catalog's original client source category, matching the equipment-like categories already used by the Wiki's full item database. This is a client category heuristic, not proof that the item remains craftable on the live server.
 
 Concrete examples from source snapshot 1:
