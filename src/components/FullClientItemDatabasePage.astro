@@ -250,6 +250,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     }
     async function addUsedInTable(parent:HTMLElement,id:string){
       const section=node("section",undefined,"used-in-crafting");
+      section.id="wiki-item-used-by";
       section.append(node("h3",pt?"Usado em fabricação":"Used in crafting"));
       section.append(node("p",pt
         ?"Relações invertidas das receitas decodificadas de ItemType*.ndt. Fontes do cliente não confirmam disponibilidade da receita no jogo atual."
@@ -287,6 +288,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     }
     async function addMonsterSources(parent:HTMLElement,id:string){
       const section=node("section",undefined,"monster-source-links");
+      section.id="wiki-item-monsters";
       section.append(node("h3",pt?"Quais monstros podem dropar este item?":"Which monsters may drop this item?"));
       const codex=node("a",pt?"Explorar no códice de drops":"Explore in the monster loot codex") as HTMLAnchorElement;
       codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
@@ -789,6 +791,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     // original source rows. Only confirmed client-source identities appear.
     function addItemOverview(parent:HTMLElement,item:IndexRow,data:Detail){
       const section=node("section",undefined,"wiki-item-overview");
+      section.id="wiki-item-about";
       section.append(node("h3",pt?"Informações do item":"About this item"));
       const note=node("p",pt
         ?"Informações encontradas nos arquivos do jogo. Nível, categoria e grade são valores cadastrados no cliente, não requisitos ou disponibilidade comprovados no servidor."
@@ -809,6 +812,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     }
     function addCraftRecipeTables(parent:HTMLElement,data:Detail){
       const section=node("section",undefined,"wiki-crafting");
+      section.id="wiki-item-crafting";
       section.append(node("h3",pt?"Como fabricar":"Crafting materials"));
       section.append(node("p",pt
         ?"Receitas extraídas dos arquivos do jogo. As quantidades abaixo são para o lote indicado no registro, quando disponível. A receita pode não estar habilitada no servidor atual."
@@ -869,6 +873,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     // instead of repeating noisy record-by-record mini-cards above the recipe.
     function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
       const section=node("details",undefined,"wiki-technical");
+      section.id="wiki-item-technical";
       section.dataset.wikiNavNative="true";
       const summary=node("summary");
       summary.append(node("span",pt?"Dados originais dos arquivos":"Original client records"),
@@ -979,6 +984,28 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             :"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values.","subtle"));
         }
         addDefinitionTable(details,data,id);
+        // A consistent player-first navigation between the main kinds of
+        // information, without showing raw source fields up front.
+        const jump=node("nav",undefined,"wiki-profile-jumps");
+        jump.setAttribute("aria-label",pt?"Navegação do perfil":"Profile navigation");
+        const targets=[
+          ["wiki-item-about",pt?"Visão geral":"Overview"],
+          ["wiki-item-crafting",pt?"Como fabricar":"Crafting"],
+          ["wiki-item-used-by",pt?"Usado em receitas":"Used in recipes"],
+          ["wiki-item-monsters",pt?"Monstros":"Monsters"],
+          ["wiki-item-technical",pt?"Dados originais":"Raw sources"],
+        ];
+        for(const [target,title] of targets){
+          const link=node("a",title) as HTMLAnchorElement;
+          link.href="#"+target;
+          if(target==="wiki-item-technical")
+            link.addEventListener("click",()=>{const d=document.getElementById(target) as HTMLDetailsElement|null;if(d)d.open=true;});
+          jump.append(link);
+        }
+        const codex=node("a",pt?"Abrir no códice de drops":"Open in loot codex") as HTMLAnchorElement;
+        codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
+        jump.append(codex);
+        details.prepend(jump);
       }catch{
         details.replaceChildren(node("p",pt?"Não foi possível carregar o arquivo deste ID.":"Could not load the client source shard for this ID.","subtle"));
       }
@@ -1137,6 +1164,24 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}
     .stats-grid{grid-template-columns:minmax(0,1fr)}.compare-controls{align-items:stretch}}
 </style>
+<style is:global>
+  #full-client-db .wiki-profile-jumps {
+    display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px;padding:12px;
+    border:1px solid var(--color-border);border-radius:5px;
+    background:var(--color-surface);
+  }
+  #full-client-db .wiki-profile-jumps a {
+    display:inline-block;border:1px solid var(--color-border);
+    border-radius:4px;padding:7px 11px;color:var(--color-accent);
+    text-decoration:none;font-weight:600;font-size:.84rem;
+  }
+  #full-client-db .wiki-profile-jumps a:is(:hover,:focus-visible){
+    border-color:var(--color-accent);outline-color:var(--color-accent);
+  }
+  #full-client-db :is(#wiki-item-about,#wiki-item-crafting,#wiki-item-used-by,
+    #wiki-item-monsters,#wiki-item-technical){scroll-margin-top:22px;}
+</style>
+
 <style is:global>
   /* Community-friendly item details: runtime-generated DOM needs global CSS,
      scoped to this page. Astro's component-scoped CSS misses JS-built nodes. */
