@@ -835,6 +835,197 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  @media(max-width:740px){.craft-form{grid-template-columns:minmax(0,1fr)}}
 </style>
 <style is:global>
+
+ /* Stage 20.59: readable schedule and shopping workspace. */
+ #wiki-craft-planner .craft-result-grid{
+  display:grid;grid-template-columns:minmax(0,1fr);
+  gap:22px;margin:26px 0 10px;
+ }
+ #wiki-craft-planner .craft-table-panel{
+  min-width:0;margin:0;padding:18px 18px 14px;
+  background:var(--color-surface);
+  border:1px solid var(--color-border);
+  border-radius:7px;
+  box-shadow:0 3px 15px color-mix(in srgb,var(--color-background) 30%,transparent);
+ }
+ #wiki-craft-planner .craft-panel-heading{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  flex-wrap:wrap;gap:12px;margin:0 0 16px;
+ }
+ #wiki-craft-planner .craft-panel-title{max-width:850px;}
+ #wiki-craft-planner .craft-panel-title h3{
+  color:var(--color-gold-light);
+  font-size:1.26rem;font-weight:650;letter-spacing:.006em;
+  line-height:1.25;margin:2px 0 7px;
+ }
+ #wiki-craft-planner .craft-panel-kicker{
+  font-size:.69rem;font-weight:750;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--color-accent);
+  margin:0 0 5px;
+ }
+ #wiki-craft-planner .craft-panel-title>p:last-child{
+  color:var(--color-text-muted);font-size:.86rem;
+  line-height:1.45;margin:0;
+ }
+ #wiki-craft-planner .craft-panel-stat{
+  min-width:112px;display:flex;flex-direction:column;gap:2px;
+  text-align:right;padding:8px 13px;border:1px solid var(--color-border);
+  border-radius:5px;background:var(--color-background);
+ }
+ #wiki-craft-planner .craft-panel-stat span{
+  color:var(--color-text-muted);font-size:.75rem;
+ }
+ #wiki-craft-planner .craft-panel-stat strong{
+  color:var(--color-accent);font-size:1.18rem;
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-data-scroll{
+  position:relative;width:100%;max-width:100%;
+  overflow:auto;border:1px solid var(--color-border);
+  border-radius:5px;background:var(--color-background);
+ }
+ #wiki-craft-planner .craft-data-table{
+  width:100%;min-width:920px;border-collapse:separate;
+  border-spacing:0;table-layout:fixed;
+ }
+ #wiki-craft-planner .craft-data-table th,
+ #wiki-craft-planner .craft-data-table td{
+  box-sizing:border-box;
+  padding:12px 13px;font-size:.88rem;
+  vertical-align:middle;
+  border-bottom:1px solid var(--color-border);
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-data-table thead th{
+  position:sticky;top:0;z-index:2;
+  background:color-mix(in srgb,var(--color-accent) 5%,var(--color-surface));
+  color:var(--color-text-muted);
+  letter-spacing:.035em;font-size:.73rem;font-weight:750;
+  text-transform:uppercase;text-align:right;white-space:normal;
+  line-height:1.25;border-bottom:2px solid var(--color-border);
+ }
+ #wiki-craft-planner .craft-data-table thead th:first-child{text-align:left;}
+ #wiki-craft-planner .craft-data-table tbody tr:nth-child(2n){
+  background:color-mix(in srgb,var(--color-text) 2%,var(--color-background));
+ }
+ #wiki-craft-planner .craft-data-table tbody tr:hover{
+  background:color-mix(in srgb,var(--color-accent) 8%,var(--color-background));
+ }
+ #wiki-craft-planner .craft-data-table tbody tr:last-child> :is(th,td){
+  border-bottom:0;
+ }
+ #wiki-craft-planner .craft-data-table .craft-data-product{
+  text-align:left;font-weight:650;white-space:normal;
+  min-width:220px;line-height:1.4;
+ }
+ #wiki-craft-planner .craft-data-product a{
+  color:var(--color-text);text-decoration:none;
+ }
+ #wiki-craft-planner .craft-data-product a:hover{
+  color:var(--color-accent);text-decoration:underline;
+ }
+ #wiki-craft-planner .craft-data-row.is-target .craft-data-product a{
+  color:var(--color-accent);
+ }
+ #wiki-craft-planner .craft-product-tag{
+  display:inline-flex;align-items:center;
+  margin:4px 0 0 8px;padding:2px 6px;
+  border:1px solid var(--color-border);
+  border-radius:3px;color:var(--color-text-muted);
+  font-size:.7rem;font-weight:550;white-space:nowrap;
+ }
+ #wiki-craft-planner .craft-data-number{
+  text-align:right;white-space:nowrap;font-weight:580;
+ }
+ #wiki-craft-planner .craft-has-excess{
+  color:var(--color-accent);font-weight:750;
+ }
+ #wiki-craft-planner .craft-data-operations{
+  text-align:left;white-space:normal;
+ }
+ #wiki-craft-planner .craft-operation-chip{
+  display:inline-block;white-space:nowrap;
+  margin:2px 3px 2px 0;padding:4px 8px;
+  background:color-mix(in srgb,var(--color-accent) 8%,var(--color-surface));
+  color:var(--color-text);
+  border:1px solid var(--color-border);border-radius:4px;
+  font-size:.81rem;font-weight:600;
+ }
+ #wiki-craft-planner .craft-data-operations>span:not(.craft-operation-chip){
+  margin:0 6px;color:var(--color-text-muted);
+ }
+ #wiki-craft-planner .craft-schedule-table{
+  min-width:1200px;
+ }
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(1){width:24%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(2){width:9%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(3){width:9%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(4){width:8%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(5){width:8%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(6){width:9%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(7){width:9%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(8){width:17%;}
+ #wiki-craft-planner .craft-schedule-table :is(th,td):nth-child(9){width:7%;}
+ #wiki-craft-planner .craft-shopping-table{min-width:650px;}
+ #wiki-craft-planner .craft-shopping-table :is(th,td):nth-child(1){width:42%;}
+ #wiki-craft-planner .craft-shopping-table :is(th,td):nth-child(2){width:18%;}
+ #wiki-craft-planner .craft-shopping-table :is(th,td):nth-child(3){width:24%;}
+ #wiki-craft-planner .craft-shopping-table :is(th,td):nth-child(4){width:16%;}
+ #wiki-craft-planner .craft-price-cell{
+  text-align:right;
+ }
+ #wiki-craft-planner .craft-price-input{
+  box-sizing:border-box;max-width:180px;width:100%;
+  min-height:38px;
+  padding:6px 10px;
+  background:var(--color-background);color:var(--color-text);
+  border:1px solid var(--color-border);border-radius:4px;
+  text-align:right;font:inherit;font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-price-input:is(:focus,:focus-visible){
+  border-color:var(--color-accent);outline:2px solid
+    color-mix(in srgb,var(--color-accent) 35%,transparent);
+ }
+ #wiki-craft-planner .craft-cost-cell{font-weight:700;}
+ #wiki-craft-planner .craft-panel-footnote{
+  color:var(--color-text-muted);font-size:.79rem;margin:12px 0 0;
+ }
+ #wiki-craft-planner .craft-shopping-actions{justify-content:flex-end;}
+ #wiki-craft-planner .craft-cost-summary{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+  border-top:1px solid var(--color-border);
+  margin-top:13px;padding:14px 3px 0;
+ }
+ #wiki-craft-planner .craft-cost-summary #craft-cost-total{
+  margin:0;font-size:.95rem;font-weight:750;
+  color:var(--color-text);font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-price-coverage{
+  display:inline-flex;align-items:center;
+  padding:5px 10px;border:1px solid var(--color-border);
+  color:var(--color-text-muted);border-radius:999px;
+  font-size:.78rem;font-weight:650;
+ }
+ #wiki-craft-planner .craft-price-coverage[data-complete="true"]{
+  color:var(--color-accent);
+ }
+ html[data-theme="contrast"] #wiki-craft-planner .craft-data-table tbody tr,
+ html[data-theme="contrast"] #wiki-craft-planner .craft-data-table thead th{
+  background:#000;color:#fff;
+ }
+ html[data-theme="contrast"] #wiki-craft-planner .craft-data-row:hover{
+  background:#222;
+ }
+ @media(max-width:760px){
+  #wiki-craft-planner .craft-table-panel{padding:13px 11px;}
+  #wiki-craft-planner .craft-panel-heading{gap:14px;}
+  #wiki-craft-planner .craft-panel-stat{min-width:90px;text-align:left;}
+  #wiki-craft-planner .craft-shopping-actions{justify-content:flex-start;}
+  #wiki-craft-planner .craft-data-table th,
+  #wiki-craft-planner .craft-data-table td{padding:9px 10px;}
+ }
+
  #wiki-craft-planner .craft-quantity-controls{
   grid-column:1/-1;
   display:grid;
@@ -937,7 +1128,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   background:var(--color-background);
  }
  #wiki-craft-planner .craft-tree-table{
-  width:100%;min-width:1220px;
+  width:100%;min-width:1460px;
   border-collapse:separate;border-spacing:0;
   table-layout:fixed;font-variant-numeric:tabular-nums;
  }
@@ -957,18 +1148,30 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   font-weight:700;
  }
  #wiki-craft-planner .craft-tree-table :is(th,td):first-child{
-  width:30%;min-width:275px;text-align:left;
+  width:25%;min-width:275px;text-align:left;
  }
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(2){width:9%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(3){width:11%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(4){width:11%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(5){width:7%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(6){width:7%;}
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(7){width:7%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(2){width:7%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(3){width:8%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(4){width:8%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(5){width:6%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(6){width:6%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(7){width:6%;}
  #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(8){
-  width:14%;text-align:left;white-space:normal;
+  width:12%;text-align:left;white-space:normal;
  }
- #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(9){width:7%;}
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(9){
+  width:15%;text-align:left;white-space:normal;
+ }
+ #wiki-craft-planner .craft-tree-table :is(th,td):nth-child(10){width:7%;}
+ #wiki-craft-planner .craft-tree-consumption{
+  color:var(--color-text);font-size:.8rem;line-height:1.45;
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner .craft-export-button{
+  border-color:var(--color-accent);font-weight:650;
+  background:color-mix(in srgb,var(--color-accent) 9%,var(--color-background));
+ }
+ #wiki-craft-planner .craft-export-button:disabled{opacity:.5;cursor:progress;}
  #wiki-craft-planner .craft-tree-table tbody tr{
   background:color-mix(in srgb,var(--craft-level) 5%,var(--color-background));
  }
@@ -1086,6 +1289,6 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  @media(max-width:620px){
   #wiki-craft-planner .craft-overview{grid-template-columns:repeat(2,minmax(0,1fr));}
   #wiki-craft-planner .craft-tree-panel{padding:11px;}
-  #wiki-craft-planner .craft-tree-table{min-width:1150px;}
+  #wiki-craft-planner .craft-tree-table{min-width:1420px;}
  }
 </style>
