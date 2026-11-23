@@ -98,7 +98,9 @@ const pt=lang==="pt-br";
       group:"overview"|"detail";native:boolean};
     let entries:Entry[]=[];
     let signature="",seq=0,scheduled=false,scrollPending=false;
-    const initialHash=decodeURIComponent(location.hash.slice(1));
+    let initialHash="";
+    try{initialHash=decodeURIComponent(location.hash.slice(1));}
+    catch{ /* Ignore malformed external hashes rather than breaking navigation. */ }
     let hashRestored=false;
     const sectionIds=new WeakMap<HTMLElement,string>();
     const isDisplayed=(el:HTMLElement)=>{
