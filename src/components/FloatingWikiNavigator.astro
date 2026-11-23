@@ -98,6 +98,8 @@ const pt=lang==="pt-br";
       group:"overview"|"detail";native:boolean};
     let entries:Entry[]=[];
     let signature="",seq=0,scheduled=false,scrollPending=false;
+    const initialHash=decodeURIComponent(location.hash.slice(1));
+    let hashRestored=false;
     const sectionIds=new WeakMap<HTMLElement,string>();
     const isDisplayed=(el:HTMLElement)=>{
       if(el.hidden||el.closest("[hidden]"))return false;
@@ -315,6 +317,19 @@ const pt=lang==="pt-br";
         detailGroup.hidden=!detail.childElementCount;
       }
       apply();
+      // A shared link may point to a section that does not exist until
+      // an async ItemID/CharID profile has finished loading.
+      if(initialHash&&!hashRestored){
+        const target=entries.find(entry=>entry.id===initialHash);
+        if(target){
+          hashRestored=true;
+          expandAncestors(target.element);
+          if(target.native)(target.element as HTMLDetailsElement).open=true;
+          requestAnimationFrame(()=>target.element.scrollIntoView({
+            behavior:"auto",block:"start"
+          }));
+        }
+      }
       updateActive();
     };
     function schedule(){
@@ -433,6 +448,21 @@ const pt=lang==="pt-br";
   }
   main[data-wiki-nav-root] section{
     scroll-margin-top:25px;
+  }
+  /* The bestiary has ID-scoped button styles; ensure the compact
+     heading toggle wins against those without changing other buttons. */
+  #creature-db section button.wiki-section-toggle,
+  #full-client-db section button.wiki-section-toggle{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;min-width:30px;line-height:1;
+    float:right;padding:0;margin:0 0 5px 9px;
+    border:1px solid #b08d56;border-radius:4px;
+    color:#f4d59a;background:#2f2b24;
+    font:600 1.2rem/1 Arial,sans-serif;
+  }
+  #creature-db section button.wiki-section-toggle:hover:not(:disabled),
+  #full-client-db section button.wiki-section-toggle:hover:not(:disabled){
+    background:#4b3e2b;border-color:#e2c188;
   }
   main[data-wiki-nav-root] .article-body .wiki-guide-section-body[hidden]{
     display:none!important;
