@@ -659,6 +659,26 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     identity.addEventListener("change",applyFilters);
     sort.addEventListener("change",applyFilters);
     equipmentOnly.addEventListener("change",applyFilters);
+    statField.addEventListener("change",applyFilters);
+    statMin.addEventListener("input",applyFilters);
+    statMax.addEventListener("input",applyFilters);
+    exportButton.addEventListener("click",()=>{
+      if(!visible.length||statField.value&&!allStatsReady)return;
+      const csv=exportFilteredClientCsv(visible,{
+        pt,field:statField.value,summaries:indexedStats,
+      });
+      const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+      const url=URL.createObjectURL(blob);
+      const a=node("a") as HTMLAnchorElement;
+      a.href=url;a.download="atlantica-client-items-snapshot-1.csv";
+      a.click();
+      window.setTimeout(()=>URL.revokeObjectURL(url),2500);
+    });
+    compareRun.addEventListener("click",()=>{void runComparison();});
+    compareClear.addEventListener("click",()=>{
+      comparedIds.splice(0);updateComparisonSelection();renderPage();
+    });
+    updateComparisonSelection();
     prev.addEventListener("click",()=>{if(currentPage>0){currentPage--;renderPage();}});
     next.addEventListener("click",()=>{if((currentPage+1)*perPage<visible.length){currentPage++;renderPage();}});
     (async()=>{
@@ -682,6 +702,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         }
         for(const cat of [...categoryValues].sort((a,b)=>a.localeCompare(b,"en"))){
           const opt=node("option",cat) as HTMLOptionElement;opt.value=cat;category.append(opt);
+        }
+        for(const {key} of RAW_STATS_FIELDS){
+          const opt=node("option",fieldTitle(key)+" ("+key+")") as HTMLOptionElement;
+          opt.value=key;statField.append(opt);
         }
         applyFilters();
         const deepLink=new URL(location.href).searchParams.get("id");
@@ -711,6 +735,28 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     color:var(--color-text);border-radius:5px;padding:11px;font:inherit}
   .equipment-toggle{display:flex;align-items:center;gap:10px;color:var(--color-text-muted);font-size:.86rem}
   .equipment-toggle input{width:auto;cursor:pointer}
+  .stats-workbench,.compare-workbench{margin:18px 0 22px;padding:16px;
+    border:1px solid var(--color-border);border-radius:6px;background:var(--color-surface)}
+  .stats-workbench h2,.compare-workbench h2{font-size:1.17rem;margin:0 0 8px;
+    color:var(--color-gold-light)}
+  .stats-workbench .subtle,.compare-workbench .subtle{font-size:.87rem;margin:8px 0 15px}
+  .stats-grid{display:grid;grid-template-columns:minmax(200px,2fr) repeat(2,minmax(120px,1fr)) auto;
+    gap:12px;align-items:end}
+  .stats-grid button{min-height:43px}
+  .stats-grid input:disabled{opacity:.48}
+  .compare-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  #db-compare-selected{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex:1 1 280px}
+  .compare-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--color-border);
+    border-radius:4px;padding:4px 7px;font-size:.87rem}
+  .compare-chip a{color:var(--color-accent)}
+  .compare-chip button,.compare-row-button{font-size:.78rem;padding:5px 8px}
+  .compare-row-button[aria-pressed="true"]{border-color:var(--color-accent);color:var(--color-gold-light)}
+  .numeric-group{margin:18px 0}
+  .numeric-group h4{color:var(--color-gold-light);margin:8px 0}
+  .numeric-conflict{outline:1px solid var(--color-bronze);outline-offset:-1px}
+  .numeric-original-rows{margin:20px 0;cursor:pointer}
+  .numeric-original-rows summary{color:var(--color-accent);padding:8px 0}
+  .compare-table small{display:block;color:var(--color-text-muted);white-space:nowrap}
   .load-status{color:var(--color-text-muted)}
   .table-wrap{overflow:auto;border:1px solid var(--color-border);border-radius:5px}
   table{width:100%;min-width:760px;border-collapse:collapse;font-size:.88rem}
@@ -736,5 +782,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   .stat-table-scroll{overflow:auto;margin:16px 0;border:1px solid var(--color-border);border-radius:4px}
   .stat-table-scroll table{min-width:800px;white-space:nowrap}
   .subtle{color:var(--color-text-muted);line-height:1.6}
-  @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:860px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .stats-grid{grid-template-columns:minmax(0,1fr)}.compare-controls{align-items:stretch}}
 </style>
