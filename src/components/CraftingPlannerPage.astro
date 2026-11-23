@@ -491,7 +491,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    try{
     plan=planClientCrafting({itemId:selectedId,quantity:amount.value,
      recipesById:activeGraph,choices,batchOverrides,
-     itemCategories,buyIds:[...buyIds]});
+     itemCategories,buyIds:[...buyIds],strictTargetBatch:true});
     steps.replaceChildren();leaves.replaceChildren();issues.replaceChildren();
     treeContainer.replaceChildren();surplus.replaceChildren();
     const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
@@ -570,29 +570,55 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   let nameCache:Map<string,string>|null=null;
   form.addEventListener("submit",event=>{
    event.preventDefault();
-   const match=query.value.trim().match(/^(\d{1,13})$/);
-   const id=selectedId||(match?match[1]:"");
-   if(!id){status.textContent=pt?"Escolha um item da lista ou informe um ItemID.":"Choose an item from suggestions or enter an ItemID.";return;}
-   const desired=amount.value;
+   if(!selectedId||!rootConfig?.ready){
+    status.textContent=pt?"Selecione uma receita e um batch válido.":"Select a valid source recipe and batch size.";
+    return;
+   }
+   if(!isAllowedCraftQuantity(amount.value,rootConfig.batch)){
+    amount.value=String(lastValidQuantity);
+    status.textContent=pt
+     ?"Quantidade inválida: informe um múltiplo exato do batch até 10.000."
+     :"Invalid quantity: enter an exact batch multiple up to 10,000.";
+    return;
+   }
+   const id=selectedId,epoch=selectionEpoch;
    status.textContent=pt?"Carregando receitas e dependências…":"Loading recipe dependencies…";
    void (async()=>{
     try{
      nameCache=await getIndex();
-     if(!nameCache.has(id))throw Error(pt?"ItemID não encontrado no catálogo.":"ItemID not found in catalog.");
-     selectedId=id;activeGraph=await loadGraph(id);
-     if(!activeGraph||Object.keys(activeGraph).length===0)throw Error("No recipe graph");
+     if(epoch!==selectionEpoch)return;
+     if(!activeGraph)activeGraph=await loadGraph(id);
+     if(epoch!==selectionEpoch)return;
+     if(!activeGraph?.[id]?.length)throw Error(pt
+      ?"Receita original indisponível."
+      :"Original recipe unavailable.");
      status.textContent=pt?"Dados carregados.":"Source data loaded.";
      redraw();
     }catch(error){
-     status.textContent=(pt?"Falha: ":"Error: ")+(error instanceof Error?error.message:String(error));
+     if(epoch!==selectionEpoch)return;
+     status.textContent=(pt?"Falha: ":"Error: ")+
+      (error instanceof Error?error.message:String(error));
      result.hidden=true;
     }
    })();
   });
   const requested=new URL(location.href).searchParams.get("id");
   if(requested&&/^[1-9]\d{0,12}$/.test(requested)){
-   query.value=requested;selectedId=requested;
+   query.value=requested;
+   void (async()=>{
+    try{
+     const names=await getIndex();
+     if(craftableCandidates.has(requested))
+      await selectCraftTarget(requested,names.get(requested)??("Item #"+requested));
+     else status.textContent=pt
+      ?"Este ItemID não possui receita extraída do cliente."
+      :"This ItemID has no parsed source recipe.";
+    }catch{
+     status.textContent=pt?"Falha ao carregar a receita.":"Could not load source recipe.";
+    }
+   })();
   }
+
  }
 </script>
 <style>
