@@ -76,7 +76,10 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
           <thead><tr><th>{pt?"Material registrado":"Source material"}</th>
             <th>{pt?"ID":"ID"}</th><th>{pt?"Quantidade":"Quantity"}</th></tr></thead>
           <tbody>{recipe.materials.map(material=><tr>
-            <td><a href={prefix+"/items/database/?id="+encodeURIComponent(material.itemId)}>{material.nameEn??(pt?"Nome não validado":"Unverified name")}</a></td>
+            <td>
+              <a href={prefix+"/items/database/?id="+encodeURIComponent(material.itemId)}>{material.nameEn??(pt?"Nome não validado":"Unverified name")}</a>
+              <small class="recipe-obtain-link"><a href={prefix+"/monsters/?item="+encodeURIComponent(material.itemId)}>{pt?"Consultar drops do cliente":"Find original monster drops"}</a></small>
+            </td>
             <td><code>{material.itemId}</code></td>
             <td class="quantity">{fmt.format(material.quantity)}</td>
           </tr>)}</tbody>
@@ -131,6 +134,8 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
   th{font-weight:600;color:var(--color-gold-light)}
   td{color:var(--color-text)}
   td a{color:var(--color-accent);text-decoration:underline;text-underline-offset:2px}
+  .recipe-obtain-link{display:block;margin-top:5px;font-size:.73rem}
+  .recipe-obtain-link a{color:var(--color-text-muted);text-decoration:underline;text-underline-offset:2px}
   .quantity{text-align:right;font-variant-numeric:tabular-nums}
   .warning{border-left:3px solid var(--color-bronze);padding:10px 12px;
     color:var(--color-text-muted);font-size:.88rem}
