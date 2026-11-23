@@ -15,16 +15,35 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     :"Plan ingredient requirements across multiple recipe levels using extracted client recipes. Equipment uses the confirmed gameplay rule: batch size 1, maximum 20 per operation. Other items use original client Unit values or explicit manual inputs."}</p>
   <form id="craft-plan-form" class="craft-form">
    <div class="field"><label for="craft-search">{pt?"Nome do item ou ItemID":"Item name or ItemID"}</label>
-    <input id="craft-search" type="search" autocomplete="off" required placeholder={pt?"Digite para encontrar um item":"Start typing to find an item"} aria-controls="craft-suggestions"/>
+    <input id="craft-search" type="search" autocomplete="off" required placeholder={pt?"Buscar itens com receita no cliente":"Search items with client recipes"} aria-controls="craft-suggestions" aria-autocomplete="list"/>
     <ul id="craft-suggestions" aria-label={pt?"Sugestões de itens":"Item suggestions"}></ul>
    </div>
    <div class="field"><label for="craft-quantity">{pt?"Quantidade desejada":"Desired output"}</label>
-    <input id="craft-quantity" type="number" min="1" max="1000000000000" value="1" step="1" required/>
+    <input id="craft-quantity" type="number" min="1" max="10000" value="1" step="1" required disabled/>
    </div>
-   <button type="submit">{pt?"Calcular materiais":"Calculate materials"}</button>
+   <button id="craft-submit" type="submit" disabled>{pt?"Calcular materiais":"Calculate materials"}</button>
+   <div id="craft-quantity-controls" class="craft-quantity-controls" hidden>
+    <div id="craft-root-variant-group" class="craft-root-setting" hidden>
+     <label for="craft-root-variant">{pt?"Versão da receita":"Recipe variant"}</label>
+     <select id="craft-root-variant"><option value="">{pt?"Escolha uma receita":"Choose a recipe"}</option></select>
+    </div>
+    <div id="craft-root-batch-group" class="craft-root-setting" hidden>
+     <label for="craft-root-batch">{pt?"Unidades por batch não identificadas: informe o mínimo":"Batch size not in source: enter the minimum"}</label>
+     <input id="craft-root-batch" type="number" min="1" max="10000" step="1" placeholder="1–10000"/>
+    </div>
+    <div id="craft-slider-group" hidden>
+     <div class="craft-range-heading">
+      <label for="craft-quantity-slider">{pt?"Quantidade de fabricação":"Craft quantity"}</label>
+      <output id="craft-quantity-output" for="craft-quantity-slider craft-quantity">—</output>
+     </div>
+     <input id="craft-quantity-slider" type="range" min="1" max="10000" value="1" step="1" disabled/>
+     <div class="craft-range-ends"><span id="craft-range-min">1</span><span id="craft-range-max">10.000</span></div>
+    </div>
+    <p id="craft-batch-hint" class="craft-muted" role="status" aria-live="polite"></p>
+   </div>
   </form>
   <p id="craft-status" role="status" aria-live="polite">
-   {pt?"Selecione um item para começar.":"Select an item to begin."}
+   {pt?"Somente itens com receitas presentes no cliente aparecem na busca. Isso não comprova disponibilidade no servidor.":"Search shows items with recipes in the client files. This does not verify live-server availability."}
   </p>
   <section id="craft-result" hidden>
    <h2>{pt?"Plano de produção":"Production plan"}</h2>
@@ -74,6 +93,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
 </BaseLayout>
 <script>
  import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
+ import {CRAFT_PLAN_MAX_OUTPUT,isSourceRecipeCandidate,resolveRootCraftBatch,isAllowedCraftQuantity}
+   from "../data/client-crafting-quantity.mjs";
  import {planClientCrafting,priceCraftLeaves} from "../data/client-crafting-planner.mjs";
  const root=document.getElementById("wiki-craft-planner");
  if(root){
@@ -81,7 +102,14 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const $=(id:string)=>document.getElementById(id)!;
   const query=$("craft-search") as HTMLInputElement;
   const amount=$("craft-quantity") as HTMLInputElement;
+  const slider=$("craft-quantity-slider") as HTMLInputElement;
   const form=$("craft-plan-form") as HTMLFormElement;
+  const submit=$("craft-submit") as HTMLButtonElement;
+  const controls=$("craft-quantity-controls");
+  const sliderGroup=$("craft-slider-group"),batchHint=$("craft-batch-hint");
+  const rootVariantGroup=$("craft-root-variant-group"),rootBatchGroup=$("craft-root-batch-group");
+  const rootVariant=$("craft-root-variant") as HTMLSelectElement;
+  const rootBatch=$("craft-root-batch") as HTMLInputElement;
   const suggestions=$("craft-suggestions"),status=$("craft-status");
   const result=$("craft-result"),note=$("craft-result-note");
   const steps=$("craft-steps"),leaves=$("craft-leaves"),issues=$("craft-issues");
@@ -103,7 +131,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   }catch{ /* Local price persistence is optional. */ }
   const detailCache=new Map<number,Promise<any>>();
   let indexPromise:Promise<Map<string,string>>|null=null;
+  const craftableCandidates=new Map<string,string>();
   let selectedId="",activeGraph:Record<string,any[]>|null=null;
+  let rootRecipes:any[]=[],rootConfig:any=null,selectionEpoch=0,lastValidQuantity=1;
   let plan:any=null;
   const el=(tag:string,value?:string)=>{
    const n=document.createElement(tag);if(value!==undefined)n.textContent=value;return n;
@@ -133,9 +163,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      for(const row of shard.rows)if(row[6]==="named"){
       names.set(row[0],row[1]);
       if(typeof row[2]==="string")itemCategories[row[0]]=row[2];
+      if(isSourceRecipeCandidate(row))craftableCandidates.set(row[0],row[1]);
      }
     }
-    if(names.size!==22702)throw Error("Incomplete source name index");
+    if(names.size!==22702||craftableCandidates.size===0)throw Error("Incomplete source name index");
     return names;
    })().catch(error=>{indexPromise=null;throw error;});
    return indexPromise;
@@ -153,29 +184,174 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    return (await detailCache.get(bucket))?.[id]??null;
   }
   let suggestTicket=0;
+  function resetTarget(){
+   ++selectionEpoch;
+   selectedId="";rootRecipes=[];rootConfig=null;activeGraph=null;plan=null;
+   controls.hidden=true;sliderGroup.hidden=true;slider.disabled=true;
+   amount.disabled=true;submit.disabled=true;result.hidden=true;
+  }
+  function configureRootBatch(){
+   if(!selectedId)return;
+   const multiple=rootRecipes.length>1;
+   rootVariantGroup.hidden=!multiple;
+   const selection=multiple?choices[selectedId]:0;
+   rootConfig=resolveRootCraftBatch({
+    recipes:rootRecipes,category:itemCategories[selectedId],
+    selectedVariant:selection,manualBatch:batchOverrides[selectedId],
+   });
+   rootBatchGroup.hidden=!["missing-batch","invalid-manual-batch","batch-over-limit"].includes(rootConfig.reason);
+   sliderGroup.hidden=!rootConfig.ready;
+   amount.disabled=!rootConfig.ready;
+   slider.disabled=!rootConfig.ready;
+   submit.disabled=!rootConfig.ready;
+   if(rootConfig.ready){
+    const {min,max,step,batch,source}=rootConfig;
+    amount.min=String(min);amount.max=String(max);amount.step=String(step);
+    slider.min=String(min);slider.max=String(max);slider.step=String(step);
+    const previous=isAllowedCraftQuantity(amount.value,batch)?Number(amount.value):min;
+    amount.value=String(previous);
+    slider.value=String(previous);
+    lastValidQuantity=previous;
+    $("craft-range-min").textContent=fmt(min);
+    $("craft-range-max").textContent=fmt(max);
+    $("craft-quantity-output").textContent=fmt(previous);
+    const label=source==="confirmed-equipment-rule"
+     ?(pt?"Regra de equipamento confirmada":"Confirmed equipment rule")
+     :source==="original-client-unit"?(pt?"Batch extraído do cliente":"Client source batch")
+     :(pt?"Batch informado manualmente":"Manually specified batch");
+    batchHint.textContent=label+": "+fmt(batch)+
+     (pt?" unidades por batch · selecione apenas múltiplos até ":" units/batch · select multiples up to ")+
+     fmt(max)+(pt?" (limite do planejamento: 10.000).":" (planning limit: 10,000).");
+    status.textContent=pt?"Seleção pronta para calcular.":"Selection ready to calculate.";
+   }else{
+    $("craft-quantity-output").textContent="—";
+    if(rootConfig.reason==="choose-variant"){
+     batchHint.textContent=pt?"Selecione a versão da receita antes de informar a quantidade.":"Choose a recipe variant before setting the quantity.";
+    }else if(rootConfig.reason==="missing-batch"||rootConfig.reason==="invalid-manual-batch"){
+     batchHint.textContent=pt?"O cliente não informa um batch seguro. Informe o mínimo de fabricação para habilitar o slider.":"Client source has no reliable batch size. Enter the minimum crafting quantity to enable the slider.";
+    }else{
+     batchHint.textContent=pt?"Não existe quantidade válida até 10.000 para esta receita.":"No legal crafting quantity up to 10,000 for this source recipe.";
+    }
+   }
+  }
+  rootVariant.addEventListener("change",()=>{
+   if(!selectedId)return;
+   // A manual batch belongs to a specific recipe variant and must never leak.
+   delete batchOverrides[selectedId];rootBatch.value="";
+   if(rootVariant.value==="")delete choices[selectedId];
+   else choices[selectedId]=Number(rootVariant.value);
+   result.hidden=true;configureRootBatch();
+  });
+  rootBatch.addEventListener("input",()=>{
+   if(!selectedId)return;
+   const value=rootBatch.value;
+   if(/^[1-9]\d{0,4}$/.test(value)&&Number(value)<=CRAFT_PLAN_MAX_OUTPUT)
+    batchOverrides[selectedId]=value;
+   else delete batchOverrides[selectedId];
+   result.hidden=true;configureRootBatch();
+  });
+  async function selectCraftTarget(id:string,name:string){
+   resetTarget();
+   const epoch=selectionEpoch;
+   ++suggestTicket;
+   suggestions.replaceChildren();
+   query.value=name+" (#"+id+")";
+   status.textContent=pt?"Conferindo receita original…":"Checking the original client recipe…";
+   try{
+    await getIndex();
+    if(epoch!==selectionEpoch)return;
+    if(!craftableCandidates.has(id))throw Error(pt
+     ?"Este item não possui receita identificada no cliente."
+     :"This item has no parsed recipe in the client files.");
+    const details=await getDetails(id);
+    if(epoch!==selectionEpoch)return;
+    const variants=details?buildClientRecipeViews(details.s):[];
+    if(variants.length===0)throw Error(pt
+     ?"Nenhuma receita válida identificada para este ItemID."
+     :"No valid parsed source recipe for this ItemID.");
+    selectedId=id;
+    rootRecipes=variants;
+    rootVariant.replaceChildren();
+    const empty=el("option",pt?"Selecione a receita":"Select recipe") as HTMLOptionElement;
+    empty.value="";rootVariant.append(empty);
+    for(const [i,recipe] of variants.entries()){
+     const option=el("option",(pt?"Receita ":"Recipe ")+(i+1)+
+      " · #"+recipe.sourceRows.join(", #")) as HTMLOptionElement;
+     option.value=String(i);rootVariant.append(option);
+    }
+    rootVariant.value=variants.length>1&&Number.isInteger(choices[id])?String(choices[id]):"";
+    rootBatch.value=batchOverrides[id]??"";
+    controls.hidden=false;
+    configureRootBatch();
+   }catch(error){
+    if(epoch!==selectionEpoch)return;
+    resetTarget();
+    status.textContent=(pt?"Seleção não disponível: ":"Selection unavailable: ")+
+     (error instanceof Error?error.message:String(error));
+   }
+  }
   async function suggest(){
    const ticket=++suggestTicket;
-   selectedId="";activeGraph=null;suggestions.replaceChildren();
+   suggestions.replaceChildren();
    const text=query.value.trim().toLowerCase();
    if(text.length<2)return;
    try{
-    const names=await getIndex();
+    await getIndex();
     if(ticket!==suggestTicket)return;
-    const matches=[...names].filter(([id,name])=>id===text||
-     name.toLowerCase().includes(text)).slice(0,18);
+    const matches=[...craftableCandidates].filter(([id,name])=>
+     id===text||name.toLowerCase().includes(text)).slice(0,18);
     for(const [id,name] of matches){
      const li=el("li"),button=el("button",name+" (#"+id+")") as HTMLButtonElement;
-     button.type="button";button.addEventListener("click",()=>{
-      selectedId=id;query.value=name+" (#"+id+")";suggestions.replaceChildren();
-     });
+     button.type="button";
+     button.addEventListener("click",()=>{void selectCraftTarget(id,name);});
      li.append(button);suggestions.append(li);
     }
-   }catch{status.textContent=pt?"Falha ao consultar índice de itens.":"Could not load the item index.";}
+    if(!matches.length){
+     const message=el("li",pt?"Nenhum item com receita encontrado.":"No items with parsed recipes found.");
+     message.className="craft-empty-suggestion";suggestions.append(message);
+    }
+   }catch{
+    status.textContent=pt?"Falha ao consultar índice de itens.":"Could not load the item index.";
+   }
   }
   let debounce:ReturnType<typeof setTimeout>|null=null;
   query.addEventListener("input",()=>{
+   resetTarget();
    if(debounce!==null)clearTimeout(debounce);
    debounce=setTimeout(()=>{void suggest();},170);
+  });
+  query.addEventListener("focus",()=>{if(query.value.trim().length>=2&&!selectedId)void suggest();});
+  let redrawFrame=0;
+  function previewQuantity(){
+   if(!result.hidden&&activeGraph){
+    if(redrawFrame)cancelAnimationFrame(redrawFrame);
+    redrawFrame=requestAnimationFrame(()=>{redrawFrame=0;redraw();});
+   }
+  }
+  slider.addEventListener("input",()=>{
+   if(!rootConfig?.ready)return;
+   amount.value=slider.value;
+   lastValidQuantity=Number(slider.value);
+   $("craft-quantity-output").textContent=fmt(lastValidQuantity);
+   previewQuantity();
+  });
+  amount.addEventListener("input",()=>{
+   if(!rootConfig?.ready)return;
+   if(isAllowedCraftQuantity(amount.value,rootConfig.batch)){
+    lastValidQuantity=Number(amount.value);
+    slider.value=amount.value;
+    $("craft-quantity-output").textContent=fmt(lastValidQuantity);
+    previewQuantity();
+   }
+  });
+  amount.addEventListener("change",()=>{
+   if(!rootConfig?.ready)return;
+   if(!isAllowedCraftQuantity(amount.value,rootConfig.batch)){
+    amount.value=String(lastValidQuantity);
+    status.textContent=pt
+     ?"Quantidade inválida: use apenas múltiplos completos do batch, dentro do limite permitido."
+     :"Invalid quantity: use exact full-batch multiples within the allowed range.";
+   }
   });
   async function loadGraph(id:string){
    const names=await getIndex();
@@ -317,7 +493,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    try{
     plan=planClientCrafting({itemId:selectedId,quantity:amount.value,
      recipesById:activeGraph,choices,batchOverrides,
-     itemCategories,buyIds:[...buyIds]});
+     itemCategories,buyIds:[...buyIds],strictTargetBatch:true});
     steps.replaceChildren();leaves.replaceChildren();issues.replaceChildren();
     treeContainer.replaceChildren();surplus.replaceChildren();
     const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
@@ -396,29 +572,55 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   let nameCache:Map<string,string>|null=null;
   form.addEventListener("submit",event=>{
    event.preventDefault();
-   const match=query.value.trim().match(/^(\d{1,13})$/);
-   const id=selectedId||(match?match[1]:"");
-   if(!id){status.textContent=pt?"Escolha um item da lista ou informe um ItemID.":"Choose an item from suggestions or enter an ItemID.";return;}
-   const desired=amount.value;
+   if(!selectedId||!rootConfig?.ready){
+    status.textContent=pt?"Selecione uma receita e um batch válido.":"Select a valid source recipe and batch size.";
+    return;
+   }
+   if(!isAllowedCraftQuantity(amount.value,rootConfig.batch)){
+    amount.value=String(lastValidQuantity);
+    status.textContent=pt
+     ?"Quantidade inválida: informe um múltiplo exato do batch até 10.000."
+     :"Invalid quantity: enter an exact batch multiple up to 10,000.";
+    return;
+   }
+   const id=selectedId,epoch=selectionEpoch;
    status.textContent=pt?"Carregando receitas e dependências…":"Loading recipe dependencies…";
    void (async()=>{
     try{
      nameCache=await getIndex();
-     if(!nameCache.has(id))throw Error(pt?"ItemID não encontrado no catálogo.":"ItemID not found in catalog.");
-     selectedId=id;activeGraph=await loadGraph(id);
-     if(!activeGraph||Object.keys(activeGraph).length===0)throw Error("No recipe graph");
+     if(epoch!==selectionEpoch)return;
+     if(!activeGraph)activeGraph=await loadGraph(id);
+     if(epoch!==selectionEpoch)return;
+     if(!activeGraph?.[id]?.length)throw Error(pt
+      ?"Receita original indisponível."
+      :"Original recipe unavailable.");
      status.textContent=pt?"Dados carregados.":"Source data loaded.";
      redraw();
     }catch(error){
-     status.textContent=(pt?"Falha: ":"Error: ")+(error instanceof Error?error.message:String(error));
+     if(epoch!==selectionEpoch)return;
+     status.textContent=(pt?"Falha: ":"Error: ")+
+      (error instanceof Error?error.message:String(error));
      result.hidden=true;
     }
    })();
   });
   const requested=new URL(location.href).searchParams.get("id");
   if(requested&&/^[1-9]\d{0,12}$/.test(requested)){
-   query.value=requested;selectedId=requested;
+   query.value=requested;
+   void (async()=>{
+    try{
+     const names=await getIndex();
+     if(craftableCandidates.has(requested))
+      await selectCraftTarget(requested,names.get(requested)??("Item #"+requested));
+     else status.textContent=pt
+      ?"Este ItemID não possui receita extraída do cliente."
+      :"This ItemID has no parsed source recipe.";
+    }catch{
+     status.textContent=pt?"Falha ao carregar a receita.":"Could not load source recipe.";
+    }
+   })();
   }
+
  }
 </script>
 <style>
@@ -457,6 +659,59 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  @media(max-width:740px){.craft-form{grid-template-columns:minmax(0,1fr)}}
 </style>
 <style is:global>
+ #wiki-craft-planner .craft-quantity-controls{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:12px;
+  border-top:1px solid var(--color-border);
+  padding-top:14px;margin-top:3px;
+ }
+ #wiki-craft-planner .craft-quantity-controls[hidden],
+ #wiki-craft-planner .craft-root-setting[hidden],
+ #wiki-craft-planner #craft-slider-group[hidden]{display:none!important;}
+ #wiki-craft-planner .craft-root-setting{
+  max-width:min(100%,520px);
+ }
+ #wiki-craft-planner .craft-root-setting :is(input,select){
+  display:block;width:100%;min-height:41px;
+  padding:9px 12px;box-sizing:border-box;
+  border-radius:4px;border:1px solid var(--color-border);
+  color:var(--color-text);background:var(--color-background);
+ }
+ #wiki-craft-planner .craft-range-heading,
+ #wiki-craft-planner .craft-range-ends{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+ }
+ #wiki-craft-planner .craft-range-heading label{margin:0;}
+ #wiki-craft-planner .craft-range-heading output{
+  font-size:1.1rem;font-weight:700;color:var(--color-accent);
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner #craft-quantity-slider{
+  display:block;appearance:auto;accent-color:var(--color-accent);
+  width:100%;height:25px;
+  border:0;padding:0;margin:6px 0;
+  background:transparent;cursor:pointer;
+ }
+ #wiki-craft-planner .craft-range-ends{
+  color:var(--color-text-muted);font-size:.79rem;
+  font-variant-numeric:tabular-nums;
+ }
+ #wiki-craft-planner #craft-batch-hint{
+  margin:0;max-width:none;font-size:.83rem;
+  color:var(--color-text-muted);line-height:1.5;
+ }
+ #wiki-craft-planner #craft-submit:disabled{
+  opacity:.5;cursor:not-allowed;
+ }
+ #wiki-craft-planner #craft-quantity:disabled{
+  opacity:.6;cursor:not-allowed;
+ }
+ #wiki-craft-planner #craft-suggestions .craft-empty-suggestion{
+  padding:10px;color:var(--color-text-muted);font-size:.83rem;
+ }
+
  #wiki-craft-planner .craft-overview{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
   gap:12px;margin:20px 0 26px;
