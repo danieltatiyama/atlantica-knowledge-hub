@@ -200,62 +200,142 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       if(!rows[id])throw Error("No original source data for ID");
       return rows[id];
     }
-    async function optionalNumericStats(id:string) {
-      if(!manifest)return null;
+    async function numericManifest(){
       if(!statsManifestPromise){
-        // No raw Items.csv stats exist yet beyond the original 551 reviewed
-        // profiles. Only the user-run, separately validated import creates
-        // this optional stats/manifest.json. A 404 is an expected state.
         statsManifestPromise=fetchJSON("/data/client-items/stats/manifest.json")
           .then(data=>{
             if(data.snapshotId!==manifest?.snapshotId||
-               data.dataset!=="all-client-item-raw-stats"||
-               !Array.isArray(data.files))return null;
-            return data as {snapshotId:number;files:string[]};
+              data.dataset!=="all-client-item-raw-stats"||
+              !Array.isArray(data.files))return null;
+            return data as {snapshotId:number;itemIds:number;sourceRows:number;files:string[]};
           }).catch(()=>null);
       }
-      const meta=await statsManifestPromise;
-      if(!meta)return null;
-      const bucket=Math.floor(Number(id)/manifest.detailBucketWidth);
+      return statsManifestPromise;
+    }
+    async function numericBucket(bucket:number,meta:{files:string[]}){
       const filename=String(bucket).padStart(2,"0")+".json";
       if(!meta.files.includes(filename))return null;
       if(!statsCache.has(bucket)){
-        statsCache.set(bucket,
-          fetchJSON("/data/client-items/stats/"+filename)
-            .then(data=>data.snapshotId===manifest?.snapshotId&&
-              data.bucket===bucket&&data.schemaVersion==="1.0"
-              ? data.items as Record<string,[number,Record<string,string>][]>
-              :null)
-            .catch(()=>null)
-        );
+        statsCache.set(bucket,fetchJSON("/data/client-items/stats/"+filename)
+          .then(data=>{
+            if(data.snapshotId!==manifest?.snapshotId||
+              data.bucket!==bucket||data.schemaVersion!=="1.0"||
+              !data.items||typeof data.items!=="object"||Array.isArray(data.items))
+              throw Error("Unrecognized original numeric shard");
+            return data.items as Record<string,[number,Record<string,string>][]>;
+          }).catch(err=>{statsCache.delete(bucket);throw err;}));
       }
-      return (await statsCache.get(bucket)!)?.[id]??null;
+      return statsCache.get(bucket)!;
+    }
+    async function optionalNumericStats(id:string){
+      if(!manifest)return null;
+      const meta=await numericManifest();
+      if(!meta)return null;
+      const bucket=Math.floor(Number(id)/manifest.detailBucketWidth);
+      return (await numericBucket(bucket,meta))?.[id]??null;
+    }
+    async function loadAllRawStats(){
+      if(allStatsReady)return indexedStats;
+      if(!allStatsPromise){
+        allStatsPromise=(async()=>{
+          const meta=await numericManifest();
+          if(!meta||meta.itemIds!==7560||meta.sourceRows!==9351||meta.files.length!==28)
+            throw Error("Numeric source manifest is missing or incompatible");
+          // This ~1 MB secondary index loads only after a user explicitly
+          // selects a source field. Regular 23,586-ID searches stay light.
+          const chunks=await Promise.all(meta.files.map(async filename=>{
+            if(!/^[0-2][0-9]\.json$/.test(filename))
+              throw Error("Unexpected numeric shard name");
+            const bucket=Number(filename.slice(0,2));
+            const records=await numericBucket(bucket,meta);
+            if(!records)throw Error("Numeric shard unavailable");
+            return {bucket,records};
+          }));
+          const built=new Map<string,ReturnType<typeof summarizeRawNumericRows>>();
+          let sourceRows=0;
+          for(const {bucket,records} of chunks){
+            for(const [id,rawRows] of Object.entries(records)){
+              const original=namedRows.get(id);
+              if(built.has(id)||!original||original[6]!=="named"||
+                Math.floor(Number(id)/1000)!==bucket)
+                throw Error("Numeric field source ID does not match client index");
+              built.set(id,summarizeRawNumericRows(rawRows));
+              sourceRows+=rawRows.length;
+            }
+          }
+          if(built.size!==meta.itemIds||sourceRows!==meta.sourceRows)
+            throw Error("Partial or duplicate numeric client data");
+          indexedStats=built;
+          allStatsReady=true;
+          statStatus.textContent=pt
+            ?number.format(built.size)+" IDs com atributos carregados. Valores brutos; conflitos preservados."
+            :number.format(built.size)+" numeric source IDs loaded. Raw values; conflicts preserved.";
+          return built;
+        })().catch(err=>{
+          allStatsPromise=null;
+          statStatus.textContent=pt
+            ?"Não foi possível validar os arquivos numéricos. Tente novamente."
+            :"Could not validate numeric client shards. Please retry.";
+          throw err;
+        });
+      }
+      return allStatsPromise;
     }
     function addRawNumericSourceTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
-      // Raw source data is relevant to ALL named IDs, including books and
-      // consumables. Historical enhancement projections are not.
+      // Source evidence may include book/material/etc categories; ZERO is
+      // never replaced with an assumed missing field, and conflicts are not
+      // silently averaged or resolved.
+      const summary=summarizeRawNumericRows(rawRows);
       parent.append(node("h3",pt?"Atributos numéricos originais — Items.csv":"Original numeric client attributes — Items.csv"));
       parent.append(node("p",pt
-        ?"Valores extraídos dos registros originais do cliente (snapshot 1), não verificados no servidor. Zero é um valor extraído; campos ausentes não são presumidos como zero. Estes atributos não comprovam que o item seja equipável ou aprimorável."
-        :"Original game-client values (snapshot 1), not verified on the live server. Zero is a real recorded value; missing fields are not assumed to be zero. These attributes do not establish equipment or enhancement eligibility.","detail-note"));
-      const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
-      for(const name of [pt?"Registro de origem":"Source row",pt?"Atributo bruto":"Raw field",pt?"Valor bruto":"Raw value"]){
-        tr.append(node("th",name));
+        ?"Dados extraídos do cliente, não conferidos no servidor. Zero, ausência, cobertura parcial e divergência entre registros são situações diferentes. Campos com divergência não são usados como um valor único."
+        :"Client-extracted values, not measured on the server. Zero, missing, partial coverage and conflicting source rows are different states. Conflicting fields are never treated as one canonical value.","detail-note"));
+      for(const group of ["attack","defense","attributes","other"]){
+        const fields=RAW_STATS_FIELDS.filter(f=>f.group===group&&summary.fields.has(f.key));
+        if(!fields.length)continue;
+        const section=node("section",undefined,"numeric-group");
+        section.append(node("h4",groupNames[group]));
+        const table=node("table") as HTMLTableElement;
+        const head=node("thead"),heading=node("tr");
+        for(const label of [pt?"Campo original":"Original field",pt?"Valor(es) bruto(s)":"Raw value(s)",
+          pt?"Cobertura e situação":"Coverage and status"])heading.append(node("th",label));
+        head.append(heading);table.append(head);
+        const body=node("tbody");
+        for(const f of fields){
+          const stat=summary.fields.get(f.key)!;
+          const row=node("tr");
+          if(stat.status==="conflict")row.className="numeric-conflict";
+          row.append(node("td",fieldTitle(f.key)+" ("+f.key+")"));
+          row.append(node("td",stat.values.join(" / ")));
+          const situation=stat.status==="conflict"?(pt?"Divergente":"Conflicting"):
+            stat.status==="partial"?(pt?"Parcial":"Partial"):(pt?"Consistente":"Consistent");
+          row.append(node("td",stat.observedIn+"/"+stat.sourceCount+" · "+situation));
+          body.append(row);
+        }
+        table.append(body);
+        const wrap=node("div",undefined,"stat-table-scroll");wrap.append(table);
+        section.append(wrap);parent.append(section);
       }
+      const sourceRows=node("details",undefined,"numeric-original-rows");
+      sourceRows.append(node("summary",pt
+        ?"Ver cada registro original e os números exatos"
+        :"Inspect each original source row and its exact numbers"));
+      const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
+      for(const name of [pt?"Registro de origem":"Source row",pt?"Campo":"Raw field",pt?"Valor":"Raw value"])
+        tr.append(node("th",name));
       head.append(tr);table.append(head);
       const body=node("tbody");
       for(const [sourceRow,raw] of rawRows){
         for(const [key,value] of Object.entries(raw)){
           const row=node("tr");
           row.append(node("td","#"+sourceRow));
-          row.append(node("td",labelForClientField(key,pt)+" ("+key+")"));
+          row.append(node("td",fieldTitle(key)+" ("+key+")"));
           row.append(node("td",String(value)));
           body.append(row);
         }
       }
-      table.append(body);
-      const scroller=node("div",undefined,"stat-table-scroll");
-      scroller.append(table);parent.append(scroller);
+      table.append(body);const wrap=node("div",undefined,"stat-table-scroll");
+      wrap.append(table);sourceRows.append(wrap);parent.append(sourceRows);
     }
     function addHistoricalGradeTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
       const model=buildHistoricalClientProjection({sourceRows:rawRows.map(([sourceRowNumber,fieldsRaw])=>({
