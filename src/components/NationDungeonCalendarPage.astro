@@ -407,3 +407,196 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  @media(max-width:900px){.nd-edit-grid{grid-template-columns:1fr}}
  @media(max-width:600px){#nd-grid :is(th,td){min-width:45px}}
 </style>
+
+<style is:global>
+/* The time/day cells and saved-run controls are created in client-side JS.
+   They need global, page-scoped selectors rather than Astro's scoped CSS.
+   Without this, generated <th>/<td> have no sizes, colors or borders. */
+#nation-calendar .nd-grid-caption{
+  color:var(--color-text-muted);
+  font-size:.86rem;line-height:1.5;margin:14px 0 10px;
+}
+#nation-calendar #nd-view-status{
+  margin:15px 0 9px;padding:10px 13px;
+  border:1px solid var(--color-border);border-radius:5px;
+  background:var(--color-background);
+  color:var(--color-text);font-size:.85rem;line-height:1.6;
+  font-variant-numeric:tabular-nums;
+}
+#nation-calendar .nd-legend{
+  gap:8px;margin:10px 0 14px;
+}
+#nation-calendar .nd-legend span{
+  padding:7px 11px;font-weight:650;
+  color:var(--color-text);
+}
+#nation-calendar .nd-legend .ready{
+  background:color-mix(in srgb,#329c67 18%,var(--color-surface));
+  border-color:color-mix(in srgb,#329c67 44%,var(--color-border));
+}
+#nation-calendar .nd-legend .cooldown{
+  background:color-mix(in srgb,#d65e68 19%,var(--color-surface));
+  border-color:color-mix(in srgb,#d65e68 44%,var(--color-border));
+}
+#nation-calendar .nd-legend .conflict{
+  background:color-mix(in srgb,#dfa836 20%,var(--color-surface));
+  border-color:color-mix(in srgb,#dfa836 44%,var(--color-border));
+}
+#nation-calendar .nd-table-wrap{
+  width:100%;max-width:100%;overflow:auto;
+  max-height:71vh;
+  border:1px solid var(--color-border);border-radius:6px;
+  background:var(--color-background);
+  scrollbar-gutter:stable;
+}
+#nation-calendar .nd-table-wrap:focus-visible{
+  outline:2px solid var(--color-accent);
+  outline-offset:3px;
+}
+#nation-calendar #nd-grid{
+  width:100%;
+  border-collapse:separate;border-spacing:0;
+  table-layout:fixed;
+  font-size:.82rem;line-height:1.3;
+  font-variant-numeric:tabular-nums;
+  color:var(--color-text);
+}
+#nation-calendar #nd-grid :is(th,td){
+  box-sizing:border-box;
+  min-width:104px;height:36px;
+  padding:7px 9px;
+  border-right:1px solid var(--color-border);
+  border-bottom:1px solid var(--color-border);
+  text-align:center;vertical-align:middle;
+}
+#nation-calendar #nd-grid thead th{
+  position:sticky;top:0;z-index:5;
+  height:52px;
+  background:var(--color-surface);
+  color:var(--color-text);
+  box-shadow:0 2px 0 var(--color-border);
+  font-size:.78rem;letter-spacing:.01em;
+  font-weight:750;
+  white-space:nowrap;
+}
+#nation-calendar #nd-grid thead th.is-weekend{
+  background:color-mix(in srgb,var(--color-accent) 9%,var(--color-surface));
+}
+#nation-calendar #nd-grid tbody th{
+  position:sticky;left:0;z-index:4;
+  width:96px;min-width:96px;
+  background:var(--color-surface);
+  color:var(--color-text);
+  font-weight:700;
+  white-space:nowrap;
+}
+#nation-calendar #nd-grid thead th:first-child{
+  position:sticky;left:0;top:0;z-index:7;
+  min-width:96px;
+  background:var(--color-surface);
+}
+#nation-calendar #nd-grid td{
+  position:relative;
+  cursor:help;
+  transition:background-color .12s ease;
+}
+#nation-calendar #nd-grid td.ready{
+  background:color-mix(in srgb,#329c67 13%,var(--color-background));
+  color:var(--color-text);
+}
+#nation-calendar #nd-grid td.cooldown{
+  background:color-mix(in srgb,#d65e68 22%,var(--color-background));
+  color:var(--color-text);
+}
+#nation-calendar #nd-grid td.gap{
+  background:repeating-linear-gradient(
+    -45deg,var(--color-background) 0,var(--color-background) 7px,
+    color-mix(in srgb,var(--color-text-muted) 12%,var(--color-background)) 7px,
+    color-mix(in srgb,var(--color-text-muted) 12%,var(--color-background)) 14px
+  );
+  color:var(--color-text-muted);
+}
+#nation-calendar #nd-grid tbody tr:nth-child(2n) td.ready{
+  background:color-mix(in srgb,#329c67 17%,var(--color-background));
+}
+#nation-calendar #nd-grid tbody tr:nth-child(2n) td.cooldown{
+  background:color-mix(in srgb,#d65e68 26%,var(--color-background));
+}
+#nation-calendar #nd-grid tbody tr:hover td{
+  box-shadow:inset 0 2px 0 color-mix(in srgb,var(--color-accent) 30%,transparent),
+             inset 0 -2px 0 color-mix(in srgb,var(--color-accent) 30%,transparent);
+}
+#nation-calendar #nd-grid td:hover{
+  outline:2px solid var(--color-accent);
+  outline-offset:-2px;z-index:2;
+}
+#nation-calendar #nd-grid .run-event,
+#nation-calendar #nd-grid .run-conflict{
+  display:inline-flex;justify-content:center;align-items:center;
+  width:24px;height:24px;border-radius:50%;
+  border:1px solid currentColor;
+  font-size:.95rem;font-weight:850;
+}
+#nation-calendar #nd-grid .run-event{
+  color:var(--color-accent);
+  background:var(--color-surface);
+}
+#nation-calendar #nd-grid .run-conflict{
+  color:#b78321;
+  background:var(--color-surface);
+}
+#nation-calendar #nd-cooldown-inputs{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+  gap:12px;
+}
+#nation-calendar #nd-cooldown-inputs label{
+  display:grid;gap:7px;
+  font-size:.84rem;color:var(--color-text-muted);
+}
+#nation-calendar #nd-cooldown-inputs input{
+  min-width:0;width:100%;box-sizing:border-box;
+  min-height:40px;padding:8px 10px;
+  background:var(--color-background);color:var(--color-text);
+  border:1px solid var(--color-border);
+  border-radius:4px;font:inherit;
+}
+#nation-calendar #nd-rule-list li{
+  display:flex;gap:9px;align-items:center;flex-wrap:wrap;
+  border:1px solid var(--color-border);
+  background:var(--color-background);border-radius:4px;
+  padding:10px 12px;
+}
+#nation-calendar #nd-rule-list li span{
+  flex:1 1 200px;color:var(--color-text);
+}
+#nation-calendar #nd-rule-list li button{
+  min-height:34px;cursor:pointer;
+  color:var(--color-text);
+  border:1px solid var(--color-border);
+  border-radius:4px;background:var(--color-surface);
+}
+#nation-calendar #nd-rule-list li button:hover{
+  border-color:var(--color-accent);
+}
+html[data-theme="contrast"] #nation-calendar #nd-grid td.ready{
+  background:#08260d;color:#fff;
+}
+html[data-theme="contrast"] #nation-calendar #nd-grid td.cooldown{
+  background:#350b0b;color:#fff;
+}
+html[data-theme="contrast"] #nation-calendar #nd-grid tbody th,
+html[data-theme="contrast"] #nation-calendar #nd-grid thead th{
+  background:#000;color:#ffe500;
+}
+@media(max-width:760px){
+  #nation-calendar #nd-grid :is(th,td){
+    min-width:92px;height:38px;padding:7px;
+  }
+  #nation-calendar #nd-grid thead th:first-child,
+  #nation-calendar #nd-grid tbody th{
+    width:83px;min-width:83px;
+  }
+  #nation-calendar .nd-table-wrap{max-height:65vh;}
+}
+</style>
