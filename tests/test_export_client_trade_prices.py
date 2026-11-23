@@ -146,6 +146,16 @@ class ClientTradePricesTest(unittest.TestCase):
                 mod.write_results(rows,report,dst,False)
             mod.write_results(rows,report,dst,True)
 
+    def test_historical_comparison_preserves_provenance_and_reports_missing_prices(self):
+        rows, _ = mod.parse_trade_table(CLIENT_TABLE)
+        source = Path(__file__).resolve().parents[1] / "research" / "market-fixed-prices" / "jana4u-2025-11-14-crosswalk.csv"
+        report = mod.compare_historical_catalog(rows, source)
+        self.assertEqual(report["status"], "historical-reference-only")
+        self.assertEqual(report["historicalMappedItemIds"], 293)
+        self.assertGreaterEqual(report["generalCatalogMatches"], 3)
+        self.assertGreaterEqual(report["generalCatalogAbsent"], 200)
+        self.assertEqual(report["generalCatalogMismatches"], 0)
+
     def test_case_insensitive_path_lookup_only_checks_expected_subdirectories(self):
         with tempfile.TemporaryDirectory() as dir:
             root=Path(dir)
