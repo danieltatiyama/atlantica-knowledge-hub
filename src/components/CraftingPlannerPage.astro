@@ -65,7 +65,22 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     <p class="craft-muted">{pt
      ?"Os valores totais são consolidados por ItemID; itens compartilhados aparecem referenciados nas outras ramificações, sem duplicar os cálculos. Escolha Comprar/Fabricar para cada intermediário."
      :"Totals are combined by ItemID. Shared materials are referenced under additional branches without double-counting. Choose Buy/Craft for intermediate items."}</p>
-    <div id="craft-tree" class="craft-tree" aria-label={pt?"Dependências de fabricação":"Crafting dependencies"}></div>
+    <div id="craft-tree" class="craft-tree" role="region" tabindex="0" aria-label={pt?"Tabela hierárquica de fabricação":"Hierarchical crafting table"}>
+     <table class="craft-tree-table">
+      <thead><tr>
+       <th scope="col">{pt?"Item / Receita":"Item / Recipe"}</th>
+       <th scope="col">{pt?"Neste ramo":"Branch need"}</th>
+       <th scope="col">{pt?"Total necessário":"Total needed"}</th>
+       <th scope="col">{pt?"A fabricar":"To produce"}</th>
+       <th scope="col">{pt?"Por batch":"Per batch"}</th>
+       <th scope="col">{pt?"Batches":"Batches"}</th>
+       <th scope="col">{pt?"Operações":"Operations"}</th>
+       <th scope="col">{pt?"Divisão das operações":"Operation breakdown"}</th>
+       <th scope="col">{pt?"Ação":"Action"}</th>
+      </tr></thead>
+      <tbody id="craft-tree-rows"></tbody>
+     </table>
+    </div>
    </section>
    <div class="craft-result-grid">
     <div><h3>{pt?"Agenda de fabricação":"Craft schedule"}</h3>
@@ -114,7 +129,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const result=$("craft-result"),note=$("craft-result-note");
   const steps=$("craft-steps"),leaves=$("craft-leaves"),issues=$("craft-issues");
   const cost=$("craft-cost-total");
-  const treeContainer=$("craft-tree"),surplus=$("craft-surplus"),surplusSection=$("craft-surplus-section");
+  const treeContainer=$("craft-tree"),treeRows=$("craft-tree-rows") as HTMLTableSectionElement;
+  const surplus=$("craft-surplus"),surplusSection=$("craft-surplus-section");
+  const collapsedTreePaths=new Set<string>();
   const itemCategories:Record<string,string>=Object.create(null),buyIds=new Set<string>();
   const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
   const fmt=(n:string|number)=>nf.format(BigInt(n));
@@ -495,7 +512,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      recipesById:activeGraph,choices,batchOverrides,
      itemCategories,buyIds:[...buyIds],strictTargetBatch:true});
     steps.replaceChildren();leaves.replaceChildren();issues.replaceChildren();
-    treeContainer.replaceChildren();surplus.replaceChildren();
+    treeRows.replaceChildren();surplus.replaceChildren();
     const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
     for(const step of plan.steps){
      const tr=el("tr"),td=el("td");
