@@ -1,12 +1,26 @@
 ---
 import ItemDetailPage from "../../../components/ItemDetailPage.astro";
-import { EQUIPMENT_ITEM_CATALOG } from "../../../data/equipment-item-catalog";
-import type { EquipmentItemCatalogEntry } from "../../../data/equipment-item-catalog";
+import ClientSourceEquipmentPage from "../../../components/ClientSourceEquipmentPage.astro";
+import {FULL_CLIENT_EQUIPMENT_CATALOG} from "../../../data/full-client-equipment-source.mjs";
+import {EQUIPMENT_ITEM_CATALOG_BY_ID} from "../../../data/equipment-item-catalog";
 
-export function getStaticPaths() {
-  return EQUIPMENT_ITEM_CATALOG.map(item => ({ params: { id: item.id }, props: { item } }));
+// Preserve the 551 reviewed pages, and add 1,911 source-backed profiles
+// from the already reconciled equipment-like categories. Neither source
+// classification nor a generated page proves live-server availability.
+export function getStaticPaths(){
+  return FULL_CLIENT_EQUIPMENT_CATALOG.map(item=>({
+    params:{id:item.id},props:{sourceItem:item},
+  }));
 }
-interface Props { item: EquipmentItemCatalogEntry; }
-const { item } = Astro.props;
+interface Props{
+  sourceItem:{id:string;nameEn:string;reviewed:boolean};
+}
+const {sourceItem}=Astro.props;
+const reviewed=sourceItem.reviewed
+  ?EQUIPMENT_ITEM_CATALOG_BY_ID.get(sourceItem.id):undefined;
+if(sourceItem.reviewed&&!reviewed)
+  throw Error("Original 551 manually reviewed item profile disappeared: "+sourceItem.id);
 ---
-<ItemDetailPage lang="pt-br" item={item} />
+{reviewed
+  ? <ItemDetailPage lang="pt-br" item={reviewed}/>
+  : <ClientSourceEquipmentPage lang="pt-br" itemId={sourceItem.id}/>}
