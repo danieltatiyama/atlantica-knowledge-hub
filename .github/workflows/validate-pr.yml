@@ -80,6 +80,9 @@ jobs:
           node --test tests/client-first-equipment.test.mjs tests/legendary-client-reconciliation.test.mjs tests/client-source-attributes.test.mjs tests/client-item-stat-summary.test.mjs tests/client-crafting-requirements.test.mjs tests/client-grade-export.test.mjs tests/equipment-catalog-source-index.test.mjs tests/full-client-item-database.test.mjs tests/full-client-stats-tools.test.mjs tests/client-craft-graph.test.mjs tests/full-client-equipment-source.test.mjs tests/client-craft-batch.test.mjs tests/client-monster-views.test.mjs tests/monster-item-discovery.test.mjs tests/monster-source-bands.test.mjs tests/client-drop-rate-hypothesis.test.mjs tests/community-readable-item-records.test.mjs tests/community-readable-monster-profiles.test.mjs tests/wiki-navigation.test.mjs tests/monster-level-band-resolution.test.mjs
           node scripts/check-client-item-attributes.mjs
 
+      - name: Validate multilingual wiki appearance themes
+        run: node --test tests/wiki-themes.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
