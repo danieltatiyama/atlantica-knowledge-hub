@@ -465,31 +465,32 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     border:1px solid #58503f;
     border-radius:3px;overflow-x:auto;
   }
-  #creature-db table{border-collapse:collapse;width:100%;min-width:690px}
-  #creature-db th,#creature-db td{
+  #creature-db .browse table,#creature-db .creature-detail table{border-collapse:collapse;width:100%;min-width:690px}
+  #creature-db .browse th,#creature-db .browse td,
+  #creature-db .creature-detail th,#creature-db .creature-detail td{
     padding:9px 11px;border-bottom:1px solid #574c3b;
     text-align:left;font-size:.83rem;
   }
-  #creature-db th{
+  #creature-db .browse th,#creature-db .creature-detail th{
     background:linear-gradient(#3d3226,#282822);
     color:#efcf8e;font-weight:600;
     letter-spacing:.025em;white-space:nowrap;
   }
-  #creature-db td{color:#d9dee5}
-  #creature-db tbody tr:nth-child(even){background:#2129346b}
-  #creature-db tbody tr:hover{background:#6b5b3950}
+  #creature-db .browse td,#creature-db .creature-detail td{color:#d9dee5}
+  #creature-db .browse tbody tr:nth-child(even),#creature-db .creature-detail tbody tr:nth-child(even){background:#2129346b}
+  #creature-db .browse tbody tr:hover,#creature-db .creature-detail tbody tr:hover{background:#6b5b3950}
   #creature-db .paging,#creature-db .detail-header{
     display:flex;justify-content:space-between;align-items:center;
     gap:10px;margin:13px 0;
   }
-  #creature-db button{
+  #creature-db .browse button,#creature-db .creature-detail button{
     cursor:pointer;
     background:linear-gradient(180deg,#373022,#232621);
     border:1px solid #85734f;border-radius:3px;
     color:#e6d3a6;padding:8px 14px;
   }
-  #creature-db button:hover:not(:disabled){background:#51432d}
-  #creature-db button:disabled{opacity:.4;cursor:not-allowed}
+  #creature-db .browse button:hover:not(:disabled),#creature-db .creature-detail button:hover:not(:disabled){background:#51432d}
+  #creature-db .browse button:disabled,#creature-db .creature-detail button:disabled{opacity:.4;cursor:not-allowed}
   #creature-db h2,#creature-db h3,#creature-db h4{
     color:#e4c78e;font-family:Georgia,"Times New Roman",serif;
   }
