@@ -1005,6 +1005,9 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         const codex=node("a",pt?"Abrir no códice de drops":"Open in loot codex") as HTMLAnchorElement;
         codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
         jump.append(codex);
+        const planner=node("a",pt?"Calcular materiais":"Calculate materials") as HTMLAnchorElement;
+        planner.href=prefix+"/tools/crafting/?id="+encodeURIComponent(id);
+        jump.append(planner);
         details.prepend(jump);
       }catch{
         details.replaceChildren(node("p",pt?"Não foi possível carregar o arquivo deste ID.":"Could not load the client source shard for this ID.","subtle"));
