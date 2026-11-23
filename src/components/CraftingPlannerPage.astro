@@ -195,6 +195,123 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    }
    return graph;
   }
+  function refreshCosts(){
+   if(!plan)return;
+   const priced=priceCraftLeaves(plan.leaves,prices);
+   for(const row of priced.rows){
+    const cell=leaves.querySelector<HTMLElement>('[data-cost-for="'+row.itemId+'"]');
+    if(cell)cell.textContent=row.total===null?"—":fmt(row.total);
+   }
+   cost.textContent=(priced.complete
+    ?(pt?"Custo total: ":"Total cost: ")
+    :(pt?"Custo conhecido (parcial): ":"Known cost (partial): "))+fmt(priced.knownTotal)+
+    (priced.unpricedItems?" · "+priced.unpricedItems+
+     (pt?" materiais sem preço":" materials without prices"):"");
+  }
+  function renderCraftTree(){
+   if(!plan)return;
+   const parents:{depth:number;holder:HTMLElement}[]=[];
+   const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
+   const tree=plan.tree as Array<any>;
+   for(let i=0;i<tree.length;i++){
+    const row=tree[i];
+    while(parents.length&&parents[parents.length-1].depth>=row.depth)parents.pop();
+    const parent=parents.length?parents[parents.length-1].holder:treeContainer;
+    const hasChildren=tree[i+1]?.depth>row.depth;
+    const wrapper=el(hasChildren?"details":"div");
+    wrapper.className="craft-tree-node";
+    if(hasChildren)(wrapper as HTMLDetailsElement).open=true;
+    const line=el(hasChildren?"summary":"div");
+    line.className="craft-tree-row";
+    const first=el("span");first.className="craft-tree-name";
+    first.append(itemLink(row.itemId,title(row.itemId)));
+    if(row.sharedReference)first.append(el("small",pt?" · compartilhado":" · shared"));
+    line.append(first);
+    const properties=el("span");properties.className="craft-tree-numbers";
+    properties.append(el("span",(pt?"Ramo: ":"Branch: ")+fmt(row.branchQuantity)));
+    properties.append(el("span",(pt?"Total: ":"Total: ")+fmt(row.totalRequired)));
+    if(row.output!==null){
+     properties.append(el("span",(pt?"Produção: ":"Output: ")+fmt(row.output)));
+     if(row.excess!=="0")properties.append(el("span",
+       (pt?"Excedente: ":"Leftover: ")+fmt(row.excess)));
+    }
+    line.append(properties);
+    const actions=el("span");actions.className="craft-tree-actions";
+    if(row.itemId!==selectedId&&activeGraph?.[row.itemId]?.length){
+     const purchased=buyIds.has(row.itemId);
+     const toggle=el("button",purchased
+      ?(pt?"Fabricar":"Craft"):(pt?"Comprar":"Buy")) as HTMLButtonElement;
+     toggle.type="button";
+     toggle.setAttribute("aria-label",(purchased
+      ?(pt?"Fabricar ":"Craft "):(pt?"Comprar ":"Buy "))+title(row.itemId));
+     toggle.addEventListener("click",event=>{
+      event.preventDefault();event.stopPropagation();
+      if(purchased)buyIds.delete(row.itemId);else buyIds.add(row.itemId);
+      redraw();
+     });
+     actions.append(toggle);
+    }
+    if(row.mode==="unresolved")actions.append(el("small",pt?"Ver pendências ↓":"See questions ↓"));
+    if(row.batchSource==="confirmed-equipment-rule"){
+     actions.append(el("small",pt?"Equipamento · 1/batch · 20/op.":"Equipment · 1/batch · 20/op."));
+    }
+    line.append(actions);
+    wrapper.append(line);
+    parent.append(wrapper);
+    if(hasChildren){
+     const holder=el("div");holder.className="craft-tree-children";
+     wrapper.append(holder);
+     parents.push({depth:row.depth,holder});
+    }
+   }
+  }
+  function renderLeftovers(){
+   if(!plan)return;
+   const title=(id:string)=>nameCache?.get(id)??("Item #"+id);
+   const rows=plan.leftoverRows as Array<{itemId:string;quantity:string}>;
+   surplusSection.hidden=rows.length===0;
+   for(const row of rows){
+    const li=el("li");
+    li.append(itemLink(row.itemId,title(row.itemId)),
+      el("span",fmt(row.quantity)+" "+(pt?"unidades":"units")));
+    surplus.append(li);
+   }
+  }
+  $("craft-tree-expand").addEventListener("click",()=>{
+   treeContainer.querySelectorAll<HTMLDetailsElement>("details").forEach(d=>{d.open=true;});
+  });
+  $("craft-tree-collapse").addEventListener("click",()=>{
+   treeContainer.querySelectorAll<HTMLDetailsElement>("details").forEach(d=>{d.open=false;});
+  });
+  function shoppingRows(){
+   if(!plan)return [];
+   return priceCraftLeaves(plan.leaves,prices).rows.map(row=>({
+    id:row.itemId,name:nameCache?.get(row.itemId)??("Item #"+row.itemId),
+    quantity:row.quantity,unitPrice:row.unitPrice??"",cost:row.total??"",
+   }));
+  }
+  $("craft-copy-shopping").addEventListener("click",()=>{
+   const lines=shoppingRows().map(row=>
+    row.name+" (#"+row.id+") · "+row.quantity+
+    (row.cost?" · "+(pt?"custo ":"cost ")+row.cost:""));
+   if(!lines.length)return;
+   void navigator.clipboard.writeText(lines.join("\n")).then(()=>{
+    status.textContent=pt?"Lista de compras copiada.":"Shopping list copied.";
+   }).catch(()=>{
+    status.textContent=pt?"Não foi possível copiar.":"Copy unavailable.";
+   });
+  });
+  $("craft-export-shopping").addEventListener("click",()=>{
+   const safe=(value:string)=>'"'+String(value).replace(/^([=+@-])/,"'$1")
+    .replace(/"/g,'""')+'"';
+   const csv=[["ItemID","Name","Quantity","UnitPrice","TotalCost"],
+    ...shoppingRows().map(row=>[row.id,row.name,row.quantity,row.unitPrice,row.cost])]
+    .map(row=>row.map(safe).join(",")).join("\r\n");
+   const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+   const url=URL.createObjectURL(blob),a=el("a") as HTMLAnchorElement;
+   a.href=url;a.download="atlantica-craft-shopping.csv";a.click();
+   setTimeout(()=>URL.revokeObjectURL(url),1500);
+  });
   function redraw(){
    if(!activeGraph||!selectedId)return;
    try{
