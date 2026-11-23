@@ -1,0 +1,444 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br";
+const prefix=pt?"/pt-br":"";
+const title=pt?"Banco completo de itens do cliente":"Full client item database";
+---
+<BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
+  description={pt?"Índice pesquisável dos 23.586 IDs extraídos dos arquivos do cliente Atlantica Global.":"Searchable source index of 23,586 original Atlantica Global game-client item IDs."}
+  alternatePaths={{en:"/items/database/", "pt-br":"/pt-br/items/database/"}}>
+  <main class="container" id="full-client-db" data-lang={lang}>
+    <nav class="breadcrumb"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
+    <header>
+      <p class="eyebrow">GLOBAL / NA · MINER SNAPSHOT 1</p>
+      <h1>{title}</h1>
+      <p class="intro">{pt
+        ?"Consulta baseada no inventário dos arquivos do jogo. Contém equipamentos, livros, materiais, consumíveis, packs, cosméticos e outros tipos de itens — não apenas os equipamentos das boxes."
+        :"An index of original game-client files, including equipment, books, materials, consumables, packs, cosmetics and other item types — not just items found in captured boxes."}</p>
+      <p class="caution">{pt
+        ?"Nomes, níveis, grades e materiais são dados extraídos do cliente, não garantias de existência no servidor, disponibilidade atual, obtenção ou fabricação. Um mesmo nome pode existir em IDs diferentes. Colisões de identidade permanecem sem nome atribuído."
+        :"Names, levels, grades and materials are client-extracted fields, not proof of live-server existence, availability, acquisition or craftability. One English name can belong to different item IDs. Identity collisions remain unnamed."}</p>
+    </header>
+
+    <section class="coverage" aria-label={pt?"Cobertura":"Coverage"}>
+      <div><strong>23.586</strong><small>{pt?"IDs de origem":"Source IDs"}</small></div>
+      <div><strong>22.702</strong><small>{pt?"Nomes conciliados":"Named IDs"}</small></div>
+      <div><strong>884</strong><small>{pt?"IDs sem identidade única":"Unresolved IDs"}</small></div>
+      <div><strong>27.281</strong><small>{pt?"Definições de arquivo":"Source records"}</small></div>
+    </section>
+
+    <section class="search-panel" aria-label={pt?"Pesquisar itens":"Search items"}>
+      <div class="search-grid">
+        <label>{pt?"Nome em inglês ou ID":"English name or ID"}
+          <input type="search" id="db-query" autocomplete="off" placeholder={pt?"Ex.: Spirit Sword, Immortal Bow, 24120":"e.g. Spirit Sword, Immortal Bow, 24120"}/>
+        </label>
+        <label>{pt?"Categoria original":"Original source category"}
+          <select id="db-category"><option value="">{pt?"Todas as categorias":"All categories"}</option></select>
+        </label>
+        <label>{pt?"Estado da identidade":"Identity status"}
+          <select id="db-identity">
+            <option value="">{pt?"Todos os IDs":"All IDs"}</option>
+            <option value="named">{pt?"Nome identificado":"Official name identified"}</option>
+            <option value="collision">{pt?"Nome divergente no mesmo ID":"Conflicting names for ID"}</option>
+            <option value="unresolved">{pt?"Sem nome identificado":"No resolved name"}</option>
+          </select>
+        </label>
+        <label>{pt?"Ordenação":"Sort by"}
+          <select id="db-sort">
+            <option value="id">{pt?"ID crescente":"Ascending ID"}</option>
+            <option value="name">{pt?"Nome A–Z":"Name A–Z"}</option>
+            <option value="level">{pt?"Nível bruto decrescente":"Raw level descending"}</option>
+          </select>
+        </label>
+      </div>
+      <label class="equipment-toggle">
+        <input type="checkbox" id="db-equipment-only"/>
+        <span>{pt?"Mostrar somente categorias semelhantes a equipamentos (classificação do cliente, não elegibilidade comprovada)":"Show only equipment-like source categories (not confirmed equip/enhancement eligibility)"}</span>
+      </label>
+      <p class="load-status" id="db-status" role="status">{pt?"Carregando índice do cliente…":"Loading client index…"}</p>
+      <div class="table-wrap">
+        <table aria-label={pt?"Todos os itens do cliente":"All client item IDs"}>
+          <thead><tr><th>ID</th><th>{pt?"Nome oficial em inglês / estado":"Official English name / status"}</th>
+            <th>{pt?"Categoria do arquivo":"Source category"}</th><th>{pt?"Nível bruto":"Raw level"}</th>
+            <th>{pt?"Grade bruta":"Raw grade"}</th><th>{pt?"Fontes":"Sources"}</th></tr></thead>
+          <tbody id="db-results"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button type="button" id="db-prev" disabled>{pt?"Anterior":"Previous"}</button>
+        <span id="db-page">—</span>
+        <button type="button" id="db-next" disabled>{pt?"Próximo":"Next"}</button>
+      </div>
+      <noscript>{pt?"Ative JavaScript para pesquisar o índice do cliente. As 551 fichas originais continuam acessíveis no catálogo de equipamentos.":"Enable JavaScript to search the client index. The original 551 item pages remain available from the equipment catalog."}</noscript>
+    </section>
+
+    <section class="detail" id="db-detail" hidden aria-live="polite">
+      <div class="detail-header"><div>
+        <p class="eyebrow">{pt?"REGISTROS DO CLIENTE":"ORIGINAL CLIENT RECORDS"}</p>
+        <h2 id="db-detail-name"></h2>
+        <p id="db-detail-meta"></p>
+      </div><button type="button" id="db-detail-close">{pt?"Fechar":"Close"}</button></div>
+      <p id="db-detail-notice" class="detail-note"></p>
+      <div id="db-detail-content"></div>
+    </section>
+  </main>
+</BaseLayout>
+<script>
+  import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
+  type IndexRow=[string,string|null,string|null,string|null,string|null,number,"named"|"collision"|"unresolved",number,number];
+  type SourceRow=[number,string,string,string,string|number|null,string|number|null,number|null,number|null,string,[string,number][]];
+  type Detail={s:SourceRow[];v:number[][]};
+  type Manifest={snapshotId:number;totalIds:number;namedIds:number;collisionIds:number;unresolvedIds:number;indexShards:string[];detailBucketWidth:number};
+  const root=document.querySelector<HTMLElement>("#full-client-db");
+  if(root){
+    const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const $=<T extends HTMLElement>(id:string)=>root.querySelector<T>("#"+id)!;
+    const query=$<HTMLInputElement>("db-query"),category=$<HTMLSelectElement>("db-category");
+    const identity=$<HTMLSelectElement>("db-identity"),sort=$<HTMLSelectElement>("db-sort");
+    const equipmentOnly=$<HTMLInputElement>("db-equipment-only");
+    const status=$<HTMLParagraphElement>("db-status"),results=$<HTMLTableSectionElement>("db-results");
+    const pageLabel=$<HTMLSpanElement>("db-page"),prev=$<HTMLButtonElement>("db-prev"),next=$<HTMLButtonElement>("db-next");
+    const detail=$<HTMLElement>("db-detail"),details=$<HTMLElement>("db-detail-content");
+    const detailName=$<HTMLElement>("db-detail-name"),detailMeta=$<HTMLElement>("db-detail-meta");
+    const detailNotice=$<HTMLElement>("db-detail-notice");
+    const close=$<HTMLButtonElement>("db-detail-close");
+    const namedRows=new Map<string,IndexRow>();
+    const detailCache=new Map<number,Promise<Record<string,Detail>>>();
+    const statsCache=new Map<number,Promise<Record<string,[number,Record<string,string>][]>|null>>();
+    let statsManifestPromise:Promise<{snapshotId:number;files:string[]}|null>|null=null;
+    // Categories are ORIGINAL ItemType source labels, not proof that the
+    // item is equipped or currently enhanceable on the server.
+    const equipmentCandidateCategories=new Set([
+      "Weapon","Defence","Sword","Spear","Axe","Bow","Gun","Cannon",
+      "Staff","Guitar","Saw","Whip","Shield","Orb","Armor","Pants",
+      "Boots","Helmet","Glove","Ring","Accessories","Neck","EARRING","BRACELET"
+    ]);
+    let allRows:IndexRow[]=[],visible:IndexRow[]=[],currentPage=0,manifest:Manifest|null=null;
+    const perPage=100,number=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+    const label=(key:string)=>({named:pt?"Nome conciliado":"Source name reconciled",
+      collision:pt?"Nome divergente entre arquivos":"Identity collision",
+      unresolved:pt?"Nome ainda não resolvido":"Name unresolved"} as Record<string,string>)[key]??key;
+    const node=(tag:string,text?:string,className?:string)=>{
+      const el=document.createElement(tag);
+      if(text!==undefined)el.textContent=text;
+      if(className)el.className=className;
+      return el;
+    };
+    const td=(tr:HTMLTableRowElement,text:string)=>{const cell=node("td",text);tr.append(cell);return cell;};
+    const nameFor=(id:string)=>namedRows.get(id)?.[1]??null;
+    const fmtRaw=(x:unknown)=>x===null||x===undefined||x===""?"—":String(x);
+    const sourceURL=(id:string)=>`/data/client-items/details/${String(Math.floor(Number(id)/1000)).padStart(2,"0")}.json`;
+    async function fetchJSON(url:string){
+      const response=await fetch(url,{cache:"force-cache"});
+      if(!response.ok)throw Error("Client dataset unavailable");
+      return response.json();
+    }
+    async function sourceDetails(id:string):Promise<Detail>{
+      if(!manifest)throw Error("Client manifest unavailable");
+      const bucket=Math.floor(Number(id)/manifest.detailBucketWidth);
+      if(!detailCache.has(bucket)){
+        detailCache.set(bucket,fetchJSON(sourceURL(id)).then(data=>{
+          if(data.snapshotId!==manifest?.snapshotId||data.bucket!==bucket||!data.items)
+            throw Error("Original client shard mismatch");
+          return data.items as Record<string,Detail>;
+        }));
+      }
+      const rows=await detailCache.get(bucket)!;
+      if(!rows[id])throw Error("No original source data for ID");
+      return rows[id];
+    }
+    async function optionalNumericStats(id:string) {
+      if(!manifest)return null;
+      if(!statsManifestPromise){
+        // No raw Items.csv stats exist yet beyond the original 551 reviewed
+        // profiles. Only the user-run, separately validated import creates
+        // this optional stats/manifest.json. A 404 is an expected state.
+        statsManifestPromise=fetchJSON("/data/client-items/stats/manifest.json")
+          .then(data=>{
+            if(data.snapshotId!==manifest?.snapshotId||
+               data.dataset!=="all-client-item-raw-stats"||
+               !Array.isArray(data.files))return null;
+            return data as {snapshotId:number;files:string[]};
+          }).catch(()=>null);
+      }
+      const meta=await statsManifestPromise;
+      if(!meta)return null;
+      const bucket=Math.floor(Number(id)/manifest.detailBucketWidth);
+      const filename=String(bucket).padStart(2,"0")+".json";
+      if(!meta.files.includes(filename))return null;
+      if(!statsCache.has(bucket)){
+        statsCache.set(bucket,
+          fetchJSON("/data/client-items/stats/"+filename)
+            .then(data=>data.snapshotId===manifest?.snapshotId&&
+              data.bucket===bucket&&data.schemaVersion==="1.0"
+              ? data.items as Record<string,[number,Record<string,string>][]>
+              :null)
+            .catch(()=>null)
+        );
+      }
+      return (await statsCache.get(bucket)!)?.[id]??null;
+    }
+    function addHistoricalGradeTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
+      const model=buildHistoricalClientProjection({sourceRows:rawRows.map(([sourceRowNumber,fieldsRaw])=>({
+        sourceRowNumber,fieldsRaw,
+      }))});
+      if(model.rows.length!==11)return;
+      const scalable=model.fields,baselineOnly=model.baselineOnlyFields??[];
+      const fixed=model.fixedFields.map((field:{key:string})=>field.key);
+      const cols=[...scalable,...baselineOnly,...fixed];
+      if(!cols.length)return;
+      const heading=node("h3",pt?"Progressão +0 a +10 — modelo histórico":"Enhancement +0 to +10 — historical model");
+      parent.append(heading);
+      parent.append(node("p",pt
+        ?"SIMULAÇÃO. +0 = valores brutos de Items.csv; +1 a +10 = multiplicadores históricos somente em ataque, AC e atributos básicos. Defesa mágica, evasão e velocidade de movimento permanecem FIXAS. Isso não comprova que o equipamento possa ser aprimorado. Nenhum grau L é inferido."
+        :"MODEL ONLY. +0 = raw Items.csv client data; +1..+10 = historical factors for attack, physical AC and base stats only. Magic Defense, EV and MoveSpeed remain FIXED. Upgrade eligibility is not proven. No Legendary grade is inferred.","detail-note"));
+      const table=node("table") as HTMLTableElement;
+      const head=node("thead"),headRow=node("tr");
+      headRow.append(node("th",pt?"Grau":"Grade"));
+      for(const key of cols){
+        const label=labelForClientField(key,pt) +
+          (fixed.includes(key)?" =":baselineOnly.includes(key)?" (+0)":" ×");
+        headRow.append(node("th",label));
+      }
+      headRow.append(node("th",pt?"Origem":"Basis"));head.append(headRow);table.append(head);
+      const body=node("tbody");
+      for(const row of model.rows){
+        const tr=node("tr");tr.append(node("td","+"+row.grade));
+        for(const key of cols)tr.append(node("td",String(row.values[key]??"—")));
+        tr.append(node("td",row.grade===0?(pt?"Extraído":"Client raw"):(pt?"Estimativa":"Estimated")));
+        body.append(tr);
+      }
+      table.append(body);
+      const scroller=node("div",undefined,"stat-table-scroll");scroller.append(table);parent.append(scroller);
+      if(model.fixedConflicts?.length)parent.append(node("p",pt
+        ?"Campos fixos divergentes não foram projetados: "+model.fixedConflicts.join(", ")
+        :"Conflicting fixed fields omitted: "+model.fixedConflicts.join(", "),"subtle"));
+    }
+    function linkItem(id:string,title:string){
+      const a=node("a",title) as HTMLAnchorElement;
+      a.href="?id="+encodeURIComponent(id);
+      a.addEventListener("click",event=>{
+        if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+        event.preventDefault();void openItem(id,true);
+      });
+      return a;
+    }
+    function renderPage(){
+      results.replaceChildren();
+      const start=currentPage*perPage;
+      for(const row of visible.slice(start,start+perPage)){
+        const tr=node("tr") as HTMLTableRowElement;
+        const id=String(row[0]);
+        td(tr,id);
+        const nameCell=td(tr,"");
+        if(row[6]==="named"){
+          nameCell.append(linkItem(id,row[1]??id));
+          if(row[8]===1)nameCell.append(node("small",pt?" · Ficha revisada":" · Reviewed item page"));
+        }else{
+          nameCell.append(node("span",label(row[6]),"unresolved"));
+          nameCell.append(" ",linkItem(id,pt?"Ver estado do ID":"Inspect ID status"));
+        }
+        td(tr,row[2]??"—");td(tr,fmtRaw(row[3]));td(tr,fmtRaw(row[4]));td(tr,String(row[5]));
+        results.append(tr);
+      }
+      prev.disabled=currentPage===0;
+      next.disabled=start+perPage>=visible.length;
+      pageLabel.textContent=visible.length
+        ?`${number.format(start+1)}–${number.format(Math.min(start+perPage,visible.length))} / ${number.format(visible.length)}`
+        :"0";
+    }
+    function applyFilters(){
+      const text=query.value.trim().toLocaleLowerCase(),cat=category.value,state=identity.value;
+      visible=allRows.filter(row=>
+        (!text||row[0].includes(text)||(row[1]??"").toLocaleLowerCase().includes(text)) &&
+        (!cat||row[2]===cat)&&(!state||row[6]===state)&&
+        (!equipmentOnly.checked||equipmentCandidateCategories.has(row[2]??"")));
+      if(sort.value==="name")visible.sort((a,b)=>(a[1]??"~").localeCompare(b[1]??"~","en")||Number(a[0])-Number(b[0]));
+      else if(sort.value==="level")visible.sort((a,b)=>{
+        const aa=a[3]===null?null:Number(a[3]),bb=b[3]===null?null:Number(b[3]);
+        if(aa===null)return bb===null?Number(a[0])-Number(b[0]):1;
+        if(bb===null)return -1;
+        return bb-aa||Number(a[0])-Number(b[0]);
+      });
+      currentPage=0;renderPage();
+      status.textContent=pt
+        ?`${number.format(visible.length)} dos ${number.format(allRows.length)} IDs encontrados. ${number.format(manifest?.namedIds??0)} nomes conciliados.`
+        :`${number.format(visible.length)} of ${number.format(allRows.length)} IDs found. ${number.format(manifest?.namedIds??0)} reconciled names.`;
+    }
+    function addDefinitionTable(parent:HTMLElement,data:Detail,id:string){
+      const h=node("h3",pt?"Definições dos arquivos de origem":"Original source-file definitions");parent.append(h);
+      parent.append(node("p",pt
+        ?"Arquivos gerais/específicos e agrupamentos de origem não significam, necessariamente, variantes jogáveis. Nível e grade são campos brutos."
+        :"General/specific files and source record groupings do not necessarily mean playable item variants. Level and grade are raw fields.","subtle"));
+      for(const row of data.s){
+        const [recordId,file,role,cat,level,grade,work,unit,state,materials]=row;
+        const card=node("section",undefined,"definition");
+        card.append(node("h4",`${file} · #${recordId}`));
+        const meta=node("p",`${role} · ${cat} · ${pt?"nível bruto":"raw level"} ${fmtRaw(level)} · ${pt?"grade bruta":"raw grade"} ${fmtRaw(grade)} · Work ${fmtRaw(work)} · Unit ${fmtRaw(unit)}`);
+        card.append(meta);
+        if(materials.length){
+          const table=node("table") as HTMLTableElement;
+          const head=node("thead"),headRow=node("tr");
+          for(const label of [pt?"Material / ID":"Material / ID",pt?"Quantidade":"Quantity"]){headRow.append(node("th",label));}
+          head.append(headRow);table.append(head);
+          const body=node("tbody");
+          for(const [itemId,quantity] of materials){
+            const tr=node("tr"),name=td(tr,"");
+            name.append(linkItem(itemId,nameFor(itemId)??`ID ${itemId}`));
+            td(tr,number.format(quantity));body.append(tr);
+          }
+          table.append(body);card.append(table);
+        }else{
+          card.append(node("p",state==="unsupported"
+            ?(pt?"Expressão de materiais não decodificada":"Material expression not parsed")
+            :(pt?"Nenhuma lista estruturada de materiais no arquivo":"No structured material list in this file"),"subtle"));
+        }
+        parent.append(card);
+      }
+      if(data.v.length>1){
+        parent.append(node("p",(pt?"Grupos de registros de origem":"Source record groupings")+": "+
+          data.v.map((v,i)=>`${i+1}: ${v.map(id=>"#"+id).join(", ")}`).join(" · "),"subtle"));
+      }
+    }
+    async function openItem(id:string,navigate:boolean){
+      if(!/^\d{1,12}$/.test(id))return;
+      const row=namedRows.get(id);
+      if(!row){
+        detail.hidden=false;details.replaceChildren();
+        detailName.textContent=pt?`ID ${id} não encontrado`:`ID ${id} not found`;
+        detailNotice.textContent="";detailMeta.textContent="";
+        if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
+        return;
+      }
+      detail.hidden=false;details.replaceChildren();
+      detailName.textContent=row[1]??`Item ID ${id}`;
+      detailMeta.textContent=`ID ${id} · ${row[2]??"—"} · ${pt?"fontes":"sources"}: ${row[5]}`;
+      detailNotice.textContent=row[6]==="named"
+        ?(pt?"Os dados abaixo vêm dos arquivos do cliente e não comprovam obtenção ou fabricação atual.":"These are game-client records, not proof of current acquisition or craftability.")
+        :(pt?"Nome retido: identidade divergente ou tradução não resolvida. Nenhuma definição foi atribuída a um nome inventado.":"Name withheld: conflicting identity or unresolved translation. No source record was assigned a guessed name.");
+      if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
+      if(row[8]===1){const p=node("p");const a=node("a",pt?"Abrir ficha completa do equipamento":"Open full equipment profile") as HTMLAnchorElement;
+        a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
+      if(row[6]!=="named"){
+        details.append(node("p",label(row[6]),"subtle"));detail.scrollIntoView({behavior:"smooth",block:"start"});return;
+      }
+      details.append(node("p",pt?"Carregando os registros de origem…":"Loading original source records…","subtle"));
+      try{
+        const data=await sourceDetails(id);
+        // Do not let an earlier slow request overwrite a more recent selection.
+        if(new URL(location.href).searchParams.get("id")!==id)return;
+        details.replaceChildren();
+        if(row[8]===1){const p=node("p");const a=node("a",pt?"Abrir ficha detalhada do equipamento (+0 a +10)":"Open detailed equipment article (+0 through +10)") as HTMLAnchorElement;
+          a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
+        addDefinitionTable(details,data,id);
+        if(equipmentCandidateCategories.has(row[2]??"")){
+          const rawStats=await optionalNumericStats(id);
+          if(new URL(location.href).searchParams.get("id")!==id)return;
+          if(rawStats){
+            details.append(node("p",(pt?"Linhas de atributos Items.csv: ":"Original Items.csv numeric rows: ")+
+              rawStats.map(item=>"#"+item[0]).join(", "),"subtle"));
+            addHistoricalGradeTable(details,rawStats);
+          }else if(row[8]!==1){
+            details.append(node("p",pt
+              ?"Atributos de combate ainda não foram importados para este ID. Não é possível calcular +0 a +10 com segurança sem os valores originais de Items.csv."
+              :"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values.","subtle"));
+          }
+        }
+      }catch{
+        details.replaceChildren(node("p",pt?"Não foi possível carregar o arquivo deste ID.":"Could not load the client source shard for this ID.","subtle"));
+      }
+      detail.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+    close.addEventListener("click",()=>{
+      detail.hidden=true;details.replaceChildren();history.pushState({},"",location.pathname);
+    });
+    window.addEventListener("popstate",()=>{
+      const id=new URL(location.href).searchParams.get("id");
+      if(id)void openItem(id,false);else detail.hidden=true;
+    });
+    query.addEventListener("input",applyFilters);
+    category.addEventListener("change",applyFilters);
+    identity.addEventListener("change",applyFilters);
+    sort.addEventListener("change",applyFilters);
+    equipmentOnly.addEventListener("change",applyFilters);
+    prev.addEventListener("click",()=>{if(currentPage>0){currentPage--;renderPage();}});
+    next.addEventListener("click",()=>{if((currentPage+1)*perPage<visible.length){currentPage++;renderPage();}});
+    (async()=>{
+      try{
+        manifest=await fetchJSON("/data/client-items/manifest.json") as Manifest;
+        if(manifest.snapshotId!==1||manifest.totalIds!==23586||manifest.namedIds!==22702||manifest.indexShards.length!==6)
+          throw Error("Manifest incompatible with original Miner snapshot");
+        const pieces=await Promise.all(manifest.indexShards.map(file=>
+          fetchJSON("/data/client-items/"+file)));
+        allRows=pieces.flatMap(data=>{
+          if(data.snapshotId!==manifest?.snapshotId||data.schemaVersion!=="1.0"||!Array.isArray(data.rows))
+            throw Error("Client index shard mismatch");
+          return data.rows as IndexRow[];
+        });
+        if(allRows.length!==manifest.totalIds)throw Error("Incomplete client item ID coverage");
+        const categoryValues=new Set<string>(),seen=new Set<string>();
+        for(const row of allRows){
+          if(seen.has(row[0])||!/^\d+$/.test(row[0]))throw Error("Duplicate client item identity");
+          seen.add(row[0]);namedRows.set(row[0],row);
+          if(row[2])categoryValues.add(row[2]);
+        }
+        for(const cat of [...categoryValues].sort((a,b)=>a.localeCompare(b,"en"))){
+          const opt=node("option",cat) as HTMLOptionElement;opt.value=cat;category.append(opt);
+        }
+        applyFilters();
+        const deepLink=new URL(location.href).searchParams.get("id");
+        if(deepLink)void openItem(deepLink,false);
+      }catch{
+        status.textContent=pt?"Falha ao carregar ou validar o índice completo. Confira os dados publicados.":"Could not load or verify the full client index. Check the published source data.";
+      }
+    })();
+  }
+</script>
+<style>
+  .container{width:min(var(--content-width),94%);margin:0 auto;padding-bottom:90px}
+  .breadcrumb{padding:22px 0}.breadcrumb a,.detail a{color:var(--color-accent)}
+  header{margin-bottom:24px}h1{font-size:clamp(2rem,4vw,3.1rem);margin:8px 0 16px}
+  .eyebrow{letter-spacing:.12em;font-size:.78rem;color:var(--color-accent)}
+  .intro{color:var(--color-text);line-height:1.7;max-width:900px}
+  .caution,.detail-note{border-left:3px solid var(--color-bronze);background:var(--color-surface);
+    padding:12px 15px;color:var(--color-text-muted);line-height:1.6}
+  .coverage{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;margin:22px 0}
+  .coverage>div{border:1px solid var(--color-border);padding:15px;border-radius:5px;display:flex;flex-direction:column;gap:4px}
+  .coverage strong{font-size:1.55rem;color:var(--color-gold-light);font-variant-numeric:tabular-nums}
+  .coverage small{color:var(--color-text-muted)}
+  .search-panel{border-top:1px solid var(--color-border);padding-top:25px}
+  .search-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px;margin-bottom:16px}
+  label{display:grid;gap:7px;font-size:.87rem;color:var(--color-gold-light)}
+  input,select{width:100%;border:1px solid var(--color-border);background:var(--color-surface);
+    color:var(--color-text);border-radius:5px;padding:11px;font:inherit}
+  .equipment-toggle{display:flex;align-items:center;gap:10px;color:var(--color-text-muted);font-size:.86rem}
+  .equipment-toggle input{width:auto;cursor:pointer}
+  .load-status{color:var(--color-text-muted)}
+  .table-wrap{overflow:auto;border:1px solid var(--color-border);border-radius:5px}
+  table{width:100%;min-width:760px;border-collapse:collapse;font-size:.88rem}
+  th,td{border-bottom:1px solid var(--color-border);padding:10px 12px;text-align:left}
+  thead th{background:#29271f;color:var(--color-gold-light)}
+  tbody tr:hover{background:var(--color-surface)}
+  .unresolved{color:var(--color-text-muted)}
+  td small{color:var(--color-text-muted)}
+  td a{color:var(--color-accent)}
+  .pagination{display:flex;gap:18px;align-items:center;justify-content:center;margin:18px 0 30px}
+  button{cursor:pointer;padding:9px 15px;border:1px solid var(--color-border);border-radius:4px;
+    color:var(--color-text);background:var(--color-surface)}button:disabled{opacity:.4;cursor:default}
+  .detail{margin:25px 0;padding:18px;border:1px solid var(--color-border);border-radius:5px;
+    background:var(--color-surface)}
+  .detail[hidden]{display:none}
+  .detail-header{display:flex;gap:15px;align-items:start;justify-content:space-between}
+  .detail-header h2{font-size:1.55rem;margin:0;color:var(--color-gold-light)}
+  .detail-header p{color:var(--color-text-muted)}
+  .definition{border:1px solid var(--color-border);margin:14px 0;border-radius:4px;padding:13px;background:var(--color-background)}
+  .definition h4{margin:0 0 8px;color:var(--color-gold-light);overflow-wrap:anywhere}
+  .definition p{color:var(--color-text-muted);font-size:.87rem;line-height:1.5;overflow-wrap:anywhere}
+  .definition table{min-width:300px}
+  .stat-table-scroll{overflow:auto;margin:16px 0;border:1px solid var(--color-border);border-radius:4px}
+  .stat-table-scroll table{min-width:800px;white-space:nowrap}
+  .subtle{color:var(--color-text-muted);line-height:1.6}
+  @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>

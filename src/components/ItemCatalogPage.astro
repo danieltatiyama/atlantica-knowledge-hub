@@ -42,9 +42,12 @@ const description = pt
       <h1>{title}</h1>
       <p>{description}</p>
       <p class="notice">{pt
-        ? "Este é um catálogo inicial de equipamentos identificados em listas de boxes. Não é uma lista completa de todos os itens do jogo. Os nomes ainda não possuem tradução verificada para português."
-        : "This is an initial catalog of equipment found in captured box lists, not every item in the game. English names were resolved against NA client localization."}</p>
+        ? "Estes 551 equipamentos possuem fichas revisadas baseadas em boxes. Para consultar livros, materiais, consumíveis, cosméticos e os demais itens do cliente, use o Banco completo de 23.586 IDs. Nomes ainda não têm tradução oficial revisada para português."
+        : "These 551 equipment items have reviewed box-based profiles. For books, materials, consumables, cosmetics and all other client items, use the full 23,586-ID source database. English names came from the original client."}</p>
       <p class="related-links">
+        <a class="related database-link" href={prefix+"/items/database/"}>
+          {pt?"Explorar TODOS os 23.586 IDs do cliente":"Browse ALL 23,586 client item IDs"}
+        </a>
         <a class="related" href={prefix + "/items/boxes/"}>{pt ? "Explorar Equipment Boxes" : "Explore Equipment Boxes"}</a>
         <a class="related legendary-link" href={prefix + "/items/legendary/"}>{pt
           ? "Pesquisa: encantamento lendário (L)" : "Research: Legendary enhancement (L)"}</a>
@@ -188,6 +191,7 @@ const description = pt
   .intro>p:not(.eyebrow){color:var(--color-text-muted);max-width:940px}
   .notice{border-left:3px solid var(--color-bronze);padding:12px 16px;background:var(--color-surface)}
   .related-links{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .database-link{border:1px solid var(--color-border);padding:7px 12px;border-radius:4px;font-weight:600}
   .legendary-link{color:#d4adf2;border:1px solid #8255a7;padding:7px 12px;border-radius:4px}
   .legendary-link:hover{background:rgba(117,73,159,.15)}
   .catalog{padding:28px 0}
