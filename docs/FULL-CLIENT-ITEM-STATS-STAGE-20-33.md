@@ -72,6 +72,7 @@ separate from validating source code.
 
        py scripts/validate-full-client-stats.py --candidate public/data/client-items/stats
        py scripts/verify-full-client-reviewed-stats.py --candidate public/data/client-items/stats
+       py scripts/verify-full-client-source-hashes.py --candidate public/data/client-items/stats
 
 5. Commit ONLY the audited public data to the existing PR branch:
 
@@ -96,7 +97,9 @@ Actions before marking it ready and merging.
   SQLite Miner source, makes commits, opens PRs or pushes branches.
 - The CI suite fails closed if published shard identities, numeric
   strings, source row numbers, field occurrence counts, aggregate
-  counts or preserved reviewed equipment fields change.
+  counts, 551 previously reviewed source records or any of the **29
+  pinned original-file SHA-256 values** change. These byte hashes are
+  recorded in docs/Miner_AllStats_ApprovedSHA256_20_33.json.
 - The local ZIP/folder and unrestricted Miner raw sources are ignored
   at the repository root and must not be added to Git.
 
