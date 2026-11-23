@@ -83,6 +83,10 @@ test("collapsible sections preserve children, forms and tables without changing 
   assert.ok(nav.includes('labelFor(heading)'));
   assert.ok(nav.includes('dataset.wikiCollapsed=String(collapsed)'));
   assert.ok(nav.includes('section.firstElementChild?.contains(heading)'));
+  assert.ok(nav.includes('root.classList.add("wiki-has-floating-nav")'));
+  assert.ok(nav.includes('root.classList.remove("wiki-has-floating-nav")'));
+  assert.ok(nav.includes('.wiki-has-floating-nav .page-sections'));
+
   assert.ok(nav.includes('if(entries.length<1)'),"Nav remains available after collapsing a parent section");
   assert.ok(nav.includes('aria-controls="wiki-float-nav"'));
 
