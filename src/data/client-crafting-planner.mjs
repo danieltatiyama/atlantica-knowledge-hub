@@ -112,7 +112,7 @@ export function planClientCrafting({
   
   const tree=[],visitedTree=new Set();
   function treeWalk(id,depth,branchQty){
-    const node=nodes.get(id),step=stepMap.get(id),leaf=leafMap.get(id);
+    const node=nodes.get(id),step=stepMap.get(id);
     const repeated=visitedTree.has(id);
     visitedTree.add(id);
     tree.push({
