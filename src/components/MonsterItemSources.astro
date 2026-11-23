@@ -1,8 +1,7 @@
 ---
 /**
- * The source files are not uploaded yet. Show a truthful pending state now,
- * and automatically render source-exact direct/group references after the
- * independently audited Miner candidate is published.
+ * The 53 original source files have been audited and committed. Always
+ * validate snapshot identity and preserve raw direct/group provenance.
  */
 interface Props {lang:"en"|"pt-br";itemId:string;}
 const {lang,itemId}=Astro.props;
@@ -36,8 +35,12 @@ const pt=lang==="pt-br";
       <th>{pt?"Registros":"Source rows"}</th>
     </tr></thead><tbody></tbody></table></div>
   </div>
-  <p class="monster-catalog-link"><a href={(pt?"/pt-br":"")+"/monsters/"}>
-    {pt?"Explorar o catálogo de criaturas":"Explore the creature catalog"}</a></p>
+  <p class="monster-catalog-link">
+    <a href={(pt?"/pt-br":"")+"/monsters/?item="+encodeURIComponent(itemId)}>
+      {pt?"Consultar este item no códice de drops":"Search this ItemID in the loot codex"}</a>
+    <span aria-hidden="true"> · </span>
+    <a href={(pt?"/pt-br":"")+"/monsters/"}>{pt?"Explorar criaturas":"Browse creatures"}</a>
+  </p>
 </section>
 <script>
   let manifestPromise:Promise<any>|null=null;
@@ -153,15 +156,21 @@ const pt=lang==="pt-br";
   }
 </script>
 <style>
-  .monster-item-sources{margin:25px 0;border:1px solid var(--color-border);
-    border-radius:5px;background:var(--color-surface);padding:17px}
-  h2{font-size:1.42rem;color:var(--color-gold-light);margin:0 0 8px}
+  .monster-item-sources{margin:25px 0;border:1px solid #847052;
+    border-radius:5px;background:linear-gradient(140deg,#171e25,#12161b);
+    box-shadow:inset 0 0 0 3px #292820,0 7px 24px #0004;
+    padding:17px}
+  h2{font-family:Georgia,"Times New Roman",serif;font-size:1.42rem;
+    color:#e7cb96;margin:0 0 8px;padding-bottom:10px;
+    border-bottom:1px solid #79674885}
   h3{font-size:1.04rem;color:var(--color-gold-light);margin:18px 0 9px}
   .drop-disclaimer,.monster-item-status{font-size:.85rem;line-height:1.65;color:var(--color-text-muted)}
   .monster-scroll{overflow:auto}
   table{border-collapse:collapse;width:100%;min-width:650px}
   th,td{padding:9px 12px;border-bottom:1px solid var(--color-border);text-align:left;font-size:.86rem}
-  th{color:var(--color-gold-light)}
+  th{color:#e1c48c;background:#2b2821}
+  .monster-item-sources :global(tbody tr:nth-child(even)){background:#222932}
+  .monster-item-sources :global(tbody tr:hover){background:#55452b57}
   td a,.monster-catalog-link a{color:var(--color-accent)}
   .monster-item-direct[hidden],.monster-item-group[hidden]{display:none}
   .monster-item-sources :global(.monster-more){
