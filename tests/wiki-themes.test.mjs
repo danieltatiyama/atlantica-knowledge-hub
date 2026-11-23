@@ -119,7 +119,7 @@ test("equipment table headings and Legendary links follow the selected palette",
 test("light-theme accent headings have accessible contrast on themed table backgrounds",()=>{
   function palette(name){
     const start=themes.indexOf(':root[data-theme="'+name+'"] {');
-    const end=themes.indexOf("\\n}",start);
+    const end=themes.indexOf(String.fromCharCode(10)+"}",start);
     assert.ok(start>=0&&end>start,name);
     return themes.slice(start,end);
   }
