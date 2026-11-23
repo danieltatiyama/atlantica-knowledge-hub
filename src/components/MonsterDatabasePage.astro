@@ -1,0 +1,373 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props{lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and drop sources";
+---
+<BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
+  description={pt?"Navegação por registros originais de criaturas, drops diretos e drops por grupos no cliente.":"Source-based creature catalog with original direct and grouped item drop references."}
+  alternatePaths={{en:"/monsters/", "pt-br":"/pt-br/monsters/"}}>
+  <main class="creature-db" id="creature-db" data-lang={lang}>
+    <nav class="breadcrumb"><a href={prefix+"/"}>{pt?"← Início":"← Home"}</a></nav>
+    <header>
+      <p class="eyebrow">ATLANTICA GLOBAL / NA · MINER SNAPSHOT 1</p>
+      <h1>{title}</h1>
+      <p>{pt
+        ?"Catálogo de IDs e relações extraídos dos arquivos de personagens e loot do cliente. Nem todo registro do cliente é necessariamente um monstro enfrentável. A existência no servidor atual e as probabilidades de drops não foram verificadas."
+        :"An index of original client character and loot references. Not every client entity is necessarily a fightable monster. Current-server availability and item-drop probabilities are not verified."}</p>
+      <p class="warning">{pt
+        ?"RawRate é um número original de configuração, NÃO uma porcentagem confirmada. Referências a grupos e itens dos grupos são etapas distintas, com linhas de origem próprias."
+        :"RawRate is an original configuration integer, NOT a confirmed percentage. A creature's group reference and an item in that group are separate stages with separate source evidence."}</p>
+    </header>
+    <section class="browse" aria-label={pt?"Pesquisar criaturas":"Search creatures"}>
+      <div class="filters">
+        <label>{pt?"Nome original ou CharID":"Original name or CharID"}
+          <input id="creature-query" type="search" autocomplete="off"
+            placeholder={pt?"Pesquise por nome ou ID":"Search by name or ID"} disabled/>
+        </label>
+        <label>{pt?"Tipo original":"Raw entity category"}
+          <select id="creature-kind" disabled>
+            <option value="">{pt?"Todas as categorias":"All source categories"}</option>
+          </select>
+        </label>
+        <label>{pt?"Nível mínimo do cliente":"Minimum source level"}
+          <input id="creature-level" type="number" min="0" step="1"
+            placeholder={pt?"Qualquer":"Any"} disabled/>
+        </label>
+      </div>
+      <p class="subtle" id="creature-status" role="status">{pt
+        ?"Verificando se os registros originais de monstros já foram publicados…"
+        :"Checking whether the original creature and loot records have been published…"}</p>
+      <div class="creature-table-scroll" id="creature-list" hidden>
+        <table>
+          <thead><tr>
+            <th>{pt?"Nome original em inglês":"Original English name"}</th>
+            <th>CharID</th>
+            <th>{pt?"Tipo do cliente":"Client category"}</th>
+            <th>{pt?"Nível bruto":"Raw level"}</th>
+            <th>{pt?"Drops diretos":"Direct drops"}</th>
+            <th>{pt?"Grupos vinculados":"Linked groups"}</th>
+          </tr></thead>
+          <tbody id="creature-rows"></tbody>
+        </table>
+      </div>
+      <div class="paging" id="creature-paging" hidden>
+        <button id="creature-prev" type="button" disabled>{pt?"Anterior":"Previous"}</button>
+        <span id="creature-pages"></span>
+        <button id="creature-next" type="button" disabled>{pt?"Próxima":"Next"}</button>
+      </div>
+    </section>
+    <section id="creature-detail" class="creature-detail" hidden>
+      <div class="detail-header">
+        <h2 id="creature-detail-name"></h2>
+        <button type="button" id="creature-close">{pt?"Fechar":"Close"}</button>
+      </div>
+      <p id="creature-detail-meta" class="subtle"></p>
+      <div id="creature-details"></div>
+    </section>
+  </main>
+</BaseLayout>
+<script>
+  const root=document.querySelector<HTMLElement>("#creature-db");
+  if(root){
+    const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const $=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
+    const query=$<HTMLInputElement>("creature-query");
+    const kind=$<HTMLSelectElement>("creature-kind");
+    const level=$<HTMLInputElement>("creature-level");
+    const status=$<HTMLElement>("creature-status");
+    const list=$<HTMLElement>("creature-list");
+    const rowsEl=$<HTMLTableSectionElement>("creature-rows");
+    const pageNav=$<HTMLElement>("creature-paging");
+    const prev=$<HTMLButtonElement>("creature-prev");
+    const next=$<HTMLButtonElement>("creature-next");
+    const pages=$<HTMLElement>("creature-pages");
+    const detail=$<HTMLElement>("creature-detail");
+    const detailName=$<HTMLElement>("creature-detail-name");
+    const detailMeta=$<HTMLElement>("creature-detail-meta");
+    const detailBody=$<HTMLElement>("creature-details");
+    const close=$<HTMLButtonElement>("creature-close");
+    const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+    const raw=(v:unknown)=>v===null||v===undefined?"—":String(v);
+    const node=(tag:string,value?:string,cls?:string)=>{
+      const n=document.createElement(tag);
+      if(value!==undefined)n.textContent=value;
+      if(cls)n.className=cls;
+      return n;
+    };
+    const cell=(row:HTMLTableRowElement,text:string)=>{
+      const td=node("td",text);row.append(td);return td;
+    };
+    const itemLink=(id:string,name:string|null)=>{
+      const a=node("a",name??("Item #"+id)) as HTMLAnchorElement;
+      a.href=prefix+"/items/database/?id="+encodeURIComponent(id);
+      return a;
+    };
+    let manifest:any=null,all:any[]=[],visible:any[]=[],page=0;
+    const perPage=100;
+    const shardCache=new Map<string,Promise<any>>();
+    const loadShard=(filename:string)=>{
+      if(!shardCache.has(filename)){
+        shardCache.set(filename,fetch("/data/client-monsters/"+filename)
+          .then(r=>{if(!r.ok)throw Error("Missing original source shard");return r.json();})
+          .then(data=>{
+            if(data.schemaVersion!=="1.0"||data.snapshotId!==1)
+              throw Error("Source shard snapshot mismatch");
+            return data;
+          }).catch(err=>{shardCache.delete(filename);throw err;}));
+      }
+      return shardCache.get(filename)!;
+    };
+    function findFile(group:string,id:string){
+      const filename=group+"/"+String(Math.floor(Number(id)/1000)).padStart(2,"0")+".json";
+      return manifest.files[group]?.includes(filename)?filename:null;
+    }
+    function render(){
+      rowsEl.replaceChildren();
+      const first=page*perPage;
+      for(const [id,name,rawLevel,rawKind,identity,directCount,groups] of visible.slice(first,first+perPage)){
+        const tr=node("tr") as HTMLTableRowElement;
+        const firstCell=cell(tr,""),a=node("a",name??("CharID "+id)) as HTMLAnchorElement;
+        a.href="?id="+encodeURIComponent(id);
+        a.addEventListener("click",e=>{
+          if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
+          e.preventDefault();void openCreature(id,true);
+        });
+        firstCell.append(a);
+        cell(tr,id);cell(tr,raw(rawKind));cell(tr,raw(rawLevel));
+        cell(tr,nf.format(directCount));cell(tr,nf.format(groups));
+        rowsEl.append(tr);
+      }
+      const total=Math.ceil(visible.length/perPage);
+      prev.disabled=page<1;next.disabled=page>=total-1;
+      pages.textContent=(pt?"Página ":"Page ")+(total?page+1:0)+"/"+total;
+      status.textContent=nf.format(visible.length)+" / "+nf.format(all.length)+
+        (pt?" registros de criaturas do cliente":" original client creature IDs");
+    }
+    function applyFilters(){
+      const q=query.value.toLocaleLowerCase().trim(),k=kind.value,rawMin=level.value;
+      const minimum=rawMin!==""?Number(rawMin):null;
+      visible=all.filter(r=>
+        (!q||r[0].includes(q)||(r[1]??"").toLocaleLowerCase().includes(q))&&
+        (!k||r[3]===k)&&
+        (minimum===null||(r[2]!==null&&Number.isFinite(Number(r[2]))&&Number(r[2])>=minimum)));
+      page=0;render();
+    }
+    function table(columns:string[],records:(string|number|null)[][]){
+      const wrap=node("div",undefined,"creature-table-scroll");
+      const tbl=node("table"),thead=node("thead"),h=node("tr"),tbody=node("tbody");
+      for(const name of columns)h.append(node("th",name));
+      thead.append(h);tbl.append(thead);
+      for(const cells of records){
+        const tr=node("tr");
+        for(const value of cells)cell(tr,raw(value));
+        tbody.append(tr);
+      }
+      tbl.append(tbody);wrap.append(tbl);return wrap;
+    }
+    function appendItemTable(container:HTMLElement,entries:any[][],isGrouped:boolean,groupId?:string,groupRef?:any[]){
+      const tableNode=node("table"),head=node("thead"),h=node("tr"),body=node("tbody");
+      const headers=isGrouped
+        ?[pt?"Item do grupo":"Group item","ItemID","GroupID",
+          pt?"RawRate da referência":"Reference RawRate",
+          pt?"RawRate do item":"Item RawRate",
+          pt?"Quantidades candidatas":"Candidate quantities",
+          pt?"Linhas originais":"Original source rows"]
+        :[pt?"Item":"Item","ItemID","RawRate",
+          pt?"Quantidades candidatas":"Candidate quantities",
+          pt?"Registro de origem":"Source row"];
+      headers.forEach(x=>h.append(node("th",x)));
+      head.append(h);tableNode.append(head);
+      for(const source of entries){
+        const tr=node("tr");
+        const itemId=isGrouped?source[2]:source[1];
+        const itemName=isGrouped?source[3]:source[2];
+        const first=node("td");first.append(itemLink(itemId,itemName));
+        tr.append(first);
+        cell(tr,itemId);
+        if(isGrouped){
+          cell(tr,groupId??"—");
+          cell(tr,raw(groupRef?.[2]));
+          cell(tr,raw(source[4]));
+          cell(tr,raw(source[6])+"–"+raw(source[7]));
+          cell(tr,"#"+groupRef?.[0]+" / #"+source[0]);
+        }else{
+          cell(tr,raw(source[3]));
+          cell(tr,raw(source[5])+"–"+raw(source[6]));
+          cell(tr,"#"+source[0]);
+        }
+        body.append(tr);
+      }
+      tableNode.append(body);
+      const wrap=node("div",undefined,"creature-table-scroll");wrap.append(tableNode);
+      container.append(wrap);
+    }
+    let shownId="";
+    async function openCreature(id:string,navigate:boolean){
+      if(!/^[1-9]\d{0,12}$/.test(id))return;
+      const entity=all.find(r=>r[0]===id);
+      if(!entity)return;
+      shownId=id;
+      detail.hidden=false;
+      detailName.textContent=entity[1]??("CharID "+id);
+      detailMeta.textContent="CharID "+id+" · "+
+        (pt?"Nível bruto":"Raw level")+" "+raw(entity[2])+
+        " · "+(pt?"Tipo do cliente":"Source type")+" "+raw(entity[3])+
+        " · "+(pt?"Identidade":"Identity")+" "+entity[4];
+      detailBody.replaceChildren(node("p",pt
+        ?"Carregando os registros de origem…"
+        :"Loading original source records…","subtle"));
+      if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
+      try{
+        const charFile=findFile("characters",id),lootFile=findFile("loot",id);
+        const [character,loot]=await Promise.all([
+          charFile?loadShard(charFile):Promise.resolve(null),
+          lootFile?loadShard(lootFile):Promise.resolve(null),
+        ]);
+        if(shownId!==id)return;
+        const body=document.createDocumentFragment();
+        const intro=node("p",pt
+          ?"Definições extraídas do cliente; nem identidade de monstro ativo, nem chance de drop foram verificadas no servidor."
+          :"Extracted client source evidence. Active monster identity and item drop chances have not been verified on the server.","subtle");
+        body.append(intro);
+        const original=character?.items?.[id]?.original??[];
+        const miner=character?.items?.[id]?.miner??[];
+        body.append(node("h3",pt?"Registros originais da criatura":"Original character records"));
+        if(original.length)body.append(table(
+          [pt?"Registro":"Source row",pt?"Nome original":"Original name",
+           pt?"Nível bruto":"Raw level",pt?"Tipo bruto":"Raw type"],
+          original));
+        else body.append(node("p",pt?"Sem registros Characters.csv para este ID.":"No Characters.csv records for this ID.","subtle"));
+        if(miner.length){
+          const extra=node("details");extra.append(node("summary",pt
+            ?"Metadados originais adicionais":"Additional Miner source metadata"));
+          extra.append(table(
+            [pt?"Registro":"Row",pt?"Código":"Code",pt?"Nome":"Name",
+            pt?"Arquivo":"File",pt?"Nível":"Level",pt?"Grade":"Grade"],
+            miner));
+          body.append(extra);
+        }
+        const rawDirect=loot?.items?.[id]?.direct??[];
+        body.append(node("h3",pt?"Drops diretos registrados":"Original direct drop references"));
+        if(rawDirect.length)appendItemTable(body as unknown as HTMLElement,rawDirect,false);
+        else body.append(node("p",pt
+          ?"Nenhuma referência direta encontrada neste snapshot."
+          :"No direct loot reference was recorded in this client snapshot.","subtle"));
+        const references=loot?.items?.[id]?.groups??[];
+        body.append(node("h3",pt?"Grupos de loot vinculados":"Original linked loot groups"));
+        if(!references.length)body.append(node("p",pt
+          ?"Nenhuma referência de grupo identificada neste snapshot."
+          :"No grouped source reference was found in this client snapshot.","subtle"));
+        for(const ref of references){
+          const [refRow,groupId,refRawRate,slot]=ref;
+          const block=node("section",undefined,"creature-group");
+          block.append(node("h4","GroupID "+groupId+" · "+(pt?"Referência":"Reference")+" #"+refRow));
+          block.append(node("p","RawRate "+raw(refRawRate)+
+            (slot?" · "+slot:"")+(pt
+              ?" (sem conversão em %)":" (not converted into %)"),"subtle"));
+          const path=findFile("groups",groupId);
+          if(!path){
+            block.append(node("p",pt
+              ?"O grupo não foi publicado ou não pôde ser conciliado."
+              :"Original group source was not published or could not be reconciled.","subtle"));
+          }else{
+            const info=await loadShard(path);
+            if(shownId!==id)return;
+            const groupData=info.items?.[groupId];
+            if(groupData?.drops?.length){
+              appendItemTable(block,groupData.drops,true,groupId,ref);
+            }else block.append(node("p",pt
+              ?"Nenhum item estruturado para este grupo."
+              :"No structured items listed for this source group.","subtle"));
+          }
+          body.append(block);
+        }
+        if(shownId!==id)return;
+        detailBody.replaceChildren(body);
+        detail.scrollIntoView({behavior:"smooth",block:"start"});
+      }catch{
+        if(shownId===id)detailBody.replaceChildren(node("p",pt
+          ?"Não foi possível validar os registros de origem para esta criatura."
+          :"Original creature records could not be loaded or validated.","subtle"));
+      }
+    }
+    close.addEventListener("click",()=>{
+      shownId="";detail.hidden=true;history.pushState({}, "",location.pathname);
+    });
+    window.addEventListener("popstate",()=>{
+      const id=new URL(location.href).searchParams.get("id");
+      if(id)void openCreature(id,false);
+      else{shownId="";detail.hidden=true;}
+    });
+    prev.addEventListener("click",()=>{if(page>0){page--;render();}});
+    next.addEventListener("click",()=>{if((page+1)*perPage<visible.length){page++;render();}});
+    query.addEventListener("input",applyFilters);
+    kind.addEventListener("change",applyFilters);
+    level.addEventListener("input",applyFilters);
+    void (async()=>{
+      try{
+        const response=await fetch("/data/client-monsters/manifest.json");
+        if(!response.ok){
+          status.textContent=pt
+            ?"Importação original pendente. As páginas e os links estão preparados; aguardamos o pacote revisado de Characters.csv e drops."
+            :"Original data import pending. Catalog pages and item links are ready for the reviewed character/drop package.";
+          return;
+        }
+        manifest=await response.json();
+        if(manifest.schemaVersion!=="1.0"||manifest.snapshotId!==1||
+          manifest.dataset!=="all-client-monster-loot-original"||
+          !Array.isArray(manifest.files?.index))
+          throw Error("Unapproved creature manifest");
+        const shards=await Promise.all(manifest.files.index.map(loadShard));
+        all=shards.flatMap(shard=>shard.rows);
+        if(all.length!==manifest.catalogMonsterIds||
+          new Set(all.map(r=>r[0])).size!==all.length)
+          throw Error("Incomplete source creature catalog");
+        const categories=[...new Set(all.map(r=>r[3]).filter(Boolean))].sort();
+        for(const category of categories){
+          const option=node("option",category) as HTMLOptionElement;
+          option.value=category;kind.append(option);
+        }
+        query.disabled=false;kind.disabled=false;level.disabled=false;
+        visible=all;list.hidden=false;pageNav.hidden=false;render();
+        const selected=new URL(location.href).searchParams.get("id");
+        if(selected)void openCreature(selected,false);
+      }catch{
+        status.textContent=pt
+          ?"Os arquivos de criaturas não passaram pela verificação de estrutura."
+          :"Original creature sources were missing or failed structural validation.";
+      }
+    })();
+  }
+</script>
+<style>
+  .creature-db{width:min(var(--content-width),92%);margin:0 auto;padding:20px 0 80px}
+  .breadcrumb{margin-bottom:18px}.breadcrumb a,.creature-db a{color:var(--color-accent)}
+  .eyebrow{letter-spacing:.12em;font-size:.75rem;color:var(--color-accent)}
+  h1{font-size:clamp(1.8rem,4vw,2.8rem)}
+  header>p{line-height:1.65;color:var(--color-text-muted)}
+  .warning{border-left:3px solid var(--color-bronze);padding:10px 14px;background:var(--color-surface)}
+  .browse,.creature-detail{border:1px solid var(--color-border);border-radius:5px;padding:18px;margin:25px 0}
+  .filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px}
+  label{display:grid;gap:5px;font-size:.85rem;color:var(--color-gold-light)}
+  input,select{width:100%;padding:11px;border:1px solid var(--color-border);
+    border-radius:4px;background:var(--color-surface);color:var(--color-text);font:inherit}
+  .subtle{font-size:.88rem;line-height:1.6;color:var(--color-text-muted)}
+  .creature-table-scroll{overflow:auto}
+  table{border-collapse:collapse;width:100%;min-width:680px}
+  th,td{padding:8px 12px;border-bottom:1px solid var(--color-border);text-align:left;font-size:.86rem}
+  th{color:var(--color-gold-light)}
+  td{color:var(--color-text)}
+  .paging,.detail-header{display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin:14px 0}
+  button{background:var(--color-surface);border:1px solid var(--color-border);
+    border-radius:4px;color:var(--color-text);padding:8px 14px;cursor:pointer}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  h2{color:var(--color-gold-light);font-size:1.38rem}
+  h3{color:var(--color-gold-light);margin-top:20px;font-size:1.13rem}
+  h4{font-size:.98rem}
+  .creature-group{margin:15px 0;padding:12px;border:1px solid var(--color-border);border-radius:4px}
+  #creature-list[hidden],#creature-paging[hidden],#creature-detail[hidden]{display:none}
+  @media(max-width:650px){.filters{grid-template-columns:1fr}}
+</style>
