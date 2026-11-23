@@ -75,3 +75,20 @@ Manual visual checks across Atlantica, Light and Parchment themes:
 7. Confirm the equipment profile itself displays the user-confirmed 1×20 rule while technical Unit remains intact.
 
 Do not mark interactive browser QA as complete solely because GitHub Actions is green.
+
+
+## Stage 20.56 — Recipe-only selection and exact crafting quantities
+
+The player confirmed that crafting takes place **only in full batches**. A source batch of 50 permits output 50, 100, 150, ... but never 51. The output selection range is limited to **10,000 units per planning request**. This planning limit differs from the per-operation equipment cap of **20 items** (a 1,000-item equipment plan is possible, divided into 50 operations).
+
+The calculator now:
+1. Lists only named client items whose indexed source records declare materials (row[7] = 1); before accepting a selection it verifies the actual parsed recipe in the original detail shard.
+2. Sets numeric input min=batch, max=floor(10000/batch)*batch, step=batch; the slider uses the same values and the two inputs stay synchronized.
+3. Rejects a non-multiple quantity rather than rounding the top-level requested output silently. The underlying planning engine supports strictTargetBatch for UI calls. Intermediate crafting still rounds material demand UP to a whole batch as required by gameplay.
+4. For a source with multiple recipe variants, asks which variant should determine the batch before activating quantity controls.
+5. For a missing/unreliable source Unit on non-equipment, explicitly requests the minimum batch size instead of guessing it. Equipment always uses the separate confirmed batch 1 rule.
+6. Accepts ?id=... links only after validating that the ItemID is a recipe-bearing, named client entry.
+
+**Provenance caveat:** having a recipe in client files is not proof that an item remains craftable in the live 2026 server. The autocomplete is labeled as client recipe items, not server-verified craftable items.
+
+Regression suite: tests/client-crafting-quantity.test.mjs checks real client items #645/#18801/#4819, exact quantity steps, absent and alternate recipes, source-only autocomplete exclusion and the strict engine. The deployed UI must still be visually checked.
