@@ -36,7 +36,7 @@ const clientFields = curatedFields ? [
 <BaseLayout lang={lang} title={title + " | Atlantica Knowledge Hub"}
   description={(pt ? "Informações de equipamento, ID e referências a boxes capturadas: " : "Equipment item ID and captured box references: ") + title}
   alternatePaths={{en:"/items/" + item.id + "/", "pt-br":"/pt-br/items/" + item.id + "/"}}>
-  <main class="container">
+  <main class="container" data-wiki-nav-root>
     <nav class="breadcrumb"><a href={base}>{pt ? "← Voltar ao catálogo" : "← Back to item catalog"}</a></nav>
     <article>
       <header>
