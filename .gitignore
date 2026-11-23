@@ -81,3 +81,6 @@ Miner_ClientAttributes_*.json
 /Miner_AllStats_PublicCandidate_*/
 /Miner_AllStats_PublicCandidate_*.zip
 /Miner_AllStats_Report_*.json
+
+# Generated from already-published immutable client item details
+/public/data/client-items/crafting/
