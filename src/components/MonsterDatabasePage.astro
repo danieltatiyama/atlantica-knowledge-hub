@@ -9,7 +9,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
 <BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
   description={pt?"Navegação por registros originais de criaturas, drops diretos e drops por grupos no cliente.":"Source-based creature catalog with original direct and grouped item drop references."}
   alternatePaths={{en:"/monsters/", "pt-br":"/pt-br/monsters/"}}>
-  <main class="creature-db" id="creature-db" data-lang={lang}>
+  <main class="creature-db" id="creature-db" data-lang={lang} data-wiki-nav-root>
     <nav class="breadcrumb"><a href={prefix+"/"}>{pt?"← Início":"← Home"}</a></nav>
     <header class="bestiary-header">
       <div class="bestiary-heading">
@@ -370,6 +370,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         // Original Miner rows remain fully auditable but no longer interrupt
         // the player-first path from creature name to possible loot.
         const audit=node("details",undefined,"community-creature-audit");
+        audit.dataset.wikiNavNative="true";
         audit.append(node("summary",(pt?"Registros originais do cliente":"Original client records")+
           " ("+nf.format(original.length+miner.length)+")"));
         audit.append(node("p",pt
