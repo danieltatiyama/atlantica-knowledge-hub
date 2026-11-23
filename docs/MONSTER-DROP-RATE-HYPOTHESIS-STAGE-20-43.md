@@ -70,3 +70,14 @@ invalid/out-of-bound fields, distinct GroupBands.RawSum, raw source
 disclaimers in all four UI paths, and widescreen-only layout behavior.
 The original source SHA audit, prior tests and production Astro
 build are run in CI before merge.
+
+## What would validate the displayed hypothesis
+
+The 0..10000 scale is plausible numerically, but confirming a real
+monster/item drop chance would require either official server drop
+mechanics or controlled observed drops (including empty drops,
+group/band selection conditions, and adequate sample sizes).
+Different combat modes, events, quest modifiers, dungeon buffs,
+and per-server loot policies could invalidate a client-only
+percentage. Until that evidence exists, the interface must retain
+the **estimated** label even when a raw field equals 10000.
