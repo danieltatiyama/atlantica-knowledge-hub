@@ -203,7 +203,7 @@ const languageLabels={
 const kind=(mode,L)=>mode==="craft"?L.crafted:mode==="buy"?L.buy:
   mode==="unresolved"?L.unresolved:L.base;
 const safeName=(name,id)=>String(name??"Item #"+id);
-export function buildCraftingWorkbook({plan,names={},prices={},locale="en"}){
+export function buildCraftingWorkbook({plan,names={},prices={},priceOrigins={},locale="en"}){
   if(!plan||!Array.isArray(plan.tree)||!Array.isArray(plan.steps)||
     !Array.isArray(plan.leaves)||!Array.isArray(plan.leftoverRows))
     throw new TypeError("A calculated crafting plan is required for export");
@@ -250,7 +250,13 @@ export function buildCraftingWorkbook({plan,names={},prices={},locale="en"}){
       txt(row.itemId),txt(getName(row.itemId)),num(row.quantity),
       price?num(price):txt(""),
       formula('IF(D'+excelRow+'="","",C'+excelRow+'*D'+excelRow+')',3),
-      txt("Original client / manual prices"),
+      txt(priceOrigins[row.itemId]==="client-npc-catalog"
+        ?(locale==="pt"||locale==="pt-br"
+          ?"Referência NPC do cliente (Market não verificado)"
+          :"Client NPC reference (Market unverified)")
+        :price
+          ?(locale==="pt"||locale==="pt-br"?"Preço informado pelo usuário":"Player-entered price")
+          :(locale==="pt"||locale==="pt-br"?"Sem preço":"Unpriced")),
     ];
   });
   const leftovers=plan.leftoverRows.length

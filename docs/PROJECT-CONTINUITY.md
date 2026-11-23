@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.64 (investigação da fonte de preços no cliente)  
-**Último PR de pesquisa:** [PR #83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) (Stage 20.64)
+**Última etapa implementada:** Stage 20.65 (preços reais da tabela NPC do cliente e referência opcional)  
+**Último PR de pesquisa:** [PR #84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) (Stage 20.65)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -367,6 +367,18 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Documentação técnica e comandos: `research/market-fixed-prices/CLIENT-TRADE-STAGE-20-64.md`. Testes com dados sintéticos, sem ativos do jogo: `tests/test_export_client_trade_prices.py` (executados pelo CI Python já existente).
 - **Dependência de usuário**: a origem real do cliente está na instalação Windows do usuário e não está disponível na integração GitHub. Para concluir a descoberta de quantos itens o cliente atual cobre, precisamos receber os 2 relatórios locais gerados (não os arquivos do jogo). **Não publicar nem autopreencher** os preços históricos ou NPC como preços fixos verificados do Market antes dessa revisão.
 
+### Stage 20.65 — Resultados reais do cliente e preços de referência não verificados
+
+- Usuário enviou os dois arquivos **reais** gerados pelo extrator Stage 20.64 em 23/11/2026: `npc-trade-price-candidate.csv` e `npc-trade-price-audit.json`. Arquivados como `research/market-fixed-prices/client-npc-trade-2026-11-23.csv` e `...-audit.json`.
+- **652 registros NPCTradeItem** sem problemas de parsing, preço zero, repetição ou conflitos; **421 do catálogo geral**, todos com nome inglês reconciliado; **231 housing**, dos quais **227 IDs estão com identidade `collision`** e somente **4 têm nome confiável**.
+- Todos os quatro exemplos do jogador conferidos no `general`: Gold Thread #7070 3.000, Colorful Thread #7081 10.000, Rice #3000 100, Mana Potion [II] #2080 8.000.
+- **293/293 registros com ItemID reconciliado da fonte Jana4U 2025 coincidem em preço** com a tabela do cliente de 2026, sem diferença ou ausência. Foram identificados outros **128 ItemIDs `general`** além desse conjunto de 293.
+- Resultado **não comprova** que o catálogo NPC de 2026 seja um índice exaustivo dos itens vendidos a preço fixo no Market do servidor. Separar `NPC trade reference`, `Market fixed price verified` e `manual prices`; a flag `marketFixedPriceVerified=false` permanece explícita.
+- Snapshot de referência pública somente com os 421 itens gerais nomeados em `public/data/client-npc-trade-prices/general.json` e `manifest.json`; 231 housing permanecem somente na pesquisa arquivada.
+- Na Crafting Calculator, **Show client references / Ver referências do cliente** consulta o catálogo NPC, exibindo dicas por ItemID, sem aplicar preço automaticamente. Cada item pode receber o preço pelo botão **Usar**, ou o jogador pode optar por **Preencher somente preços vazios**. Preços manuais existentes sempre têm prioridade. A origem NPC é salva separadamente e documentada na lista de compras do Excel.
+- Implementação: `src/data/client-npc-price-reference.mjs`, `src/components/CraftingPlannerPage.astro`, `src/data/client-crafting-xlsx.mjs`. Testes e CI: `tests/client-npc-trade-prices-stage-20-65.test.mjs`. Metodologia: `research/market-fixed-prices/CLIENT-PRICE-STAGE-20-65.md`.
+- Próximo passo: validar no jogo exemplos dos **128 registros novos** e investigar possível tabela **servidor** com outros preços fixos; não inferir que o Market possua somente 421 preços fixos.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -390,6 +402,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.62 | [#81](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/81) | Conclusão reversível de produtos, valores centralizados e limite de 10.000 de cada ingrediente por operação |
 | 20.63 | [#82](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/82) | Catálogo de pesquisa de 1.016 preços fixos históricos, 292 IDs conciliados, Rice reportado pelo jogador, sem modificar preços na interface |
 | 20.64 | [#83](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/83) | Descoberta da fonte candidata NPCTradeItem_ENG.ndt e exportador offline de preços por ItemID/catálogo com 4 benchmarks de validação |
+| 20.65 | [#84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) | Extração real 652 preços NPC, 421 gerais nomeados, 293/293 históricos compatíveis; referência opt-in para calculadora |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -466,4 +479,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.62 implementada no PR #81. Verificar CI e integração no GitHub. Após deploy, conferir o limite real de ingredientes de Strong Fishing Line/Fishhook, os botões Feito/Desfazer em materiais compartilhados e centralização das três tabelas em diferentes temas.**
+**Estado documentado: Stage 20.65 implementada no PR #84, com dados reais NPCTradeItem. Conferir status de CI/integração no GitHub e testar visualmente no site o botão Ver referências do cliente, Usar/Preencher somente preços vazios e a origem na planilha exportada. Os preços NPC não foram confirmados como ofertas fixas do Market do servidor.**

@@ -122,6 +122,9 @@ jobs:
       - name: Validate fixed Market price research provenance and client name matches
         run: node --test tests/market-fixed-price-research.test.mjs
 
+      - name: Validate actual client NPC price snapshot, historical crosscheck and opt-in UI
+        run: node --test tests/client-npc-trade-prices-stage-20-65.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 

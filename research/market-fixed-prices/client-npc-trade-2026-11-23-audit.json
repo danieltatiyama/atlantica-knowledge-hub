@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "researchStage": "20.64",
+  "dataset": "client-npc-trade-catalog-candidate",
+  "sourceRelativePath": "LANG/ENG/NPCTRADEITEM/NPCTradeItem_ENG.ndt",
+  "extractedAtUtc": "2026-11-23T20:41:35.766536+00:00",
+  "sourceVersion": "not-established",
+  "catalogSnapshotId": 1,
+  "candidateCount": 652,
+  "generalCatalogCount": 421,
+  "housingCatalogCount": 231,
+  "mappedNamedItemIds": 425,
+  "sourceParse": {
+    "parsedSourceRows": 652,
+    "retainedRows": 652,
+    "invalidRows": 0,
+    "unsupportedParamRows": 0,
+    "duplicateSameValueRows": 0,
+    "conflictingItemCatalogPairsHeld": 0,
+    "zeroPriceRows": 0
+  },
+  "knownPriceComparison": [
+    {
+      "itemId": "7070",
+      "clientNameEn": "Gold Thread",
+      "expectedGold": 3000,
+      "observedGeneralPriceGold": 3000,
+      "comparison": "match",
+      "expectedSource": "player-example-2026-11-23"
+    },
+    {
+      "itemId": "7081",
+      "clientNameEn": "Colorful Thread",
+      "expectedGold": 10000,
+      "observedGeneralPriceGold": 10000,
+      "comparison": "match",
+      "expectedSource": "player-example-2026-11-23"
+    },
+    {
+      "itemId": "3000",
+      "clientNameEn": "Rice",
+      "expectedGold": 100,
+      "observedGeneralPriceGold": 100,
+      "comparison": "match",
+      "expectedSource": "player-example-2026-11-23"
+    },
+    {
+      "itemId": "2080",
+      "clientNameEn": "Mana Potion [II]",
+      "expectedGold": 8000,
+      "observedGeneralPriceGold": 8000,
+      "comparison": "match",
+      "expectedSource": "player-example-2026-11-23"
+    }
+  ],
+  "knownPriceMatchCount": 4,
+  "conclusion": "Source table agrees with all four independent examples; its equivalence to current Global Market fixed prices remains unproven.",
+  "privacy": "No absolute game paths, unrelated client tables, Korean item names, accounts, item inventories, personal data, or raw NDT bytes exported.",
+  "historicalPriceCrosscheck": {
+    "status": "historical-reference-only",
+    "historicalMappedItemIds": 293,
+    "generalCatalogMatches": 293,
+    "generalCatalogMismatches": 0,
+    "generalCatalogAbsent": 0,
+    "mismatchExamples": [],
+    "notice": "Source agreement is not proof of current Global fixed Market pricing."
+  }
+}
