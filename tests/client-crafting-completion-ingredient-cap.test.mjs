@@ -14,7 +14,7 @@ const recipe=id=>{
 const step=(p,id)=>p.steps.find(x=>x.itemId===id);
 const find=(p,id)=>p.leaves.find(x=>x.itemId===id);
 
-test("Strong Fishing Line: 200 Thread per batch 20 caps each operation at 1,000 output",()=>{
+test("Strong Fishing Line: 200 Colorful Thread per batch 20 caps each operation at 1,000 output",()=>{
  const source=recipe("2320");
  assert.equal(source.length,1);
  assert.equal(source[0].batchSize,20);
