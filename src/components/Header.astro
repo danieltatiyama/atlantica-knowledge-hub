@@ -504,6 +504,14 @@ import {
       grid-template-columns: minmax(0, 1fr);
     }
   }
+  /* Keep responsive rules after the base component rules in the cascade. */
+  @media (max-width: 1560px) {
+    .main-nav { justify-self: stretch; }
+    .nav-link { padding: 8px 11px; }
+  }
+  @media (max-width: 700px) {
+    .nav-link { padding: 8px 10px; }
+  }
 
 </style>
 
