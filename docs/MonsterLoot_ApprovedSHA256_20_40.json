@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "20.40-sha256",
+  "dataset": "all-client-monster-loot-original",
+  "snapshotId": 1,
+  "source": "user-provided Miner_MonsterLoot_PublicCandidate_20_38.zip",
+  "approvedFiles": 53,
+  "catalogMonsterIds": 4351,
+  "directSourceRows": 9959,
+  "groupReferenceRows": 5784,
+  "groupDropRows": 3076,
+  "groupBandRows": 572,
+  "reverseItemIds": 893,
+  "groupSourceJoins": 172120,
+  "zipSha256": "dd02a5d0c75653bf815a5a2549247e2549d0fb5f67142e16baa5601dcbfe846d",
+  "originalFileStreamSha256": "d202d71798e45053217fbeaf71a72a4c7af3a1a01343b2bb58fe55f6717bc72b",
+  "aggregateFormat": "Sort 53 relative POSIX paths, SHA256(concat(UTF8(name)+NUL+original-file-bytes)); original files have exactly one trailing CRLF; accept a Git checkout with only that terminal CRLF normalized to LF.",
+  "description": "Original 4351 creature references; direct/group raw rates not independently verified drop percentages. 172120 inverse group joins are derived, not distinct drop rows."
+}
