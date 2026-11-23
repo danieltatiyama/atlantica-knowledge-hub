@@ -41,7 +41,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     <span class="conflict">{pt?"Run incompatível":"Conflicting run"}</span>
     <span class="gap">{pt?"Hora inexistente (DST)":"Nonexistent hour (DST)"}</span>
    </div>
-   <div class="nd-table-wrap"><table id="nd-grid" aria-label={pt?"Disponibilidade por hora":"Hourly availability"}></table></div>
+   <p class="nd-grid-caption">{pt
+    ?"Cada célula representa uma hora no fuso escolhido. Verde = dungeon disponível; vermelho = cooldown. Símbolos indicam runs cadastradas."
+    :"Each cell is one hour in the selected timezone. Green = dungeon ready; red = cooldown. Markers indicate scheduled runs."}</p>
+   <div class="nd-table-wrap" role="region" tabindex="0" aria-label={pt?"Grade do calendário com rolagem":"Scrollable dungeon calendar grid"}><table id="nd-grid" aria-label={pt?"Disponibilidade por hora":"Hourly availability"}></table></div>
    <p class="nd-hint">{pt
     ?"O calendário indica disponibilidade calculada a partir das runs registradas. Uma run em cooldown é marcada como conflito e não reinicia o timer. Horas repetidas no fim do horário de verão usam a primeira ocorrência."
     :"Readiness is estimated from registered runs. A run during cooldown is marked as conflicting and does not restart the timer. Repeated clocks at DST fallback use the first occurrence."}</p>
@@ -212,6 +215,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    grid.replaceChildren();
    const tz=zone(),days=Number(horizon.value),name=selected.value;
    const runs=expandNationRuns(plan,{startDate:start.value,days,timeZone:tz});
+   const daysOnColumns=orientation.value==="time-rows";
+   grid.dataset.orientation=orientation.value;
+   grid.style.minWidth=(daysOnColumns?Math.max(800,days*116+100):1900)+"px";
    const selectedRuns=runs.filter(run=>run.dungeon===name);
    const events=new Map<string,any[]>();
    for(const run of selectedRuns){
@@ -235,6 +241,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(value.ready)readySlots++;else cooldownSlots++;
     td.title=date+" "+String(hour).padStart(2,"0")+":00 "+tz+
       " · "+(value.ready?(pt?"Disponível":"Ready"):(pt?"Em cooldown":"Cooldown"));
+    td.setAttribute("aria-label",td.title);
     const matching=events.get(date+"|"+hour)??[];
     for(const run of matching){
      const label=node("span",run.accepted?"●":"!");
@@ -247,20 +254,36 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     return td;
    };
    const thead=node("thead"),head=node("tr");
-   head.append(node("th",orientation.value==="time-rows"?(pt?"Hora":"Hour"):(pt?"Dia":"Day")));
-   for(const key of (orientation.value==="time-rows"?dates:hoursList))
-    head.append(node("th",typeof key==="number"?String(key).padStart(2,"0")+":00":key));
+   const topLeft=node("th",daysOnColumns?(pt?"Hora":"Hour"):(pt?"Dia":"Day"));
+   topLeft.scope="col";head.append(topLeft);
+   const weekdayFormatter=new Intl.DateTimeFormat(pt?"pt-BR":"en-US",{
+    weekday:"short",timeZone:"UTC",
+   });
+   for(const key of (daysOnColumns?dates:hoursList)){
+    const th=node("th");th.scope="col";
+    if(typeof key==="number"){
+     th.textContent=String(key).padStart(2,"0")+":00";
+    }else{
+     const weekday=weekdayFormatter.format(new Date(key+"T12:00:00Z"));
+     th.textContent=weekday+" "+key.slice(8,10)+"/"+key.slice(5,7);
+     if([0,6].includes(new Date(key+"T00:00:00Z").getUTCDay()))
+      th.classList.add("is-weekend");
+    }
+    head.append(th);
+   }
    thead.append(head);grid.append(thead);
    const body=node("tbody");
    if(orientation.value==="time-rows"){
     for(const hour of hoursList){
-     const tr=node("tr");tr.append(node("th",String(hour).padStart(2,"0")+":00"));
+     const tr=node("tr"),th=node("th",String(hour).padStart(2,"0")+":00");
+     th.scope="row";tr.append(th);
      for(const date of dates)tr.append(makeCell(date,hour));
      body.append(tr);
     }
    }else{
     for(const date of dates){
-     const tr=node("tr");tr.append(node("th",date));
+     const tr=node("tr"),th=node("th",date.slice(8,10)+"/"+date.slice(5,7));
+     th.scope="row";th.title=date;tr.append(th);
      for(const hour of hoursList)tr.append(makeCell(date,hour));
      body.append(tr);
     }
