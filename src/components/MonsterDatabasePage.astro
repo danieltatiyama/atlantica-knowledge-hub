@@ -25,7 +25,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       <div class="bestiary-stats" aria-label={pt?"Cobertura da base":"Source database coverage"}>
         <div><strong>4.351</strong><span>{pt?"IDs de criaturas/personagens":"Character IDs"}</span></div>
         <div><strong>9.959</strong><span>{pt?"Drops diretos":"Direct source drops"}</span></div>
-        <div><strong>893</strong><span>{pt?"Itens com referências":"Items with source links"}</span></div>
+        <div><strong>822</strong><span>{pt?"Itens com drops por nível":"Items with level-matched drops"}</span></div>
       </div>
       <p class="bestiary-description">{pt
         ?"Nem todo registro representa um monstro enfrentável. As informações foram extraídas dos arquivos do cliente e não comprovam disponibilidade no servidor atual."
@@ -59,10 +59,10 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         </label>
         <label>{pt?"Tipo de referência":"Loot references"}
           <select id="creature-loot-mode" disabled>
-            <option value="">{pt?"Todos os registros":"All source characters"}</option>
-            <option value="direct">{pt?"Com drops diretos":"Has direct drops"}</option>
-            <option value="group">{pt?"Com grupos vinculados":"Has linked groups"}</option>
-            <option value="none">{pt?"Sem referências":"Without source links"}</option>
+            <option value="">{pt?"Todas as criaturas":"All creatures"}</option>
+            <option value="with">{pt?"Com possíveis drops":"With possible drops"}</option>
+            <option value="none">{pt?"Sem drops identificados":"No matched drops"}</option>
+            <option value="unresolved">{pt?"Com registros inconclusivos":"With unresolved records"}</option>
           </select>
         </label>
       </div>
@@ -76,8 +76,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
             <th>CharID</th>
             <th>{pt?"Tipo do cliente":"Client category"}</th>
             <th>{pt?"Nível bruto":"Raw level"}</th>
-            <th>{pt?"Drops diretos":"Direct drops"}</th>
-            <th>{pt?"Grupos vinculados":"Linked groups"}</th>
+            <th>{pt?"Itens possíveis":"Possible item rows"}</th>
           </tr></thead>
           <tbody id="creature-rows"></tbody>
         </table>
@@ -147,6 +146,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       return a;
     };
     let manifest:any=null,all:any[]=[],visible:any[]=[],page=0;
+    const possibleByCreature=new Map<string,[number,number]>();
     const perPage=100;
     const shardCache=new Map<string,Promise<any>>();
     const loadShard=(filename:string)=>{
@@ -168,7 +168,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     function render(){
       rowsEl.replaceChildren();
       const first=page*perPage;
-      for(const [id,name,rawLevel,rawKind,identity,directCount,groups] of visible.slice(first,first+perPage)){
+      for(const [id,name,rawLevel,rawKind] of visible.slice(first,first+perPage)){
         const tr=node("tr") as HTMLTableRowElement;
         const firstCell=cell(tr,""),a=node("a",name??("CharID "+id)) as HTMLAnchorElement;
         a.href="?id="+encodeURIComponent(id);
@@ -178,7 +178,8 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         });
         firstCell.append(a);
         cell(tr,id);cell(tr,raw(rawKind));cell(tr,raw(rawLevel));
-        cell(tr,nf.format(directCount));cell(tr,nf.format(groups));
+        const possible=possibleByCreature.get(id);
+        cell(tr,possible?nf.format(possible[0]):"—");
         rowsEl.append(tr);
       }
       const total=Math.ceil(visible.length/perPage);
@@ -195,8 +196,9 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         (!q||r[0].includes(q)||(r[1]??"").toLocaleLowerCase().includes(q))&&
         (!k||r[3]===k)&&
         (minimum===null||(r[2]!==null&&Number.isFinite(Number(r[2]))&&Number(r[2])>=minimum))&&
-        (!links||(links==="direct"?r[5]>0:
-          links==="group"?r[6]>0:r[5]===0&&r[6]===0)));
+        (!links||(links==="with"?(possibleByCreature.get(r[0])?.[0]??0)>0:
+          links==="unresolved"?(possibleByCreature.get(r[0])?.[1]??0)>0:
+          (possibleByCreature.get(r[0])?.[0]??0)===0)));
       page=0;render();
     }
     function table(columns:string[],records:(string|number|null)[][]){
@@ -408,6 +410,19 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         if(all.length!==manifest.catalogMonsterIds||
           new Set(all.map(r=>r[0])).size!==all.length)
           throw Error("Incomplete source creature catalog");
+        const countResp=await fetch("/data/client-monster-discovery/creature-counts.json");
+        if(!countResp.ok)throw Error("Level-matched creature index missing");
+        const matchCounts=await countResp.json();
+        if(matchCounts.schemaVersion!=="1.0"||matchCounts.snapshotId!==1||
+          matchCounts.dataset!=="level-resolved-creature-drop-counts"||
+          matchCounts.count!==4351||matchCounts.matchedDropRows!==33864||
+          matchCounts.unresolvedRefs!==197||!Array.isArray(matchCounts.rows)||
+          matchCounts.rows.length!==4351)
+          throw Error("Level-resolved creature counts failed validation");
+        possibleByCreature.clear();
+        for(const row of matchCounts.rows)possibleByCreature.set(row[0],[row[1],row[2]]);
+        if(possibleByCreature.size!==all.length)
+          throw Error("Unreconciled level-matched creature counts");
         const categories=[...new Set(all.map(r=>r[3]).filter(Boolean))].sort();
         for(const category of categories){
           const option=node("option",category) as HTMLOptionElement;
