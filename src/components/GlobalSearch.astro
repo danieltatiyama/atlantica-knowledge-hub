@@ -1,0 +1,200 @@
+---
+import {getCollection} from "astro:content";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br";
+const guides=(await getCollection("guides",({data})=>!data.draft&&data.lang===lang))
+  .map(guide=>({
+    title:guide.data.title,
+    description:guide.data.description,
+    href:(pt?"/pt-br":"")+"/guides/"+guide.id.replace(/^[^/]+\//,"")+"/",
+  }));
+const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
+---
+<dialog id="wiki-global-search" class="wiki-global-search" data-lang={lang}
+  aria-label={pt?"Busca global da Wiki":"Wiki global search"}>
+  <div class="wiki-search-top">
+    <h2>{pt?"Pesquisar na Wiki":"Search the Wiki"}</h2>
+    <form method="dialog">
+      <button type="submit" class="wiki-search-close" aria-label={pt?"Fechar busca":"Close search"}>×</button>
+    </form>
+  </div>
+  <label for="wiki-search-query">{pt?"Nome ou ID do item, monstro ou guia":"Item, monster or guide name or ID"}</label>
+  <input type="search" id="wiki-search-query" autocomplete="off"
+    placeholder={pt?"Ex.: Silver Thread, Huge Crocodile, 7080":"e.g. Silver Thread, Huge Crocodile, 7080"}
+    aria-controls="wiki-search-results" />
+  <div class="wiki-search-options">
+    <label for="wiki-search-kind">{pt?"Categoria":"Category"}</label>
+    <select id="wiki-search-kind">
+      <option value="all">{pt?"Todas":"All"}</option>
+      <option value="item">{pt?"Itens":"Items"}</option>
+      <option value="monster">{pt?"Monstros":"Monsters"}</option>
+      <option value="guide">{pt?"Guias":"Guides"}</option>
+    </select>
+  </div>
+  <p id="wiki-search-status" role="status" aria-live="polite">
+    {pt?"Digite pelo menos 2 caracteres.":"Enter at least 2 characters."}
+  </p>
+  <ul id="wiki-search-results"></ul>
+  <p class="wiki-search-footnote">{pt
+    ?"Os nomes e IDs são extraídos do cliente; isso não confirma disponibilidade no servidor."
+    :"Names and IDs come from the game client; they do not confirm server availability."}</p>
+</dialog>
+<script type="application/json" id="wiki-search-guides" set:html={guidesJson}/>
+<script>
+  import {buildWikiSearchRecords,searchWikiRecords} from "../data/wiki-unified-search.mjs";
+  const dialog=document.getElementById("wiki-global-search") as HTMLDialogElement|null;
+  const query=document.getElementById("wiki-search-query") as HTMLInputElement|null;
+  const kind=document.getElementById("wiki-search-kind") as HTMLSelectElement|null;
+  const status=document.getElementById("wiki-search-status") as HTMLElement|null;
+  const results=document.getElementById("wiki-search-results") as HTMLUListElement|null;
+  const pt=dialog?.dataset.lang==="pt-br";
+  type RecordRow={kind:string;id:string;title:string;detail:string;href:string};
+  let records:RecordRow[]|null=null;
+  let loading:Promise<RecordRow[]>|null=null;
+  let currentSearch=0;
+  async function loadSearch(){
+    if(records)return records;
+    if(loading)return loading;
+    loading=(async()=>{
+      const fetchJSON=async (path:string)=>{
+        const response=await fetch(path);
+        if(!response.ok)throw Error("Search index unavailable");
+        return response.json();
+      };
+      const [items,monsters]=await Promise.all([
+        fetchJSON("/data/client-items/manifest.json"),
+        fetchJSON("/data/client-monsters/manifest.json"),
+      ]);
+      if(items?.snapshotId!==1||items.totalIds!==23586||
+          monsters?.snapshotId!==1||monsters.catalogMonsterIds!==4351||
+          !Array.isArray(items.indexShards)||!Array.isArray(monsters.files?.index))
+        throw Error("Unexpected search index manifest");
+      const itemPaths=items.indexShards;
+      const monsterPaths=monsters.files.index;
+      if(itemPaths.length!==6||monsterPaths.length!==3||
+          ![...itemPaths,...monsterPaths].every(name=>/^index-\d{2}\.json$/.test(name)))
+        throw Error("Invalid search source filenames");
+      const [itemShards,monsterShards]=await Promise.all([
+        Promise.all(itemPaths.map((name:string)=>fetchJSON("/data/client-items/"+name))),
+        Promise.all(monsterPaths.map((name:string)=>fetchJSON("/data/client-monsters/"+name))),
+      ]);
+      const guideTag=document.getElementById("wiki-search-guides");
+      const guides=guideTag?JSON.parse(guideTag.textContent||"[]"):[];
+      const data=buildWikiSearchRecords(itemShards,monsterShards,guides,pt?"pt-br":"en");
+      if(data.filter((row:RecordRow)=>row.kind==="item").length!==22702||
+         data.filter((row:RecordRow)=>row.kind==="monster").length!==4351)
+        throw Error("Incomplete search source records");
+      records=data;
+      return data;
+    })();
+    try{return await loading;}finally{loading=null;}
+  }
+  const label=(item:RecordRow)=>item.kind==="item"?(pt?"Item":"Item"):
+    item.kind==="monster"?(pt?"Monstro":"Monster"):(pt?"Guia":"Guide");
+  function draw(rows:RecordRow[]){
+    if(!results)return;
+    results.replaceChildren();
+    for(const item of rows){
+      const li=document.createElement("li"),a=document.createElement("a");
+      a.href=item.href;
+      const heading=document.createElement("strong"),detail=document.createElement("small");
+      heading.textContent=item.title;
+      detail.textContent=label(item)+(item.id?" #"+item.id:"")+
+        (item.detail?" · "+item.detail:"");
+      a.append(heading,detail);li.append(a);results.append(li);
+    }
+  }
+  async function refresh(){
+    if(!query||!kind||!status)return;
+    const text=query.value.trim(),ticket=++currentSearch;
+    if(text.length<2){draw([]);status.textContent=pt?"Digite pelo menos 2 caracteres.":"Enter at least 2 characters.";return;}
+    status.textContent=pt?"Pesquisando índices do cliente…":"Searching client indexes…";
+    try{
+      const source=await loadSearch();
+      if(ticket!==currentSearch)return;
+      const found=searchWikiRecords(source,text,{kind:kind.value,limit:30});
+      draw(found);
+      status.textContent=found.length?
+        (pt?"Resultados exibidos: ":"Results shown: ")+found.length:
+        (pt?"Nenhum resultado encontrado.":"No results found.");
+    }catch{
+      if(ticket!==currentSearch)return;
+      draw([]);status.textContent=pt
+        ?"Não foi possível carregar os índices de busca."
+        :"Could not load search indexes.";
+    }
+  }
+  function openSearch(){
+    if(!dialog||!query)return;
+    if(!dialog.open)dialog.showModal();
+    query.focus();
+    if(query.value.trim().length>=2)void refresh();
+  }
+  document.querySelectorAll<HTMLElement>("[data-global-search-open]").forEach(button=>{
+    button.addEventListener("click",event=>{event.preventDefault();openSearch();});
+  });
+  document.addEventListener("keydown",event=>{
+    const target=event.target as HTMLElement|null;
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="k"){
+      event.preventDefault();openSearch();return;
+    }
+    if(event.key==="/"&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&
+       !target?.closest("input,textarea,select,[contenteditable]")&&!dialog?.open){
+      event.preventDefault();openSearch();
+    }
+  });
+  let debounce:ReturnType<typeof setTimeout>|null=null;
+  query?.addEventListener("input",()=>{
+    if(debounce!==null)clearTimeout(debounce);
+    debounce=setTimeout(()=>{void refresh();},160);
+  });
+  kind?.addEventListener("change",()=>{void refresh();});
+  query?.addEventListener("keydown",event=>{
+    if(event.key==="Enter"&&results){
+      const first=results.querySelector<HTMLAnchorElement>("a");
+      if(first){event.preventDefault();window.location.assign(first.href);}
+    }
+  });
+</script>
+<style is:global>
+  .wiki-global-search {
+    position:fixed;
+    width:min(710px,calc(100vw - 28px));
+    max-height:min(80dvh,780px);
+    overflow:auto;
+    padding:clamp(17px,2vw,26px);
+    border:1px solid var(--color-border);
+    border-radius:8px;
+    background:var(--color-surface);
+    color:var(--color-text);
+    box-shadow:0 25px 75px #0008;
+    font-family:var(--font-primary);
+    z-index:999;
+  }
+  .wiki-global-search::backdrop {background:rgba(0,0,0,.68);}
+  .wiki-search-top {display:flex;justify-content:space-between;align-items:center;gap:15px;}
+  .wiki-search-top h2 {font-size:1.45rem;margin:0 0 14px;color:var(--color-gold-light);}
+  .wiki-search-close {background:transparent;color:var(--color-text);font-size:1.6rem;
+    border:1px solid var(--color-border);cursor:pointer;border-radius:5px;min-width:36px;}
+  .wiki-global-search label {display:block;font-size:.84rem;color:var(--color-text-muted);margin:5px 0;}
+  .wiki-global-search input,.wiki-global-search select {
+    background:var(--color-background);color:var(--color-text);border:1px solid var(--color-border);
+    border-radius:5px;font:inherit;padding:11px;min-height:43px;width:100%;
+  }
+  .wiki-search-options {display:flex;gap:13px;align-items:center;margin:14px 0 9px;}
+  .wiki-search-options label{margin:0;}
+  .wiki-search-options select{max-width:220px;}
+  #wiki-search-status {color:var(--color-text-muted);font-size:.85rem;line-height:1.5;}
+  #wiki-search-results {list-style:none;margin:0;padding:0;}
+  #wiki-search-results li + li{border-top:1px solid var(--color-border);}
+  #wiki-search-results a {display:grid;gap:4px;text-decoration:none;padding:11px;color:var(--color-text);}
+  #wiki-search-results a strong{overflow-wrap:anywhere;font-weight:600;}
+  #wiki-search-results a small{color:var(--color-text-muted);}
+  #wiki-search-results a:is(:hover,:focus-visible){background:var(--color-background);outline:2px solid var(--color-accent);}
+  .wiki-search-footnote{font-size:.76rem;color:var(--color-text-muted);margin:16px 0 0;}
+  .wiki-global-trigger{border:1px solid var(--color-border);border-radius:5px;
+    background:var(--color-surface);color:var(--color-accent);cursor:pointer;
+    padding:8px 12px;font:inherit;font-weight:600;font-size:.85rem;white-space:nowrap;}
+  .wiki-global-trigger:is(:hover,:focus-visible){border-color:var(--color-accent);outline-color:var(--color-accent);}
+</style>

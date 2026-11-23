@@ -83,6 +83,9 @@ jobs:
       - name: Validate multilingual wiki appearance themes
         run: node --test tests/wiki-themes.test.mjs
 
+      - name: Validate unified Wiki search
+        run: node --test tests/wiki-unified-search.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
