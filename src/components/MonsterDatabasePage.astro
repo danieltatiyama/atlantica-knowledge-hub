@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import MonsterDropItemSearch from "./MonsterDropItemSearch.astro";
 interface Props{lang:"en"|"pt-br";}
 const {lang}=Astro.props;
 const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
@@ -10,17 +11,38 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
   alternatePaths={{en:"/monsters/", "pt-br":"/pt-br/monsters/"}}>
   <main class="creature-db" id="creature-db" data-lang={lang}>
     <nav class="breadcrumb"><a href={prefix+"/"}>{pt?"← Início":"← Home"}</a></nav>
-    <header>
-      <p class="eyebrow">ATLANTICA GLOBAL / NA · MINER SNAPSHOT 1</p>
-      <h1>{title}</h1>
-      <p>{pt
-        ?"Catálogo de IDs e relações extraídos dos arquivos de personagens e loot do cliente. Nem todo registro do cliente é necessariamente um monstro enfrentável. A existência no servidor atual e as probabilidades de drops não foram verificadas."
-        :"An index of original client character and loot references. Not every client entity is necessarily a fightable monster. Current-server availability and item-drop probabilities are not verified."}</p>
+    <header class="bestiary-header">
+      <div class="bestiary-heading">
+        <div class="bestiary-crest" aria-hidden="true"><span>✥</span></div>
+        <div>
+          <p class="eyebrow">ATLANTICA GLOBAL / NA · {pt?"BESTIÁRIO DO CLIENTE":"CLIENT BESTIARY"}</p>
+          <h1>{title}</h1>
+          <p class="bestiary-description">{pt
+            ?"Explore criaturas, itens e relações de drops identificados na extração original do cliente."
+            :"Discover creatures, items and original game-client loot relationships."}</p>
+        </div>
+      </div>
+      <div class="bestiary-stats" aria-label={pt?"Cobertura da base":"Source database coverage"}>
+        <div><strong>4.351</strong><span>{pt?"IDs de criaturas/personagens":"Character IDs"}</span></div>
+        <div><strong>9.959</strong><span>{pt?"Drops diretos":"Direct source drops"}</span></div>
+        <div><strong>893</strong><span>{pt?"Itens com referências":"Items with source links"}</span></div>
+      </div>
+      <p class="bestiary-description">{pt
+        ?"Nem todo registro representa um monstro enfrentável. As informações foram extraídas dos arquivos do cliente e não comprovam disponibilidade no servidor atual."
+        :"Not every client record represents a fightable monster. Client files do not establish current live-server availability."}</p>
       <p class="warning">{pt
-        ?"RawRate é um número original de configuração, NÃO uma porcentagem confirmada. Referências a grupos e itens dos grupos são etapas distintas, com linhas de origem próprias."
-        :"RawRate is an original configuration integer, NOT a confirmed percentage. A creature's group reference and an item in that group are separate stages with separate source evidence."}</p>
+        ?"RawRate é um valor bruto, não uma porcentagem confirmada. As duas etapas de grupos permanecem separadas."
+        :"RawRate is an original source value, not a confirmed percentage. The two grouped-drop stages remain separate."}</p>
     </header>
+    <MonsterDropItemSearch lang={lang}/>
     <section class="browse" aria-label={pt?"Pesquisar criaturas":"Search creatures"}>
+      <div class="bestiary-section-head">
+        <span class="section-ornament" aria-hidden="true">✦</span>
+        <div>
+          <p class="eyebrow">{pt?"ARQUIVO DE CRIATURAS":"CREATURE ARCHIVE"}</p>
+          <h2>{pt?"Consultar pelo monstro":"Browse by creature"}</h2>
+        </div>
+      </div>
       <div class="filters">
         <label>{pt?"Nome original ou CharID":"Original name or CharID"}
           <input id="creature-query" type="search" autocomplete="off"
@@ -341,33 +363,158 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     })();
   }
 </script>
-<style>
-  .creature-db{width:min(var(--content-width),92%);margin:0 auto;padding:20px 0 80px}
-  .breadcrumb{margin-bottom:18px}.breadcrumb a,.creature-db a{color:var(--color-accent)}
-  .eyebrow{letter-spacing:.12em;font-size:.75rem;color:var(--color-accent)}
-  h1{font-size:clamp(1.8rem,4vw,2.8rem)}
-  header>p{line-height:1.65;color:var(--color-text-muted)}
-  .warning{border-left:3px solid var(--color-bronze);padding:10px 14px;background:var(--color-surface)}
-  .browse,.creature-detail{border:1px solid var(--color-border);border-radius:5px;padding:18px;margin:25px 0}
-  .filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px}
-  label{display:grid;gap:5px;font-size:.85rem;color:var(--color-gold-light)}
-  input,select{width:100%;padding:11px;border:1px solid var(--color-border);
-    border-radius:4px;background:var(--color-surface);color:var(--color-text);font:inherit}
-  .subtle{font-size:.88rem;line-height:1.6;color:var(--color-text-muted)}
-  .creature-table-scroll{overflow:auto}
-  table{border-collapse:collapse;width:100%;min-width:680px}
-  th,td{padding:8px 12px;border-bottom:1px solid var(--color-border);text-align:left;font-size:.86rem}
-  th{color:var(--color-gold-light)}
-  td{color:var(--color-text)}
-  .paging,.detail-header{display:flex;align-items:center;justify-content:space-between;
-    gap:12px;margin:14px 0}
-  button{background:var(--color-surface);border:1px solid var(--color-border);
-    border-radius:4px;color:var(--color-text);padding:8px 14px;cursor:pointer}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  h2{color:var(--color-gold-light);font-size:1.38rem}
-  h3{color:var(--color-gold-light);margin-top:20px;font-size:1.13rem}
-  h4{font-size:.98rem}
-  .creature-group{margin:15px 0;padding:12px;border:1px solid var(--color-border);border-radius:4px}
-  #creature-list[hidden],#creature-paging[hidden],#creature-detail[hidden]{display:none}
-  @media(max-width:650px){.filters{grid-template-columns:1fr}}
+<style is:global>
+  #creature-db{
+    --bestiary-metal:#93805d;
+    --bestiary-gold:#ecd19a;
+    --bestiary-paper:#d5d6d9;
+    width:min(var(--content-width),94%);
+    margin:0 auto;
+    padding:18px 0 90px;
+  }
+  #creature-db .breadcrumb{margin:4px 0 17px}
+  #creature-db .breadcrumb a{color:var(--color-accent);font-size:.86rem}
+  #creature-db a{color:#e5c586}
+  #creature-db a:focus-visible,#creature-db button:focus-visible,
+  #creature-db input:focus-visible,#creature-db select:focus-visible{
+    outline:2px solid #e4b964;outline-offset:2px;
+  }
+  #creature-db .bestiary-header{
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
+    padding:clamp(20px,3.5vw,34px);
+    background:
+      radial-gradient(ellipse at 20% -35%,#4c3c25a3,transparent 60%),
+      radial-gradient(ellipse at 96% 120%,#2a3644ad,transparent 48%),
+      linear-gradient(130deg,#141b24,#11151d 60%,#17191e);
+    border:1px solid var(--bestiary-metal);
+    border-radius:5px;
+    box-shadow:inset 0 0 0 3px #28251f,inset 0 0 32px #0008,0 15px 40px #0005;
+  }
+  #creature-db .bestiary-header:before,#creature-db .bestiary-header:after{
+    content:"";position:absolute;left:25px;right:25px;height:2px;
+    background:linear-gradient(90deg,transparent,#9d865c,#e4ca8b,#9d865c,transparent);
+    opacity:.8;
+  }
+  #creature-db .bestiary-header:before{top:8px}
+  #creature-db .bestiary-header:after{bottom:8px}
+  #creature-db .bestiary-heading{display:flex;align-items:center;gap:20px}
+  #creature-db .bestiary-crest{
+    flex:0 0 88px;display:grid;place-items:center;width:88px;height:88px;
+    border:2px solid #b69a66;border-radius:50%;
+    background:
+      radial-gradient(circle at 40% 32%,#5c5344,#26303b 60%,#131720 100%);
+    box-shadow:inset 0 0 22px #000c,0 0 0 4px #27251f,0 0 34px #bba35a38;
+    color:#e5cd93;text-shadow:0 0 16px #efca7a;
+  }
+  #creature-db .bestiary-crest span{font-size:2.9rem;font-family:Georgia,serif;line-height:1}
+  #creature-db .eyebrow{letter-spacing:.16em;font-size:.71rem;
+    font-weight:600;color:#c7aa71;margin:0 0 7px}
+  #creature-db h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:clamp(1.7rem,3.5vw,2.65rem);
+    font-weight:600;line-height:1.16;margin:0;
+    letter-spacing:.008em;color:#f0d8a1;
+    text-shadow:0 2px 4px #000c,0 0 20px #cb9c4740;
+  }
+  #creature-db .bestiary-description{line-height:1.62;color:#bec4ce;margin:10px 0 4px;font-size:.91rem}
+  #creature-db .bestiary-stats{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    margin:22px 0 12px;
+    border-top:1px solid #987e5470;border-bottom:1px solid #987e5470;
+    padding:14px 0;gap:10px;
+  }
+  #creature-db .bestiary-stats>div{display:grid;gap:3px;text-align:center}
+  #creature-db .bestiary-stats>div+div{border-left:1px solid #81704f87}
+  #creature-db .bestiary-stats strong{
+    color:#f0d095;font-size:clamp(1.15rem,2.2vw,1.65rem);
+    font-weight:600;font-variant-numeric:tabular-nums;
+  }
+  #creature-db .bestiary-stats span{font-size:.76rem;color:#c4c6cb}
+  #creature-db .warning{
+    background:linear-gradient(90deg,#47351e85,#25211f7a);
+    padding:10px 13px;border-left:3px solid #c3a06b;
+    font-size:.83rem;line-height:1.55;color:#deccaa;
+  }
+  #creature-db .browse,#creature-db .creature-detail{
+    border:1px solid #89734d;
+    border-radius:5px;padding:clamp(15px,2.5vw,23px);margin:27px 0;
+    background:linear-gradient(145deg,#171e27,#10151c 72%);
+    box-shadow:inset 0 0 0 3px #29271f,0 8px 30px #0004;
+  }
+  #creature-db .bestiary-section-head{display:flex;align-items:center;gap:12px;margin-bottom:17px}
+  #creature-db .section-ornament{
+    display:grid;place-items:center;width:45px;height:45px;
+    border:1px solid #7e704d;background:#24251f;border-radius:3px;
+    color:#e2c185;font-size:1.4rem;
+  }
+  #creature-db .bestiary-section-head h2{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:1.38rem;margin:0;color:#eed29a;
+  }
+  #creature-db .filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:13px}
+  #creature-db label{display:grid;gap:7px;font-size:.82rem;color:#e5d4b7}
+  #creature-db input,#creature-db select{
+    width:100%;padding:11px 12px;border:1px solid #837153;
+    border-radius:3px;background:#101721;color:#e7e3d8;font:inherit;
+  }
+  #creature-db input:disabled,#creature-db select:disabled{opacity:.45}
+  #creature-db .subtle{font-size:.85rem;line-height:1.65;color:#afb9c6}
+  #creature-db .creature-table-scroll{
+    border:1px solid #58503f;
+    border-radius:3px;overflow-x:auto;
+  }
+  #creature-db .browse table,#creature-db .creature-detail table{border-collapse:collapse;width:100%;min-width:690px}
+  #creature-db .browse th,#creature-db .browse td,
+  #creature-db .creature-detail th,#creature-db .creature-detail td{
+    padding:9px 11px;border-bottom:1px solid #574c3b;
+    text-align:left;font-size:.83rem;
+  }
+  #creature-db .browse th,#creature-db .creature-detail th{
+    background:linear-gradient(#3d3226,#282822);
+    color:#efcf8e;font-weight:600;
+    letter-spacing:.025em;white-space:nowrap;
+  }
+  #creature-db .browse td,#creature-db .creature-detail td{color:#d9dee5}
+  #creature-db .browse tbody tr:nth-child(even),#creature-db .creature-detail tbody tr:nth-child(even){background:#2129346b}
+  #creature-db .browse tbody tr:hover,#creature-db .creature-detail tbody tr:hover{background:#6b5b3950}
+  #creature-db .paging,#creature-db .detail-header{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:10px;margin:13px 0;
+  }
+  #creature-db .browse button,#creature-db .creature-detail button{
+    cursor:pointer;
+    background:linear-gradient(180deg,#373022,#232621);
+    border:1px solid #85734f;border-radius:3px;
+    color:#e6d3a6;padding:8px 14px;
+  }
+  #creature-db .browse button:hover:not(:disabled),#creature-db .creature-detail button:hover:not(:disabled){background:#51432d}
+  #creature-db .browse button:disabled,#creature-db .creature-detail button:disabled{opacity:.4;cursor:not-allowed}
+  #creature-db h2,#creature-db h3,#creature-db h4{
+    color:#e4c78e;font-family:Georgia,"Times New Roman",serif;
+  }
+  #creature-db h2{font-size:1.5rem}#creature-db h3{font-size:1.18rem;margin:20px 0 10px}
+  #creature-db h4{font-size:1.02rem}
+  #creature-db .creature-group{
+    margin:13px 0;padding:14px;border:1px solid #77684b;
+    border-radius:3px;background:#1a1e23;
+  }
+  #creature-db .creature-detail{scroll-margin-top:40px}
+  #creature-db #creature-list[hidden],
+  #creature-db #creature-paging[hidden],
+  #creature-db #creature-detail[hidden]{display:none}
+  #creature-db .ao-drop-finder #drop-item-list[hidden],
+  #creature-db .ao-drop-finder #drop-item-result[hidden]{display:none}
+  @media(max-width:700px){
+    #creature-db .bestiary-crest{display:none}
+    #creature-db .filters{grid-template-columns:1fr}
+    #creature-db .bestiary-stats{gap:4px}
+    #creature-db .bestiary-stats strong{font-size:1.15rem}
+    #creature-db .bestiary-stats span{font-size:.69rem}
+    #creature-db .browse,#creature-db .creature-detail{padding:13px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #creature-db *{scroll-behavior:auto!important}
+  }
 </style>

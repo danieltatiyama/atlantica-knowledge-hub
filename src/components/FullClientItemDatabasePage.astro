@@ -275,6 +275,9 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     async function addMonsterSources(parent:HTMLElement,id:string){
       const section=node("section",undefined,"monster-source-links");
       section.append(node("h3",pt?"Onde conseguir — drops do cliente":"Where to obtain — client monster drops"));
+      const codex=node("a",pt?"Consultar este ItemID no códice de drops":"Look up this ItemID in the monster loot codex") as HTMLAnchorElement;
+      codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
+      const codexLine=node("p");codexLine.append(codex);section.append(codexLine);
       section.append(node("p",pt
         ?"RawRate e taxas de grupos são valores brutos do cliente, NÃO probabilidades verificadas ou garantia de disponibilidade no servidor."
         :"RawRate and group rates are raw client-source fields, NOT verified probabilities or confirmed current-server availability.","detail-note"));

@@ -89,3 +89,6 @@ Miner_ClientAttributes_*.json
 /Miner_MonsterLoot_PublicCandidate_20_38/
 /Miner_MonsterLoot_Report_20_38.json
 /Atlantica_Loot_Investigation_v2.zip
+
+# Deterministic, generated from original 53 SHA-approved monster source shards
+/public/data/client-monster-discovery/
