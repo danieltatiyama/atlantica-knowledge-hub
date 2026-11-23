@@ -91,14 +91,15 @@ export function createLevelResolvedDiscovery(clientRoot=itemRoot,monsterRoot=inp
   }
   check(names.size===22702&&allIds.size===23586,"Original item registry incomplete");
 
-  const items=new Map();
+  const items=new Map(),creatureCounts=[];
   let direct=0,groupRows=0,groupRefs=0,unresolved=0,unresolvedCreatures=0;
   const unresolvedDetails=[];
   for(const [charId,character] of chars){
     const source=loot.get(charId);
-    if(!source)continue;
+    if(!source){creatureCounts.push([charId,0,0]);continue;}
     groupRefs+=source.groups.length;
     const resolved=resolveClientCreatureDrops(character,source,groups);
+    creatureCounts.push([charId,resolved.rows.length,resolved.unresolved.length]);
     if(resolved.unresolved.length){
       unresolved+=resolved.unresolved.length;unresolvedCreatures++;
       unresolvedDetails.push([charId,character[1],character[2],
@@ -113,7 +114,8 @@ export function createLevelResolvedDiscovery(clientRoot=itemRoot,monsterRoot=inp
     }
   }
   check(direct===9959&&groupRefs===5784&&unresolved===197&&
-    groupRows===23905&&items.size===822,
+    groupRows===23905&&items.size===822&&creatureCounts.length===4351&&
+    creatureCounts.reduce((sum,r)=>sum+r[1],0)===33864,
     "Client band inference diverged from audited original level snapshot");
   const rows=[];
   const buckets={};
@@ -141,7 +143,7 @@ export function createLevelResolvedDiscovery(clientRoot=itemRoot,monsterRoot=inp
     unmatchedLevelGroupRefs:unresolved,
     creaturesWithUnmatchedRefs:unresolvedCreatures,
     matchedItemIds:items.size,
-    files:{itemSources:files},
+    files:{itemSources:files,creatureCounts:"creature-counts.json"},
     notice:"Client-derived level-band inference calibrated against Huge Crocodile game screenshots; not independently verified for every creature. Composite percentage values are estimates, not guaranteed live-server odds.",
   };
   const lookup={
@@ -158,13 +160,22 @@ export function createLevelResolvedDiscovery(clientRoot=itemRoot,monsterRoot=inp
     rows,
   };
   return {manifest:discoveryManifest,index:lookup,items:buckets,
-    unresolvedDetails};
+    creatureCounts,unresolvedDetails};
 }
 
 export function generateLevelResolvedDiscovery(){
   const data=createLevelResolvedDiscovery();
   makePublicFile(resolve(out,"manifest.json"),data.manifest);
   makePublicFile(resolve(out,"item-lookup.json"),data.index);
+  makePublicFile(resolve(out,"creature-counts.json"),{
+    schemaVersion:"1.0",snapshotId:1,
+    dataset:"level-resolved-creature-drop-counts",
+    count:data.creatureCounts.length,
+    matchedDropRows:data.manifest.originalDirectRows+data.manifest.levelMatchedGroupRows,
+    unresolvedRefs:data.manifest.unmatchedLevelGroupRefs,
+    columns:["CharID","PossibleItemRows","UnresolvedGroupReferences"],
+    rows:data.creatureCounts,
+  });
   for(const file of data.manifest.files.itemSources){
     const bucket=Number(file.slice(-7,-5));
     makePublicFile(resolve(out,file),{
