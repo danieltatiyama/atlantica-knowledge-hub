@@ -152,6 +152,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     let craftManifestPromise:Promise<{files:string[];bucketWidth:number}|null>|null=null;
     const statsCache=new Map<number,Promise<Record<string,[number,Record<string,string>][]>|null>>();
     let statsManifestPromise:Promise<{snapshotId:number;itemIds:number;sourceRows:number;files:string[]}|null>|null=null;
+    let lootSourceManifestPromise:Promise<any|null>|null=null;
+    const itemMonsterSourcesCache=new Map<number,Promise<any>>();
     let allStatsPromise:Promise<Map<string,ReturnType<typeof summarizeRawNumericRows>>>|null=null;
     let indexedStats=new Map<string,ReturnType<typeof summarizeRawNumericRows>>();
     let allStatsReady=false,filterEpoch=0,compareEpoch=0;
@@ -267,6 +269,95 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       }catch{
         state.textContent=pt?"Não foi possível carregar as referências de fabricação."
           :"Could not load the original source craft references.";
+      }
+    }
+    async function addMonsterSources(parent:HTMLElement,id:string){
+      const section=node("section",undefined,"monster-source-links");
+      section.append(node("h3",pt?"Onde conseguir — drops do cliente":"Where to obtain — client monster drops"));
+      section.append(node("p",pt
+        ?"RawRate e taxas de grupos são valores brutos do cliente, NÃO probabilidades verificadas ou garantia de disponibilidade no servidor."
+        :"RawRate and group rates are raw client-source fields, NOT verified probabilities or confirmed current-server availability.","detail-note"));
+      const state=node("p",pt?"Consultando registros originais…":"Checking original source rows…","subtle");
+      section.append(state);parent.append(section);
+      try{
+        if(!lootSourceManifestPromise){
+          lootSourceManifestPromise=fetchJSON("/data/client-monsters/manifest.json")
+            .catch(()=>null);
+        }
+        const meta=await lootSourceManifestPromise;
+        if(!meta){
+          state.textContent=pt
+            ?"Base original de drops ainda não publicada. A consulta ficará disponível após importação e revisão."
+            :"Original source drops have not been published yet. Links will appear after audited import.";
+          return;
+        }
+        if(meta.schemaVersion!=="1.0"||meta.snapshotId!==manifest?.snapshotId||
+          meta.dataset!=="all-client-monster-loot-original"||
+          !Array.isArray(meta.files?.itemSources))throw Error("Loot manifest snapshot mismatch");
+        const bucket=Math.floor(Number(id)/1000);
+        const filename="item-sources/"+String(bucket).padStart(2,"0")+".json";
+        if(!meta.files.itemSources.includes(filename)){
+          state.textContent=pt
+            ?"Não há referência de drop para este ID no snapshot; isso não comprova ausência no jogo."
+            :"No original drop reference for this ID; this does not prove in-game absence.";
+          return;
+        }
+        if(!itemMonsterSourcesCache.has(bucket)){
+          itemMonsterSourcesCache.set(bucket,fetchJSON("/data/client-monsters/"+filename)
+            .then(data=>{
+              if(data.schemaVersion!=="1.0"||data.snapshotId!==manifest?.snapshotId||
+                data.bucket!==bucket)throw Error("Invalid loot item source shard");
+              return data.items;
+            }).catch(error=>{itemMonsterSourcesCache.delete(bucket);throw error;}));
+        }
+        const entry=(await itemMonsterSourcesCache.get(bucket)!)?.[id];
+        if(!entry){
+          state.textContent=pt?"Nenhum registro para este ID.":"No source records for this ID.";
+          return;
+        }
+        state.textContent=(pt?"Referências originais: ":"Original loot references: ")+
+          number.format((entry.direct?.length??0)+(entry.group?.length??0));
+        const draw=(title:string,rows:any[],kind:"direct"|"group")=>{
+          if(!rows?.length)return;
+          const body=node("tbody"),thead=node("thead"),heading=node("tr");
+          for(const label of (kind==="direct"?
+            [pt?"Criatura":"Creature","RawRate",pt?"Quantidade candidata":"Candidate quantity",pt?"Registro":"Source row"]:
+            [pt?"Criatura":"Creature","GroupID","RawRate ref","RawRate item",
+              pt?"Quantidade candidata":"Candidate quantity",pt?"Registros":"Source rows"]))
+            heading.append(node("th",label));
+          thead.append(heading);
+          for(const row of rows){
+            const [charId,name]=row;
+            if(!/^[1-9]\d*$/.test(charId))continue;
+            const tr=node("tr"),first=node("td");
+            const link=node("a",name??("CharID "+charId)) as HTMLAnchorElement;
+            link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
+            first.append(link);if(name)first.append(" · #"+charId);
+            tr.append(first);
+            if(kind==="direct"){
+              tr.append(node("td",String(row[3]??"—")));
+              tr.append(node("td",String(row[5]??"—")+"–"+String(row[6]??"—")));
+              tr.append(node("td","#"+row[2]));
+            }else{
+              tr.append(node("td",String(row[2])));
+              tr.append(node("td",String(row[5]??"—")));
+              tr.append(node("td",String(row[6]??"—")));
+              tr.append(node("td",String(row[9]??"—")+"–"+String(row[10]??"—")));
+              tr.append(node("td","#"+row[3]+" / #"+row[4]));
+            }
+            body.append(tr);
+          }
+          const table=node("table");table.append(thead,body);
+          const scroll=node("div",undefined,"stat-table-scroll");scroll.append(table);
+          const details=node("details");details.open=true;
+          details.append(node("summary",title+" ("+number.format(rows.length)+")"),scroll);
+          section.append(details);
+        };
+        draw(pt?"Drops diretos registrados":"Original direct source drops",entry.direct,"direct");
+        draw(pt?"Drops vinculados a grupos":"Group-linked source drops",entry.group,"group");
+      }catch{
+        state.textContent=pt?"Não foi possível validar os registros de drop."
+          :"Original source drop records failed to load or validate.";
       }
     }
     async function numericManifest(){
@@ -708,6 +799,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         // Reverse links are generated from every one of the 22,702 named-ID
         // source details, not just the originally reviewed 551 profiles.
         void addUsedInTable(details,id);
+        void addMonsterSources(details,id);
         // Original raw numeric rows are shown for every named item type.
         // Only equipment-like source categories may use the explicitly
         // unverified historical upgrade projection.
@@ -831,6 +923,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   .compare-chip a{color:var(--color-accent)}
   .compare-chip button,.compare-row-button{font-size:.78rem;padding:5px 8px}
   .compare-row-button[aria-pressed="true"]{border-color:var(--color-accent);color:var(--color-gold-light)}
+  .monster-source-links{margin:20px 0}
+  .monster-source-links h3{color:var(--color-gold-light)}
+  .monster-source-links details{margin:10px 0;border:1px solid var(--color-border)}
+  .monster-source-links summary{padding:10px;cursor:pointer;color:var(--color-accent)}
   .numeric-group{margin:18px 0}
   .numeric-group h4{color:var(--color-gold-light);margin:8px 0}
   .numeric-conflict{outline:1px solid var(--color-bronze);outline-offset:-1px}
