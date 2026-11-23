@@ -15,8 +15,17 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       <p class="eyebrow">GLOBAL / NA · MINER SNAPSHOT 1</p>
       <h1>{title}</h1>
       <p class="intro">{pt
-        ?"Consulta baseada no inventário dos arquivos do jogo. Contém equipamentos, livros, materiais, consumíveis, packs, cosméticos e outros tipos de itens — não apenas os equipamentos das boxes."
-        :"An index of original game-client files, including equipment, books, materials, consumables, packs, cosmetics and other item types — not just items found in captured boxes."}</p>
+        ?"Pesquise um item pelo nome ou ID para consultar seus atributos, materiais de fabricação, receitas relacionadas e possíveis fontes de obtenção."
+        :"Search an item by name or ID to see its attributes, crafting materials, recipes that use it, and possible acquisition sources."}</p>
+      <details class="reader-guide">
+        <summary>{pt?"Como ler as informações desta wiki":"How to read the item information"}</summary>
+        <p>{pt
+          ?"Primeiro mostramos o que é útil para jogar. As definições técnicas ficam em Dados originais dos arquivos, ao final de cada ficha. Você pode abrir um ingrediente para ver sua própria ficha ou consultar seus possíveis drops."
+          :"Useful player information comes first. Technical definitions are available under Original client records at the bottom of each item page. Open any ingredient to see its own page or find its possible monster drops."}</p>
+        <p>{pt
+          ?"Taxas em % são estimativas baseadas no valor dos arquivos, e não chances verificadas. A ausência de uma receita ou drop não prova que ele não exista no servidor."
+          :"Percentages are client-based estimates, not verified probabilities. Missing recipes or drops do not prove they are unavailable in-game."}</p>
+      </details>
       <p class="caution">{pt
         ?"Nomes, níveis, grades e materiais são dados extraídos do cliente, não garantias de existência no servidor, disponibilidade atual, obtenção ou fabricação. Um mesmo nome pode existir em IDs diferentes. Colisões de identidade permanecem sem nome atribuído."
         :"Names, levels, grades and materials are client-extracted fields, not proof of live-server existence, availability, acquisition or craftability. One English name can belong to different item IDs. Identity collisions remain unnamed."}</p>
@@ -745,34 +754,36 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     }
     function addCraftBatchInformation(parent:HTMLElement,data:Detail){
       const batch=summarizeCraftBatch(data.s);
-      const section=node("section",undefined,"craft-batch-summary");
-      section.append(node("h3",pt?"Produção por batch":"Production per batch"));
+      const hasMaterials=data.s.some(row=>row[9].length>0);
       const ready=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
+      // Avoid a misleading empty 'craft batch' box on non-craft source rows.
+      if(!ready&&!hasMaterials&&batch.status==="not-provided")return;
+      const section=node("section",undefined,"craft-batch-summary");
+      section.append(node("h3",pt?"Quantidade produzida por fabricação":"Crafting batch size"));
       if(ready){
-        section.append(node("p",
-          (pt?"Batch mínimo / incremento: ":"Source batch / increment: ")+
-          number.format(batch.batchSize)+" · "+
-          (pt?"Limite por operação: ":"Output cap per operation: ")+
-          number.format(batch.maxPerOperation)+" · "+
-          (pt?"Máximo de batches: ":"Max batches per operation: ")+
-          number.format(batch.maxBatchesPerOperation)+" · "+
-          (pt?"Produção máxima viável: ":"Maximum batch-aligned output: ")+
-          number.format(batch.maxCraftQuantityPerOperation),
-          "craft-batch-value"));
+        const facts=node("dl",undefined,"wiki-facts");
+        for(const [heading,value] of [
+          [pt?"Produção por lote":"Items per batch",number.format(batch.batchSize)],
+          [pt?"Múltiplos permitidos":"Batch step",number.format(batch.increment)],
+          [pt?"Limite por operação":"Operation limit",number.format(batch.maxPerOperation)],
+          [pt?"Lotes por operação":"Max batches per operation",number.format(batch.maxBatchesPerOperation)],
+        ]){
+          const card=node("div");card.append(node("dt",heading),node("dd",value));facts.append(card);
+        }
+        section.append(facts);
       }else{
         section.append(node("p",batch.status==="conflict"
-          ?(pt?"Unit divergente entre arquivos; nenhum batch foi escolhido."
-             :"Conflicting original Unit fields; no batch has been selected.")
-          :(pt?"Batch não identificado com segurança nos arquivos originais."
-             :"Batch size could not be identified safely from original source rows."),
-          "subtle"));
+          ?(pt?"Os arquivos apresentam quantidades por lote diferentes. Não é seguro escolher uma delas."
+            :"The client files disagree on the output batch quantity, so none is selected.")
+          :(pt?"A quantidade produzida por lote não está informada com segurança nos arquivos."
+            :"The output per batch is not reliably recorded in the client files."),"wiki-help"));
       }
-      if(batch.status==="partial")section.append(node("p",
-        pt?"Valor Unit presente apenas em parte das definições."
-          :"Original Unit is present in only some source definitions.","subtle"));
+      if(batch.status==="partial")section.append(node("p",pt
+        ?"A quantidade por lote consta apenas em parte das definições."
+        :"Only some source definitions contain the batch quantity.","wiki-source-warning"));
       section.append(node("p",pt
-        ?"O tamanho do batch vem do campo Unit do ItemType. O limite de 10.000 unidades por operação é uma regra informada pelo jogador e armazenada separadamente. Valores históricos não comprovam disponibilidade da receita no jogo atual."
-        :"Batch is taken from the original ItemType Unit field. The 10,000-unit operation cap is a separately recorded player-reported rule, not derived from Unit. Original records do not confirm live-server recipe availability.","detail-note"));
+        ?"Produção por lote: campo Unit dos arquivos do cliente. O máximo de 10.000 unidades por operação é uma regra informada por jogador, não um dado extraído. A receita pode não estar disponível no jogo atual."
+        :"Output per batch comes from the original client Unit field. The 10,000-item operation limit is player-reported, not extracted. Crafting may not be enabled on the current game server.","wiki-help"));
       parent.append(section);
     }
     // Community-facing quick facts are deliberately separated from the
@@ -1286,4 +1297,21 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     #full-client-db .wiki-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
     #full-client-db .wiki-recipe-heading{align-items:flex-start;flex-direction:column}
   }
+</style>
+
+<style is:global>
+  #full-client-db .reader-guide{
+    max-width:860px;
+    margin:8px 0 17px;
+    padding:10px 14px;
+    border:1px solid #766244;
+    border-radius:4px;
+    background:linear-gradient(110deg,#232923,#1a2127);
+    color:#dce0e4;
+  }
+  #full-client-db .reader-guide summary{
+    color:#f1d198;cursor:pointer;font-weight:600;
+    font-size:.88rem;
+  }
+  #full-client-db .reader-guide p{margin:9px 0;line-height:1.6;font-size:.86rem}
 </style>
