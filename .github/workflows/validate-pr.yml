@@ -95,6 +95,9 @@ jobs:
       - name: Validate recursive crafting calculator
         run: node --test tests/client-crafting-planner.test.mjs
 
+      - name: Validate nation dungeon calendar rules
+        run: node --test tests/nation-dungeon-calendar.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
