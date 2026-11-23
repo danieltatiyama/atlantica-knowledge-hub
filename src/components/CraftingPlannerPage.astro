@@ -184,29 +184,172 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    return (await detailCache.get(bucket))?.[id]??null;
   }
   let suggestTicket=0;
+  function resetTarget(){
+   ++selectionEpoch;
+   selectedId="";rootRecipes=[];rootConfig=null;activeGraph=null;plan=null;
+   controls.hidden=true;sliderGroup.hidden=true;slider.disabled=true;
+   amount.disabled=true;submit.disabled=true;result.hidden=true;
+  }
+  function configureRootBatch(){
+   if(!selectedId)return;
+   const multiple=rootRecipes.length>1;
+   rootVariantGroup.hidden=!multiple;
+   const selection=multiple?choices[selectedId]:0;
+   rootConfig=resolveRootCraftBatch({
+    recipes:rootRecipes,category:itemCategories[selectedId],
+    selectedVariant:selection,manualBatch:batchOverrides[selectedId],
+   });
+   rootBatchGroup.hidden=!["missing-batch","invalid-manual-batch","batch-over-limit"].includes(rootConfig.reason);
+   sliderGroup.hidden=!rootConfig.ready;
+   amount.disabled=!rootConfig.ready;
+   slider.disabled=!rootConfig.ready;
+   submit.disabled=!rootConfig.ready;
+   if(rootConfig.ready){
+    const {min,max,step,batch,source}=rootConfig;
+    amount.min=String(min);amount.max=String(max);amount.step=String(step);
+    slider.min=String(min);slider.max=String(max);slider.step=String(step);
+    const previous=isAllowedCraftQuantity(amount.value,batch)?Number(amount.value):min;
+    amount.value=String(previous);
+    slider.value=String(previous);
+    lastValidQuantity=previous;
+    $("craft-range-min").textContent=fmt(min);
+    $("craft-range-max").textContent=fmt(max);
+    $("craft-quantity-output").textContent=fmt(previous);
+    const label=source==="confirmed-equipment-rule"
+     ?(pt?"Regra de equipamento confirmada":"Confirmed equipment rule")
+     :source==="original-client-unit"?(pt?"Batch extraído do cliente":"Client source batch")
+     :(pt?"Batch informado manualmente":"Manually specified batch");
+    batchHint.textContent=label+": "+fmt(batch)+
+     (pt?" unidades por batch · selecione apenas múltiplos até ":" units/batch · select multiples up to ")+
+     fmt(max)+(pt?" (limite do planejamento: 10.000).":" (planning limit: 10,000).");
+    status.textContent=pt?"Seleção pronta para calcular.":"Selection ready to calculate.";
+   }else{
+    $("craft-quantity-output").textContent="—";
+    if(rootConfig.reason==="choose-variant"){
+     batchHint.textContent=pt?"Selecione a versão da receita antes de informar a quantidade.":"Choose a recipe variant before setting the quantity.";
+    }else if(rootConfig.reason==="missing-batch"||rootConfig.reason==="invalid-manual-batch"){
+     batchHint.textContent=pt?"O cliente não informa um batch seguro. Informe o mínimo de fabricação para habilitar o slider.":"Client source has no reliable batch size. Enter the minimum crafting quantity to enable the slider.";
+    }else{
+     batchHint.textContent=pt?"Não existe quantidade válida até 10.000 para esta receita.":"No legal crafting quantity up to 10,000 for this source recipe.";
+    }
+   }
+  }
+  rootVariant.addEventListener("change",()=>{
+   if(!selectedId)return;
+   if(rootVariant.value==="")delete choices[selectedId];
+   else choices[selectedId]=Number(rootVariant.value);
+   result.hidden=true;configureRootBatch();
+  });
+  rootBatch.addEventListener("input",()=>{
+   if(!selectedId)return;
+   const value=rootBatch.value;
+   if(/^[1-9]\d{0,4}$/.test(value)&&Number(value)<=CRAFT_PLAN_MAX_OUTPUT)
+    batchOverrides[selectedId]=value;
+   else delete batchOverrides[selectedId];
+   result.hidden=true;configureRootBatch();
+  });
+  async function selectCraftTarget(id:string,name:string){
+   resetTarget();
+   const epoch=selectionEpoch;
+   ++suggestTicket;
+   suggestions.replaceChildren();
+   query.value=name+" (#"+id+")";
+   status.textContent=pt?"Conferindo receita original…":"Checking the original client recipe…";
+   try{
+    await getIndex();
+    if(epoch!==selectionEpoch)return;
+    if(!craftableCandidates.has(id))throw Error(pt
+     ?"Este item não possui receita identificada no cliente."
+     :"This item has no parsed recipe in the client files.");
+    const details=await getDetails(id);
+    if(epoch!==selectionEpoch)return;
+    const variants=details?buildClientRecipeViews(details.s):[];
+    if(variants.length===0)throw Error(pt
+     ?"Nenhuma receita válida identificada para este ItemID."
+     :"No valid parsed source recipe for this ItemID.");
+    selectedId=id;
+    rootRecipes=variants;
+    rootVariant.replaceChildren();
+    const empty=el("option",pt?"Selecione a receita":"Select recipe") as HTMLOptionElement;
+    empty.value="";rootVariant.append(empty);
+    for(const [i,recipe] of variants.entries()){
+     const option=el("option",(pt?"Receita ":"Recipe ")+(i+1)+
+      " · #"+recipe.sourceRows.join(", #")) as HTMLOptionElement;
+     option.value=String(i);rootVariant.append(option);
+    }
+    rootVariant.value=variants.length>1&&Number.isInteger(choices[id])?String(choices[id]):"";
+    rootBatch.value=batchOverrides[id]??"";
+    controls.hidden=false;
+    configureRootBatch();
+   }catch(error){
+    if(epoch!==selectionEpoch)return;
+    resetTarget();
+    status.textContent=(pt?"Seleção não disponível: ":"Selection unavailable: ")+
+     (error instanceof Error?error.message:String(error));
+   }
+  }
   async function suggest(){
    const ticket=++suggestTicket;
-   selectedId="";activeGraph=null;suggestions.replaceChildren();
+   suggestions.replaceChildren();
    const text=query.value.trim().toLowerCase();
    if(text.length<2)return;
    try{
-    const names=await getIndex();
+    await getIndex();
     if(ticket!==suggestTicket)return;
-    const matches=[...names].filter(([id,name])=>id===text||
-     name.toLowerCase().includes(text)).slice(0,18);
+    const matches=[...craftableCandidates].filter(([id,name])=>
+     id===text||name.toLowerCase().includes(text)).slice(0,18);
     for(const [id,name] of matches){
      const li=el("li"),button=el("button",name+" (#"+id+")") as HTMLButtonElement;
-     button.type="button";button.addEventListener("click",()=>{
-      selectedId=id;query.value=name+" (#"+id+")";suggestions.replaceChildren();
-     });
+     button.type="button";
+     button.addEventListener("click",()=>{void selectCraftTarget(id,name);});
      li.append(button);suggestions.append(li);
     }
-   }catch{status.textContent=pt?"Falha ao consultar índice de itens.":"Could not load the item index.";}
+    if(!matches.length){
+     const message=el("li",pt?"Nenhum item com receita encontrado.":"No items with parsed recipes found.");
+     message.className="craft-empty-suggestion";suggestions.append(message);
+    }
+   }catch{
+    status.textContent=pt?"Falha ao consultar índice de itens.":"Could not load the item index.";
+   }
   }
   let debounce:ReturnType<typeof setTimeout>|null=null;
   query.addEventListener("input",()=>{
+   resetTarget();
    if(debounce!==null)clearTimeout(debounce);
    debounce=setTimeout(()=>{void suggest();},170);
+  });
+  query.addEventListener("focus",()=>{if(query.value.trim().length>=2&&!selectedId)void suggest();});
+  let redrawFrame=0;
+  function previewQuantity(){
+   if(!result.hidden&&activeGraph){
+    if(redrawFrame)cancelAnimationFrame(redrawFrame);
+    redrawFrame=requestAnimationFrame(()=>{redrawFrame=0;redraw();});
+   }
+  }
+  slider.addEventListener("input",()=>{
+   if(!rootConfig?.ready)return;
+   amount.value=slider.value;
+   lastValidQuantity=Number(slider.value);
+   $("craft-quantity-output").textContent=fmt(lastValidQuantity);
+   previewQuantity();
+  });
+  amount.addEventListener("input",()=>{
+   if(!rootConfig?.ready)return;
+   if(isAllowedCraftQuantity(amount.value,rootConfig.batch)){
+    lastValidQuantity=Number(amount.value);
+    slider.value=amount.value;
+    $("craft-quantity-output").textContent=fmt(lastValidQuantity);
+    previewQuantity();
+   }
+  });
+  amount.addEventListener("change",()=>{
+   if(!rootConfig?.ready)return;
+   if(!isAllowedCraftQuantity(amount.value,rootConfig.batch)){
+    amount.value=String(lastValidQuantity);
+    status.textContent=pt
+     ?"Quantidade inválida: use apenas múltiplos completos do batch, dentro do limite permitido."
+     :"Invalid quantity: use exact full-batch multiples within the allowed range.";
+   }
   });
   async function loadGraph(id:string){
    const names=await getIndex();
