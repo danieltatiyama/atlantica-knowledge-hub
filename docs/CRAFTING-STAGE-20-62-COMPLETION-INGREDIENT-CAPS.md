@@ -22,7 +22,7 @@ Example from the extracted source:
 
 | Product | Batch output | Ingredient limiting the operation | Maximum whole batches/op | Output per operation |
 |---|---:|---|---:|---:|
-| Strong Fishing Line (#2320) | 20 | 200 Thread (#7081) per batch | 50 | **1,000** |
+| Strong Fishing Line (#2320) | 20 | 200 Colorful Thread (#7081) per batch | 50 | **1,000** |
 | Strong Fishhook (#2321) | 20 | 100 Large Animal Bone (#8003) per batch | 100 | **2,000** |
 | Titanium Fishing Rod (#2318) | 10 | 20 Strong Fishhook (#2321), among other ingredients | 500 | **5,000** |
 
