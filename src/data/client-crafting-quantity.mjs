@@ -24,12 +24,12 @@ export function resolveRootCraftBatch({recipes,category,selectedVariant,manualBa
   let batch,source;
   if(policy.equipment){
     batch=1;source="confirmed-equipment-rule";
+  }else if(Number.isSafeInteger(recipe.batchSize)&&recipe.batchSize>0){
+    batch=recipe.batchSize;source="original-client-unit";
   }else if(manualBatch!==undefined&&manualBatch!==null&&manualBatch!==""){
     const input=String(manualBatch);
     if(!/^[1-9]\d{0,5}$/.test(input))return {ready:false,reason:"invalid-manual-batch",variantCount:recipes.length};
     batch=Number(input);source="manual";
-  }else if(Number.isSafeInteger(recipe.batchSize)&&recipe.batchSize>0){
-    batch=recipe.batchSize;source="original-client-unit";
   }else{
     return {ready:false,reason:"missing-batch",variantCount:recipes.length};
   }
