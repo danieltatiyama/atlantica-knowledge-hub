@@ -90,6 +90,11 @@ function bucketSource(id,directory,cache,manifestCheck){
   return cache.get(bucket)[String(id)]??null;
 }
 
+export function getOriginalClientItemIdentity(id){
+  const row=originalIndex.get(String(id));
+  return row?{id:row[0],nameEn:row[6]==="named"?row[1]:null,
+    category:row[2],status:row[6]}:null;
+}
 export function isClientEquipmentSourceId(id){
   return equipmentById.has(String(id));
 }
