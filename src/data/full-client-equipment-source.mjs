@@ -8,12 +8,12 @@
  */
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {fileURLToPath} from "node:url";
 import {summarizeRawNumericRows,comparableRawNumber}
   from "./full-client-stats-tools.mjs";
 
-const ROOT=resolve(fileURLToPath(new URL("../../",import.meta.url)));
-const SOURCE=resolve(ROOT,"public/data/client-items");
+// Astro's prerender server bundles this module under dist/.prerender.
+// import.meta.url would then incorrectly resolve public/ under dist/.
+const SOURCE=resolve(process.cwd(),"public/data/client-items");
 export const EQUIPMENT_LIKE_CLIENT_CATEGORIES=Object.freeze([
   "Weapon","Defence","Sword","Spear","Axe","Bow","Gun","Cannon",
   "Staff","Guitar","Saw","Whip","Shield","Orb","Armor","Pants",
