@@ -166,6 +166,14 @@ def build(db,source=ITEM_ROOT):
     for char_id,record in optional_monster_rows(db):
         catalog[char_id]["miner"].append(record)
 
+    # Exact CharID joins ONLY. Different candidate English names for the
+    # same ID leave its display name unresolved; no arbitrary first name.
+    original_char_names={
+        cid:(next(iter(found)) if len(found)==1 else None)
+        for cid,record in catalog.items()
+        for found in [{entry[1] for entry in record["original"] if entry[1]}]
+    }
+
     for row_num,data in input_rows["DirectDrops.csv"]:
         char_id=normalized_id(data.get("CharID"))
         item_id=normalized_id(data.get("ItemID"))
@@ -174,10 +182,11 @@ def build(db,source=ITEM_ROOT):
         min_qty=raw_numeric(data.get("MinQtyCandidate"))
         max_qty=raw_numeric(data.get("MaxQtyCandidate"))
         direct[char_id].append([
-            row_num,item_id,raw_rate,slot,min_qty,max_qty
+            row_num,item_id,names.get(item_id),raw_rate,slot,min_qty,max_qty
         ])
         reverse[item_id]["direct"].append([
-            char_id,row_num,raw_rate,slot,min_qty,max_qty,
+            char_id,original_char_names.get(char_id),row_num,
+            raw_rate,slot,min_qty,max_qty,
         ])
         quantities["direct"]+=1
 
@@ -194,7 +203,7 @@ def build(db,source=ITEM_ROOT):
         item_id=normalized_id(data.get("ItemID"))
         group_drops[group_id].append([
             row_num,raw_text(data.get("Band"),80),
-            item_id,raw_numeric(data.get("RawRate")),
+            item_id,names.get(item_id),raw_numeric(data.get("RawRate")),
             raw_text(data.get("Slot"),100),
             raw_numeric(data.get("MinQtyCandidate")),
             raw_numeric(data.get("MaxQtyCandidate")),
@@ -219,8 +228,9 @@ def build(db,source=ITEM_ROOT):
             for char_id,ref in by_group.get(group_id,()):
                 item_id=drop[2]
                 reverse[item_id]["group"].append([
-                    char_id,group_id,ref[0],drop[0],ref[2],drop[3],
-                    ref[3],drop[1],drop[5],drop[6],
+                    char_id,original_char_names.get(char_id),group_id,
+                    ref[0],drop[0],ref[2],drop[4],
+                    ref[3],drop[1],drop[6],drop[7],
                 ])
                 quantities["group_joins"]+=1
                 require(quantities["group_joins"]<=1_000_000,
