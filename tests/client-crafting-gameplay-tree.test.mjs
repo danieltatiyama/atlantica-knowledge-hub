@@ -123,4 +123,9 @@ test("equipment detail summary follows 1×20 without overwriting Unit evidence",
  const summary=readFileSync("src/components/ClientCraftingSummary.astro","utf8");
  assert.ok(summary.includes("summarizeCraftBatch(item.sourceDefinitions,{equipment:true})"));
  assert.ok(summary.includes("originalUnitStatus"));
+ const full=readFileSync("src/components/FullClientItemDatabasePage.astro","utf8");
+ assert.ok(full.includes('addCraftBatchInformation(details,data,row)'));
+ assert.ok(full.includes('summarizeCraftBatch(data.s,{equipment})'));
+ assert.ok(full.includes('if(equipment&&!hasMaterials)return'));
+
 });
