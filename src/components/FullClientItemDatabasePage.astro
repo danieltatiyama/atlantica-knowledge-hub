@@ -1129,3 +1129,161 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   @media(max-width:620px){.detail{padding:12px}.coverage{grid-template-columns:repeat(2,minmax(0,1fr))}
     .stats-grid{grid-template-columns:minmax(0,1fr)}.compare-controls{align-items:stretch}}
 </style>
+<style is:global>
+  /* Community-friendly item details: runtime-generated DOM needs global CSS,
+     scoped to this page. Astro's component-scoped CSS misses JS-built nodes. */
+  #full-client-db .wiki-item-overview,
+  #full-client-db .wiki-crafting,
+  #full-client-db .wiki-technical{
+    margin:18px 0;
+    border:1px solid #7c6b50;
+    border-radius:5px;
+    background:linear-gradient(135deg,#192129,#131820);
+    box-shadow:inset 0 0 0 2px #3a352b,0 5px 17px #0003;
+    padding:clamp(12px,2vw,19px);
+    color:#e1e5e9;
+  }
+  #full-client-db .wiki-item-overview h3,
+  #full-client-db .wiki-crafting h3{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:1.36rem;line-height:1.25;
+    margin:0 0 9px;
+    color:#f0d39c;
+  }
+  #full-client-db .wiki-help,
+  #full-client-db .wiki-empty,
+  #full-client-db .wiki-source-refs{
+    margin:7px 0 14px;
+    color:#bcc5cc;
+    line-height:1.55;
+    font-size:.86rem;
+  }
+  #full-client-db .wiki-facts{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));
+    gap:9px;margin:0;
+  }
+  #full-client-db .wiki-facts>div{
+    border:1px solid #66583e;
+    background:#252a2d;
+    padding:11px 13px;
+    min-width:0;
+  }
+  #full-client-db .wiki-facts dt{
+    font-size:.77rem;line-height:1.35;color:#bbc2cd;
+  }
+  #full-client-db .wiki-facts dd{
+    margin:7px 0 0;
+    font-size:.95rem;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+    color:#f4dda8;
+    overflow-wrap:anywhere;
+  }
+  #full-client-db .wiki-recipe{
+    margin:13px 0;
+    border:1px solid #695b43;
+    border-radius:4px;
+    overflow:hidden;
+    background:#151b22;
+  }
+  #full-client-db .wiki-recipe-heading{
+    display:flex;flex-wrap:wrap;align-items:center;
+    justify-content:space-between;gap:8px 15px;
+    background:#302b22;padding:11px 13px;
+  }
+  #full-client-db .wiki-recipe-heading h4{
+    margin:0;color:#f0d399;font-size:1.03rem;
+  }
+  #full-client-db .wiki-batch-label{
+    color:#f1e0be;font-size:.87rem;
+  }
+  #full-client-db .wiki-table-scroll{
+    overflow-x:auto;
+    scrollbar-color:#84704c #171b20;
+  }
+  #full-client-db .wiki-table-scroll table{
+    width:100%;border-collapse:collapse;
+    min-width:440px;
+    background:#151b21;
+    font-size:.86rem;
+    table-layout:auto;
+  }
+  #full-client-db .wiki-table-scroll th{
+    position:sticky;top:0;
+    background:#292920;color:#eacb8b;
+    font-weight:600;text-align:left;
+    padding:10px 12px;
+    border-bottom:1px solid #6f5f40;
+  }
+  #full-client-db .wiki-table-scroll td{
+    color:#e1e5eb;
+    padding:9px 12px;
+    border-bottom:1px solid #4a4a45;
+    vertical-align:top;
+    overflow-wrap:anywhere;
+  }
+  #full-client-db .wiki-table-scroll tbody tr:nth-child(even){
+    background:#212934;
+  }
+  #full-client-db .wiki-table-scroll tbody tr:hover,
+  #full-client-db .wiki-table-scroll tbody tr:focus-within{
+    background:#35404a;
+  }
+  #full-client-db .wiki-table-scroll a{color:#f0cd8d;text-underline-offset:3px}
+  #full-client-db .wiki-table-scroll a:focus-visible,
+  #full-client-db .wiki-technical summary:focus-visible{
+    outline:2px solid #f0c777;outline-offset:3px;
+  }
+  #full-client-db .wiki-table-scroll .wiki-quantity{
+    text-align:right;font-variant-numeric:tabular-nums;font-weight:600;
+  }
+  #full-client-db .wiki-raw-id{
+    display:block;margin-top:4px;font-size:.73rem;color:#afb7c2;
+  }
+  #full-client-db .wiki-source-refs{
+    padding:8px 12px;margin:0;
+    border-top:1px solid #66583e;
+    font-size:.77rem;color:#b6bac1;
+  }
+  #full-client-db .wiki-source-warning{
+    margin:12px 0;padding:9px 12px;
+    background:#443320;color:#ead2ab;
+    border-left:3px solid #d1aa6c;line-height:1.55;
+    font-size:.84rem;
+  }
+  #full-client-db .wiki-technical{
+    background:#171a20;
+    border-color:#5d5a50;
+  }
+  #full-client-db .wiki-technical>summary{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;cursor:pointer;
+    color:#e9cf9c;font-weight:600;font-size:1.02rem;
+    padding:5px 0;
+  }
+  #full-client-db .wiki-tech-count{
+    padding:4px 8px;background:#2f2d27;
+    color:#c6c5bd;border:1px solid #68604b;
+    border-radius:4px;white-space:nowrap;font-size:.78rem;font-weight:400;
+  }
+  #full-client-db .wiki-technical>summary::marker{color:#c2a66f}
+  #full-client-db .wiki-technical[open]>summary{
+    margin-bottom:10px;
+    border-bottom:1px solid #655944;padding-bottom:12px;
+  }
+  #full-client-db .wiki-technical .wiki-table-scroll table{min-width:850px}
+  #full-client-db .wiki-source-groupings{
+    margin:14px 0 0;border:1px solid #5f5a4a;
+    padding:10px;border-radius:4px;
+  }
+  #full-client-db .wiki-source-groupings summary{
+    cursor:pointer;color:#e4ca95;
+  }
+  @media(max-width:650px){
+    #full-client-db .wiki-item-overview,
+    #full-client-db .wiki-crafting,
+    #full-client-db .wiki-technical{padding:11px}
+    #full-client-db .wiki-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #full-client-db .wiki-recipe-heading{align-items:flex-start;flex-direction:column}
+  }
+</style>
