@@ -124,8 +124,15 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       <div class="craft-tree-tools craft-shopping-actions">
        <button type="button" id="craft-copy-shopping">{pt?"Copiar lista":"Copy list"}</button>
        <button type="button" id="craft-export-shopping">{pt?"Exportar CSV":"Export CSV"}</button>
+       <button type="button" id="craft-load-npc-prices">{pt?"Ver referências do cliente":"Show client references"}</button>
+       <button type="button" id="craft-apply-npc-prices" hidden>{pt?"Preencher somente preços vazios":"Fill only empty prices"}</button>
       </div>
      </div>
+     <p id="craft-npc-price-caption" class="craft-npc-price-caption">
+      {pt
+       ?"Preços da tabela NPC do cliente: referências opcionais. Não comprovam oferta fixa no Market atual. Os valores manuais têm prioridade."
+       :"Client NPC trade table prices: optional references, not verified fixed offers in the live Market. Manual prices take priority."}
+     </p>
      <div class="table-scroll craft-data-scroll">
       <table class="craft-data-table craft-shopping-table">
        <thead><tr>
@@ -211,7 +218,16 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const fmt=(n:string|number)=>nf.format(BigInt(n));
   const choices:Record<string,number>={},batchOverrides:Record<string,string>={};
   const prices:Record<string,string>={};
+  const priceOrigins:Record<string,string>={};
   const storedPriceKey="atlantica.crafting.prices.v1";
+  const priceOriginsKey="atlantica.crafting.priceOrigins.v1";
+  let clientNPCPriceMap:Map<string,string>|null=null;
+  const savePriceState=()=>{
+   try{
+    localStorage.setItem(storedPriceKey,JSON.stringify(prices));
+    localStorage.setItem(priceOriginsKey,JSON.stringify(priceOrigins));
+   }catch{ /* Local storage is optional. */ }
+  };
   try{
    const stored=JSON.parse(localStorage.getItem(storedPriceKey)||"{}");
    if(stored&&typeof stored==="object"&&!Array.isArray(stored)){
@@ -220,6 +236,14 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       prices[id]=String(value);
    }
   }catch{ /* Local price persistence is optional. */ }
+  try{
+   const savedOrigins=JSON.parse(localStorage.getItem(priceOriginsKey)||"{}");
+   if(savedOrigins&&typeof savedOrigins==="object"&&!Array.isArray(savedOrigins)){
+    for(const [id,origin] of Object.entries(savedOrigins))
+     if(/^[1-9]\d{0,12}$/.test(id)&&origin==="client-npc-catalog"&&prices[id])
+      priceOrigins[id]="client-npc-catalog";
+   }
+  }catch{ /* Origin metadata is optional. */ }
   const detailCache=new Map<number,Promise<any>>();
   let indexPromise:Promise<Map<string,string>>|null=null;
   const craftableCandidates=new Map<string,string>();
@@ -463,6 +487,30 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    }
    return graph;
   }
+  function attachNPCPriceHint(priceCell:HTMLElement,itemId:string,input:HTMLInputElement){
+   const value=clientNPCPriceMap?.get(itemId);
+   if(!value)return;
+   const hint=el("div");hint.className="craft-client-price-reference";
+   const caption=el("small",(pt?"Referência NPC: ":"NPC reference: ")+fmt(value)+" gold");
+   caption.title=pt
+    ?"Preço unitário extraído do catálogo de negociação NPC do cliente. Não é preço fixo do Market confirmado."
+    :"Unit price from client NPC trade catalog. Not a verified live fixed Market price.";
+   hint.append(caption);
+   const use=el("button",pt?"Usar":"Use") as HTMLButtonElement;
+   use.type="button";use.className="craft-use-client-price";
+   use.disabled=input.value.trim()!=="";
+   use.setAttribute("aria-label",(pt?"Usar preço NPC não verificado para ":"Use unverified NPC price for ")+itemId);
+   use.addEventListener("click",()=>{
+    if(input.value.trim())return;
+    prices[itemId]=value;
+    priceOrigins[itemId]="client-npc-catalog";
+    savePriceState();
+    input.value=value;
+    use.disabled=true;
+    refreshCosts();
+   });
+   hint.append(use);priceCell.append(hint);
+  }
   function refreshCosts(){
    if(!plan)return;
    const priced=priceCraftLeaves(plan.leaves,prices);
@@ -658,7 +706,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     try{
      const {buildCraftingWorkbook}=await import("../data/client-crafting-xlsx.mjs");
      const names=Object.fromEntries(nameCache?.entries()??[]);
-     const bytes=buildCraftingWorkbook({plan,names,prices,locale:pt?"pt":"en"});
+     const bytes=buildCraftingWorkbook({plan,names,prices,priceOrigins,locale:pt?"pt":"en"});
      const blob=new Blob([bytes],{
       type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
      });
@@ -674,6 +722,62 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       (error instanceof Error?error.message:String(error));
     }finally{button.disabled=false;}
    })();
+  });
+  $("craft-load-npc-prices").addEventListener("click",()=>{
+   const button=$("craft-load-npc-prices") as HTMLButtonElement;
+   button.disabled=true;
+   status.textContent=pt?"Consultando referências NPC do cliente…":"Loading client NPC reference prices…";
+   void (async()=>{
+    try{
+     const [manifest,data]=await Promise.all([
+      fetchJSON("/data/client-npc-trade-prices/manifest.json"),
+      fetchJSON("/data/client-npc-trade-prices/general.json"),
+     ]);
+     if(manifest.schemaVersion!=="1.0"||manifest.snapshotId!==1||
+       manifest.dataset!=="client-npc-trade-price-candidates"||
+       manifest.marketFixedPriceVerified!==false||manifest.generalCount!==421||
+       data.dataset!=="client-npc-trade-general-prices"||data.snapshotId!==1||
+       !Array.isArray(data.rows)||data.rows.length!==421)
+      throw Error("Client NPC price source manifest mismatch");
+     const map=new Map<string,string>();
+     for(const entry of data.rows){
+      if(!Array.isArray(entry)||entry.length!==3)throw Error("Invalid source reference row");
+      const [id,value,line]=entry;
+      if(typeof id!=="string"||!/^[1-9]\d{0,12}$/.test(id)||
+        typeof value!=="string"||!/^[1-9]\d{0,14}$/.test(value)||
+        !Number.isInteger(line)||line<1||map.has(id))
+       throw Error("Invalid source price entry");
+      map.set(id,value);
+     }
+     clientNPCPriceMap=map;
+     ($("craft-apply-npc-prices") as HTMLButtonElement).hidden=false;
+     if(plan)redraw();
+     status.textContent=pt
+      ?"421 preços de referência NPC disponíveis. Nenhum preço foi aplicado automaticamente."
+      :"421 NPC reference prices available. No prices applied automatically.";
+    }catch(error){
+     button.disabled=false;
+     status.textContent=(pt?"Referências indisponíveis: ":"References unavailable: ")+
+      (error instanceof Error?error.message:String(error));
+    }
+   })();
+  });
+  $("craft-apply-npc-prices").addEventListener("click",()=>{
+   if(!clientNPCPriceMap||!plan)return;
+   let filled=0;
+   for(const leaf of plan.leaves){
+    const value=clientNPCPriceMap.get(leaf.itemId);
+    if(value&&(!prices[leaf.itemId]||!prices[leaf.itemId].trim())){
+     prices[leaf.itemId]=value;
+     priceOrigins[leaf.itemId]="client-npc-catalog";
+     filled++;
+    }
+   }
+   if(filled)savePriceState();
+   redraw();
+   status.textContent=pt
+    ?filled+" preços vazios preenchidos com referência NPC (não verificada no Market)."
+    :filled+" empty prices filled with NPC reference (not Market-verified).";
   });
   $("craft-copy-shopping").addEventListener("click",()=>{
    const lines=shoppingRows().map(row=>
@@ -758,10 +862,15 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      input.setAttribute("aria-label",(pt?"Preço unitário ":"Unit price ")+title(leaf.itemId));
      input.addEventListener("change",()=>{
       prices[leaf.itemId]=input.value;
-      try{localStorage.setItem(storedPriceKey,JSON.stringify(prices));}catch{}
+      delete priceOrigins[leaf.itemId];
+      savePriceState();
+      const useButton=priceCell.querySelector<HTMLButtonElement>(".craft-use-client-price");
+      if(useButton)useButton.disabled=input.value.trim()!=="";
       try{refreshCosts();}catch{status.textContent=pt?"Preço inválido.":"Invalid price.";}
      });
-     priceCell.append(input);tr.append(priceCell);
+     priceCell.append(input);
+     attachNPCPriceHint(priceCell,leaf.itemId,input);
+     tr.append(priceCell);
      const totalCell=el("td","—");totalCell.dataset.costFor=leaf.itemId;
      totalCell.className="craft-data-number craft-cost-cell";
      tr.append(totalCell);leaves.append(tr);
