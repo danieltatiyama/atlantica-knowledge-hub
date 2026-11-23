@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa concluída:** Stage 20.55  
-**Último PR funcional:** [PR #75](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/75) (Stage 20.55)
+**Última etapa concluída:** Stage 20.56  
+**Último PR funcional:** [PR #76](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/76) (Stage 20.56)
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -283,6 +283,18 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Documentação detalhada, referências e checklist: `docs/CRAFTING-CALCULATOR-STAGE-20-55.md`.
 - Testes específicos: `tests/client-crafting-gameplay-tree.test.mjs` e suites históricas de batches/crafting.
 
+### Stage 20.56 — Controle de quantidade e seleção de receitas
+
+- O jogador confirmou que **não existe fabricação fracionada**. A quantidade solicitada deve ser um múltiplo inteiro do batch.
+- Autocomplete restringido a nomes reconciliados com indicação de ingredientes nos registros originais do cliente (`hasMaterials = 1` no índice), com segunda validação da receita interpretada no detalhe. Não equivale a verificação de que a receita está ativa no servidor.
+- Slider exibido **depois de escolher o item**, com `min=batch`, `step=batch` e `max=floor(10000/batch)*batch`, sincronizado ao campo `Desired Output` que usa as mesmas restrições.
+- Exemplos: batch 50 admite 50, 100, 150...10000; batch 300 admite até 9900; batch 500 admite até 10000.
+- Equipamento: batch de 1, quantidade planejada até 10000 e até 20 por operação, podendo distribuir o planejamento em várias operações.
+- Dados ausentes: versão alternativa de receita requer escolha; batch de produto não-equipamento ausente requer entrada manual antes de ativar slider.
+- O motor `planClientCrafting` mantém arredondamento **somente de intermediários** e rejeita quantidade fracionada para o produto-alvo no modo `strictTargetBatch` usado pela interface.
+- Arquivos: `src/data/client-crafting-quantity.mjs`, `src/data/client-crafting-planner.mjs`, `src/components/CraftingPlannerPage.astro` e `tests/client-crafting-quantity.test.mjs`.
+- Documentação técnica e limites estão em `docs/CRAFTING-CALCULATOR-STAGE-20-55.md`. Check no GitHub Actions e inspeção visual em produção após integração.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -298,6 +310,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.53 | [#72](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/72) | Calculadora de crafting multietapas e custos manuais |
 | 20.54 | [#73](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/73) | Nation Dungeon Planner com DST e rotinas semanais |
 | 20.55 | [#75](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/75) | Regra de equipamento 1×20, árvore de crafting, compras, excedentes e custos |
+| 20.56 | [#76](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/76) | Autocomplete de receitas e quantidades estritamente múltiplas do batch (1 a 10.000) |
 
 Todos esses PRs foram integrados à `main`.
 
@@ -376,4 +389,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.55 implementada no PR #75, com testes automatizados aprovados. Revisar o estado de integração e verificar visualmente a árvore, os preços e o limite de equipamentos no site publicado.**
+**Estado documentado: Stage 20.56 implementada no PR #76, com testes automatizados aprovados. Conferir o estado de integração e verificar visualmente filtro de receitas, slider e sincronização do campo de quantidade, inclusive fusos/temas da Wiki.**
