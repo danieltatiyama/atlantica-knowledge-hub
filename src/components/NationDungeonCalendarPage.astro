@@ -1,0 +1,386 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+---
+<BaseLayout lang={lang} title={(pt?"Calendário de Nation Dungeons":"Nation Dungeon calendar")+" | Atlantica Knowledge Hub"}
+ alternatePaths={{en:"/tools/nation-dungeons/","pt-br":"/pt-br/tools/nation-dungeons/"}}>
+ <main class="nd-calendar" id="nation-calendar" data-lang={lang}>
+  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <p class="eyebrow">ATLANTICA GLOBAL / NA · SERVER RESET</p>
+  <h1>{pt?"Calendário de Nation Dungeons":"Nation Dungeon calendar"}</h1>
+  <p class="nd-intro">{pt
+   ?"Planeje runs normais e horários fixos semanais a partir do reset das 06:00 no servidor (America/Los_Angeles). Horário de verão é tratado automaticamente. As alterações ficam neste navegador ou podem ser exportadas."
+   :"Plan ordinary runs and permanent weekly slots from the 06:00 server reset (America/Los_Angeles). Daylight saving is handled automatically. Plans are stored in this browser or exported."}</p>
+  <section class="nd-panel">
+   <h2>{pt?"Visualização":"View"}</h2>
+   <div class="nd-controls">
+    <label>{pt?"Dungeon":"Dungeon"}<select id="nd-selected-dungeon">
+     <option>Avalon</option><option>Babel</option><option>Yggdrasil</option><option>Alcatraz</option><option>Pirate</option>
+    </select></label>
+    <label>{pt?"Fuso horário da visualização":"Viewing timezone"}<select id="nd-timezone">
+     <option value="local">{pt?"Meu fuso (automático)":"My timezone (automatic)"}</option>
+     <option value="America/Los_Angeles">Server (Los Angeles)</option>
+     <option value="UTC">UTC</option>
+     <option value="America/Sao_Paulo">São Paulo</option>
+     <option value="Europe/Paris">Paris</option>
+     <option value="Asia/Tokyo">Tokyo</option>
+    </select></label>
+    <label>{pt?"Data inicial no fuso selecionado":"Start date in selected timezone"}<input id="nd-start-date" type="date"/></label>
+    <label>{pt?"Intervalo":"Horizon"}<select id="nd-horizon"><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
+    <label>{pt?"Orientação":"Orientation"}<select id="nd-orientation">
+     <option value="time-rows">{pt?"Horas × Dias":"Hours × Days"}</option>
+     <option value="day-rows">{pt?"Dias × Horas":"Days × Hours"}</option>
+    </select></label>
+   </div>
+   <p id="nd-view-status" role="status"></p>
+   <div class="nd-legend">
+    <span class="ready">{pt?"Disponível":"Ready"}</span>
+    <span class="cooldown">{pt?"Em cooldown":"Cooldown"}</span>
+    <span class="conflict">{pt?"Run incompatível":"Conflicting run"}</span>
+    <span class="gap">{pt?"Hora inexistente (DST)":"Nonexistent hour (DST)"}</span>
+   </div>
+   <div class="nd-table-wrap"><table id="nd-grid" aria-label={pt?"Disponibilidade por hora":"Hourly availability"}></table></div>
+   <p class="nd-hint">{pt
+    ?"O calendário indica disponibilidade calculada a partir das runs registradas. Uma run em cooldown é marcada como conflito e não reinicia o timer. Horas repetidas no fim do horário de verão usam a primeira ocorrência."
+    :"Readiness is estimated from registered runs. A run during cooldown is marked as conflicting and does not restart the timer. Repeated clocks at DST fallback use the first occurrence."}</p>
+  </section>
+  <div class="nd-edit-grid">
+   <section class="nd-panel">
+    <h2>{pt?"Adicionar ou editar run":"Add or edit a run"}</h2>
+    <form id="nd-event-form">
+     <div class="nd-controls">
+      <label>{pt?"Dungeon":"Dungeon"}<select id="nd-edit-dungeon">
+       <option>Avalon</option><option>Babel</option><option>Yggdrasil</option><option>Alcatraz</option><option>Pirate</option>
+      </select></label>
+      <label>{pt?"Tipo":"Type"}<select id="nd-edit-type">
+       <option value="normal">{pt?"Run individual":"Single run"}</option>
+       <option value="fixed">{pt?"Fixa semanal":"Weekly fixed"}</option>
+      </select></label>
+      <label id="nd-date-label">{pt?"Data no servidor":"Server date"}<input id="nd-edit-date" type="date" required/></label>
+      <label id="nd-weekday-label" hidden>{pt?"Dia semanal no servidor":"Server weekday"}<select id="nd-edit-weekday">
+       <option value="1">Monday</option><option value="2">Tuesday</option>
+       <option value="3">Wednesday</option><option value="4">Thursday</option>
+       <option value="5">Friday</option><option value="6">Saturday</option>
+       <option value="0">Sunday</option>
+      </select></label>
+      <label>{pt?"Horas após reset (R+)":"Hours after reset (R+)"}<input id="nd-edit-offset-hours" type="number" min="0" max="23" step="1" value="6" required/></label>
+      <label>{pt?"Minutos extras":"Extra minutes"}<input id="nd-edit-offset-minutes" type="number" min="0" max="59" step="1" value="0" required/></label>
+     </div>
+     <div class="nd-buttons"><button type="submit" id="nd-save-run">{pt?"Salvar run":"Save run"}</button>
+      <button type="button" id="nd-cancel-edit">{pt?"Cancelar edição":"Cancel edit"}</button></div>
+    </form>
+    <p class="nd-hint">{pt
+     ?"Exemplo: segunda-feira, R+6 significa segunda às 12:00 no horário do servidor."
+     :"Example: Monday, R+6 means Monday at 12:00 server time."}</p>
+   </section>
+   <section class="nd-panel">
+    <h2>{pt?"Cooldowns configuráveis":"Configurable cooldowns"}</h2>
+    <form id="nd-cooldown-form">
+     <div class="nd-controls" id="nd-cooldown-inputs"></div>
+     <button type="submit">{pt?"Salvar cooldowns":"Save cooldowns"}</button>
+    </form>
+    <p class="nd-hint">{pt
+     ?"Valores iniciais do planejamento anterior; ajuste se as regras do servidor mudarem. Horas são contadas como duração real, inclusive durante mudanças de DST."
+     :"Initial values come from prior planning; change them if the server rules change. Cooldowns are elapsed hours, including across DST transitions."}</p>
+   </section>
+  </div>
+  <section class="nd-panel">
+   <h2>{pt?"Runs registradas e horários fixos":"Saved runs and weekly slots"}</h2>
+   <ul id="nd-rule-list"></ul>
+   <div class="nd-buttons">
+    <button type="button" id="nd-export">{pt?"Exportar JSON":"Export JSON"}</button>
+    <label class="nd-file-label">{pt?"Importar JSON":"Import JSON"}<input id="nd-import" type="file" accept=".json,application/json"/></label>
+    <button type="button" id="nd-share">{pt?"Criar link compartilhável":"Create shareable link"}</button>
+   </div>
+   <input type="text" id="nd-share-link" readonly hidden aria-label={pt?"Link para compartilhar":"Share link"}/>
+   <p id="nd-action-status" role="status"></p>
+  </section>
+ </main>
+</BaseLayout>
+<script>
+ import {SERVER_TIME_ZONE,DUNGEON_COOLDOWNS_HOURS,emptyNationPlan,validateNationPlan,
+   addCalendarDays,zonedWallToEpoch,zonedParts,expandNationRuns,availabilityAt} from "../data/nation-dungeon-calendar.mjs";
+ const root=document.getElementById("nation-calendar");
+ if(root){
+  const pt=root.dataset.lang==="pt-br";
+  const $=(id:string)=>document.getElementById(id)!;
+  const selected=$("nd-selected-dungeon") as HTMLSelectElement;
+  const zoneSelect=$("nd-timezone") as HTMLSelectElement;
+  const start=$("nd-start-date") as HTMLInputElement;
+  const horizon=$("nd-horizon") as HTMLSelectElement;
+  const orientation=$("nd-orientation") as HTMLSelectElement;
+  const grid=$("nd-grid") as HTMLTableElement;
+  const status=$("nd-view-status"),actionStatus=$("nd-action-status");
+  const form=$("nd-event-form") as HTMLFormElement;
+  const type=$("nd-edit-type") as HTMLSelectElement;
+  const dungeon=$("nd-edit-dungeon") as HTMLSelectElement;
+  const serverDate=$("nd-edit-date") as HTMLInputElement;
+  const weekday=$("nd-edit-weekday") as HTMLSelectElement;
+  const hours=$("nd-edit-offset-hours") as HTMLInputElement;
+  const minutes=$("nd-edit-offset-minutes") as HTMLInputElement;
+  const list=$("nd-rule-list"),cooldownInputs=$("nd-cooldown-inputs");
+  const cacheKey="atlantica.nd-calendar.v1",viewKey="atlantica.nd-view.v1";
+  const systemZone=Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
+  const weekdays=pt?["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"]:
+    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const dungeons=Object.keys(DUNGEON_COOLDOWNS_HOURS);
+  const node=(tag:string,text?:string)=>{
+   const el=document.createElement(tag);if(text!==undefined)el.textContent=text;return el;
+  };
+  const zone=()=>zoneSelect.value==="local"?systemZone:zoneSelect.value;
+  const viewToday=()=>zonedParts(Date.now(),zone()).date;
+  let plan=emptyNationPlan(),editingId="";
+  try{
+   const saved=localStorage.getItem(cacheKey);
+   if(saved)plan=validateNationPlan(JSON.parse(saved));
+  }catch{ /* Storage is optional. */ }
+  try{
+   const view=JSON.parse(localStorage.getItem(viewKey)||"null");
+   if(view&&["7","14","30"].includes(view.days)&&["time-rows","day-rows"].includes(view.orientation)){
+    horizon.value=view.days;orientation.value=view.orientation;
+    if([...zoneSelect.options].some(x=>x.value===view.zone))zoneSelect.value=view.zone;
+    if(dungeons.includes(view.dungeon))selected.value=view.dungeon;
+   }
+  }catch{ /* Ignore saved view conflicts. */ }
+  start.value=viewToday();serverDate.value=zonedParts(Date.now(),SERVER_TIME_ZONE).date;
+  const shared=new URL(location.href).searchParams.get("plan");
+  if(shared&&shared.length<=12000&&/^[A-Za-z0-9_-]+$/.test(shared)){
+   try{
+    const decoded=atob(shared.replace(/-/g,"+").replace(/_/g,"/"));
+    plan=validateNationPlan(JSON.parse(decoded));
+    actionStatus.textContent=pt?"Plano compartilhado carregado (não salvo até você alterar).":
+      "Shared plan loaded (not saved until you edit).";
+   }catch{actionStatus.textContent=pt?"Link compartilhado inválido.":"Invalid shared plan link.";}
+  }
+  const persist=()=>{
+   try{localStorage.setItem(cacheKey,JSON.stringify(plan));}
+   catch{actionStatus.textContent=pt?"Armazenamento bloqueado; exporte seu plano.":"Storage blocked; export your plan.";}
+  };
+  const saveView=()=>{
+   try{localStorage.setItem(viewKey,JSON.stringify({
+    zone:zoneSelect.value,days:horizon.value,orientation:orientation.value,dungeon:selected.value
+   }));}catch{}
+  };
+  function toggleType(){
+   const fixed=type.value==="fixed";
+   $("nd-date-label").hidden=fixed;
+   $("nd-weekday-label").hidden=!fixed;
+   serverDate.required=!fixed;
+  }
+  type.addEventListener("change",toggleType);toggleType();
+  function renderRules(){
+   list.replaceChildren();
+   for(const rule of plan.rules){
+    const li=node("li");
+    const dateInfo=rule.type==="fixed"
+      ?(pt?"Toda ":"Every ")+weekdays[rule.weekday]
+      :rule.serverDate;
+    const off=Math.floor(rule.offsetMinutes/60)+":"+
+      String(rule.offsetMinutes%60).padStart(2,"0");
+    li.append(node("span",rule.dungeon+" · "+dateInfo+" · R+"+off));
+    const edit=node("button",pt?"Editar":"Edit") as HTMLButtonElement;
+    edit.type="button";edit.addEventListener("click",()=>{
+     editingId=rule.id;dungeon.value=rule.dungeon;type.value=rule.type;
+     if(rule.type==="normal")serverDate.value=rule.serverDate;
+     else weekday.value=String(rule.weekday);
+     hours.value=String(Math.floor(rule.offsetMinutes/60));
+     minutes.value=String(rule.offsetMinutes%60);toggleType();
+     form.scrollIntoView({behavior:"smooth",block:"center"});
+    });
+    const remove=node("button",pt?"Excluir":"Delete") as HTMLButtonElement;
+    remove.type="button";remove.addEventListener("click",()=>{
+     plan=validateNationPlan({...plan,rules:plan.rules.filter(x=>x.id!==rule.id)});
+     persist();renderAll();
+    });
+    li.append(edit,remove);list.append(li);
+   }
+   if(!plan.rules.length)list.append(node("li",pt?"Nenhuma run cadastrada.":"No runs registered."));
+  }
+  function renderCooldowns(){
+   cooldownInputs.replaceChildren();
+   for(const name of dungeons){
+    const label=node("label",name+" (h)");
+    const input=node("input") as HTMLInputElement;
+    input.type="number";input.min="1";input.max="240";input.step="1";
+    input.value=String(plan.cooldowns[name]);input.dataset.dungeon=name;input.required=true;
+    label.append(input);cooldownInputs.append(label);
+   }
+  }
+  function renderCalendar(){
+   grid.replaceChildren();
+   const tz=zone(),days=Number(horizon.value),name=selected.value;
+   const runs=expandNationRuns(plan,{startDate:start.value,days,timeZone:tz});
+   const selectedRuns=runs.filter(run=>run.dungeon===name);
+   const events=new Map<string,any[]>();
+   for(const run of selectedRuns){
+    const parts=zonedParts(run.epoch,tz);
+    const key=parts.date+"|"+parts.hour;
+    if(!events.has(key))events.set(key,[]);
+    events.get(key)!.push(run);
+   }
+   const dates=Array.from({length:days},(_,i)=>addCalendarDays(start.value,i));
+   const hoursList=Array.from({length:24},(_,i)=>i);
+   let readySlots=0,cooldownSlots=0,conflicts=0;
+   const makeCell=(date:string,hour:number)=>{
+    const td=node("td");
+    const epoch=zonedWallToEpoch(date,hour,0,tz);
+    if(epoch===null){
+     td.className="gap";td.textContent="—";td.title=pt?"Hora inexistente por horário de verão":"Hour skipped by daylight saving";
+     return td;
+    }
+    const value=availabilityAt(epoch,name,runs,plan);
+    td.className=value.ready?"ready":"cooldown";
+    if(value.ready)readySlots++;else cooldownSlots++;
+    td.title=date+" "+String(hour).padStart(2,"0")+":00 "+tz+
+      " · "+(value.ready?(pt?"Disponível":"Ready"):(pt?"Em cooldown":"Cooldown"));
+    const matching=events.get(date+"|"+hour)??[];
+    for(const run of matching){
+     const label=node("span",run.accepted?"●":"!");
+     label.className=run.accepted?"run-event":"run-conflict";
+     label.title=(run.type==="fixed"?"Fixed":"Single")+" R+"+
+       Math.floor(run.offsetMinutes/60)+":"+String(run.offsetMinutes%60).padStart(2,"0")+
+       (run.accepted?" · OK":" · Cooldown conflict");
+     td.append(label);
+    }
+    return td;
+   };
+   const thead=node("thead"),head=node("tr");
+   head.append(node("th",orientation.value==="time-rows"?(pt?"Hora":"Hour"):(pt?"Dia":"Day")));
+   for(const key of (orientation.value==="time-rows"?dates:hoursList))
+    head.append(node("th",typeof key==="number"?String(key).padStart(2,"0")+":00":key));
+   thead.append(head);grid.append(thead);
+   const body=node("tbody");
+   if(orientation.value==="time-rows"){
+    for(const hour of hoursList){
+     const tr=node("tr");tr.append(node("th",String(hour).padStart(2,"0")+":00"));
+     for(const date of dates)tr.append(makeCell(date,hour));
+     body.append(tr);
+    }
+   }else{
+    for(const date of dates){
+     const tr=node("tr");tr.append(node("th",date));
+     for(const hour of hoursList)tr.append(makeCell(date,hour));
+     body.append(tr);
+    }
+   }
+   grid.append(body);
+   conflicts=selectedRuns.filter(r=>!r.accepted&&
+     dates.includes(zonedParts(r.epoch,tz).date)).length;
+   status.textContent=(pt?"Fuso: ":"Timezone: ")+tz+" · "+
+    (pt?"Disponível":"Ready")+": "+readySlots+" · "+
+    (pt?"Cooldown":"Cooldown")+": "+cooldownSlots+" · "+
+    (pt?"Conflitos":"Conflicts")+": "+conflicts;
+  }
+  function renderAll(){renderRules();renderCooldowns();renderCalendar();}
+  const updateView=()=>{saveView();renderCalendar();};
+  for(const el of [selected,zoneSelect,start,horizon,orientation])
+   el.addEventListener("change",()=>{
+    if(el===zoneSelect)start.value=viewToday();
+    updateView();
+   });
+  form.addEventListener("submit",event=>{
+   event.preventDefault();
+   const offset=Number(hours.value)*60+Number(minutes.value);
+   const id=editingId||"run-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);
+   const rule=type.value==="normal"
+    ?{id,type:"normal",dungeon:dungeon.value,serverDate:serverDate.value,offsetMinutes:offset}
+    :{id,type:"fixed",dungeon:dungeon.value,weekday:Number(weekday.value),offsetMinutes:offset};
+   try{
+    plan=validateNationPlan({...plan,rules:[...plan.rules.filter(x=>x.id!==editingId),rule]});
+    editingId="";persist();renderAll();
+    actionStatus.textContent=pt?"Run registrada.":"Run saved.";
+   }catch(err){actionStatus.textContent=(pt?"Erro: ":"Error: ")+(err instanceof Error?err.message:String(err));}
+  });
+  $("nd-cancel-edit").addEventListener("click",()=>{
+   editingId="";form.reset();serverDate.value=zonedParts(Date.now(),SERVER_TIME_ZONE).date;toggleType();
+  });
+  ($("nd-cooldown-form") as HTMLFormElement).addEventListener("submit",event=>{
+   event.preventDefault();
+   const cooldowns={...plan.cooldowns};
+   for(const input of cooldownInputs.querySelectorAll<HTMLInputElement>("input[data-dungeon]"))
+    cooldowns[input.dataset.dungeon!]=Number(input.value);
+   try{
+    plan=validateNationPlan({...plan,cooldowns});persist();renderAll();
+    actionStatus.textContent=pt?"Cooldowns atualizados.":"Cooldowns updated.";
+   }catch(e){actionStatus.textContent=pt?"Valor de cooldown inválido.":"Invalid cooldown value.";}
+  });
+  $("nd-export").addEventListener("click",()=>{
+   const data=new Blob([JSON.stringify(plan,null,2)],{type:"application/json"});
+   const url=URL.createObjectURL(data),a=node("a") as HTMLAnchorElement;
+   a.href=url;a.download="atlantica-nation-dungeons.json";a.click();
+   setTimeout(()=>URL.revokeObjectURL(url),2000);
+  });
+  ($("nd-import") as HTMLInputElement).addEventListener("change",event=>{
+   const input=event.target as HTMLInputElement;
+   const file=input.files?.[0];if(!file)return;
+   void file.text().then(text=>{
+    plan=validateNationPlan(JSON.parse(text));editingId="";persist();renderAll();
+    actionStatus.textContent=pt?"Plano importado.":"Plan imported.";
+   }).catch(()=>{actionStatus.textContent=pt?"JSON inválido.":"Invalid JSON plan.";});
+   input.value="";
+  });
+  $("nd-share").addEventListener("click",()=>{
+   try{
+    const encoded=btoa(JSON.stringify(plan)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+    if(encoded.length>8000)throw Error("Plan too large for a shareable URL");
+    const url=new URL(location.href);url.searchParams.set("plan",encoded);
+    const field=$("nd-share-link") as HTMLInputElement;
+    field.hidden=false;field.value=url.toString();field.select();
+    void navigator.clipboard?.writeText(field.value).catch(()=>{});
+    actionStatus.textContent=pt?"Link pronto abaixo para copiar.":"Share link ready below; copy it.";
+   }catch{actionStatus.textContent=pt?"Plano grande demais para link; exporte JSON.":"Plan too large for link; export JSON.";}
+  });
+  try{renderAll();}catch(e){
+   status.textContent=(pt?"Não foi possível gerar calendário: ":"Could not render calendar: ")+
+    (e instanceof Error?e.message:String(e));
+  }
+ }
+</script>
+<style>
+ .nd-calendar{width:min(1600px,94%);margin:0 auto;padding:25px 0 80px}
+ nav a{color:var(--color-accent)}.eyebrow{color:var(--color-accent);font-size:.77rem;letter-spacing:.13em}
+ h1{font-size:clamp(2rem,4vw,3rem)}.nd-intro,.nd-hint{color:var(--color-text-muted);line-height:1.6}
+ .nd-panel{border:1px solid var(--color-border);border-radius:6px;background:var(--color-surface);
+   padding:clamp(14px,2vw,22px);margin:20px 0}
+ .nd-panel h2{font-size:1.35rem;color:var(--color-gold-light);margin:0 0 14px}
+ .nd-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,155px),1fr));gap:12px}
+ .nd-controls label{display:grid;gap:7px;min-width:0;color:var(--color-text-muted);font-size:.86rem}
+ .nd-controls :is(select,input){width:100%;min-height:40px;background:var(--color-background);
+  border:1px solid var(--color-border);border-radius:4px;color:var(--color-text);padding:8px;font:inherit}
+ .nd-legend{display:flex;gap:9px;flex-wrap:wrap;margin:15px 0}
+ .nd-legend span{padding:6px 10px;border-radius:4px;border:1px solid var(--color-border);font-size:.78rem}
+ .nd-table-wrap{overflow:auto;max-width:100%;max-height:74vh;border:1px solid var(--color-border)}
+ #nd-grid{border-collapse:separate;border-spacing:1px;min-width:max-content;font-size:.72rem}
+ #nd-grid :is(th,td){border:1px solid var(--color-border);text-align:center;padding:4px;min-width:51px;height:28px}
+ #nd-grid th{background:var(--color-surface);color:var(--color-text);position:sticky;top:0;z-index:2}
+ #nd-grid tbody th{position:sticky;left:0;z-index:1}
+ #nd-grid :is(td.ready,.nd-legend .ready){background:rgba(22,145,75,.20);color:var(--color-text)}
+ #nd-grid td.cooldown,.nd-legend .cooldown{background:rgba(188,54,65,.24);color:var(--color-text)}
+ #nd-grid td.gap,.nd-legend .gap{background:var(--color-background);color:var(--color-text-muted)}
+ .nd-legend .ready{background:rgba(22,145,75,.20)}
+ .nd-legend .cooldown{background:rgba(188,54,65,.24)}
+ .nd-legend .conflict{background:rgba(216,143,24,.22)}
+ .run-event{color:var(--color-accent);font-weight:800;font-size:1.25em}
+ .run-conflict{color:#d28f20;font-weight:800;font-size:1.25em}
+ .nd-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+ .nd-edit-grid>.nd-panel{margin:0}
+ .nd-buttons{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+ .nd-buttons button,.nd-panel form>button,.nd-file-label{cursor:pointer;padding:8px 12px;
+   border:1px solid var(--color-border);border-radius:4px;background:var(--color-background);color:var(--color-text);font:inherit}
+ .nd-buttons button:hover,.nd-file-label:hover{border-color:var(--color-accent)}
+ #nd-rule-list{list-style:none;padding:0;display:grid;gap:8px}
+ #nd-rule-list li{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+   padding:10px;background:var(--color-background);border:1px solid var(--color-border)}
+ #nd-rule-list li span{flex:1 1 200px}
+ #nd-rule-list li button{border:1px solid var(--color-border);padding:5px 9px;
+   border-radius:4px;cursor:pointer;color:var(--color-text);background:var(--color-surface)}
+ .nd-file-label input{display:block;max-width:210px;margin:5px 0}
+ #nd-share-link{display:block;width:100%;min-height:38px;background:var(--color-background);
+   border:1px solid var(--color-border);color:var(--color-text);padding:8px}
+ #nd-share-link[hidden]{display:none}
+ .nd-panel [hidden]{display:none!important}
+ @media(max-width:900px){.nd-edit-grid{grid-template-columns:1fr}}
+ @media(max-width:600px){#nd-grid :is(th,td){min-width:45px}}
+</style>
