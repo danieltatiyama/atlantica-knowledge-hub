@@ -89,6 +89,9 @@ jobs:
       - name: Validate player profile navigation
         run: node --test tests/wiki-profile-navigation.test.mjs
 
+      - name: Validate cross-source data audit
+        run: node --test tests/wiki-source-audit.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
