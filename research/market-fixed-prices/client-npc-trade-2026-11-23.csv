@@ -1,0 +1,653 @@
+item_id,client_name_en,client_category,catalog,npc_trade_price_gold,client_identity_status,market_fixed_price_verified,source_row_number,provenance
+1,Spirit Sword,Sword,general,900,named,false,7,local-client-npc-trade-table
+15,Ocean Sword,Sword,general,4800,named,false,8,local-client-npc-trade-table
+25,Rakshasa's Sword,Sword,general,13700,named,false,9,local-client-npc-trade-table
+35,Destroyer's Sword,Sword,general,41100,named,false,10,local-client-npc-trade-table
+100,Spirit Spear,Spear,general,900,named,false,11,local-client-npc-trade-table
+115,Ocean Spear,Spear,general,4800,named,false,12,local-client-npc-trade-table
+125,Rakshasa's Spear,Spear,general,13700,named,false,13,local-client-npc-trade-table
+135,Destroyer's Spear,Spear,general,41100,named,false,14,local-client-npc-trade-table
+200,Spirit Staff,Staff,general,900,named,false,15,local-client-npc-trade-table
+220,Red Soul Staff,Staff,general,4800,named,false,16,local-client-npc-trade-table
+225,Krishna's Staff,Staff,general,13700,named,false,17,local-client-npc-trade-table
+230,Savior's Staff,Staff,general,41100,named,false,18,local-client-npc-trade-table
+300,Spirit Axe,Axe,general,900,named,false,19,local-client-npc-trade-table
+310,Ocean Axe,Axe,general,4800,named,false,20,local-client-npc-trade-table
+320,Rakshasa's Axe,Axe,general,13700,named,false,21,local-client-npc-trade-table
+330,Destroyer's Axe,Axe,general,41100,named,false,22,local-client-npc-trade-table
+400,Spirit Bow,Bow,general,900,named,false,23,local-client-npc-trade-table
+415,Deep-Sea Bow,Bow,general,4800,named,false,24,local-client-npc-trade-table
+420,Ogre Bow,Bow,general,13700,named,false,25,local-client-npc-trade-table
+425,Assassin's Bow,Bow,general,41100,named,false,26,local-client-npc-trade-table
+500,Spirit Rifle,Gun,general,900,named,false,27,local-client-npc-trade-table
+510,Deep-Sea Rifle,Gun,general,4800,named,false,28,local-client-npc-trade-table
+515,Ogre Rifle,Gun,general,13700,named,false,29,local-client-npc-trade-table
+520,Assassin's Rifle,Gun,general,41100,named,false,30,local-client-npc-trade-table
+600,Spirit Armor,Armor,general,700,named,false,31,local-client-npc-trade-table
+631,Ocean Heavy Armor,Armor,general,2300,named,false,32,local-client-npc-trade-table
+632,Deep-Sea Light Armor,Armor,general,2300,named,false,33,local-client-npc-trade-table
+650,Red Soul Robe,Armor,general,2300,named,false,34,local-client-npc-trade-table
+651,Rakshasa's Heavy Armor,Armor,general,6500,named,false,35,local-client-npc-trade-table
+652,Ogre Light Armor,Armor,general,6500,named,false,36,local-client-npc-trade-table
+660,Krishna's Robe,Armor,general,6500,named,false,37,local-client-npc-trade-table
+661,Destroyer's Heavy Armor,Armor,general,19350,named,false,38,local-client-npc-trade-table
+662,Assassin's Light Armor,Armor,general,19350,named,false,39,local-client-npc-trade-table
+665,Savior's Robe,Armor,general,19350,named,false,40,local-client-npc-trade-table
+700,Spirit Helmet,Helmet,general,600,named,false,41,local-client-npc-trade-table
+731,Ocean Helmet,Helmet,general,2300,named,false,42,local-client-npc-trade-table
+732,Deep-Sea Chain Helm,Helmet,general,2300,named,false,43,local-client-npc-trade-table
+750,Red Soul Hat,Helmet,general,2300,named,false,44,local-client-npc-trade-table
+751,Rakshasa's Helmet,Helmet,general,6500,named,false,45,local-client-npc-trade-table
+752,Ogre Chain Helm,Helmet,general,6500,named,false,46,local-client-npc-trade-table
+760,Krishna's Hat,Helmet,general,6500,named,false,47,local-client-npc-trade-table
+761,Destroyer's Helmet,Helmet,general,19350,named,false,48,local-client-npc-trade-table
+762,Assassin's Chain Helm,Helmet,general,19350,named,false,49,local-client-npc-trade-table
+765,Savior's Hat,Helmet,general,19350,named,false,50,local-client-npc-trade-table
+1200,Spirit Leggings,Pants,general,500,named,false,51,local-client-npc-trade-table
+1230,Ocean Greaves,Pants,general,2300,named,false,52,local-client-npc-trade-table
+1231,Deep-Sea Leggings,Pants,general,2300,named,false,53,local-client-npc-trade-table
+1250,Rakshasa's Greaves,Pants,general,6400,named,false,54,local-client-npc-trade-table
+1251,Ogre Leggings,Pants,general,6400,named,false,55,local-client-npc-trade-table
+1260,Destroyer's Greaves,Pants,general,18800,named,false,56,local-client-npc-trade-table
+1261,Assassin's Leggings,Pants,general,18800,named,false,57,local-client-npc-trade-table
+1300,Spirit Power Saw,Saw,general,900,named,false,317,local-client-npc-trade-table
+1301,Ocean Power Saw,Saw,general,4800,named,false,318,local-client-npc-trade-table
+1302,Rakshasa's Power Saw,Saw,general,13700,named,false,319,local-client-npc-trade-table
+1304,Destroyer's Power Saw,Saw,general,41100,named,false,320,local-client-npc-trade-table
+1400,Spirit Instrument,Guitar,general,900,named,false,313,local-client-npc-trade-table
+1401,Deep-Sea Instrument,Guitar,general,4800,named,false,314,local-client-npc-trade-table
+1402,Ogre Instrument,Guitar,general,13700,named,false,315,local-client-npc-trade-table
+1404,Assassin's Instrument,Guitar,general,41100,named,false,316,local-client-npc-trade-table
+1500,Spirit Shoes,Boots,general,300,named,false,58,local-client-npc-trade-table
+1520,Ocean Boots,Boots,general,1600,named,false,59,local-client-npc-trade-table
+1525,Deep-Sea Chain Boots,Boots,general,1600,named,false,60,local-client-npc-trade-table
+1530,Red Soul Shoes,Boots,general,1600,named,false,61,local-client-npc-trade-table
+1535,Rakshasa's Boots,Boots,general,3100,named,false,62,local-client-npc-trade-table
+1540,Ogre Chain Boots,Boots,general,3100,named,false,63,local-client-npc-trade-table
+1545,Krishna's Shoes,Boots,general,3100,named,false,64,local-client-npc-trade-table
+1550,Destroyer's Boots,Boots,general,12100,named,false,65,local-client-npc-trade-table
+1555,Assassin's Chain Boots,Boots,general,12100,named,false,66,local-client-npc-trade-table
+1560,Savior's Shoes,Boots,general,12100,named,false,67,local-client-npc-trade-table
+1800,Spirit Gloves,Glove,general,300,named,false,68,local-client-npc-trade-table
+1820,Ocean Gauntlets,Glove,general,1600,named,false,69,local-client-npc-trade-table
+1825,Deep-Sea Chain Gauntlets,Glove,general,1600,named,false,70,local-client-npc-trade-table
+1830,Red Soul Gloves,Glove,general,1600,named,false,71,local-client-npc-trade-table
+1835,Rakshasa's Gauntlets,Glove,general,3100,named,false,72,local-client-npc-trade-table
+1840,Ogre Chain Gauntlets,Glove,general,3100,named,false,73,local-client-npc-trade-table
+1845,Krishna's Gloves,Glove,general,3100,named,false,74,local-client-npc-trade-table
+1850,Destroyer's Gauntlets,Glove,general,14600,named,false,75,local-client-npc-trade-table
+1855,Assassin's Chain Gauntlets,Glove,general,14600,named,false,76,local-client-npc-trade-table
+1860,Savior's Gloves,Glove,general,14600,named,false,77,local-client-npc-trade-table
+2000,Ginseng,Heal,general,100,named,false,78,local-client-npc-trade-table
+2001,Revival Plant,Heal,general,20000,named,false,290,local-client-npc-trade-table
+2002,Holly,Heal,general,100,named,false,79,local-client-npc-trade-table
+2003,Life Potion [IV],Heal,general,16000,named,false,266,local-client-npc-trade-table
+2004,Dogwood Fruit,Heal,general,100,named,false,80,local-client-npc-trade-table
+2006,Mandrake Root,Heal,general,100,named,false,81,local-client-npc-trade-table
+2010,Eucalyptus,Heal,general,200,named,false,82,local-client-npc-trade-table
+2012,Green Mold,Heal,general,200,named,false,83,local-client-npc-trade-table
+2015,Valerian,Heal,general,200,named,false,84,local-client-npc-trade-table
+2016,Hyssop,Heal,general,200,named,false,85,local-client-npc-trade-table
+2023,Powder of Musk,Heal,general,100000,named,false,299,local-client-npc-trade-table
+2030,Ginger,Heal,general,300,named,false,86,local-client-npc-trade-table
+2031,Chrysanthemum,Heal,general,300,named,false,87,local-client-npc-trade-table
+2032,Coriander,Heal,general,300,named,false,88,local-client-npc-trade-table
+2033,Jasmine,Heal,general,300,named,false,89,local-client-npc-trade-table
+2035,Angelica,Heal,general,300,named,false,90,local-client-npc-trade-table
+2036,Lamb's Ear,Heal,general,300,named,false,91,local-client-npc-trade-table
+2037,Cyclamen,Heal,general,1000,named,false,92,local-client-npc-trade-table
+2038,Anise,Heal,general,1000,named,false,93,local-client-npc-trade-table
+2040,Healing Potion [I],Heal,general,1500,named,false,94,local-client-npc-trade-table
+2050,Healing Potion [II],Heal,general,8000,named,false,95,local-client-npc-trade-table
+2070,Mana Potion [I],Heal,general,1500,named,false,96,local-client-npc-trade-table
+2080,Mana Potion [II],Heal,general,8000,named,false,97,local-client-npc-trade-table
+2140,Polish,Heal,general,4000,named,false,229,local-client-npc-trade-table
+2141,Common Polish,Heal,general,8000,named,false,230,local-client-npc-trade-table
+2142,Quality Polish,Heal,general,16000,named,false,231,local-client-npc-trade-table
+2150,Fusing Agent,Heal,general,2000,named,false,232,local-client-npc-trade-table
+2151,Common Fusing Agent,Heal,general,8000,named,false,233,local-client-npc-trade-table
+2152,Quality Fusing Agent,Heal,general,16000,named,false,234,local-client-npc-trade-table
+2155,Secret Vial of Protection,Heal,general,5000000,named,false,636,local-client-npc-trade-table
+2160,Leather Protectant,Heal,general,500,named,false,235,local-client-npc-trade-table
+2161,Common Leather Protectant,Heal,general,1000,named,false,236,local-client-npc-trade-table
+2162,Quality Leather Protectant,Heal,general,2000,named,false,237,local-client-npc-trade-table
+2170,Glue,Heal,general,500,named,false,238,local-client-npc-trade-table
+2171,Common Glue,Heal,general,1000,named,false,239,local-client-npc-trade-table
+2172,Quality Glue,Heal,general,2000,named,false,240,local-client-npc-trade-table
+2180,Antidote [I],Heal,general,1500,named,false,98,local-client-npc-trade-table
+2181,Antidote [II],Heal,general,4000,named,false,99,local-client-npc-trade-table
+2195,Mysterious Vial: Valor,Heal,general,500000,named,false,285,local-client-npc-trade-table
+2196,Mysterious Vial: Wisdom,Heal,general,650000,named,false,286,local-client-npc-trade-table
+2197,Mysterious Vial: Death,Heal,general,800000,named,false,287,local-client-npc-trade-table
+2400,Thoroughbred,Ride,general,70000000,named,false,322,local-client-npc-trade-table
+2503,Yellow Paper,Tool,general,2200,named,false,390,local-client-npc-trade-table
+3000,Rice,Food,general,100,named,false,100,local-client-npc-trade-table
+3006,Monster Egg,Food,general,10000,named,false,408,local-client-npc-trade-table
+3008,Bay Salt,Food,general,3000,named,false,332,local-client-npc-trade-table
+3010,Radish,Food,general,100,named,false,101,local-client-npc-trade-table
+3020,Spinach,Food,general,100,named,false,102,local-client-npc-trade-table
+3030,Mushroom,Food,general,200,named,false,103,local-client-npc-trade-table
+3040,Barley,Food,general,100,named,false,104,local-client-npc-trade-table
+3050,Potato,Food,general,100,named,false,105,local-client-npc-trade-table
+3060,Sweet Potato,Food,general,100,named,false,106,local-client-npc-trade-table
+3070,Onion,Food,general,200,named,false,107,local-client-npc-trade-table
+3072,Lemon,Food,general,5000,named,false,295,local-client-npc-trade-table
+3080,Cucumber,Food,general,100,named,false,108,local-client-npc-trade-table
+3090,Carrot,Food,general,100,named,false,109,local-client-npc-trade-table
+3100,Garlic,Food,general,200,named,false,110,local-client-npc-trade-table
+3110,Bean,Food,general,100,named,false,111,local-client-npc-trade-table
+3120,Leek,Food,general,100,named,false,112,local-client-npc-trade-table
+3130,Wheat,Food,general,100,named,false,113,local-client-npc-trade-table
+3135,Pork,Food,general,100,named,false,114,local-client-npc-trade-table
+3140,Beef,Food,general,300,named,false,115,local-client-npc-trade-table
+3145,Mutton,Food,general,500,named,false,116,local-client-npc-trade-table
+3146,Chicken,Food,general,300,named,false,344,local-client-npc-trade-table
+3180,Honey,Food,general,100,named,false,117,local-client-npc-trade-table
+3200,Sesame Oil,Food,general,500,named,false,118,local-client-npc-trade-table
+3201,Olive Oil,Food,general,500,named,false,119,local-client-npc-trade-table
+3305,Dumpling,Food,general,1000,named,false,120,local-client-npc-trade-table
+3310,Grilled Pork,Food,general,1200,named,false,121,local-client-npc-trade-table
+3430,Stew,Food,general,3500,named,false,122,local-client-npc-trade-table
+3435,Roasted Mushroom,Food,general,4100,named,false,123,local-client-npc-trade-table
+3762,Spirit's Fist,Weapon,general,12000,named,false,649,local-client-npc-trade-table
+3763,Destroyer's Fist,Weapon,general,92500,named,false,650,local-client-npc-trade-table
+5000,Coal,Mineral,general,1000,named,false,124,local-client-npc-trade-table
+5001,Coke,Mineral,general,2000,named,false,125,local-client-npc-trade-table
+5002,Oil,Mineral,general,3000,named,false,126,local-client-npc-trade-table
+5003,Refined Oil,Mineral,general,18000,named,false,265,local-client-npc-trade-table
+5009,Iron Sand,Mineral,general,200,named,false,127,local-client-npc-trade-table
+5011,Titanium Ore,Mineral,general,45000,named,false,330,local-client-npc-trade-table
+5019,Copper Flakes,Mineral,general,100,named,false,128,local-client-npc-trade-table
+5020,Copper Ore,Mineral,general,300,named,false,129,local-client-npc-trade-table
+5021,Copper Ingot,Mineral,general,500,named,false,130,local-client-npc-trade-table
+5025,Brass,Mineral,general,1000,named,false,131,local-client-npc-trade-table
+5039,Gold Dust,Mineral,general,450,named,false,132,local-client-npc-trade-table
+5040,Gold Ore,Mineral,general,1350,named,false,133,local-client-npc-trade-table
+5045,Gold Ingot,Mineral,general,2000,named,false,134,local-client-npc-trade-table
+5049,Silver Dust,Mineral,general,300,named,false,135,local-client-npc-trade-table
+5050,Silver Ore,Mineral,general,900,named,false,136,local-client-npc-trade-table
+5055,Silver Ingot,Mineral,general,1000,named,false,137,local-client-npc-trade-table
+5056,Emerald,Mineral,general,5000,named,false,138,local-client-npc-trade-table
+5057,Topaz,Mineral,general,5000,named,false,139,local-client-npc-trade-table
+5060,Jade,Mineral,general,500,named,false,140,local-client-npc-trade-table
+5065,Clay,Mineral,general,100,named,false,141,local-client-npc-trade-table
+5066,Platinum Ore,Mineral,general,600,named,false,142,local-client-npc-trade-table
+5067,Platinum,Mineral,general,1800,named,false,143,local-client-npc-trade-table
+5068,Platinum Ingot,Mineral,general,10000,named,false,506,local-client-npc-trade-table
+5069,Magnesium,Mineral,general,200,named,false,144,local-client-npc-trade-table
+5070,Sulfur,Mineral,general,500,named,false,145,local-client-npc-trade-table
+5072,Nickel,Mineral,general,2000,named,false,146,local-client-npc-trade-table
+5073,Zinc,Mineral,general,100,named,false,147,local-client-npc-trade-table
+5080,Pearl,Mineral,general,500,named,false,148,local-client-npc-trade-table
+5090,Amber,Mineral,general,1000,named,false,149,local-client-npc-trade-table
+5094,Mithril Ore,Mineral,general,2800,named,false,150,local-client-npc-trade-table
+5095,Mithril,Mineral,general,14000,named,false,151,local-client-npc-trade-table
+5100,Coral,Mineral,general,100,named,false,152,local-client-npc-trade-table
+5200,Crystal,Mineral,general,1000,named,false,153,local-client-npc-trade-table
+5202,Small Diamond,Mineral,general,25000,named,false,258,local-client-npc-trade-table
+5210,Powder of Life,Mineral,general,7000,named,false,246,local-client-npc-trade-table
+5211,Powder of Spirit,Mineral,general,10000,named,false,247,local-client-npc-trade-table
+5212,Powder of Soul,Mineral,general,15000,named,false,248,local-client-npc-trade-table
+5333,Tanzanite,Mineral,general,5000,named,false,257,local-client-npc-trade-table
+5334,Opal,Mineral,general,20000,named,false,507,local-client-npc-trade-table
+5335,Ruby,Mineral,general,30000,named,false,508,local-client-npc-trade-table
+5341,Adamantium Ore,Mineral,general,30000,named,false,272,local-client-npc-trade-table
+5344,Iron Ore,Mineral,general,1000,named,false,251,local-client-npc-trade-table
+5345,Iron Ingot,Mineral,general,5000,named,false,252,local-client-npc-trade-table
+5346,Steel,Mineral,general,20000,named,false,253,local-client-npc-trade-table
+6000,Small Tree Branch,Tree,general,100,named,false,242,local-client-npc-trade-table
+6001,Thick Tree Branch,Tree,general,300,named,false,243,local-client-npc-trade-table
+6002,Slab of Lumber,Tree,general,1000,named,false,244,local-client-npc-trade-table
+6003,Big Slab of Lumber,Tree,general,5000,named,false,511,local-client-npc-trade-table
+6010,Bamboo,Tree,general,200,named,false,155,local-client-npc-trade-table
+6020,Oak,Tree,general,300,named,false,156,local-client-npc-trade-table
+6030,Charcoal,Tree,general,400,named,false,157,local-client-npc-trade-table
+6050,Pine,Tree,general,500,named,false,158,local-client-npc-trade-table
+6060,Raw Rubber,Tree,general,500,named,false,159,local-client-npc-trade-table
+6080,Maple,Tree,general,100,named,false,154,local-client-npc-trade-table
+6128,Cleaning Tool Container,Etc,general,1000000,named,false,655,local-client-npc-trade-table
+7000,Rough Leather,Cloth,general,100,named,false,160,local-client-npc-trade-table
+7001,Common Leather,Cloth,general,300,named,false,161,local-client-npc-trade-table
+7002,Quality Leather,Cloth,general,1000,named,false,162,local-client-npc-trade-table
+7010,Rough Silk,Cloth,general,100,named,false,163,local-client-npc-trade-table
+7011,Common Silk,Cloth,general,300,named,false,164,local-client-npc-trade-table
+7012,Quality Silk,Cloth,general,1000,named,false,165,local-client-npc-trade-table
+7020,Rough Muslin,Cloth,general,100,named,false,166,local-client-npc-trade-table
+7021,Common Muslin,Cloth,general,300,named,false,167,local-client-npc-trade-table
+7022,Quality Muslin,Cloth,general,1000,named,false,168,local-client-npc-trade-table
+7040,Rough Fur,Cloth,general,100,named,false,169,local-client-npc-trade-table
+7041,Common Fur,Cloth,general,300,named,false,170,local-client-npc-trade-table
+7042,Quality Fur,Cloth,general,1000,named,false,171,local-client-npc-trade-table
+7044,Colorful Fabric,Cloth,general,50000,named,false,259,local-client-npc-trade-table
+7045,Thin Rayon,Cloth,general,20000,named,false,510,local-client-npc-trade-table
+7050,Thread,Cloth,general,100,named,false,172,local-client-npc-trade-table
+7060,Embroidery Thread,Cloth,general,300,named,false,173,local-client-npc-trade-table
+7070,Gold Thread,Cloth,general,3000,named,false,174,local-client-npc-trade-table
+7080,Silver Thread,Cloth,general,1000,named,false,175,local-client-npc-trade-table
+7081,Colorful Thread,Cloth,general,10000,named,false,509,local-client-npc-trade-table
+7500,Ring of Strength,,general,16000,named,false,176,local-client-npc-trade-table
+7505,Ring of Dexterity,,general,16000,named,false,177,local-client-npc-trade-table
+7510,Ring of Vitality,,general,16000,named,false,178,local-client-npc-trade-table
+7515,Ring of Intelligence,,general,16000,named,false,179,local-client-npc-trade-table
+7900,Tannin,Etc,general,5000,named,false,180,local-client-npc-trade-table
+7905,Carmine,Etc,general,5000,named,false,181,local-client-npc-trade-table
+7910,Fusain,Tool,general,14600,named,false,381,local-client-npc-trade-table
+7912,Blue Quill,Tool,general,3000,named,false,182,local-client-npc-trade-table
+7913,Papyrus,Tool,general,3600,named,false,380,local-client-npc-trade-table
+7914,Chinese Paper,Tool,general,7200,named,false,383,local-client-npc-trade-table
+7915,Brush,Tool,general,43200,named,false,384,local-client-npc-trade-table
+7916,Parchment,Tool,general,26000,named,false,386,local-client-npc-trade-table
+7917,Quill,Tool,general,76000,named,false,387,local-client-npc-trade-table
+7918,Whatman Paper,Tool,general,88000,named,false,389,local-client-npc-trade-table
+7919,Fountain Pen,Tool,general,162500,named,false,391,local-client-npc-trade-table
+7920,Small Ink Bottle,Tool,general,1500,named,false,382,local-client-npc-trade-table
+7921,Quality Ink Bottle,Tool,general,3600,named,false,385,local-client-npc-trade-table
+7922,Deluxe Ink Bottle,Tool,general,6500,named,false,388,local-client-npc-trade-table
+7923,Ornate Ink Bottle,Tool,general,13000,named,false,392,local-client-npc-trade-table
+7924,Drawing Paper,Tool,general,187000,named,false,393,local-client-npc-trade-table
+7925,Ballpen,Tool,general,272000,named,false,394,local-client-npc-trade-table
+7926,Shiny Ink Bottle,Tool,general,29000,named,false,395,local-client-npc-trade-table
+7927,Magic Parchment,Tool,general,703000,named,false,396,local-client-npc-trade-table
+7928,Magic Pen,Tool,general,566000,named,false,397,local-client-npc-trade-table
+7929,Magical Ink Bottle,Tool,general,80000,named,false,398,local-client-npc-trade-table
+8000,Broken Animal Bones,Etc,general,300,named,false,183,local-client-npc-trade-table
+8001,Small Animal Bone,Etc,general,1300,named,false,274,local-client-npc-trade-table
+8002,Thick Animal Bone,Etc,general,5000,named,false,275,local-client-npc-trade-table
+8003,Large Animal Bone,Etc,general,10000,named,false,276,local-client-npc-trade-table
+8005,Hero's Blood,Etc,general,400000,named,false,289,local-client-npc-trade-table
+8030,Ivory,Etc,general,500,named,false,184,local-client-npc-trade-table
+8032,Soft Hair,Etc,general,300000,named,false,296,local-client-npc-trade-table
+8033,Solid Shell,Etc,general,300000,named,false,297,local-client-npc-trade-table
+8034,Sharpened Claw,Etc,general,100000,named,false,298,local-client-npc-trade-table
+8043,Accessory Mold,Etc,general,200000,named,false,321,local-client-npc-trade-table
+8047,Dragon God's Ire,Etc,general,1000000,named,false,407,local-client-npc-trade-table
+8048,Weapon & Armor Mold,Etc,general,500000,named,false,331,local-client-npc-trade-table
+8350,Weak Gunpowder,Etc,general,100,named,false,185,local-client-npc-trade-table
+8351,Common Gunpowder,Etc,general,2000,named,false,268,local-client-npc-trade-table
+8355,Small Feather,Etc,general,100,named,false,186,local-client-npc-trade-table
+8356,Normal Feather,Etc,general,1000,named,false,267,local-client-npc-trade-table
+8361,Shining Glass,Etc,general,5000,named,false,245,local-client-npc-trade-table
+8375,Energy of Atmosphere,Energy,general,10000,named,false,277,local-client-npc-trade-table
+8377,Energy of Hail,Energy,general,40000,named,false,278,local-client-npc-trade-table
+8378,Energy of Sky,Energy,general,80000,named,false,279,local-client-npc-trade-table
+8385,Energy of Wind,Energy,general,20000,named,false,280,local-client-npc-trade-table
+8390,Frozen Soul,Etc,general,50000,named,false,273,local-client-npc-trade-table
+8392,Power of Night,Energy,general,10000,named,false,281,local-client-npc-trade-table
+8393,Power of Dark,Energy,general,20000,named,false,282,local-client-npc-trade-table
+8394,Power of Midnight,Energy,general,40000,named,false,283,local-client-npc-trade-table
+8395,Power of Nightmare,Energy,general,80000,named,false,284,local-client-npc-trade-table
+8396,Pure Dragon's Blood,Etc,general,70000,named,false,269,local-client-npc-trade-table
+8400,Old Treasure Map,TreasureMap,general,10000,named,false,241,local-client-npc-trade-table
+12421,Furious Sea King's Wrath,Key,general,30000000,named,false,656,local-client-npc-trade-table
+12422,Azi Dahaka's Shining Seal,Key,general,50000000,named,false,657,local-client-npc-trade-table
+13053,Tombkeeper's Lantern,Key,general,100000000,named,false,658,local-client-npc-trade-table
+13054,Diabolic Battlefield Order,Key,general,300000000,named,false,634,local-client-npc-trade-table
+13055,Secret Diabolic Order,Key,general,300000000,named,false,637,local-client-npc-trade-table
+15000,Phoenix Crystal,Crystal,general,80000,named,false,306,local-client-npc-trade-table
+15005,Giant Crystal,Crystal,general,80000,named,false,304,local-client-npc-trade-table
+15010,Redemption Crystal,Crystal,general,80000,named,false,305,local-client-npc-trade-table
+15015,Dragon Crystal,Crystal,general,350000,named,false,307,local-client-npc-trade-table
+15071,Ashen Crystal,Crystal,general,8000,named,false,303,local-client-npc-trade-table
+16000,Salt,Food,general,100,named,false,187,local-client-npc-trade-table
+16001,Oriental Mushroom,Food,general,80000,named,false,406,local-client-npc-trade-table
+16120,Carp,Food,general,300,named,false,188,local-client-npc-trade-table
+16130,Octopus,Food,general,100,named,false,189,local-client-npc-trade-table
+16140,Shrimp,Food,general,100,named,false,190,local-client-npc-trade-table
+19000,Spirit Cannon,Cannon,general,900,named,false,191,local-client-npc-trade-table
+19010,Deep-Sea Cannon,Cannon,general,4800,named,false,192,local-client-npc-trade-table
+19015,Ogre Cannon,Cannon,general,13700,named,false,193,local-client-npc-trade-table
+19020,Assassin's Cannon,Cannon,general,41100,named,false,194,local-client-npc-trade-table
+19100,Book: Blessing of Life [I],Book,general,5000,named,false,195,local-client-npc-trade-table
+19116,Vindictive Soul Imprint,Etc,general,350000,named,false,410,local-client-npc-trade-table
+19120,Book: Wild Shot [I],Book,general,5000,named,false,197,local-client-npc-trade-table
+19130,Book: Multi Arrow [I],Book,general,200000,named,false,301,local-client-npc-trade-table
+19133,Book: Ice Ridge Axe [I],Book,general,200000,named,false,302,local-client-npc-trade-table
+19150,Book: Freezing Axe [I],Book,general,5000,named,false,199,local-client-npc-trade-table
+19160,Book: Silence [I],Book,general,5000,named,false,200,local-client-npc-trade-table
+19170,Book: Holy Guard [I],Book,general,5000,named,false,201,local-client-npc-trade-table
+19190,Book: Deep Insight [I],Book,general,5000,named,false,202,local-client-npc-trade-table
+19210,Book: Mana Drain [I],Book,general,5000,named,false,203,local-client-npc-trade-table
+19220,Book: Hex of Darkness [I],Book,general,5000,named,false,204,local-client-npc-trade-table
+19230,Book: Awakening [I],Book,general,10000,named,false,205,local-client-npc-trade-table
+19240,Book: Mana Recharge [I],Book,general,10000,named,false,206,local-client-npc-trade-table
+19250,Book: Meteor Strike [I],Book,general,10000,named,false,207,local-client-npc-trade-table
+19280,Book: Flame Sword [I],Book,general,5000,named,false,196,local-client-npc-trade-table
+19290,Book: Lightning Spear [I],Book,general,5000,named,false,198,local-client-npc-trade-table
+19386,Book: Protect [I],Book,general,10000,named,false,208,local-client-npc-trade-table
+19428,Book: Chainsaw Blade [I],Book,general,400000,named,false,312,local-client-npc-trade-table
+19434,Book: Storm Blast [I],Book,general,200000,named,false,311,local-client-npc-trade-table
+19437,Book: Melody of Madness [I],Book,general,10000,named,false,310,local-client-npc-trade-table
+19478,Book: Ravaging Melody [I],Book,general,5000,named,false,309,local-client-npc-trade-table
+19890,Book: Waltz of the Blade [I],Book,general,300000000,named,false,651,local-client-npc-trade-table
+19891,Book: Waltz of the Blade [II],Book,general,600000000,named,false,652,local-client-npc-trade-table
+19892,Book: Waltz of the Blade [III],Book,general,900000000,named,false,653,local-client-npc-trade-table
+19893,Book: Waltz of the Blade [IV],Book,general,1200000000,named,false,654,local-client-npc-trade-table
+19948,Book of Knowledge,Book,general,5000,named,false,254,local-client-npc-trade-table
+19949,Book of Wisdom,Book,general,10000,named,false,255,local-client-npc-trade-table
+19950,Book of Anguish,Book,general,20000,named,false,256,local-client-npc-trade-table
+19958,Book: Mana Trap [I],Book,general,10000,named,false,260,local-client-npc-trade-table
+19961,Book: Break Down [I],Book,general,10000,named,false,261,local-client-npc-trade-table
+19964,Book: Chaos Wind [I],Book,general,10000,named,false,262,local-client-npc-trade-table
+19967,Book: Evanescent Scud [I],Book,general,10000,named,false,263,local-client-npc-trade-table
+19982,Book: Mana Shield [I],Book,general,50000,named,false,308,local-client-npc-trade-table
+20001,Manager's Scroll [I],Scroll,general,1000,named,false,209,local-client-npc-trade-table
+20002,Manager's Scroll [II],Scroll,general,5000,named,false,210,local-client-npc-trade-table
+20010,Life Potion [I],Heal,general,1500,named,false,226,local-client-npc-trade-table
+20011,Life Potion[II],Heal,general,3000,named,false,227,local-client-npc-trade-table
+20012,Life Potion [III],Heal,general,8000,named,false,228,local-client-npc-trade-table
+20015,Growth Vial [I],Heal,general,10000,named,false,211,local-client-npc-trade-table
+20016,Growth Vial [II],Heal,general,30000,named,false,271,local-client-npc-trade-table
+20033,Trade Permission,Scroll,general,1000000,named,false,300,local-client-npc-trade-table
+20277,Scroll of Mana Piercing [I],ACTIVESCROLL,general,500,named,false,291,local-client-npc-trade-table
+20278,Scroll of Mana Piercing [II],ACTIVESCROLL,general,5000,named,false,292,local-client-npc-trade-table
+20279,Scroll of Mana Piercing [III],ACTIVESCROLL,general,30000,named,false,293,local-client-npc-trade-table
+20280,Scroll of Mana Piercing [IV],ACTIVESCROLL,general,60000,named,false,294,local-client-npc-trade-table
+20300,Still-Beating Heart,Etc,general,140000,named,false,212,local-client-npc-trade-table
+20301,Gilgamesh's Sword Shard,Etc,general,280000,named,false,249,local-client-npc-trade-table
+20304,Gold Dragon Scale,Etc,general,150000,named,false,250,local-client-npc-trade-table
+20305,Warrior's Sign,Etc,general,200000,named,false,288,local-client-npc-trade-table
+20313,Ghost Mask,Etc,general,100000,named,false,264,local-client-npc-trade-table
+20317,Evil Soul Extract,Etc,general,200000,named,false,409,local-client-npc-trade-table
+21000,Spirit Shield,Shield,general,900,named,false,213,local-client-npc-trade-table
+21010,Ocean Shield,Shield,general,4600,named,false,214,local-client-npc-trade-table
+21015,Rakshasa's Shield,Shield,general,12900,named,false,215,local-client-npc-trade-table
+21020,Destroyer's Shield,Shield,general,35600,named,false,216,local-client-npc-trade-table
+21100,Spirit Orb,Orb,general,900,named,false,217,local-client-npc-trade-table
+21110,Red Soul Orb,Orb,general,4600,named,false,218,local-client-npc-trade-table
+21115,Krishna's Orb,Orb,general,12900,named,false,219,local-client-npc-trade-table
+21120,Savior's Orb,Orb,general,34100,named,false,220,local-client-npc-trade-table
+21564,Repair Stone [I],Stone,general,3750,named,false,338,local-client-npc-trade-table
+21565,Repair Stone [II],Stone,general,15000,named,false,339,local-client-npc-trade-table
+21566,Repair Stone [III],Stone,general,150000,named,false,340,local-client-npc-trade-table
+21567,Repair Stone [IV],Stone,general,300000,named,false,341,local-client-npc-trade-table
+21568,Repair Stone [V],Stone,general,1000000,named,false,342,local-client-npc-trade-table
+21569,Enchant Stone [I],Stone,general,1000,named,false,335,local-client-npc-trade-table
+21570,Enchant Stone [II],Stone,general,15000,named,false,336,local-client-npc-trade-table
+21571,Enchant Stone [III],Stone,general,50000,named,false,337,local-client-npc-trade-table
+21579,Repair Stone [VI],Stone,general,2000000,named,false,628,local-client-npc-trade-table
+21595,Purified Repair Stone,Stone,general,5000000,named,false,648,local-client-npc-trade-table
+22149,Book: Lightning Lash [I],Book,general,5000,named,false,642,local-client-npc-trade-table
+22157,Book: Divine Thunder [I],Book,general,5000,named,false,643,local-client-npc-trade-table
+22161,Book: Heaven's Fury [I],Book,general,5000,named,false,644,local-client-npc-trade-table
+22232,Book: Static Shield [I],Book,general,5000,named,false,630,local-client-npc-trade-table
+22236,Book: Direct Current [I],Book,general,5000,named,false,631,local-client-npc-trade-table
+22244,Book: Electron Field [I],Book,general,5000,named,false,632,local-client-npc-trade-table
+22248,Book: Impulse [I],Book,general,5000,named,false,633,local-client-npc-trade-table
+23600,Book: Parting Shot [I],Book,general,20000,named,false,645,local-client-npc-trade-table
+23604,Book: Agile Counter [I],Book,general,20000,named,false,646,local-client-npc-trade-table
+23612,Book: Hunter's Mark [I],Book,general,10000,named,false,647,local-client-npc-trade-table
+24900,Guardian Stone [I],,general,1500,named,false,270,local-client-npc-trade-table
+25530,Jackpot License [I](1 day),Scroll,general,7500,named,false,323,local-client-npc-trade-table
+25531,Jackpot License [II](1 day),Scroll,general,75000,named,false,324,local-client-npc-trade-table
+25549,Allied Teleport License [I](7 days),Scroll,general,3000,named,false,325,local-client-npc-trade-table
+25550,Allied Teleport License [II](7 days),Scroll,general,130000,named,false,326,local-client-npc-trade-table
+25551,Allied Teleport License [III](14 days),Scroll,general,10000000,named,false,327,local-client-npc-trade-table
+25552,Allied Teleport License [IV](14 days),Scroll,general,55000000,named,false,328,local-client-npc-trade-table
+25568,Allied Teleport License [V](14 days),Scroll,general,135000000,named,false,329,local-client-npc-trade-table
+26320,Scroll of Mana Piercing [V],ACTIVESCROLL,general,240000,named,false,343,local-client-npc-trade-table
+26760,Allied Teleport License [VI] (14 Days),Scroll,general,190000000,named,false,627,local-client-npc-trade-table
+28000,Hammer [I],Metal,general,100,named,false,221,local-client-npc-trade-table
+28001,Hammer [II],Metal,general,1500,named,false,222,local-client-npc-trade-table
+28002,Hammer [III],Metal,general,3000,named,false,223,local-client-npc-trade-table
+28012,Hammer [IV],Metal,general,30000,named,false,333,local-client-npc-trade-table
+28014,Hammer [V],Metal,general,100000,named,false,334,local-client-npc-trade-table
+28015,Hammer [VI],Metal,general,200000,named,false,629,local-client-npc-trade-table
+28200,Spirit Whip,Whip,general,900,named,false,638,local-client-npc-trade-table
+28201,Deep-Sea Whip,Whip,general,4800,named,false,639,local-client-npc-trade-table
+28202,Ogre Whip,Whip,general,13700,named,false,640,local-client-npc-trade-table
+28204,Assassin's Whip,Whip,general,41100,named,false,641,local-client-npc-trade-table
+28300,Earth Element Shard,Element,general,100,named,false,224,local-client-npc-trade-table
+28301,Sea Element Shard,Element,general,1000,named,false,225,local-client-npc-trade-table
+28302,Flame Element Shard,Element,general,4500,named,false,399,local-client-npc-trade-table
+28303,Storm Element Shard,Element,general,11000,named,false,400,local-client-npc-trade-table
+28304,Earth Element,Element,general,33000,named,false,401,local-client-npc-trade-table
+28305,Sea Element,Element,general,110000,named,false,402,local-client-npc-trade-table
+28306,Flame Element,Element,general,250000,named,false,403,local-client-npc-trade-table
+28307,Storm Element,Element,general,750000,named,false,404,local-client-npc-trade-table
+28308,Earth Essence,Element,general,1000000,named,false,635,local-client-npc-trade-table
+29200,Mint,Etc,general,12000,named,false,498,local-client-npc-trade-table
+29201,Quality Mint,Etc,general,200000,named,false,502,local-client-npc-trade-table
+29202,Rare Mint,Etc,general,500000,named,false,623,local-client-npc-trade-table
+29204,Magnetite,Etc,general,12000,named,false,499,local-client-npc-trade-table
+29205,Quality Magnetite,Etc,general,200000,named,false,503,local-client-npc-trade-table
+29206,Rare Magnetite,Etc,general,500000,named,false,624,local-client-npc-trade-table
+29208,Ginkgo Wood,Etc,general,12000,named,false,500,local-client-npc-trade-table
+29209,Quality Ginkgo Wood,Etc,general,200000,named,false,504,local-client-npc-trade-table
+29210,Rare Ginkgo Wood,Etc,general,500000,named,false,625,local-client-npc-trade-table
+29212,Brown Rice,Etc,general,12000,named,false,501,local-client-npc-trade-table
+29213,Quality Brown Rice,Etc,general,200000,named,false,505,local-client-npc-trade-table
+29214,Rare Brown Rice,Etc,general,500000,named,false,626,local-client-npc-trade-table
+29216,Artisan's Soul,Etc,general,20000,named,false,379,local-client-npc-trade-table
+29217,Craftsman's Soul,Etc,general,300000,named,false,405,local-client-npc-trade-table
+29218,Expert's Soul,Etc,general,3000000,named,false,622,local-client-npc-trade-table
+29650,,House_Curtain,housing,2940000,collision,false,369,local-client-npc-trade-table
+29651,,House_Curtain,housing,3360000,collision,false,370,local-client-npc-trade-table
+29652,,House_Curtain,housing,3780000,collision,false,371,local-client-npc-trade-table
+29653,,House_Curtain,housing,4200000,collision,false,372,local-client-npc-trade-table
+29654,,House_Doll,housing,5040000,collision,false,373,local-client-npc-trade-table
+29655,,House_Etc,housing,61950000,collision,false,494,local-client-npc-trade-table
+29656,,House_Frame,housing,5880000,collision,false,374,local-client-npc-trade-table
+29657,,House_Frame,housing,6300000,collision,false,375,local-client-npc-trade-table
+29658,,House_Frame,housing,6720000,collision,false,376,local-client-npc-trade-table
+29659,,House_Frame,housing,105000000,collision,false,592,local-client-npc-trade-table
+29660,,House_Frame,housing,105000000,collision,false,593,local-client-npc-trade-table
+29663,,House_Lamp,housing,7560000,collision,false,377,local-client-npc-trade-table
+29664,,House_Flowerpot,housing,8400000,collision,false,378,local-client-npc-trade-table
+29665,,House_Rug,housing,9240000,collision,false,473,local-client-npc-trade-table
+29667,,House_Stand,housing,10080000,collision,false,474,local-client-npc-trade-table
+29670,,House_Vase,housing,10920000,collision,false,475,local-client-npc-trade-table
+29671,,House_Bed,housing,15120000,collision,false,354,local-client-npc-trade-table
+29672,,House_Bed,housing,130200000,collision,false,445,local-client-npc-trade-table
+29673,,House_Bed,housing,193200000,collision,false,557,local-client-npc-trade-table
+29674,,House_Bed,housing,130200000,collision,false,446,local-client-npc-trade-table
+29675,,House_Bed,housing,155400000,collision,false,530,local-client-npc-trade-table
+29676,,House_Table,housing,92400000,collision,false,425,local-client-npc-trade-table
+29677,,House_Bed,housing,21840000,collision,false,414,local-client-npc-trade-table
+29678,,House_Bookcase,housing,15120000,collision,false,355,local-client-npc-trade-table
+29679,,House_Bookcase,housing,130200000,collision,false,447,local-client-npc-trade-table
+29680,,House_Bookcase,housing,193200000,collision,false,562,local-client-npc-trade-table
+29681,,House_Bookcase,housing,130200000,collision,false,448,local-client-npc-trade-table
+29682,,House_Bookcase,housing,159600000,collision,false,533,local-client-npc-trade-table
+29683,,House_Storage,housing,18480000,collision,false,358,local-client-npc-trade-table
+29684,,House_Storage,housing,155400000,collision,false,512,local-client-npc-trade-table
+29685,,House_Storage,housing,235200000,collision,false,574,local-client-npc-trade-table
+29686,,House_Storage,housing,155400000,collision,false,513,local-client-npc-trade-table
+29687,,House_Storage,housing,172200000,collision,false,540,local-client-npc-trade-table
+29688,,House_Chair,housing,11760000,collision,false,351,local-client-npc-trade-table
+29689,,House_Chair,housing,100800000,collision,false,436,local-client-npc-trade-table
+29690,,House_Chair,housing,151200000,collision,false,532,local-client-npc-trade-table
+29691,,House_Chair,housing,100800000,collision,false,437,local-client-npc-trade-table
+29693,,House_Chair,housing,134400000,collision,false,523,local-client-npc-trade-table
+29694,,House_Desk,housing,100800000,collision,false,439,local-client-npc-trade-table
+29695,,House_Desk,housing,151200000,collision,false,537,local-client-npc-trade-table
+29696,,House_Desk,housing,138600000,collision,false,524,local-client-npc-trade-table
+29697,,House_Storage,housing,20160000,collision,false,411,local-client-npc-trade-table
+29698,,House_Storage,housing,168000000,collision,false,514,local-client-npc-trade-table
+29699,,House_Storage,housing,256200000,collision,false,577,local-client-npc-trade-table
+29700,,House_Storage,housing,168000000,collision,false,515,local-client-npc-trade-table
+29701,,House_Storage,housing,176400000,collision,false,543,local-client-npc-trade-table
+29702,,House_Storage,housing,20160000,collision,false,412,local-client-npc-trade-table
+29703,,House_Storage,housing,168000000,collision,false,517,local-client-npc-trade-table
+29704,,House_Storage,housing,256200000,collision,false,580,local-client-npc-trade-table
+29705,,House_Storage,housing,168000000,collision,false,518,local-client-npc-trade-table
+29706,,House_Storage,housing,180600000,collision,false,545,local-client-npc-trade-table
+29707,,House_Lathe,housing,10080000,collision,false,349,local-client-npc-trade-table
+29708,,House_Lathe,housing,84000000,collision,false,429,local-client-npc-trade-table
+29709,,House_Lathe,housing,130200000,collision,false,525,local-client-npc-trade-table
+29710,,House_Lathe,housing,84000000,collision,false,430,local-client-npc-trade-table
+29711,,House_Lathe,housing,121800000,collision,false,516,local-client-npc-trade-table
+29712,,House_Storage,housing,20160000,collision,false,413,local-client-npc-trade-table
+29713,,House_Storage,housing,168000000,collision,false,521,local-client-npc-trade-table
+29714,,House_Storage,housing,168000000,collision,false,522,local-client-npc-trade-table
+29715,,House_Storage,housing,256200000,collision,false,582,local-client-npc-trade-table
+29716,,House_Storage,housing,184800000,collision,false,548,local-client-npc-trade-table
+29717,,House_Chair,housing,151200000,collision,false,542,local-client-npc-trade-table
+29718,,House_Chair,housing,67200000,collision,false,417,local-client-npc-trade-table
+29719,,House_Storage,housing,11760000,collision,false,352,local-client-npc-trade-table
+29720,,House_Storage,housing,100800000,collision,false,442,local-client-npc-trade-table
+29721,,House_Storage,housing,151200000,collision,false,547,local-client-npc-trade-table
+29722,,House_Storage,housing,100800000,collision,false,443,local-client-npc-trade-table
+29723,,House_Storage,housing,147000000,collision,false,527,local-client-npc-trade-table
+29724,,House_Sofa,housing,15120000,collision,false,356,local-client-npc-trade-table
+29725,,House_Sofa,housing,130200000,collision,false,449,local-client-npc-trade-table
+29726,,House_Sofa,housing,193200000,collision,false,567,local-client-npc-trade-table
+29727,,House_Sofa,housing,130200000,collision,false,450,local-client-npc-trade-table
+29728,,House_Sofa,housing,163800000,collision,false,535,local-client-npc-trade-table
+29729,,House_Sofa,housing,84000000,collision,false,421,local-client-npc-trade-table
+29730,,House_Sofa,housing,21840000,collision,false,415,local-client-npc-trade-table
+29731,,House_Chair,housing,151200000,collision,false,552,local-client-npc-trade-table
+29732,,House_Chair,housing,67200000,collision,false,419,local-client-npc-trade-table
+29733,,House_SupperTable,housing,16800000,collision,false,357,local-client-npc-trade-table
+29734,,House_SupperTable,housing,142800000,collision,false,451,local-client-npc-trade-table
+29735,,House_SupperTable,housing,214200000,collision,false,571,local-client-npc-trade-table
+29736,,House_SupperTable,housing,142800000,collision,false,452,local-client-npc-trade-table
+29737,,House_SupperTable,housing,168000000,collision,false,538,local-client-npc-trade-table
+29738,,House_Table,housing,92400000,collision,false,427,local-client-npc-trade-table
+29739,Herb Garden,House_Myhome,housing,10000000,named,false,345,local-client-npc-trade-table
+29741,Farm,House_Myhome,housing,10000000,named,false,346,local-client-npc-trade-table
+29743,Mine,House_Myhome,housing,10000000,named,false,347,local-client-npc-trade-table
+29746,Lumberyard,House_Myhome,housing,10000000,named,false,348,local-client-npc-trade-table
+29764,,House_Etc,housing,58800000,collision,false,492,local-client-npc-trade-table
+29772,,House_Doll,housing,11760000,collision,false,476,local-client-npc-trade-table
+29773,,House_Lamp,housing,12600000,collision,false,477,local-client-npc-trade-table
+29774,,House_Flowerpot,housing,53550000,collision,false,489,local-client-npc-trade-table
+29775,,House_Flowerpot,housing,55650000,collision,false,491,local-client-npc-trade-table
+29776,,House_Rug,housing,33600000,collision,false,478,local-client-npc-trade-table
+29777,,House_Rug,housing,34650000,collision,false,480,local-client-npc-trade-table
+29778,,House_Stand,housing,36750000,collision,false,481,local-client-npc-trade-table
+29779,,House_Stand,housing,38850000,collision,false,483,local-client-npc-trade-table
+29780,,House_Stand,housing,40950000,collision,false,485,local-client-npc-trade-table
+29781,,House_Lamp,housing,44100000,collision,false,486,local-client-npc-trade-table
+29782,,House_Frame,housing,47250000,collision,false,487,local-client-npc-trade-table
+29783,,House_Doll,housing,50400000,collision,false,488,local-client-npc-trade-table
+29784,,House_Flowerpot,housing,65100000,collision,false,495,local-client-npc-trade-table
+29785,,House_Flowerpot,housing,68250000,collision,false,496,local-client-npc-trade-table
+29786,,House_Flowerpot,housing,70350000,collision,false,497,local-client-npc-trade-table
+29787,,House_Bed,housing,84000000,collision,false,423,local-client-npc-trade-table
+29788,,House_Desk,housing,11760000,collision,false,353,local-client-npc-trade-table
+29789,,House_Desk,housing,100800000,collision,false,440,local-client-npc-trade-table
+29790,,House_Table,housing,130200000,collision,false,528,local-client-npc-trade-table
+29791,,House_Table,housing,100800000,collision,false,433,local-client-npc-trade-table
+29792,,House_Table,housing,100800000,collision,false,434,local-client-npc-trade-table
+29793,,House_Table,housing,130200000,collision,false,520,local-client-npc-trade-table
+29794,,House_Flowerpot,housing,73500000,collision,false,583,local-client-npc-trade-table
+29795,,House_Flowerpot,housing,75600000,collision,false,585,local-client-npc-trade-table
+29796,,House_Stand,housing,76650000,collision,false,586,local-client-npc-trade-table
+29797,,House_Vase,housing,79800000,collision,false,587,local-client-npc-trade-table
+29799,,House_Doll,housing,86100000,collision,false,588,local-client-npc-trade-table
+29800,,House_Stand,housing,89250000,collision,false,589,local-client-npc-trade-table
+29801,,House_Flowerpot,housing,92400000,collision,false,590,local-client-npc-trade-table
+29802,,House_Flowerpot,housing,94500000,collision,false,591,local-client-npc-trade-table
+29803,,House_Table,housing,10080000,collision,false,350,local-client-npc-trade-table
+29811,,House_Etc,housing,136500000,collision,false,599,local-client-npc-trade-table
+29813,,House_Etc,housing,120750000,collision,false,596,local-client-npc-trade-table
+29814,,House_Etc,housing,131250000,collision,false,598,local-client-npc-trade-table
+29815,,House_Flowerpot,housing,110250000,collision,false,594,local-client-npc-trade-table
+29816,,House_Etc,housing,126000000,collision,false,597,local-client-npc-trade-table
+29817,,House_Etc,housing,147000000,collision,false,601,local-client-npc-trade-table
+29818,,House_Etc,housing,152250000,collision,false,602,local-client-npc-trade-table
+29820,,House_Doll,housing,115500000,collision,false,595,local-client-npc-trade-table
+29821,,House_Etc,housing,141750000,collision,false,600,local-client-npc-trade-table
+29822,,House_Wallpaper,housing,1260000,collision,false,359,local-client-npc-trade-table
+29823,,House_Wallpaper,housing,1260000,collision,false,360,local-client-npc-trade-table
+29824,,House_Wallpaper,housing,1470000,collision,false,362,local-client-npc-trade-table
+29825,,House_Wallpaper,housing,1470000,collision,false,363,local-client-npc-trade-table
+29826,,House_Wallpaper,housing,1680000,collision,false,365,local-client-npc-trade-table
+29827,,House_Wallpaper,housing,1680000,collision,false,366,local-client-npc-trade-table
+29828,,House_Wallpaper,housing,1890000,collision,false,368,local-client-npc-trade-table
+29829,,House_Wallpaper,housing,1890000,collision,false,453,local-client-npc-trade-table
+29830,,House_Wallpaper,housing,2100000,collision,false,455,local-client-npc-trade-table
+29831,,House_Wallpaper,housing,2100000,collision,false,456,local-client-npc-trade-table
+29832,,House_Wallpaper,housing,5775000,collision,false,458,local-client-npc-trade-table
+29833,,House_Wallpaper,housing,5775000,collision,false,459,local-client-npc-trade-table
+29834,,House_Wallpaper,housing,6300000,collision,false,461,local-client-npc-trade-table
+29835,,House_Wallpaper,housing,6300000,collision,false,462,local-client-npc-trade-table
+29836,,House_Wallpaper,housing,6825000,collision,false,464,local-client-npc-trade-table
+29837,,House_Wallpaper,housing,6825000,collision,false,465,local-client-npc-trade-table
+29838,,House_Wallpaper,housing,7350000,collision,false,467,local-client-npc-trade-table
+29839,,House_Wallpaper,housing,7350000,collision,false,468,local-client-npc-trade-table
+29840,,House_Wallpaper,housing,7875000,collision,false,470,local-client-npc-trade-table
+29841,,House_Wallpaper,housing,7875000,collision,false,471,local-client-npc-trade-table
+29842,,House_Wallpaper,housing,8400000,collision,false,603,local-client-npc-trade-table
+29843,,House_Wallpaper,housing,8400000,collision,false,604,local-client-npc-trade-table
+29844,,House_Wallpaper,housing,8925000,collision,false,606,local-client-npc-trade-table
+29845,,House_Tile,housing,1260000,collision,false,361,local-client-npc-trade-table
+29846,,House_Tile,housing,1470000,collision,false,364,local-client-npc-trade-table
+29847,,House_Tile,housing,1680000,collision,false,367,local-client-npc-trade-table
+29848,,House_Tile,housing,1890000,collision,false,454,local-client-npc-trade-table
+29849,,House_Tile,housing,2100000,collision,false,457,local-client-npc-trade-table
+29850,,House_Tile,housing,5775000,collision,false,460,local-client-npc-trade-table
+29851,,House_Tile,housing,6300000,collision,false,463,local-client-npc-trade-table
+29852,,House_Tile,housing,6825000,collision,false,466,local-client-npc-trade-table
+29853,,House_Tile,housing,7350000,collision,false,469,local-client-npc-trade-table
+29854,,House_Tile,housing,7875000,collision,false,472,local-client-npc-trade-table
+29855,,House_Tile,housing,8400000,collision,false,605,local-client-npc-trade-table
+29856,,House_Tile,housing,8925000,collision,false,608,local-client-npc-trade-table
+29857,,House_Tile,housing,9450000,collision,false,611,local-client-npc-trade-table
+29858,,House_Tile,housing,9975000,collision,false,614,local-client-npc-trade-table
+29859,,House_Wallpaper,housing,8925000,collision,false,607,local-client-npc-trade-table
+29860,,House_Wallpaper,housing,9450000,collision,false,609,local-client-npc-trade-table
+29861,,House_Wallpaper,housing,9450000,collision,false,610,local-client-npc-trade-table
+29862,,House_Wallpaper,housing,9975000,collision,false,612,local-client-npc-trade-table
+29863,,House_Wallpaper,housing,9975000,collision,false,613,local-client-npc-trade-table
+29864,,House_Wallpaper,housing,10500000,collision,false,615,local-client-npc-trade-table
+29865,,House_Wallpaper,housing,10500000,collision,false,616,local-client-npc-trade-table
+29866,,House_Wallpaper,housing,11025000,collision,false,618,local-client-npc-trade-table
+29867,,House_Wallpaper,housing,11025000,collision,false,619,local-client-npc-trade-table
+29868,,House_Wallpaper,housing,11550000,collision,false,621,local-client-npc-trade-table
+29870,,House_Tile,housing,10500000,collision,false,617,local-client-npc-trade-table
+29871,,House_Tile,housing,11025000,collision,false,620,local-client-npc-trade-table
+29872,,House_Bed,housing,222600000,collision,false,570,local-client-npc-trade-table
+29873,,House_Table,housing,193200000,collision,false,553,local-client-npc-trade-table
+29874,,House_Bookcase,housing,226800000,collision,false,572,local-client-npc-trade-table
+29875,,House_Storage,housing,239400000,collision,false,576,local-client-npc-trade-table
+29876,,House_Chair,housing,201600000,collision,false,558,local-client-npc-trade-table
+29877,,House_Desk,housing,205800000,collision,false,560,local-client-npc-trade-table
+29878,,House_Storage,housing,243600000,collision,false,578,local-client-npc-trade-table
+29879,,House_Storage,housing,247800000,collision,false,579,local-client-npc-trade-table
+29880,,House_Lathe,housing,189000000,collision,false,550,local-client-npc-trade-table
+29881,,House_Storage,housing,252000000,collision,false,581,local-client-npc-trade-table
+29882,,House_Chair,housing,210000000,collision,false,563,local-client-npc-trade-table
+29883,,House_Storage,housing,214200000,collision,false,565,local-client-npc-trade-table
+29884,,House_Sofa,housing,231000000,collision,false,573,local-client-npc-trade-table
+29885,,House_Chair,housing,218400000,collision,false,568,local-client-npc-trade-table
+29886,,House_SupperTable,housing,235200000,collision,false,575,local-client-npc-trade-table
+29887,,House_Table,housing,197400000,collision,false,555,local-client-npc-trade-table
+29894,,House_Bed,housing,107100000,collision,false,435,local-client-npc-trade-table
+29895,,House_Bookcase,housing,88410000,collision,false,422,local-client-npc-trade-table
+29896,,House_Bookcase,housing,119280000,collision,false,441,local-client-npc-trade-table
+29897,,House_Chair,housing,85680000,collision,false,424,local-client-npc-trade-table
+29898,,House_Desk,housing,66990000,collision,false,416,local-client-npc-trade-table
+29899,,House_Desk,housing,84840000,collision,false,426,local-client-npc-trade-table
+29901,,House_Lathe,housing,68670000,collision,false,418,local-client-npc-trade-table
+29902,,House_Lathe,housing,93030000,collision,false,438,local-client-npc-trade-table
+29903,,House_Desk,housing,74130000,collision,false,420,local-client-npc-trade-table
+29904,,House_Sofa,housing,102900000,collision,false,431,local-client-npc-trade-table
+29905,,House_SupperTable,housing,102060000,collision,false,428,local-client-npc-trade-table
+29906,,House_SupperTable,housing,126000000,collision,false,444,local-client-npc-trade-table
+29909,,House_Doll,housing,54600000,collision,false,490,local-client-npc-trade-table
+29910,,House_Doll,housing,60270000,collision,false,493,local-client-npc-trade-table
+29911,,House_Doll,housing,39900000,collision,false,484,local-client-npc-trade-table
+29912,,House_Storage,housing,114870000,collision,false,432,local-client-npc-trade-table
+29913,,House_Table,housing,159600000,collision,false,534,local-client-npc-trade-table
+29914,,House_Bookcase,housing,193200000,collision,false,554,local-client-npc-trade-table
+29915,,House_Storage,housing,205800000,collision,false,561,local-client-npc-trade-table
+29916,,House_Chair,housing,168000000,collision,false,539,local-client-npc-trade-table
+29917,,House_Desk,housing,172200000,collision,false,541,local-client-npc-trade-table
+29918,,House_Storage,housing,210000000,collision,false,564,local-client-npc-trade-table
+29919,,House_Storage,housing,214200000,collision,false,566,local-client-npc-trade-table
+29920,,House_Lathe,housing,155400000,collision,false,531,local-client-npc-trade-table
+29921,,House_Storage,housing,218400000,collision,false,569,local-client-npc-trade-table
+29922,,House_Storage,housing,180600000,collision,false,546,local-client-npc-trade-table
+29923,,House_Chair,housing,184800000,collision,false,549,local-client-npc-trade-table
+29924,,House_SupperTable,housing,201600000,collision,false,559,local-client-npc-trade-table
+29925,,House_Table,housing,163800000,collision,false,536,local-client-npc-trade-table
+29926,,House_Bed,housing,189000000,collision,false,551,local-client-npc-trade-table
+29927,,House_Sofa,housing,197400000,collision,false,556,local-client-npc-trade-table
+29928,,House_Chair,housing,176400000,collision,false,544,local-client-npc-trade-table
+29929,,House_Table,housing,126000000,collision,false,519,local-client-npc-trade-table
+29930,,House_Chair,housing,142800000,collision,false,526,local-client-npc-trade-table
+29931,,House_Chair,housing,151200000,collision,false,529,local-client-npc-trade-table
+29932,,House_Doll,housing,33600000,collision,false,479,local-client-npc-trade-table
+29933,,House_Doll,housing,36750000,collision,false,482,local-client-npc-trade-table
+29939,,House_Etc,housing,73500000,collision,false,584,local-client-npc-trade-table
