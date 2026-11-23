@@ -12,6 +12,7 @@ import ClientItemStatSummary from "./ClientItemStatSummary.astro";
 import ClientCraftingSummary from "./ClientCraftingSummary.astro";
 import AtlanticaItemInfoPanel from "./AtlanticaItemInfoPanel.astro";
 import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
+import MonsterItemSources from "./MonsterItemSources.astro";
 import ClientRawRequirementsSection from "./ClientRawRequirementsSection.astro";
 
 interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
@@ -99,6 +100,7 @@ const clientFields = curatedFields ? [
           <p>{pt ? "Nenhuma associação de box capturada para este item." : "No captured box association for this item."}</p>
         )}
       </section>
+      <MonsterItemSources lang={lang} itemId={item.id} />
       <ItemKnowledgeSections lang={lang} profile={profile} section="crafting" />
       <ClientCraftingSummary lang={lang} item={sourceFacts} />
       <div id="item-used-in"><ClientCraftingBacklinks lang={lang} itemId={item.id} /></div>
