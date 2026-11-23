@@ -131,6 +131,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
 <script>
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
   import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
+  import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
   import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
   import {RAW_STATS_FIELDS,summarizeRawNumericRows,comparableRawNumber,matchesRawStat,
     compareSourceStats,exportFilteredClientCsv} from "../data/full-client-stats-tools.mjs";
@@ -814,34 +815,29 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       section.append(node("p",pt
         ?"Receitas extraídas dos arquivos do jogo. As quantidades abaixo são para o lote indicado no registro, quando disponível. A receita pode não estar habilitada no servidor atual."
         :"Recipes extracted from the game files. Quantities below are for the recorded batch, where available. A recipe may not be enabled on the current server.","wiki-help"));
-      // A general and a specific source record can describe the SAME recipe;
-      // collapse exact material + batch duplicates but retain source row IDs.
-      const recipes=new Map<string,{
-        materials:[string,number][];unit:number|null;sourceRows:number[];
-      }>();
-      for(const source of data.s){
-        const [recordId,,,,,,,unit,state,materials]=source;
-        if(!state.startsWith("parsed-")||!materials.length)continue;
-        const sorted=materials.slice().sort((a,b)=>Number(a[0])-Number(b[0]));
-        const key=JSON.stringify([unit,sorted]);
-        const existing=recipes.get(key);
-        if(existing)existing.sourceRows.push(recordId);
-        else recipes.set(key,{materials:sorted,unit,sourceRows:[recordId]});
-      }
-      const entries=[...recipes.values()];
+      // Exact identical material lists are grouped even when a general
+      // source row omitted Unit. Conflicting known Unit values stay visible.
+      const entries=buildClientRecipeViews(data.s);
       if(entries.length>1)section.append(node("p",pt
-        ?"Os arquivos apresentam mais de uma combinação de materiais ou quantidade produzida. As definições são mostradas separadamente: não são opções confirmadas de fabricação."
-        :"The game files contain different material lists or batch quantities. They are shown separately, not as confirmed in-game crafting options.","wiki-source-warning"));
+        ?"Os arquivos apresentam listas de materiais diferentes. Elas estão separadas para consulta; não são opções de fabricação confirmadas."
+        :"The original files contain different material lists. They remain separate for reference, not as confirmed crafting options.","wiki-source-warning"));
       entries.forEach((recipe,i)=>{
         const block=node("div",undefined,"wiki-recipe");
         const heading=node("div",undefined,"wiki-recipe-heading");
         heading.append(node("h4",entries.length>1
           ?(pt?"Receita registrada ":"Recorded recipe ")+(i+1)
           :(pt?"Materiais necessários":"Required materials")));
-        const batch=recipe.unit!==null&&recipe.unit>0
-          ?(pt?"Produz "+number.format(recipe.unit)+" por lote":"Produces "+number.format(recipe.unit)+" per batch")
-          :(pt?"Quantidade por lote não informada":"Batch quantity not recorded");
+        const batch=recipe.batchSize!==null
+          ?(pt?"Produz "+number.format(recipe.batchSize)+" por lote":"Produces "+number.format(recipe.batchSize)+" per batch")
+          :recipe.batchStatus==="conflict"
+            ?(pt?"Quantidade divergente entre arquivos":"Conflicting source batch quantities")
+            :(pt?"Quantidade por lote não informada":"Batch quantity not recorded");
         heading.append(node("span",batch,"wiki-batch-label"));block.append(heading);
+        if(recipe.batchStatus==="partial")block.append(node("p",pt
+          ?"Quantidade informada em apenas um dos arquivos de origem."
+          :"Batch quantity is present in only some original source records.","wiki-source-warning"));
+        if(recipe.batchStatus==="conflict")block.append(node("p",pt
+          ?"Valores Unit identificados: ":"Reported original Unit values: ")+recipe.reportedBatches.map(x=>number.format(x)).join(" / "),"wiki-source-warning"));
         const tbl=node("table") as HTMLTableElement,head=node("thead"),headingRow=node("tr");
         for(const name of [pt?"Material":"Material",
           pt?"Quantidade":"Amount",pt?"Onde obter":"Where to find"])
