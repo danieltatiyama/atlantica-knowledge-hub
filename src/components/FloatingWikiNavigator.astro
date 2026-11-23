@@ -177,7 +177,7 @@ const pt=lang==="pt-br";
       const url=new URL(location.href);
       url.hash=entry.id;
       history.replaceState(history.state,"",url.pathname+url.search+url.hash);
-      entry.element.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
+      entry.element.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
       setActive(entry.id);
     };
     const makeLink=(entry:Entry)=>{
@@ -207,8 +207,54 @@ const pt=lang==="pt-br";
       }
       setActive(best.id);
     };
+    // Markdown guides contain sibling h2/h3 elements rather than sections.
+    // Group their existing siblings only once, keeping all original links,
+    // tables and IDs and letting both heading levels collapse independently.
+    const prepareGuideSections=()=>{
+      const article=root.querySelector<HTMLElement>(".article-body");
+      if(!article||article.dataset.wikiFoldPrepared==="true")return;
+      article.dataset.wikiFoldPrepared="true";
+      const groupHeadings=(host:HTMLElement,tag:"H2"|"H3")=>{
+        const headings=[...host.children].filter(child=>child.tagName===tag) as HTMLElement[];
+        for(const heading of headings){
+          const content=document.createElement("div");
+          content.className="wiki-guide-section-body";
+          content.id=getId(content);
+          heading.after(content);
+          while(content.nextSibling&&
+            !(content.nextSibling instanceof HTMLElement&&
+              content.nextSibling.tagName===tag)){
+            content.append(content.nextSibling);
+          }
+          if(!content.childNodes.length){content.remove();continue;}
+          const btn=document.createElement("button");
+          btn.type="button";btn.className="wiki-section-toggle";
+          btn.textContent="−";btn.title=pt?"Recolher seção":"Collapse section";
+          btn.setAttribute("aria-expanded","true");
+          btn.setAttribute("aria-controls",content.id);
+          btn.setAttribute("aria-label",(pt?"Recolher ":"Collapse ")+labelFor(heading));
+          heading.append(btn);
+          btn.addEventListener("click",()=>{
+            content.hidden=!content.hidden;
+            const collapsed=content.hidden;
+            btn.textContent=collapsed?"+":"−";
+            btn.title=collapsed?(pt?"Expandir seção":"Expand section")
+              :(pt?"Recolher seção":"Collapse section");
+            btn.setAttribute("aria-expanded",String(!collapsed));
+            btn.setAttribute("aria-label",(collapsed
+              ?(pt?"Expandir ":"Expand "):(pt?"Recolher ":"Collapse "))+labelFor(heading));
+            schedule();
+          });
+          if(tag==="H2")groupHeadings(content,"H3");
+        }
+      };
+      groupHeadings(article,"H2");
+      // Guides without h2s may still have h3 sections.
+      groupHeadings(article,"H3");
+    };
     const render=()=>{
       scheduled=false;
+      prepareGuideSections();
       // Native technical disclosures participate in the SAME navigation,
       // without becoming a second competing menu.
       const sections=[...root.querySelectorAll<HTMLElement>(
@@ -372,6 +418,16 @@ const pt=lang==="pt-br";
   }
   main[data-wiki-nav-root] section{
     scroll-margin-top:25px;
+  }
+  main[data-wiki-nav-root] .article-body .wiki-guide-section-body[hidden]{
+    display:none!important;
+  }
+  main[data-wiki-nav-root] .article-body .wiki-guide-section-body{
+    min-width:0;
+  }
+  main[data-wiki-nav-root] .article-body h2,
+  main[data-wiki-nav-root] .article-body h3{
+    clear:both;
   }
   @media(max-width:700px){
     #wiki-float-nav{width:min(280px,calc(100vw - 42px));
