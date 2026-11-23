@@ -401,6 +401,72 @@ html[data-theme]:not([data-theme="atlantica"]) #full-client-db section button.wi
   background:var(--theme-hover);
 }
 
+/* Guide category cards and simple source-backed tables. */
+html[data-theme]:not([data-theme="atlantica"]) .categories .category-art,
+html[data-theme]:not([data-theme="atlantica"]) .categories .category-art--mercenaries,
+html[data-theme]:not([data-theme="atlantica"]) .categories .category-art--systems {
+  background:radial-gradient(circle at center,var(--theme-highlight),transparent 80%),var(--theme-deep);
+}
+html[data-theme]:not([data-theme="atlantica"]) .categories .category-symbol {
+  background:var(--color-surface);
+  border-color:var(--color-border);
+  color:var(--color-accent);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) .guide-filters .filter-button.is-active {
+  background:var(--theme-highlight);
+  color:var(--color-accent);
+}
+html[data-theme]:not([data-theme="atlantica"]) :is(
+ .equipment-source-page,.craft-backlinks,.article,.article-body
+) th {
+  background:var(--theme-deep);
+  color:var(--color-accent);
+}
+
+/* The in-game inspired item panel is themed like the surrounding article,
+   while preserving its distinctive layout, decorative lines and stats. */
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip {
+  --ao-frame:var(--color-border);
+  --ao-gold:var(--color-accent);
+  --ao-ink:var(--color-text);
+  background:var(--theme-deep);
+  border-color:var(--color-border);
+  color:var(--color-text);
+  box-shadow:0 6px 20px var(--theme-shadow);
+}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip .tooltip-content {
+  background:var(--theme-panel);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip :is(
+ .tooltip-bracket,.tooltip-divider
+) {background:linear-gradient(90deg,transparent,var(--color-accent),transparent);}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip :is(
+ .item-title h2,.item-emblem span,.tooltip-stat-group h3,
+ .tooltip-stat-group dd,.tooltip-batch strong
+) {color:var(--color-accent);text-shadow:none;}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip :is(
+ .tooltip-topline,.client-marker,.item-title p,
+ .tooltip-basic dt,.tooltip-stat-group dt,.tooltip-stat-group dd small,
+ .tooltip-empty,.tooltip-batch > span,.tooltip-batch small,.tooltip-disclaimer
+) {color:var(--color-text-muted);}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip :is(
+ .tooltip-basic dd,.tooltip-stat-group dd.uncertain
+) {color:var(--color-text);}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip .item-emblem {
+  background:var(--theme-deep);
+  border-color:var(--color-border);
+  box-shadow:none;
+}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip .tooltip-batch {
+  background:var(--theme-highlight);
+  border-color:var(--color-border);
+}
+html[data-theme]:not([data-theme="atlantica"]) .ao-item-tooltip .tooltip-disclaimer {
+  border-color:var(--color-border);
+}
+
 /* Black/yellow mode: avoid relying on shadows or subtle border differences. */
 html[data-theme="contrast"] :is(
  .site-header,#creature-db .browse,#creature-db .creature-detail,
