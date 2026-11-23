@@ -13,7 +13,7 @@ import {fileURLToPath} from "node:url";
 const root=resolve(fileURLToPath(new URL("../",import.meta.url)));
 const client=resolve(root,"public/data/client-items");
 const monsters=resolve(root,"public/data/client-monsters");
-const destination=resolve(monsters,"item-lookup.json");
+const destination=resolve(root,"public/data/client-monster-discovery/item-lookup.json");
 const ID=/^[1-9][0-9]{0,12}$/;
 const parse=path=>JSON.parse(readFileSync(path,"utf8"));
 const check=(v,message)=>{if(!v)throw Error(message);};
