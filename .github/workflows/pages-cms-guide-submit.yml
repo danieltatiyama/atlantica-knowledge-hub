@@ -1,0 +1,144 @@
+name: Submit Approved Pages CMS Guide
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: "Pages CMS JSON publication request"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: cms-guide-publish-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    name: Validate guide and open publication PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Require development source branch
+        shell: bash
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/dev/i18n" ]; then
+            echo "::error::Run publication submission from the dev/i18n CMS branch."
+            exit 1
+          fi
+
+      - name: Checkout authored guide source
+        uses: actions/checkout@v7
+        with:
+          ref: dev/i18n
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Prepare scoped publication changes
+        id: prepare
+        env:
+          CMS_PAYLOAD: ${{ inputs.payload }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync,writeFileSync,mkdirSync,appendFileSync} from "node:fs";
+          import {dirname} from "node:path";
+          import {execFileSync} from "node:child_process";
+          import {prepareGuidePublication} from "./scripts/guide-publication-contract.mjs";
+
+          function git(args){
+            return execFileSync("git",args,{encoding:"utf8",maxBuffer:20000000}).trim();
+          }
+
+          if(process.env.GITHUB_REF!=="refs/heads/dev/i18n"||
+             process.env.GITHUB_ACTIONS!=="true"||
+             git(["branch","--show-current"])!=="dev/i18n")
+            throw Error("Publication source must be dev/i18n");
+
+          const payload=JSON.parse(process.env.CMS_PAYLOAD);
+          const fields=payload?.inputs??{};
+          if(payload?.source!=="pages-cms"||
+             payload?.action?.name!=="submit-guide-publication")
+            throw Error("Invalid Pages CMS publication request");
+          const language=fields.language,translationKey=fields.translationKey;
+          if(!["en","pt-br"].includes(language)||
+             typeof translationKey!=="string"||
+             !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translationKey)||
+             translationKey.length>80)
+            throw Error("Unsafe guide language or translation key");
+
+          const sourcePath="src/content/guides/"+language+"/"+translationKey+".md";
+          if(git(["status","--porcelain"]))throw Error("Working tree must be clean");
+          const authored=readFileSync(sourcePath,"utf8");
+          const prepared=prepareGuidePublication(authored,{language,translationKey});
+          const copies=prepared.imageCopies.map(entry=>({
+            destination:entry.to,data:readFileSync(entry.from),
+          }));
+
+          git(["fetch","origin","main","--no-tags"]);
+          const targetBranch="publish/cms-"+language+"-"+translationKey+"-"+process.env.GITHUB_RUN_ID;
+          git(["switch","-c",targetBranch,"refs/remotes/origin/main"]);
+
+          mkdirSync(dirname(prepared.path),{recursive:true});
+          writeFileSync(prepared.path,prepared.markdown,{encoding:"utf8"});
+          for(const file of copies){
+            mkdirSync(dirname(file.destination),{recursive:true});
+            writeFileSync(file.destination,file.data);
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT,"branch="+targetBranch+"\n");
+          appendFileSync(process.env.GITHUB_OUTPUT,"guide="+prepared.path+"\n");
+          appendFileSync(process.env.GITHUB_OUTPUT,"assets=public/images/guides/"+translationKey+"\n");
+          console.log("[IC] Prepared:",prepared.path);
+          console.log("[IC] Referenced images copied:",copies.length);
+          console.log("[IC] No other dev/i18n files copied.");
+          NODE
+
+      - name: Install website dependencies
+        run: npm ci
+
+      - name: Validate website content and generated pages
+        run: npm run build
+
+      - name: Open publication pull request and trigger validation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUB_BRANCH: ${{ steps.prepare.outputs.branch }}
+          PUB_GUIDE: ${{ steps.prepare.outputs.guide }}
+          PUB_ASSETS: ${{ steps.prepare.outputs.assets }}
+        shell: bash
+        run: |
+          git add -- "$PUB_GUIDE"
+          if [ -d "$PUB_ASSETS" ]; then git add -A -- "$PUB_ASSETS"; fi
+          if git diff --cached --quiet; then
+            echo "::error::Publication content is identical to main; no PR required."
+            exit 1
+          fi
+          while IFS= read -r changed; do
+            if [[ "$changed" != "$PUB_GUIDE" && "$changed" != "$PUB_ASSETS/"* ]]; then
+              echo "::error::Unexpected staged file: $changed"
+              exit 1
+            fi
+          done < <(git diff --cached --name-only)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs(guides): submit approved $PUB_GUIDE for publication"
+          git push origin "HEAD:refs/heads/$PUB_BRANCH"
+          gh pr create \
+            --base main \
+            --head "$PUB_BRANCH" \
+            --title "Publish approved guide: $PUB_GUIDE" \
+            --body "Submitted from Pages CMS dev/i18n. Source requires draft: false and reviewStatus: approved. Only this guide and its linked images are included. Merge after validation. Website publication follows the main deployment."
+          # GITHUB_TOKEN-created pull requests do not normally trigger PR workflows.
+          # A workflow_dispatch on the publication branch attaches a validation run.
+          gh workflow run validate-pr.yml --ref "$PUB_BRANCH"
