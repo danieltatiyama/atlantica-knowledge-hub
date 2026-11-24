@@ -150,6 +150,30 @@ actions:
         type: text
         required: true
 
+  - name: request-guide-publication
+    label: "Request publication PR for approved guide (DEV)"
+    workflow: pages-cms-guide-publication.yml
+    ref: current
+    confirm:
+      title: "Open a guide publication PR?"
+      message: "Run from dev/i18n. The guide must be Approved and Draft must be off. This opens a reviewable PR to main; it does not publish automatically."
+      button: "Request publication PR"
+    fields:
+      - name: language
+        label: Guide language
+        type: select
+        required: true
+        default: en
+        options:
+          - label: English
+            value: en
+          - label: Português (Brasil)
+            value: pt-br
+      - name: translationKey
+        label: Guide identifier (filename without .md)
+        type: text
+        required: true
+
 media:
   input: public/images
   output: /images
@@ -273,7 +297,7 @@ content:
         label: Draft
         type: boolean
         default: true
-        description: "Only disable Draft when Editorial Status is Approved. Otherwise, the site build will fail."
+        description: "Draft off and Editorial Status Approved mark this guide ready for review, NOT publicly deployed. Use Request publication PR and merge it into main."
 
       - name: reviewStatus
         label: Editorial Status
@@ -435,7 +459,7 @@ content:
         label: Rascunho
         type: boolean
         default: true
-        description: "Desative Rascunho apenas quando o Status Editorial estiver como Aprovado. Caso contrário, o build falhará."
+        description: "Rascunho desativado e Status Aprovado não publicam no site. Use Request publication PR e integre o PR à main."
 
       - name: reviewStatus
         label: Status Editorial
