@@ -436,9 +436,9 @@ export const equipmentRowsB=[
     "unité par lot (règle équipement)",
     "Einheit pro Batch (Ausrüstungsregel)",
     "unidad por lote (regla de equipamiento)",
-    "배치당 1개 (장비 규칙)",
-    "每批 1 件（装备规则）",
-    "バッチあたり1個（装備ルール）"
+    "배치당 생산 (장비 규칙)",
+    "件/批（装备规则）",
+    "個/バッチ（装備ルール）"
   ],
   [
     "Maximum output per operation",
