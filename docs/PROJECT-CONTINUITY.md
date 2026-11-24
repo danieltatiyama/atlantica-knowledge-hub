@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.72 (visualizador de imagens global em artigos, zoom, teclado, galeria por artigo e EN/PT-BR)  
-**Último PR de funcionalidade integrado:** [#99](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99) — guia Sistema VIP em PT-BR, 16 imagens compartilhadas, CI aprovado. O guia inglês continua no [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93); o fluxo CMS é o dos PRs [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) e [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95). Conferir deploy Cloudflare.
+**Último PR de funcionalidade integrado:** [#101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101) — Stage 20.72, lightbox global dos artigos, zoom, galeria e acessibilidade, CI e build aprovados na `main`. Os 16 screenshots compartilhados do VIP System permanecem inalterados. Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -441,7 +441,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Contenção/restauração de foco, bloqueio/restauração de scroll da página, textos acessíveis, tratamento de clique em links existentes e estilos responsivos baseados nos tokens dos seis temas.
 - Funções de dimensionamento e navegação em `src/lib/article-image-lightbox.mjs` e testes `tests/wiki-article-image-lightbox.test.mjs`. As **16** imagens compartilhadas VIP EN/PT-BR não foram modificadas ou duplicadas.
 - Documento `docs/WIKI-ARTICLE-LIGHTBOX-STAGE-20-72.md`; validação: Node tests + Astro build na CI. **Conferir visualmente após o deploy**, especialmente zoom/fechamento/foco/mobile.
-- Feature desenvolvida no [PR #101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101), base `main`, com CI e status de integração a verificar no GitHub.
+- Feature integrada na `main` pelo [PR #101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101), com testes e build Astro aprovados. Resta inspeção no navegador após o deploy.
 
 ## 7. Histórico das etapas recentes
 
@@ -550,4 +550,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.72 em desenvolvimento: lightbox global de imagens em artigos de Guias, Eventos e Mercenários, com zoom, teclado, navegação circular e EN/PT-BR. Implementação no PR #101, aguardando a validação e integração na main. Não foram alteradas as 16 imagens do VIP System. Após o deploy, validar a experiência visual no navegador, temas e mobile. A Stage 20.71 e o fluxo CMS (#94/#95) permanecem integrados.**
+**Estado documentado: Stage 20.72 integrada à `main` no PR #101, com GitHub Actions e build Astro concluídos com sucesso. O lightbox é global para imagens do corpo dos artigos em Guias, Eventos e Mercenários, com zoom 100–500%, ajuste à janela, teclado, galeria e controles EN/PT-BR. Nenhuma imagem original foi alterada. A validação visual real no navegador, nos seis temas e em mobile continua pendente após deploy Cloudflare. A Stage 20.71 e o fluxo CMS (#94/#95) permanecem integrados.**
