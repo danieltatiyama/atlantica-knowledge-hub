@@ -50,6 +50,6 @@ test("calendar offers editable runs, horizon, orientation, timezone, persistence
    "atlantica.nd-calendar.v1","atlantica.nd-view.v1","expandNationRuns(plan",
    "availabilityAt(epoch","localStorage.setItem(cacheKey","serverDate.value"])
    assert.ok(page.includes(token),token);
- assert.ok(hub.includes('href:prefix+"/tools/nation-dungeons/"'));
+ assert.ok(hub.includes('href:catalogPath(lang,"/tools/nation-dungeons/")'));
  assert.ok(page.includes("source")||page.includes("reset"));
 });
