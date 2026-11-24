@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.73 (substituição de captura VIP com informações de jogador, sincronizada com CMS dev/i18n)  
-**Último PR de funcionalidade integrado:** [#101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101) — Stage 20.72, lightbox global dos artigos, zoom, galeria e acessibilidade, CI e build aprovados na `main`. Os 16 screenshots compartilhados do VIP System permanecem inalterados. Conferir deploy Cloudflare.
+**Último PR de funcionalidade integrado:** [#103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) — Stage 20.73, substituição da primeira imagem VIP sem detalhes do jogador, CI aprovado e integrado à `main`. A origem do CMS em `dev/i18n` também foi corrigida no [#104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104). Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -560,4 +560,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.73 em implementação. Os artigos VIP EN/PT-BR da main e a fonte do Pages CMS em dev/i18n devem usar a nova captura do menu sem detalhes do jogador; os arquivos antigos são excluídos das árvores atuais, preservando as outras 15 imagens. Confirmar CI, merges e deploy. A substituição não expurga automaticamente histórico Git nem caches externos.**
+**Estado documentado: Stage 20.73 integrada à `main` no PR #103, com CI e build aprovados, e à `dev/i18n` no PR #104. Os artigos VIP EN/PT-BR e a fonte do CMS apontam para `/images/guides/vip-system/vip-menu.png`; a captura antiga está ausente das árvores atuais dessas branches. As 15 imagens restantes não foram modificadas. Confirmar deploy e cache Cloudflare. A exclusão não reescreve histórico Git nem elimina cópias anteriores em caches externos.**
