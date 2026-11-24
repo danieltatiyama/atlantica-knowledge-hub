@@ -630,3 +630,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Approved English editorial box content is reused with an explicit fallback note until reviewed translations exist; no unapproved draft is published.
 - Dedicated reviewed profiles (551) are localized; 1,911 source-only items remain available via localized dynamic database profiles. Standalone legacy detail articles remain EN/PT-BR. Static asset ceiling remains 20,000.
 - Stage 20.81 (tools) and Stage 20.82 (verified official client names) are separate work; translations are editorial, not asserted official game terminology.
+
+
+### Stage 20.81a — Hub de ferramentas e Nation Dungeon Planner
+
+- Hub e calendário em oito idiomas; `tools-ui.mjs` traduz interface estática, mensagens de execução, legenda e controles. Dias da semana via Intl e locale selecionado. Rotas `/[locale]/tools/` e `/[locale]/tools/nation-dungeons/`, navegação Home/cabeçalho e alternates.
+- Preservados motor do calendário, reset 06:00 America/Los_Angeles, DST, cooldowns editáveis, orientação, horizontes 7/14/30, storage keys, formato JSON e links. O seletor de idioma mantém a query `?plan=`. Erros técnicos do motor podem permanecer em inglês.
+- Ferramentas ainda não localizadas continuam acessíveis em EN/PT-BR; hub explicita fallback inglês nos seis idiomas adicionais. Próximos incrementos: crafting (incluindo mensagens dinâmicas e XLSX), preços de mercado/pesquisa e auditoria de dados. Não declarar a Stage 20.81 completa antes de validá-los.
+- Traduções sem revisão nativa; deploy Cloudflare precisa de confirmação.

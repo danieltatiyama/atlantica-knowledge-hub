@@ -11,7 +11,8 @@ export const isLocale = lang => LOCALE_IDS.includes(lang);
 export const legacyLocale = lang => lang==="pt-br"?"pt-br":"en";
 export const LOCALIZED_CATALOG_PATHS = ["/items/","/events/","/mercenaries/","/items/database/","/monsters/"];
 export const LOCALIZED_COMPLEMENTARY_PATHS = ["/items/boxes/","/items/legendary/","/items/legendary/dell-artes-ambition/"];
-export const catalogPath = (lang,path) => localePrefix((LOCALIZED_CATALOG_PATHS.includes(path)||LOCALIZED_COMPLEMENTARY_PATHS.includes(path))?lang:legacyLocale(lang))+path;
+export const LOCALIZED_TOOL_PATHS = ["/tools/","/tools/nation-dungeons/"];
+export const catalogPath = (lang,path) => localePrefix((LOCALIZED_CATALOG_PATHS.includes(path)||LOCALIZED_COMPLEMENTARY_PATHS.includes(path)||LOCALIZED_TOOL_PATHS.includes(path))?lang:legacyLocale(lang))+path;
 // Preserve dedicated reviewed articles; additional source-only IDs use the localized data explorer.
 export const equipmentProfilePath=(lang,id,reviewed)=>NEW_GUIDE_LOCALES.includes(lang)&&!reviewed
  ?catalogPath(lang,"/items/database/")+"?id="+encodeURIComponent(id)
@@ -34,6 +35,7 @@ export function languageDestination({lang,path,guideAlternates,itemAlternates}){
  const equipment=/^\/items\/([1-9]\d*)\/$/.exec(plain);
  if(equipment)return itemAlternates?.[lang]??equipmentProfilePath(lang,equipment[1],false);
  if(/^\/items\/boxes\/[^/]+\/$/.test(plain))return itemAlternates?.[lang]??catalogPath(lang,"/items/boxes/");
+ if(LOCALIZED_TOOL_PATHS.includes(plain))return catalogPath(lang,plain);
  if(LOCALIZED_COMPLEMENTARY_PATHS.includes(plain))return catalogPath(lang,plain);
  if(LOCALIZED_CATALOG_PATHS.includes(plain))return catalogPath(lang,plain);
  if(/^\/(events|mercenaries|items|monsters|tools|explore)(\/|$)/.test(plain)){

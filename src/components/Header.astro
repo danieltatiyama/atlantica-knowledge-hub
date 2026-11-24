@@ -60,8 +60,8 @@ const navigation = [
   },
   {
     label: chromeText(lang,"Tools",lang === "pt-br" ? "Ferramentas" : "Tools"),
-    href: lang === "pt-br" ? "/pt-br/tools/" : "/tools/",
-    active: pathname.startsWith(lang === "pt-br" ? "/pt-br/tools/" : "/tools/"),
+    href: catalogPath(lang,"/tools/"),
+    active: pathname.startsWith(catalogPath(lang,"/tools/")),
   },
   {
     label: t("nav.explore"),
@@ -552,8 +552,9 @@ import {
       /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/monsters\/$/.test(currentPath);
 
     const isItemDatabase = /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/items\/database\/$/.test(currentPath);
-    // Preserve category filters and selected ItemID on localized listings.
-    const query = isGuideListing || isMonsterCatalog || isItemDatabase
+    const isNationCalendar = /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/tools\/nation-dungeons\/$/.test(currentPath);
+    // Preserve category filters, selected ItemID and shared calendar plan.
+    const query = isGuideListing || isMonsterCatalog || isItemDatabase || isNationCalendar
       ? window.location.search
       : "";
 

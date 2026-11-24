@@ -6,6 +6,7 @@ import {catalogText} from "../src/i18n/catalog-ui.mjs";
 import {itemDbText} from "../src/i18n/item-db-ui.mjs";
 import {monsterText} from "../src/i18n/monster-ui.mjs";
 import {legacyLocale,NEW_GUIDE_LOCALES} from "../src/i18n/locales.mjs";
+import {toolText} from "../src/i18n/tools-ui.mjs";
 import {equipmentText} from "../src/i18n/equipment-ui.mjs";
 for(const lang of LOCALE_IDS){
  for(const path of ["/","/guides/"]){
@@ -108,3 +109,18 @@ for(const lang of LOCALE_IDS){
  for(const path of ["/items/boxes/","/items/legendary/"])assert.ok(html.includes('href="'+prefix+path+'"'),prefix+" missing link "+path);
 }
 console.log("[IC] Verified localized boxes, legendary research and extended equipment pages.");
+
+for(const lang of LOCALE_IDS){
+ const prefix=localePrefix(lang);
+ for(const [path,labels] of [["/tools/",[["Tools & calculators","Ferramentas e calculadoras"]]],["/tools/nation-dungeons/",[["Nation Dungeon calendar","Calendário de Nation Dungeons"],["Viewing timezone","Fuso horário da visualização"],["Save run","Salvar run"],["Ready","Disponível"]]]]){
+ const file="dist"+prefix+path+"index.html";
+ assert.ok(existsSync(file),file);
+ const html=readFileSync(file,"utf8");
+ assert.ok(html.includes('lang="'+localeTag(lang)+'"'),file);
+ for(const [en,pt] of labels)assert.ok(html.includes(toolText(lang,en,pt).replaceAll("&","&amp;")),file+" missing "+en);
+ for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),file+" missing alternate "+locale);
+ }
+ const hub=readFileSync("dist"+prefix+"/tools/index.html","utf8");
+ assert.ok(hub.includes('href="'+prefix+'/tools/nation-dungeons/"'),prefix+" missing calendar link");
+}
+console.log("[IC] Verified eight localized tools hubs and nation dungeon calendars.");

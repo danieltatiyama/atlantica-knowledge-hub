@@ -47,6 +47,6 @@ test("new routes reuse components and original English/PT-BR paths remain unchan
  assert.ok(read("astro.config.mjs").includes("locales: [...LOCALE_IDS]"));
  assert.ok(read("src/components/Header.astro").includes("LOCALE_IDS.map(locale"));
  assert.ok(read("src/components/GuidesPage.astro").includes('localizedPaths("/guides/")'));
- assert.ok(read("src/components/HomePage.astro").includes("legacyLocale(lang)"));
+ assert.ok(read("src/components/HomePage.astro").includes('catalogPath(lang,"/tools/")'));
  assert.ok(read("src/components/GuideArticle.astro").includes("localeTag(lang)"));
 });
