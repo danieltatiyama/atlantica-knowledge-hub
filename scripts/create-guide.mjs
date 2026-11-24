@@ -32,6 +32,7 @@ const subcategoryParents = {
   "builds-formations": "mercenaries",
   crafting: "game-systems",
   "equipment-enhancement": "game-systems",
+  others: "game-systems",
 };
 
 try {
