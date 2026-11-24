@@ -23,13 +23,13 @@ test("catalog dictionaries have a unique label in every locale",()=>{
  }
 });
 test("localized listing routes preserve locale and unsupported detail paths do not pretend to be translated",()=>{
- assert.deepEqual(LOCALIZED_CATALOG_PATHS,["/items/","/events/","/mercenaries/"]);
+ assert.deepEqual(LOCALIZED_CATALOG_PATHS,["/items/","/events/","/mercenaries/","/items/database/"]);
  for(const lang of LOCALE_IDS){
   for(const path of LOCALIZED_CATALOG_PATHS){
    assert.equal(catalogPath(lang,path),localePrefix(lang)+path);
    for(const from of LOCALE_IDS)assert.equal(languageDestination({lang,path:localePrefix(from)+path}),localePrefix(lang)+path);
   }
-  assert.equal(catalogPath(lang,"/items/database/"),localePrefix(legacyLocale(lang))+"/items/database/");
+  assert.equal(catalogPath(lang,"/items/1/"),localePrefix(legacyLocale(lang))+"/items/1/");
  }
  for(const path of LOCALIZED_CATALOG_PATHS){
   assert.ok(read("src/pages/[locale]"+path+"index.astro").includes("NEW_GUIDE_LOCALES"));
