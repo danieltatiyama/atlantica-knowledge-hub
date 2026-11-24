@@ -1,0 +1,13 @@
+---
+import GuideArticle from "../../../components/GuideArticle.astro";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import { NEW_GUIDE_LOCALES } from "../../../i18n/locales.mjs";
+import type { Lang } from "../../../i18n/ui";
+export async function getStaticPaths(){
+ const guides=await getCollection("guides",({data})=>!data.draft&&NEW_GUIDE_LOCALES.includes(data.lang));
+ return guides.map(guide=>({params:{locale:guide.data.lang,slug:guide.id.replace(/^[^/]+\//,"")},props:{guide,lang:guide.data.lang}}));
+}
+const {guide,lang}=Astro.props as {guide:CollectionEntry<"guides">;lang:Lang};
+---
+<GuideArticle guide={guide} lang={lang} />

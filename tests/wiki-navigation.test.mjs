@@ -6,9 +6,9 @@ const read=path=>readFileSync(path,"utf8");
 
 test("header differentiates equipment from all 23,586 client items in both locales",()=>{
   const header=read("src/components/Header.astro");
-  assert.ok(header.includes('label: lang === "pt-br" ? "Equipamentos" : "Equipment"'));
-  assert.ok(header.includes('label: lang === "pt-br" ? "Todos os itens" : "All Items"'));
-  assert.ok(header.includes('const allItemsHref = lang === "en" ? "/items/database/"'));
+  assert.ok(header.includes('chromeText(lang,"Equipment",lang === "pt-br" ? "Equipamentos" : "Equipment")'));
+  assert.ok(header.includes('chromeText(lang,"All Items",lang === "pt-br" ? "Todos os itens" : "All Items")'));
+  assert.ok(header.includes('const allItemsHref = localePrefix(legacyLocale(lang))+"/items/database/"'));
   assert.ok(header.includes('active: pathname.startsWith(itemsHref) && !pathname.startsWith(allItemsHref)'));
   assert.ok(header.includes('active: pathname.startsWith(allItemsHref)'));
   assert.ok(!header.includes('label: lang === "pt-br" ? "Itens" : "Items"'));

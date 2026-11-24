@@ -12,7 +12,8 @@ const t = useTranslations(lang);
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 
-import { SUBCATEGORY_IDS, GUIDE_SUBCATEGORIES, } from "../data/guide-taxonomy";
+import { SUBCATEGORY_IDS, GUIDE_SUBCATEGORIES, guideSubcategoryLabel } from "../data/guide-taxonomy";
+import { localizedPaths, NEW_GUIDE_LOCALES } from "../i18n/locales.mjs";
 
 const categories = [
   {
@@ -56,7 +57,7 @@ const categoryLabels: Record<string, string> = {
 const subcategories = SUBCATEGORY_IDS.map((id) => ({
   id,
   category: GUIDE_SUBCATEGORIES[id].category,
-  label: GUIDE_SUBCATEGORIES[id].labels[lang],
+  label: guideSubcategoryLabel(id,lang),
 }));
 ---
 
@@ -64,10 +65,7 @@ const subcategories = SUBCATEGORY_IDS.map((id) => ({
   title={`${t("guides.title")} | Atlantica Knowledge Hub`}
   description={t("guides.intro")}
   lang={lang}
-  alternatePaths={{
-    en: "/guides/",
-    "pt-br": "/pt-br/guides/",
-  }}
+  alternatePaths={localizedPaths("/guides/")}
 >
   <main class="container">
     <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -203,6 +201,7 @@ const subcategories = SUBCATEGORY_IDS.map((id) => ({
           {t("guides.noArticles")}
         </p>
 
+      {NEW_GUIDE_LOCALES.includes(lang) && <p><a href="/guides/" lang="en">{t("guides.browseEnglish")} →</a></p>}
     </section>
 
     <section class="categories" aria-labelledby="categories-title">

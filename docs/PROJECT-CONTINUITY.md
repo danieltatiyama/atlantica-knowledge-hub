@@ -4,7 +4,7 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.73 (substituição de captura VIP com informações de jogador, sincronizada com CMS dev/i18n)  
+**Última etapa em validação:** Stage 20.74 (infraestrutura de oito idiomas para guias e navegação)  
 **Último PR de funcionalidade integrado:** [#103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) — Stage 20.73, substituição da primeira imagem VIP sem detalhes do jogador, CI aprovado e integrado à `main`. A origem do CMS em `dev/i18n` também foi corrigida no [#104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104). Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
@@ -452,6 +452,16 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - A exclusão da árvore atual **não reescreve histórico Git**, versões já publicadas ou caches externos antigos; não afirmar eliminação retroativa de todos os vestígios. Para remoção retroativa desses locais seria necessário um procedimento separado de privacidade e purga do histórico/cache.
 - Confirmar CI e integração do [PR #103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) na main e do [PR #104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104) em dev/i18n, atualização do deploy Cloudflare e que a imagem segura aparece em EN/PT-BR no site; verificar se o URL antigo da imagem retorna 404 após a publicação.
 
+### Stage 20.74 — Base de internacionalização para oito idiomas
+
+- Implementação no [PR #107](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/107), branch `feat/stage-20-74-eight-guide-locales`. Consultar CI e integração no GitHub.
+- Registro comum `src/i18n/locales.mjs`: inglês, PT-BR, francês, alemão, espanhol, coreano, chinês simplificado e japonês. Chinês tradicional não é tratado automaticamente como simplificado.
+- Novas rotas estáticas reutilizáveis `/[locale]/`, `/[locale]/guides/` e `/[locale]/guides/[slug]/`; EN/PT-BR mantêm as URLs existentes. Schema de guias aceita os oito idiomas, sem mudar schemas editoriais de eventos e mercenários.
+- Tradução das 52 mensagens compartilhadas de Home/Guides, controles principais do cabeçalho e taxonomia dos guias; seletor dinâmico, preferência de idioma do navegador, hreflang e fallback de fontes CJK.
+- Ferramentas, bases de dados e módulos não traduzidos continuam disponíveis em inglês para novos idiomas. Alguns componentes compartilhados (busca global, índice flutuante, lightbox e rodapé) ainda conservam textos EN/PT-BR. Guias sem tradução remetem à listagem de destino e aos guias em inglês.
+- Testes: `tests/wiki-eight-locales.test.mjs` e `scripts/check-built-guide-locales.mjs`, integrado à CI para conferir 16 páginas geradas (Home e listagem de guias), hreflang e rotas VIP existentes.
+- **Limite de escopo:** nesta etapa não são gerados artigos traduzidos nem alterado o Pages CMS. Próxima etapa 20.75: pipeline de tradução a partir do inglês, proteção de Markdown e termos, glossário, geração de rascunhos e validação. Stage 20.76: versionamento, PRs e sincronização. Não configurar serviços pagos ou segredos sem decisão do usuário.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -484,6 +494,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.71 | [#99](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99) | Tradução integral VIP System em PT-BR, sem duplicação das 16 imagens e com navegação EN/PT-BR |
 | 20.72 | [#101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101) | Lightbox global para imagens de artigos, zoom, controles de teclado, navegação e temas |
 | 20.73 | [#103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) + [#104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104) | Substituição da primeira captura VIP por versão sem dados do jogador; atualização dos dois idiomas e da fonte do CMS |
+| 20.74 | [#107](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/107) | Registro de oito idiomas, rotas de guias, interface principal e testes de build |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -561,3 +572,5 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
 **Estado documentado: Stage 20.73 integrada à `main` no PR #103, com CI e build aprovados, e à `dev/i18n` no PR #104. Os artigos VIP EN/PT-BR e a fonte do CMS apontam para `/images/guides/vip-system/vip-menu.png`; a captura antiga está ausente das árvores atuais dessas branches. As 15 imagens restantes não foram modificadas. Confirmar deploy e cache Cloudflare. A exclusão não reescreve histórico Git nem elimina cópias anteriores em caches externos.**
+
+**Continuação:** confirmar o estado do PR #107 antes de avançar com o motor de tradução automática. Os seis idiomas novos ainda não têm conteúdo editorial traduzido por esta etapa.

@@ -5,11 +5,12 @@ import {
   type Lang,
   type TranslationKey,
 } from "./ui";
+import { isLocale } from "./locales.mjs";
 
 export function getLangFromUrl(url: URL): Lang {
   const [, candidate] = url.pathname.split("/");
 
-  if (candidate && candidate in ui) {
+  if (isLocale(candidate)) {
     return candidate as Lang;
   }
 
