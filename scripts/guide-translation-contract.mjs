@@ -63,7 +63,7 @@ function restore(translated,part){
  const expected=part.tokens.map(x=>x.token);
  if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error("Protected token sequence changed");
  const remainder=translated.replace(tokenPattern,"");
- if(/[0-9*|~]|⟦|⟧/.test(remainder)||/https?:\/\//i.test(remainder))throw Error("New number, markup or link introduced");
+ if(/[0-9*|~]|⟦|⟧/.test(remainder)||/https?:\/\//i.test(remainder)||/^\s*(?:#{1,6}\s|>\s|[-+]\s|[-=_]{3,}\s*$)/.test(remainder))throw Error("New number, markup or link introduced");
  let result=translated;
  for(const item of part.tokens)result=result.replace(item.token,()=>item.value);
  return result;
