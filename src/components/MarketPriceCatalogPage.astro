@@ -132,7 +132,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       (pt?"Referência do cliente":"Client reference");
     const detailCell=node("td"),link=node("a",pt?"Ver item":"View item") as HTMLAnchorElement;
     link.href=href;detailCell.append(link);
-    const cells=[itemCell,node("td",item.category),
+    const cells=[itemCell,node("td",item.category||(pt?"Sem categoria":"Uncategorized")),
      node("td",BigInt(item.referenceGold).toLocaleString(locale)),
      node("td",source),detailCell];
     cells.forEach((cell,i)=>{cell.dataset.label=labels[i];tr.append(cell);});
