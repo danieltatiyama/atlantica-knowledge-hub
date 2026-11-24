@@ -152,6 +152,30 @@ actions:
 
 
 
+  - name: request-guide-publication
+    label: "Request publication PR for approved guide (DEV)"
+    workflow: pages-cms-guide-publication.yml
+    ref: current
+    confirm:
+      title: "Open a guide publication PR?"
+      message: "Run from dev/i18n. The guide must be Approved and Draft must be off. This opens a reviewable PR to main; it does not publish automatically."
+      button: "Request publication PR"
+    fields:
+      - name: language
+        label: Guide language
+        type: select
+        required: true
+        default: en
+        options:
+          - label: English
+            value: en
+          - label: Português (Brasil)
+            value: pt-br
+      - name: translationKey
+        label: Guide identifier (filename without .md)
+        type: text
+        required: true
+
 media:
   input: public/images
   output: /images
