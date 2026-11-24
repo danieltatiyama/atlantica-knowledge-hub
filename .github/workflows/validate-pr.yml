@@ -159,6 +159,11 @@ jobs:
       - name: Validate guide translation pipeline without external API
         run: node --test tests/guide-translation-pipeline.test.mjs
 
+      - name: Smoke test offline translation request export
+        run: |
+          node scripts/guide-translations.mjs export "$RUNNER_TEMP/translation-requests-smoke"
+          node --input-type=module -e 'import {readFileSync} from "node:fs"; const status=JSON.parse(readFileSync(process.argv[1],"utf8")); if(!Array.isArray(status.entries)||status.entries.length===0)throw Error("Missing translation status entries"); console.log("[IC] Translation status entries:",status.entries.length);' "$RUNNER_TEMP/translation-requests-smoke/status.json"
+
       - name: Validate Astro build
         run: npm run build
 

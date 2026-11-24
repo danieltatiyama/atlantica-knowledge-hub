@@ -4,7 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - "src/content/guides/en/**"
+      - "src/content/guides/**"
+      - "translation-review/**"
+      - "scripts/guide-translation-*.mjs"
+      - "scripts/guide-translations.mjs"
+      - ".github/workflows/guide-translation-requests.yml"
   workflow_dispatch:
 
 permissions:
