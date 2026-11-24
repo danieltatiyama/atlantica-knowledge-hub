@@ -28,6 +28,7 @@ const subcategoryParents = {
   yggdrasil: "nation-dungeons",
   alcatraz: "nation-dungeons",
   pirate: "nation-dungeons",
+  introduction: "mercenaries",
   skills: "mercenaries",
   "builds-formations": "mercenaries",
   crafting: "game-systems",
