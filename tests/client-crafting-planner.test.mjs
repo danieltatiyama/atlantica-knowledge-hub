@@ -61,7 +61,7 @@ test("crafting calculator is linked from tools and individual item profiles",()=
  const page=read("src/components/CraftingPlannerPage.astro");
  const item=read("src/components/ItemDetailPage.astro");
  const full=read("src/components/FullClientItemDatabasePage.astro");
- assert.ok(tools.includes('href:prefix+"/tools/crafting/"'));
+ assert.ok(tools.includes('href:catalogPath(lang,"/tools/crafting/")'));
  assert.ok(page.includes('buildClientRecipeViews(detail.s)'));
  assert.ok(page.includes('planClientCrafting({'));
  assert.ok(page.includes("priceCraftLeaves(plan.leaves,prices)"));
