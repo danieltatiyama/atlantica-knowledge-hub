@@ -6,8 +6,8 @@ lang: "ja"
 category: "game-systems"
 subcategory: "others"
 updatedAt: "2026-11-24"
-draft: true
-reviewStatus: "in-review"
+draft: false
+reviewStatus: "approved"
 translationSourceHash: "41c197718027a02a290828bdb974ca35ade0a903d69d8a54d0d42c95a7ce4ebe"
 translationMethod: "machine-assisted"
 translationProvider: "chatgpt-assisted"
@@ -26,7 +26,7 @@ translationGlossaryVersion: "1"
 
 アカウント全体に適用されるため、キャラクターごとに VIP レベルを上げる必要はありません。
 
-GC を消費すると経験値が得られます。また、すべてのプレイヤーは毎日 22 の無料経験値を獲得できます。
+GC を消費すると経験値が得られます。また、すべてのプレイヤーは毎日 22 ポイントの無料経験値を獲得できます。
 
 ![image.png](/images/guides/vip-system/image-2.png)
 
@@ -38,7 +38,7 @@ GC を消費すると経験値が得られます。また、すべてのプレ�
 - Buff Item Auto-Consume Slots の利用
 - Atlantica VIP Material Bag の利用 
 
-以下の表には、必要な経験値と GC、そして各 VIP レベルに F2P プレイヤーが到達するまでにかかる日数・年数が記載されています。
+以下の表には、すべての VIP レベルに到達するために必要な経験値と GC、および F2P プレイヤーが同じレベルに到達するまでにかかる日数・年数が記載されています。
 
 ![image.png](/images/guides/vip-system/image-3.png)
 

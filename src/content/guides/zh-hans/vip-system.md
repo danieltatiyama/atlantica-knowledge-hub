@@ -6,8 +6,8 @@ lang: "zh-hans"
 category: "game-systems"
 subcategory: "others"
 updatedAt: "2026-11-24"
-draft: true
-reviewStatus: "in-review"
+draft: false
+reviewStatus: "approved"
 translationSourceHash: "41c197718027a02a290828bdb974ca35ade0a903d69d8a54d0d42c95a7ce4ebe"
 translationMethod: "machine-assisted"
 translationProvider: "chatgpt-assisted"
@@ -38,7 +38,7 @@ translationGlossaryVersion: "1"
 - 使用 Buff Item Auto-Consume Slots
 - 使用 Atlantica VIP Material Bag 
 
-下表列出了所需经验和 GC，以及 VIP 各等级的达成条件，并说明 F2P 玩家达到相同等级所需的天数或年数：
+下表列出了达到各 VIP 等级所需的经验和 GC，以及 F2P 玩家达到相同等级所需的天数或年数：
 
 ![image.png](/images/guides/vip-system/image-3.png)
 

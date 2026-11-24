@@ -6,8 +6,8 @@ lang: "fr"
 category: "game-systems"
 subcategory: "others"
 updatedAt: "2026-11-24"
-draft: true
-reviewStatus: "in-review"
+draft: false
+reviewStatus: "approved"
 translationSourceHash: "41c197718027a02a290828bdb974ca35ade0a903d69d8a54d0d42c95a7ce4ebe"
 translationMethod: "machine-assisted"
 translationProvider: "chatgpt-assisted"

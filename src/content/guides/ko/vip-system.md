@@ -6,8 +6,8 @@ lang: "ko"
 category: "game-systems"
 subcategory: "others"
 updatedAt: "2026-11-24"
-draft: true
-reviewStatus: "in-review"
+draft: false
+reviewStatus: "approved"
 translationSourceHash: "41c197718027a02a290828bdb974ca35ade0a903d69d8a54d0d42c95a7ce4ebe"
 translationMethod: "machine-assisted"
 translationProvider: "chatgpt-assisted"
@@ -26,7 +26,7 @@ translationGlossaryVersion: "1"
 
 이 시스템은 계정 전체에 적용되므로 캐릭터마다 VIP 레벨을 올릴 필요가 없습니다.
 
-GC를 소비하면 경험치를 획득합니다. 모든 플레이어는 매일 22의 무료 경험치도 받을 수 있습니다:
+GC를 소비하면 경험치를 획득합니다. 모든 플레이어는 매일 22포인트의 무료 경험치도 받을 수 있습니다:
 
 ![image.png](/images/guides/vip-system/image-2.png)
 
@@ -38,7 +38,7 @@ GC를 소비하면 경험치를 획득합니다. 모든 플레이어는 매일 2
 - Buff Item Auto-Consume Slots 이용
 - Atlantica VIP Material Bag 이용 
 
-아래 표는 필요한 경험치와 GC, 그리고 VIP의 모든 레벨에 F2P 플레이어가 도달하는 데 걸리는 일수 또는 연수를 보여줍니다:
+아래 표는 모든 VIP 레벨에 도달하는 데 필요한 경험치와 GC, 그리고 F2P 플레이어가 같은 레벨에 도달하는 데 걸리는 일수 또는 연수를 보여줍니다:
 
 ![image.png](/images/guides/vip-system/image-3.png)
 

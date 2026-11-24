@@ -6,8 +6,8 @@ lang: "es"
 category: "game-systems"
 subcategory: "others"
 updatedAt: "2026-11-24"
-draft: true
-reviewStatus: "in-review"
+draft: false
+reviewStatus: "approved"
 translationSourceHash: "41c197718027a02a290828bdb974ca35ade0a903d69d8a54d0d42c95a7ce4ebe"
 translationMethod: "machine-assisted"
 translationProvider: "chatgpt-assisted"
@@ -32,7 +32,7 @@ La experiencia se obtiene gastando GC. Todos los jugadores también reciben 22 p
 
 **Según tu nivel VIP**, puedes obtener los siguientes beneficios:
 
-- Acceso a la Aca VIP Shop
+- Acceso a Aca VIP Shop
 - Finalización instantánea de diarios (tanto normales como ALVL)
 - Beneficios adicionales en Olympus Tower durante los días HOT
 - Acceso a Buff Item Auto-Consume Slots

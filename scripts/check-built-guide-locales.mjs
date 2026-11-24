@@ -10,6 +10,17 @@ for(const lang of LOCALE_IDS){
   for(const alternate of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(alternate)+'"'),file+" missing alternate "+alternate);
  }
 }
-for(const file of ["dist/guides/vip-system/index.html","dist/pt-br/guides/vip-system/index.html"])
- assert.ok(existsSync(file),"Missing pre-existing VIP route "+file);
-console.log("[IC] Verified 16 generated home/guide-list pages, all eight hreflang tags and both existing VIP articles.");
+// All eight published versions of the two reviewed public guides must resolve.
+for(const slug of ["vip-system","nation-dungeon-planning"]){
+ for(const lang of LOCALE_IDS){
+  const file="dist"+localePrefix(lang)+"/guides/"+slug+"/index.html";
+  assert.ok(existsSync(file),"Missing translated guide: "+file);
+  const html=readFileSync(file,"utf8");
+  assert.ok(html.includes('lang="'+localeTag(lang)+'"'),file+" missing language tag");
+  for(const alternate of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(alternate)+'"'),file+" missing guide alternate "+alternate);
+ }
+}
+for(const lang of LOCALE_IDS){
+ assert.ok(!existsSync("dist"+localePrefix(lang)+"/guides/avalon-overview/index.html"),"Unreviewed Avalon must remain unpublished");
+}
+console.log("[IC] Verified 16 localized entry pages and 16 guide pages, eight hreflang tags per page, and Avalon draft exclusion.");
