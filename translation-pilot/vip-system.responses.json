@@ -4,7 +4,7 @@
   "model": "editorial-pilot",
   "responses": {
     "fr": {
-      "s0": "⟦AO00000⟧ — Système",
+      "s0": "Système ⟦AO00000⟧",
       "s1": "Informations sur le nouveau système ⟦AO00000⟧, introduit en même temps que la mercenaire archère ⟦AO00001⟧.",
       "s2": "Présentation",
       "s3": "Le nouveau système ⟦AO00000⟧ ressemble à celui de certains jeux mobiles ou sur navigateur, où les joueurs bénéficient d'avantages selon leur niveau ⟦AO00001⟧.",
@@ -13,7 +13,7 @@
       "s6": "Le système s'applique à l'ensemble du compte : il n'est donc pas nécessaire d'augmenter son niveau ⟦AO00000⟧ séparément pour chaque personnage.",
       "s7": "L'expérience s'obtient en dépensant des ⟦AO00000⟧. Tous les joueurs reçoivent également ⟦AO00001⟧ points d'expérience gratuits par jour :",
       "s8": "⟦AO00000⟧Selon votre niveau ⟦AO00001⟧⟦AO00002⟧, vous pouvez bénéficier des avantages suivants :",
-      "s9": "Accès à la boutique ⟦AO00000⟧",
+      "s9": "Accès à l’⟦AO00000⟧",
       "s10": "Achèvement instantané des journaux (normaux et ⟦AO00000⟧)",
       "s11": "Avantages supplémentaires dans ⟦AO00000⟧ lors des journées ⟦AO00001⟧",
       "s12": "Accès à ⟦AO00000⟧",
@@ -75,7 +75,7 @@
       "s11": "⟦AO00000⟧의 ⟦AO00001⟧ 기간 추가 혜택",
       "s12": "⟦AO00000⟧ 이용",
       "s13": "⟦AO00000⟧ 이용",
-      "s14": "아래 표는 필요한 경험치와 ⟦AO00000⟧, 모든 ⟦AO00001⟧ 레벨에 도달하기 위해 필요한 정보, 그리고 ⟦AO00002⟧ 플레이어가 같은 레벨에 도달하는 데 걸리는 일수 또는 연수를 보여줍니다:",
+      "s14": "아래 표는 필요한 경험치와 ⟦AO00000⟧, 그리고 ⟦AO00001⟧의 모든 레벨에 ⟦AO00002⟧ 플레이어가 도달하는 데 걸리는 일수 또는 연수를 보여줍니다:",
       "s15": "일정 수준부터는 과금을 많이 하는 플레이어를 위한 영역에 가까워지므로 진행 계획을 신중하게 세우세요.",
       "s16": "아래는 ⟦AO00000⟧ 레벨 ⟦AO00001⟧부터 ⟦AO00002⟧까지의 모든 혜택입니다:"
     },
@@ -94,7 +94,7 @@
       "s11": "在 ⟦AO00000⟧ 的 ⟦AO00001⟧ 活动日获得额外福利",
       "s12": "使用 ⟦AO00000⟧",
       "s13": "使用 ⟦AO00000⟧",
-      "s14": "下表列出了所需的经验和 ⟦AO00000⟧、达到所有 ⟦AO00001⟧ 等级所需的信息，以及 ⟦AO00002⟧ 玩家达到相同等级需要多少天或年：",
+      "s14": "下表列出了所需经验和 ⟦AO00000⟧，以及 ⟦AO00001⟧ 各等级的达成条件，并说明 ⟦AO00002⟧ 玩家达到相同等级所需的天数或年数：",
       "s15": "如你所见，达到一定阶段后，该系统主要面向高额付费玩家，因此请合理规划进度。",
       "s16": "以下是 ⟦AO00000⟧ 等级从 ⟦AO00001⟧ 到 ⟦AO00002⟧ 的全部福利："
     },
@@ -113,7 +113,7 @@
       "s11": "⟦AO00000⟧ の ⟦AO00001⟧ 開催日の追加特典",
       "s12": "⟦AO00000⟧ の利用",
       "s13": "⟦AO00000⟧ の利用",
-      "s14": "以下の表には、必要な経験値と ⟦AO00000⟧、各 ⟦AO00001⟧ レベルに必要な情報、そして ⟦AO00002⟧ プレイヤーが同じレベルに到達するまでにかかる日数・年数が記載されています。",
+      "s14": "以下の表には、必要な経験値と ⟦AO00000⟧、そして各 ⟦AO00001⟧ レベルに ⟦AO00002⟧ プレイヤーが到達するまでにかかる日数・年数が記載されています。",
       "s15": "ご覧のとおり、ある段階からは多額の課金をするプレイヤー向けになるため、計画的に進めましょう。",
       "s16": "以下は ⟦AO00000⟧ レベル ⟦AO00001⟧ から ⟦AO00002⟧ までの全特典です。"
     }
