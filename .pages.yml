@@ -2,6 +2,30 @@
 
 
 actions:
+  - name: submit-guide-publication
+    label: "Submit approved guide for publication (PR)"
+    workflow: pages-cms-guide-submit.yml
+    ref: current
+    confirm:
+      title: "Submit an approved guide to the public website?"
+      message: "Run from dev/i18n. The guide must be saved with Draft disabled and Editorial Status Approved. Creates a PR to main with the guide and linked images; the website updates only after review, merge and deployment."
+      button: "Create publication PR"
+    fields:
+      - name: language
+        label: Guide language
+        type: select
+        required: true
+        default: en
+        options:
+          - label: English
+            value: en
+          - label: Português
+            value: pt-br
+      - name: translationKey
+        label: Guide identifier (translationKey)
+        type: text
+        required: true
+
   - name: create-guide-preview
     label: "Create guide from template (TEST)"
     workflow: pages-cms-guide-preview.yml
