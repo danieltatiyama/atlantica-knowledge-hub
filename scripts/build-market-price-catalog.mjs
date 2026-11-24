@@ -19,7 +19,7 @@ export function buildClientMarketPriceCatalog({clientCSV,historicalCSV,reference
   throw Error("Unexpected client price source snapshot");
  const source=new Map();
  for(const row of general){
-  if(!row.item_id||!row.client_name_en||!row.client_category||
+  if(!row.item_id||!row.client_name_en||
     row.client_identity_status!=="named"||row.market_fixed_price_verified!=="false"||
     !/^[1-9]\d*$/.test(row.item_id)||
     !/^[1-9]\d*$/.test(row.npc_trade_price_gold)||
