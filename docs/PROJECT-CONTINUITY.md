@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.69 (subcategoria Others/Outros em Game Systems, com taxonomia, Pages CMS e gerador de rascunhos alinhados)  
-**Último PR integrado de funcionalidade:** [PR #90](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/90) (Stage 20.69; validação completa e build editorial aprovados na `main`). **Suporte de rascunhos `dev/i18n`:** [PR #91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) integrado.
+**Última etapa implementada:** Stage 20.70 (guia VIP System enviado à `main` e fluxo CMS de submissão de guias aprovados por PR)  
+**Guia VIP System:** [PR #93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93) integrado à `main` com 16 screenshots. **Fluxo CMS:** [PR #94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) (`main`) e [PR #95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) (`dev/i18n`). Conferir integração e deploy.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -415,6 +415,15 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - A branch `dev/i18n` diverge muito da `main`; o [PR #91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) aplica a atualização mínima do CMS/gerador naquela branch, sem mesclar as branches inteiras.
 - Novos testes: `tests/game-systems-others-subcategory.test.mjs`. Nenhum artigo existente foi reclassificado nem publicado automaticamente.
 
+### Stage 20.70 — Publicação do guia VIP System e fluxo aprovado do Pages CMS
+
+- O usuário publicou o guia **VIP System** no Pages CMS, em `src/content/guides/en/vip-system.md` na `dev/i18n`. O arquivo tinha `draft: false`, mas faltava `reviewStatus: approved` e não havia integração na `main`. O site público, portanto, não podia mostrar o guia somente com a passagem do tempo.
+- O [PR #93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93) integrou a publicação à `main`, mantendo o texto original, `game-systems → others`, adicionando a aprovação editorial e copiando **16 capturas originais** byte a byte para `public/images/guides/vip-system/` para evitar colisões com outros guias. CI incluindo SHA1 de Git blobs passou. Rota pública prevista: `/guides/vip-system/` (EN). Ainda conferir deploy real no Cloudflare.
+- Para os próximos guias, o [PR #94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) inclui a ação explícita do Pages CMS **Submit approved guide for publication (PR)** e workflow `.github/workflows/pages-cms-guide-submit.yml`, validando `draft:false`, `reviewStatus:approved`, idiomas/slugs e imagens referenciadas. O fluxo copia somente o artigo selecionado e seus arquivos para um PR originado da `main`, executa build e dispara a validação sem mesclar diretamente a branch de desenvolvimento.
+- O [PR #95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) incorpora o mesmo fluxo à `dev/i18n`, onde o Pages CMS opera, e registra `reviewStatus: approved` na cópia-fonte do VIP já publicado. Nenhum merge massivo entre as branches divergentes é necessário.
+- O usuário ainda precisa **integrar o PR de cada guia** e confirmar o deploy Cloudflare. O workflow com `GITHUB_TOKEN` pode exigir habilitar no repositório a permissão de Actions para criar PRs. Informações e limites em `docs/GUIDE-PUBLISHING.md`.
+- Testes: `tests/vip-system-guide-publication.test.mjs` e `tests/guide-publication-cms.test.mjs`. Aprovação editorial não é evidência independente de cada mecânica de jogo.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -443,6 +452,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.67 | [#86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
 | 20.68 | [#88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) | Catálogo de 421 preços pesquisáveis, filtros e links para itens; ferramenta técnica preservada em /research/ |
 | 20.69 | [#90](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/90) | Inclusão de Game Systems → Others/Outros na Wiki, CMS e gerador de guias; complemento `dev/i18n` no [#91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) |
+| 20.70 | [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93), [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94), [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) | Guia VIP aprovado/publicado no código; Pages CMS com ação de envio por PR para main e imagens específicas por guia |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -519,4 +529,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.69 integrada na `main` pelo PR #90 (GitHub Actions e build editorial aprovados) e na `dev/i18n` pelo PR #91. Game Systems contém agora `others` com rótulos Others/Outros em inglês e português, disponível no filtro de Guias, Pages CMS e criador de rascunhos. Nenhum artigo existente foi reclassificado ou publicado. A inspeção visual da Stage 20.68 permanece independente desta alteração.**
+**Estado documentado: Stage 20.70 — publicação do VIP System integrada à `main` no PR #93 com as 16 imagens preservadas e testes aprovados. O fluxo de publicação do Pages CMS (PR #94 na main, PR #95 na dev/i18n) valida aprovação editorial, cria PR específico e exige merge + deploy; verificar se ambos foram integrados. O Cloudflare ainda não teve sua publicação verificada visualmente. O histórico original do guia permanece em dev/i18n, e nenhum merge integral entre branches foi feito.**
