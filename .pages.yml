@@ -74,6 +74,8 @@ actions:
             value: alcatraz
           - label: "Nation Dungeons - Pirate"
             value: pirate
+          - label: "Mercenaries - Introduction"
+            value: introduction
           - label: "Mercenaries - Skills"
             value: skills
           - label: "Mercenaries - Builds & Formations"
@@ -148,6 +150,8 @@ actions:
             value: alcatraz
           - label: "Nation Dungeons - Pirate"
             value: pirate
+          - label: "Mercenaries - Introduction"
+            value: introduction
           - label: "Mercenaries - Skills"
             value: skills
           - label: "Mercenaries - Builds & Formations"
@@ -274,6 +278,8 @@ content:
               label: "Nation Dungeons - Alcatraz"
             - name: pirate
               label: "Nation Dungeons - Pirate"
+            - name: introduction
+              label: "Mercenaries - Introduction"
             - name: skills
               label: "Mercenaries - Skills"
             - name: builds-formations
@@ -436,6 +442,8 @@ content:
               label: "Dungeons da Nação - Alcatraz"
             - name: pirate
               label: "Dungeons da Nação - Pirate"
+            - name: introduction
+              label: "Mercenários - Introdução"
             - name: skills
               label: "Mercenários - Habilidades"
             - name: builds-formations
