@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.69 (subcategoria Others/Outros em Game Systems, com taxonomia, Pages CMS e gerador de rascunhos alinhados)  
-**Último PR integrado de funcionalidade:** [PR #88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) (Stage 20.68; GitHub Actions aprovado e integrado à `main`).
+**Último PR integrado de funcionalidade:** [PR #90](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/90) (Stage 20.69; validação completa e build editorial aprovados na `main`). **Suporte de rascunhos `dev/i18n`:** [PR #91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) integrado.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -519,4 +519,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.69 implementada em PRs #90 (`main`) e #91 (`dev/i18n`), aguardando validação e integração. A subcategoria `others` de Game Systems é exibida nos filtros de Guias e no Pages CMS EN/PT-BR, e aceita rascunhos no gerador sem reclassificar artigos existentes. A Stage 20.68 permanece integrada; sua inspeção visual posterior continua independente desta alteração.**
+**Estado documentado: Stage 20.69 integrada na `main` pelo PR #90 (GitHub Actions e build editorial aprovados) e na `dev/i18n` pelo PR #91. Game Systems contém agora `others` com rótulos Others/Outros em inglês e português, disponível no filtro de Guias, Pages CMS e criador de rascunhos. Nenhum artigo existente foi reclassificado ou publicado. A inspeção visual da Stage 20.68 permanece independente desta alteração.**
