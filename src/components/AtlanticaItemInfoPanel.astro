@@ -87,7 +87,7 @@ const showBatch=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
       <span>{equipmentText(lang,"Production per batch","Produção por batch")}</span>
       <strong>{fmt.format(batch.batchSize)}</strong>
       <small>{equipmentText(lang,"Per-operation limit","Limite por operação")}: {fmt.format(batch.maxPerOperation)} ·
-        {equipmentText(lang,"up to","até")} {fmt.format(batch.maxBatchesPerOperation)} batches</small>
+        {equipmentText(lang,"up to","até")} {fmt.format(batch.maxBatchesPerOperation)} {equipmentText(lang,"batches","batches")}</small>
       {batch.status==="partial"&&<small>{equipmentText(lang,"Unit recorded in only some original source files","Unit registrado em parte dos arquivos")}</small>}
     </div>}
     {batch.status==="conflict"&&<p class="tooltip-batch-warning">{equipmentText(lang,"Batch withheld: original source Unit values conflict.","Batch indefinido: valores Unit divergentes nos registros originais.")}</p>}
