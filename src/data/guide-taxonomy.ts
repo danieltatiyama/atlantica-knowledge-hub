@@ -9,6 +9,7 @@ export const SUBCATEGORY_IDS = [
   "builds-formations",
   "crafting",
   "equipment-enhancement",
+  "others",
 ] as const;
 
 export type GuideSubcategory =
@@ -72,5 +73,9 @@ export const GUIDE_SUBCATEGORIES: Record<
       en: "Equipment & Enhancement",
       "pt-br": "Equipamentos e Aprimoramento",
     },
+  },
+  others: {
+    category: "game-systems",
+    labels: { en: "Others", "pt-br": "Outros" },
   },
 };
