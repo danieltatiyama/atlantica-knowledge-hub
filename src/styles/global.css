@@ -83,3 +83,8 @@ h3 {
   font-weight: 400;
   letter-spacing: 0.015em;
 }
+
+/* System font fallback for East Asian glyphs; no extra font download required. */
+html:lang(ko){--font-primary:"Source Sans 3","Malgun Gothic","Noto Sans KR",sans-serif;--font-heading:"Malgun Gothic","Noto Sans KR",sans-serif;}
+html:lang(zh-Hans){--font-primary:"Source Sans 3","Microsoft YaHei","Noto Sans SC",sans-serif;--font-heading:"Microsoft YaHei","Noto Sans SC",sans-serif;}
+html:lang(ja){--font-primary:"Source Sans 3","Yu Gothic","Meiryo","Noto Sans JP",sans-serif;--font-heading:"Yu Gothic","Meiryo","Noto Sans JP",sans-serif;}
