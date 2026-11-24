@@ -138,8 +138,8 @@ jobs:
           node scripts/build-market-price-catalog.mjs --check
           node --test tests/market-price-catalog-stage-20-68.test.mjs
 
-      - name: Validate Game Systems Others guide subcategory and Pages CMS
-        run: node --test tests/game-systems-others-subcategory.test.mjs
+      - name: Validate guide subcategories and Pages CMS
+        run: node --test tests/game-systems-others-subcategory.test.mjs tests/mercenaries-introduction-subcategory.test.mjs
 
       - name: Validate published VIP System metadata and 16 archived images
         run: node --test tests/vip-system-guide-publication.test.mjs
