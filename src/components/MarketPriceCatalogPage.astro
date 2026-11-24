@@ -171,7 +171,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const categories=[...new Set(catalog.map(x=>x.category))]
      .sort((a,b)=>a.localeCompare(b,"en"));
     for(const value of categories){
-     const option=node("option",value) as HTMLOptionElement;
+     const option=node("option",value||(pt?"Sem categoria":"Uncategorized")) as HTMLOptionElement;
      option.value=value;category.append(option);
     }
     draw();
