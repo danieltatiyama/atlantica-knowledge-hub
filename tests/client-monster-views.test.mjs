@@ -78,5 +78,5 @@ test("header and home expose the bilingual client monster source catalog",()=>{
   assert.ok(header.includes('monstersHref'));
   assert.ok(header.includes('isMonsterCatalog'));
   assert.ok(home.includes('Monsters & Drops'));
-  assert.ok(home.includes('"/pt-br/monsters/"'));
+  assert.ok(home.includes('catalogPath(lang,"/monsters/")'));
 });
