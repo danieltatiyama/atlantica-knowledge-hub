@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {parseGuide,readEnglishGuide,prepareTranslation,translationRequest,finishTranslation,translationState,TARGET_LOCALES,sha256} from "../scripts/guide-translation-contract.mjs";
+import {parseGuide,readEnglishGuide,prepareTranslation,translationRequest,finishTranslation,translationState,TARGET_LOCALES,sha256,approveTranslation} from "../scripts/guide-translation-contract.mjs";
 const read=slug=>readFileSync("src/content/guides/en/"+slug+".md","utf8");
 const source=read("vip-system"),slug="vip-system";
 const images=s=>[...s.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map(m=>m[1]);
@@ -52,4 +52,57 @@ test("table structure and numbers are retained",()=>{
  const output=finishTranslation(p,translationRequest(p).segments);
  assert.ok(output.includes("| --- | ---: |"));
  assert.ok(output.includes("| Sylvia | 123 |"));
+});
+
+import {providerConfig,translateViaProvider} from "../scripts/guide-translation-provider.mjs";
+test("pilot has six real translated drafts with unchanged shared image references",()=>{
+ const pilot=JSON.parse(readFileSync("translation-pilot/vip-system.responses.json","utf8"));
+ for(const lang of ["fr","de","es","ko","zh-hans","ja"]){
+  const target=readFileSync("src/content/guides/"+lang+"/vip-system.md","utf8"),actual=parseGuide(target);
+  assert.equal(actual.meta.lang,lang);
+  assert.equal(actual.meta.translationKey,slug);
+  if(actual.meta.translationSourceHash===sha256(source))assert.deepEqual(images(target),images(source));
+  // The pilot response fixture is for one English revision. Editors can improve
+  // or approve the generated articles without invalidating future builds.
+  if(sha256(source)==="41c197718027a02a290828bdb974ca35ade0a903d69d8a54d0d42c95a7ce4ebe"){
+   const p=prepareTranslation(source,slug,lang);
+   const generated=finishTranslation(p,pilot.responses[lang],pilot);
+   assert.deepEqual(images(generated),images(source));
+   assert.notEqual(parseGuide(generated).meta.title,parseGuide(source).meta.title);
+  }
+ }
+});
+test("approval requires exact reviewed hashes and cannot replace manual or stale content",()=>{
+ const p=prepareTranslation(source,slug,"fr");
+ const candidate=finishTranslation(p,translationRequest(p).segments);
+ const args={english:source,slug,lang:"fr",candidate,expectedCandidateHash:sha256(candidate),currentTarget:candidate,expectedTargetHash:sha256(candidate)};
+ const approved=approveTranslation(args);
+ assert.equal(parseGuide(approved).meta.draft,false);
+ assert.equal(parseGuide(approved).meta.reviewStatus,"approved");
+ assert.deepEqual(images(approved),images(source));
+ assert.throws(()=>approveTranslation({...args,expectedCandidateHash:"wrong"}));
+ assert.throws(()=>approveTranslation({...args,expectedTargetHash:"wrong"}));
+ assert.throws(()=>approveTranslation({...args,english:source+"\nChanged source."}));
+ const manual=candidate.replace(/^translationSourceHash:.*\n/m,"");
+ assert.throws(()=>approveTranslation({...args,currentTarget:manual,expectedTargetHash:sha256(manual)}));
+ const tampered=candidate.replace("/vip-menu.png","/wrong.png");
+ assert.throws(()=>approveTranslation({...args,candidate:tampered,expectedCandidateHash:sha256(tampered),currentTarget:tampered,expectedTargetHash:sha256(tampered)}));
+});
+test("provider is disabled unless configured, bounded, and uses a mock rather than network",async()=>{
+ assert.throws(()=>providerConfig({}));
+ assert.throws(()=>providerConfig({GUIDE_TRANSLATION_ENABLED:"true"}));
+ assert.throws(()=>providerConfig({GUIDE_TRANSLATION_ENABLED:"true",GUIDE_TRANSLATION_API_URL:"http://example.org",GUIDE_TRANSLATION_MODEL:"test"}));
+ const config=providerConfig({GUIDE_TRANSLATION_ENABLED:"true",GUIDE_TRANSLATION_API_URL:"http://127.0.0.1:11434/v1/chat/completions",GUIDE_TRANSLATION_MODEL:"test",GUIDE_TRANSLATION_MAX_REQUESTS:"2"});
+ assert.equal(config.limit,2);
+ const req={targetLanguage:"fr",instructions:"Translate",segments:{s0:"Hello"}};
+ const result=await translateViaProvider(req,config,async(url,options)=>{
+  assert.equal(url,config.endpoint);
+  assert.equal(options.redirect,"error");
+  assert.ok(JSON.parse(options.body).messages[0].content.includes("Français"));
+  assert.ok(!options.headers.Authorization);
+  return {ok:true,text:async()=>JSON.stringify({choices:[{finish_reason:"stop",message:{content:'{"s0":"Bonjour"}'}}]})};
+ });
+ assert.equal(result.segments.s0,"Bonjour");
+ await assert.rejects(()=>translateViaProvider(req,config,async()=>({ok:true,text:async()=>JSON.stringify({choices:[{message:{content:'{"s0":"Hello"}'}}]})})));
+ await assert.rejects(()=>translateViaProvider(req,config,async()=>({ok:false,status:429})),/429/);
 });
