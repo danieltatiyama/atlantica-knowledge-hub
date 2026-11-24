@@ -1,4 +1,5 @@
 ---
+import {sharedText} from "../i18n/shared-ui.mjs";
 
 import { getCollection } from "astro:content";
 import { LOCALE_IDS, LOCALE_NAMES, languageDestination, legacyLocale, localePrefix } from "../i18n/locales.mjs";
@@ -110,7 +111,7 @@ import {
 
 <header class="site-header">
   <div class="header-content">
-    <a class="brand" href={homeHref} aria-label={`${siteName} - Home`}>
+    <a class="brand" href={homeHref} aria-label={`${siteName} - ${sharedText(lang,"Home")}`}>
         <div class="brand-wordmark" aria-hidden="true">
           <span class="brand-ornament">✦</span>
           <span class="brand-name">
@@ -139,7 +140,7 @@ import {
         </a>
       ))}
       <button class="wiki-global-trigger" type="button" data-global-search-open
-        aria-label={lang === "pt-br" ? "Abrir busca global" : "Open global search"}>
+        aria-label={sharedText(lang,"Open global search")}>
         ⌕ {chromeText(lang,"Search",lang === "pt-br" ? "Buscar" : "Search")}
       </button>
     </nav>
@@ -165,7 +166,7 @@ import {
         <label for="site-language" class="language-label header-control-label">
           {chromeText(lang,"Language",lang === "pt-br" ? "Idioma" : "Language")}
         </label>
-        <select id="site-language" class="language-select header-control-select"
+        <select translate="no" id="site-language" class="language-select header-control-select"
           aria-label={chromeText(lang,"Select language",lang === "pt-br" ? "Selecionar idioma" : "Select language")}
           >
           {LOCALE_IDS.map(locale=><option value={locale} selected={lang===locale} data-target={getLanguageTarget(locale)}>{LOCALE_NAMES[locale]}</option>)}
