@@ -16,6 +16,7 @@ The Tools hub links to the catalog. Both pages use existing `BaseLayout` languag
 ## What players see
 
 - **421** named ItemIDs and **per-unit** gold reference prices from the client's general NPC trade catalog.
+- **Five records** (four rings and Guardian Stone [I]) have an empty source category. They are displayed as **Uncategorized / Sem categoria** without inferring a category.
 - Filters for name, category or ItemID, category selection, provenance class, and sorting by name, unit price ascending/descending, or ItemID.
 - 50 results per page, next/previous navigation, total matching count and a mobile card layout.
 - Direct links into the existing complete item database using `/items/database/?id=<ItemID>` and `/pt-br/items/database/?id=<ItemID>`.
