@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa em validação:** Stage 20.74 (infraestrutura de oito idiomas para guias e navegação)  
-**Último PR de funcionalidade integrado:** [#103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) — Stage 20.73, substituição da primeira imagem VIP sem detalhes do jogador, CI aprovado e integrado à `main`. A origem do CMS em `dev/i18n` também foi corrigida no [#104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104). Conferir deploy Cloudflare.
+**Última etapa implementada:** Stage 20.74 integrada; Stages 20.75–20.76 em validação (pipeline multilíngue com geração e aprovação separadas)  
+**Último PR de funcionalidade integrado:** [#107](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/107), Stage 20.74, infraestrutura de oito idiomas; CI e build editorial aprovados. Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -495,6 +495,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.72 | [#101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101) | Lightbox global para imagens de artigos, zoom, controles de teclado, navegação e temas |
 | 20.73 | [#103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) + [#104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104) | Substituição da primeira captura VIP por versão sem dados do jogador; atualização dos dois idiomas e da fonte do CMS |
 | 20.74 | [#107](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/107) | Registro de oito idiomas, rotas de guias, interface principal e testes de build |
+| 20.75–20.76 | PR em validação | Motor de tradução, seis rascunhos VIP, status por hash, geração opcional e aprovação por PR |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -573,4 +574,4 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 
 **Estado documentado: Stage 20.73 integrada à `main` no PR #103, com CI e build aprovados, e à `dev/i18n` no PR #104. Os artigos VIP EN/PT-BR e a fonte do CMS apontam para `/images/guides/vip-system/vip-menu.png`; a captura antiga está ausente das árvores atuais dessas branches. As 15 imagens restantes não foram modificadas. Confirmar deploy e cache Cloudflare. A exclusão não reescreve histórico Git nem elimina cópias anteriores em caches externos.**
 
-**Continuação:** confirmar o estado do PR #107 antes de avançar com o motor de tradução automática. Os seis idiomas novos ainda não têm conteúdo editorial traduzido por esta etapa.
+**Continuação:** Stage 20.74 integrada no PR #107. Stages 20.75–20.76 incluem pipeline de tradução, seis rascunhos VIP, comparação de hashes, revisão e PRs. A ativação de um provedor externo está desabilitada até configuração explícita. Consultar docs/GUIDE-TRANSLATION-PIPELINE.md e o estado do PR antes de avançar.
