@@ -3,6 +3,8 @@
 import { getCollection } from "astro:content";
 import GlobalSearch from "./GlobalSearch.astro";
 import type { CollectionEntry } from "astro:content";
+import type { Lang } from "../i18n/ui";
+import { localeIds, localeNames, localePrefix, isFullLocale } from "../i18n/locales.mjs";
 
 const siteName = "Atlantica Knowledge Hub";
 const pathname = Astro.url.pathname;
@@ -10,11 +12,11 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
-const eventsHref = lang === "en" ? "/events/" : `/${lang}/events/`;
-const mercenariesHref = lang === "en" ? "/mercenaries/" : `/${lang}/mercenaries/`;
-const itemsHref = lang === "en" ? "/items/" : `/${lang}/items/`;
-const allItemsHref = lang === "en" ? "/items/database/" : `/${lang}/items/database/`;
-const monstersHref = lang === "en" ? "/monsters/" : `/${lang}/monsters/`;
+const eventsHref = lang === "en" ? "/events/" : lang === "pt-br" ? "/pt-br/events/" : "/events/";
+const mercenariesHref = lang === "en" ? "/mercenaries/" : lang === "pt-br" ? "/pt-br/mercenaries/" : "/mercenaries/";
+const itemsHref = lang === "en" ? "/items/" : lang === "pt-br" ? "/pt-br/items/" : "/items/";
+const allItemsHref = lang === "en" ? "/items/database/" : lang === "pt-br" ? "/pt-br/items/database/" : "/items/database/";
+const monstersHref = lang === "en" ? "/monsters/" : lang === "pt-br" ? "/pt-br/monsters/" : "/monsters/";
 
 const navigation = [
   {
@@ -65,13 +67,12 @@ const navigation = [
 ];
 
 
-type SupportedLang = "en" | "pt-br";
+type SupportedLang = Lang;
 
 const publishedGuides = await getCollection(
   "guides",
   ({ data }) =>
-    !data.draft &&
-    (data.lang === "en" || data.lang === "pt-br")
+    !data.draft
 );
 
 function getGuideUrl(guide: CollectionEntry<"guides">): string {
@@ -112,13 +113,12 @@ function getLanguageTarget(targetLang: SupportedLang): string {
   }
 
   // Guides listing: preserve the page type.
-  if (
-    normalizedPath === "/guides/" ||
-    normalizedPath === "/pt-br/guides/"
-  ) {
+  if (normalizedPath === localePrefix(lang)+"/guides/") {
     return `${prefix}/guides/`;
   }
 
+  // Non-guide modules only have EN/PT-BR routes. New locales open their home.
+  if (!isFullLocale(targetLang)) return prefix+"/";
   // New curated collections: preserve their listing type when switching languages.
   if (normalizedPath.startsWith("/events/") || normalizedPath.startsWith("/pt-br/events/")) {
     return `${prefix}/events/`;
@@ -206,9 +206,11 @@ import {
         <select id="site-language" class="language-select header-control-select"
           aria-label={lang === "pt-br" ? "Selecionar idioma" : "Select language"}
           data-target-en={getLanguageTarget("en")}
-          data-target-pt-br={getLanguageTarget("pt-br")}>
+          data-target-pt-br={getLanguageTarget("pt-br")}
+          data-language-targets={JSON.stringify(Object.fromEntries(localeIds.map(id=>[id,getLanguageTarget(id)])))}>
           <option value="en" selected={lang === "en"}>English</option>
           <option value="pt-br" selected={lang === "pt-br"}>Português (Brasil)</option>
+          {localeIds.filter(id=>!isFullLocale(id)).map(id=> <option value={id} selected={lang===id}>{localeNames[id]}</option>)}
         </select>
       </div>
     </div>
@@ -562,16 +564,8 @@ import {
   languageSelect?.addEventListener("change", () => {
     const selectedLanguage = languageSelect.value;
 
-    if (
-      selectedLanguage !== "en" &&
-      selectedLanguage !== "pt-br"
-    ) {
-      return;
-    }
-
-    const destination = selectedLanguage === "en"
-      ? languageSelect.dataset.targetEn
-      : languageSelect.dataset.targetPtBr;
+    const targets = JSON.parse(languageSelect.dataset.languageTargets || "{}");
+    const destination = Object.hasOwn(targets, selectedLanguage) ? targets[selectedLanguage] : null;
 
     if (!destination) {
       return;
@@ -589,13 +583,9 @@ import {
 
     const currentPath = window.location.pathname;
 
-    const isHome =
-      currentPath === "/" ||
-      currentPath === "/pt-br/";
-
-    const isGuideListing =
-      currentPath === "/guides/" ||
-      currentPath === "/pt-br/guides/";
+    const localPath = currentPath.replace(/^\/(?:pt-br|fr|de|es|ko|zh-hans|ja)(?=\/)/, "");
+    const isHome = localPath === "/";
+    const isGuideListing = localPath === "/guides/";
     const isMonsterCatalog =
       currentPath === "/monsters/" ||
       currentPath === "/pt-br/monsters/";

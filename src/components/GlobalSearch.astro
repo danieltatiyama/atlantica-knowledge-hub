@@ -1,13 +1,15 @@
 ---
 import {getCollection} from "astro:content";
-interface Props {lang:"en"|"pt-br";}
+import type { Lang } from "../i18n/ui";
+import { localePrefix } from "../i18n/locales.mjs";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
 const pt=lang==="pt-br";
 const guides=(await getCollection("guides",({data})=>!data.draft&&data.lang===lang))
   .map(guide=>({
     title:guide.data.title,
     description:guide.data.description,
-    href:(pt?"/pt-br":"")+"/guides/"+guide.id.replace(/^[^/]+\//,"")+"/",
+    href:localePrefix(lang)+"/guides/"+guide.id.replace(/^[^/]+\//,"")+"/",
   }));
 const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
 ---
