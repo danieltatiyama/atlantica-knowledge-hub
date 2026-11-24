@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { complementaryText } from "../i18n/complementary-ui.mjs";
+import { localePrefix, localeTag, localizedPaths, legacyLocale, equipmentProfilePath } from "../i18n/locales.mjs";
 import research from "../data/legendary-enhancement-research.json";
 import { getLegendaryResearchRows } from "../data/legendary-enhancement-research.mjs";
 import legendaryReference from "../data/legendary-eligibility-reference.json";
@@ -9,11 +11,10 @@ import {EQUIPMENT_ITEM_NAMES_EN} from "../data/equipment-item-names-en";
 import clientLegendary from "../data/legendary-client-name-candidates.json";
 import {assertLegendaryClientCandidates} from "../data/legendary-client-name-candidates-gate.mjs";
 
-interface Props { lang:"en"|"pt-br"; }
+interface Props { lang: string; }
 const { lang } = Astro.props;
-const pt=lang==="pt-br";
-const prefix=pt?"/pt-br":"";
-const title=pt?"Encantamento lendário (L)":"Legendary enhancement (L)";
+const prefix=localePrefix(lang);
+const title=complementaryText(lang,"Legendary enhancement (L)","Encantamento lendário (L)");
 const examples=getLegendaryResearchRows(research);
 const clientCandidates=assertLegendaryClientCandidates(clientLegendary,legendaryReference);
 const eligibility=crossReferenceLegendaryNames(legendaryReference,EQUIPMENT_ITEM_NAMES_EN)
@@ -25,7 +26,7 @@ const matchCounts={
   ambiguous:clientCandidates.filter(item=>item.clientMatchStatus==="ambiguous-client-identity").length,
   missing:clientCandidates.filter(item=>item.clientMatchStatus==="not-found-in-miner").length,
 };
-const format=(n:number)=>new Intl.NumberFormat(pt?"pt-BR":"en-US").format(n);
+const format=(n:number)=>new Intl.NumberFormat(localeTag(lang)).format(n);
 const stats=[
  {key:"attackMin",pt:"Ataque mínimo",en:"Min. attack"},
  {key:"attackMax",pt:"Ataque máximo",en:"Max. attack"},
@@ -37,54 +38,40 @@ const stats=[
 ] as const;
 ---
 <BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
- description={pt
-   ?"Comparação histórica de upgrades +0 a +10 e L, com previsões claramente separadas de valores documentados."
-   :"Historical +0 through +10 and Legendary (L) progression, separating documented stats from predictions."}
- alternatePaths={{en:"/items/legendary/", "pt-br":"/pt-br/items/legendary/"}}>
+ description={complementaryText(lang,"Historical +0 through +10 and Legendary (L) progression, separating documented stats from predictions.","Comparação histórica de upgrades +0 a +10 e L, com previsões claramente separadas de valores documentados.")}
+ alternatePaths={localizedPaths("/items/legendary/")}>
  <main class="container">
-  <nav class="breadcrumbs"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
+  <nav class="breadcrumbs"><a href={prefix+"/items/"}>{complementaryText(lang,"← Equipment catalog","← Catálogo de equipamentos")}</a></nav>
   <header>
-    <p class="eyebrow">{pt?"PESQUISA DE EQUIPAMENTOS":"EQUIPMENT RESEARCH"}</p>
+    <p class="eyebrow">{complementaryText(lang,"EQUIPMENT RESEARCH","PESQUISA DE EQUIPAMENTOS")}</p>
     <h1>{title}</h1>
-    <p class="lead">{pt
-      ?"A graduação L (Legendary, equivalente a +11) existe somente para equipamentos elegíveis. Compare valores publicados em fontes comunitárias com o modelo histórico."
-      :"L (Legendary, equivalent to +11) exists only for eligible equipment. Compare community-documented figures with the historical model."}</p>
-    <p class="source-disclaimer">{pt
-      ?"As tabelas de progressão abaixo vêm de fontes comunitárias históricas. Já as correspondências de nomes/IDs mais adiante vêm dos arquivos do cliente Global (Miner snapshot 1). Um ID candidato não comprova que a versão atual permite enhancement até L."
-      :"The progression tables below come from historical community sources. Later, separate client name/ID candidates come from Global game files (Miner snapshot 1). A matching item ID is not proof that its current version can be enhanced to L."}</p>
+    <p class="lead">{complementaryText(lang,"L (Legendary, equivalent to +11) exists only for eligible equipment. Compare community-documented figures with the historical model.","A graduação L (Legendary, equivalente a +11) existe somente para equipamentos elegíveis. Compare valores publicados em fontes comunitárias com o modelo histórico.")}</p>
+    <p class="source-disclaimer">{complementaryText(lang,"The progression tables below come from historical community sources. Later, separate client name/ID candidates come from Global game files (Miner snapshot 1). A matching item ID is not proof that its current version can be enhanced to L.","As tabelas de progressão abaixo vêm de fontes comunitárias históricas. Já as correspondências de nomes/IDs mais adiante vêm dos arquivos do cliente Global (Miner snapshot 1). Um ID candidato não comprova que a versão atual permite enhancement até L.")}</p>
   </header>
   <section>
-    <h2>{pt?"Modelo de progressão":"Progression model"}</h2>
+    <h2>{complementaryText(lang,"Progression model","Modelo de progressão")}</h2>
     <div class="formula">
-      <div><span>{pt?"+10 sobre +0":"+10 vs +0"}</span><strong>4,0×</strong></div>
+      <div><span>{complementaryText(lang,"+10 vs +0","+10 sobre +0")}</span><strong>4,0×</strong></div>
       <div><span>L vs +0</span><strong>4,3×</strong></div>
-      <div><span>{pt?"L vs +10":"L vs +10"}</span><strong>+7,5%</strong></div>
+      <div><span>{complementaryText(lang,"L vs +10","L vs +10")}</span><strong>+7,5%</strong></div>
     </div>
-    <p class="note">{pt
-      ?"Estimativa para ataque, força, destreza, inteligência, vitalidade e defesa física: piso(valor +0 × multiplicador). O modelo usa aritmética inteira para evitar erros de arredondamento. O bônus adicional de 7,5% compara os multiplicadores antes do truncamento."
-      :"Estimate for attack, Strength, Dexterity, Intelligence, Vitality and physical Defense: floor(base +0 × multiplier). Integer arithmetic avoids floating-point rounding errors. The additional 7.5% compares multipliers before truncation."}</p>
-    <p class="note">{pt
-      ?"Bônus especiais, chance de ativação, Magic Defense fixa, evasão, durabilidade, Atlas Ore, habilidades e probabilidades de sucesso não obedecem necessariamente a esta fórmula."
-      :"Special bonuses, proc rates, fixed Magic Defense, evasion, durability, Atlas Ore, skills and enhancement success rates are not covered by this formula."}</p>
+    <p class="note">{complementaryText(lang,"Estimate for attack, Strength, Dexterity, Intelligence, Vitality and physical Defense: floor(base +0 × multiplier). Integer arithmetic avoids floating-point rounding errors. The additional 7.5% compares multipliers before truncation.","Estimativa para ataque, força, destreza, inteligência, vitalidade e defesa física: piso(valor +0 × multiplicador). O modelo usa aritmética inteira para evitar erros de arredondamento. O bônus adicional de 7,5% compara os multiplicadores antes do truncamento.")}</p>
+    <p class="note">{complementaryText(lang,"Special bonuses, proc rates, fixed Magic Defense, evasion, durability, Atlas Ore, skills and enhancement success rates are not covered by this formula.","Bônus especiais, chance de ativação, Magic Defense fixa, evasão, durabilidade, Atlas Ore, habilidades e probabilidades de sucesso não obedecem necessariamente a esta fórmula.")}</p>
   </section>
   <section id="legendary-eligibility" class="legendary-reference">
-    <h2>{pt?"Lista inicial de equipamentos elegíveis a L":"Initial list of L-eligible equipment"}</h2>
-    <p class="note">{pt
-      ?"47 entradas em 12 categorias da lista histórica do Fandom, cruzadas com todos os 23.586 IDs do Miner (snapshot 1). Os IDs mostrados são candidatos por correspondência exata de nome em inglês. Elegibilidade real a L, fabricação, origem por evento e disponibilidade atual não foram comprovadas."
-      :"47 entries in 12 groups from the historical Fandom list, matched against all 23,586 Miner item IDs (snapshot 1). Shown IDs are exact-English-name source candidates. Actual L eligibility, crafting, event origin and current availability are not established."}</p>
+    <h2>{complementaryText(lang,"Initial list of L-eligible equipment","Lista inicial de equipamentos elegíveis a L")}</h2>
+    <p class="note">{complementaryText(lang,"47 entries in 12 groups from the historical Fandom list, matched against all 23,586 Miner item IDs (snapshot 1). Shown IDs are exact-English-name source candidates. Actual L eligibility, crafting, event origin and current availability are not established.","47 entradas em 12 categorias da lista histórica do Fandom, cruzadas com todos os 23.586 IDs do Miner (snapshot 1). Os IDs mostrados são candidatos por correspondência exata de nome em inglês. Elegibilidade real a L, fabricação, origem por evento e disponibilidade atual não foram comprovadas.")}</p>
     <p class="sources"><a href={LEGENDARY_REFERENCE_URL} target="_blank" rel="noopener noreferrer">
-      {pt?"Fonte: Legendary Weapons — Atlantica Wiki (Fandom)":"Source: Legendary Weapons — Atlantica Wiki (Fandom)"}</a></p>
-    <p class="note">{pt
-      ? `${matchCounts.unique} correspondências únicas de nome, ${matchCounts.ambiguous} nomes com múltiplos IDs e ${matchCounts.missing} sem correspondência. Nível e grade do cliente são campos brutos, não necessariamente o requisito exibido no jogo. Nomes divergentes continuam para revisão.`
-      : `${matchCounts.unique} unique name matches, ${matchCounts.ambiguous} names with multiple item IDs and ${matchCounts.missing} unmatched. Client level and grade are raw fields, not necessarily the live requirement. Divergent source names remain unresolved.`}</p>
+      {complementaryText(lang,"Source: Legendary Weapons — Atlantica Wiki (Fandom)","Fonte: Legendary Weapons — Atlantica Wiki (Fandom)")}</a></p>
+    <p class="note">{complementaryText(lang,"{unique} unique name matches, {ambiguous} names with multiple item IDs and {missing} unmatched. Client level and grade are raw fields, not necessarily the live requirement. Divergent source names remain unresolved.","{unique} correspondências únicas de nome, {ambiguous} nomes com múltiplos IDs e {missing} sem correspondência. Nível e grade do cliente são campos brutos, não necessariamente o requisito exibido no jogo. Nomes divergentes continuam para revisão.",matchCounts)}</p>
     <div class="legendary-groups">
       {categoryGroups.map(group=><details class="legendary-group">
         <summary>{group.category} <span>({group.items.length})</span></summary>
         <div class="table-scroll"><table>
           <thead><tr>
-            <th>{pt?"Equipamento":"Equipment"}</th>
-            <th>{pt?"Nível na fonte":"Listed level"}</th>
-            <th>{pt?"IDs candidatos do cliente":"Candidate client IDs"}</th>
+            <th>{complementaryText(lang,"Equipment","Equipamento")}</th>
+            <th>{complementaryText(lang,"Listed level","Nível na fonte")}</th>
+            <th>{complementaryText(lang,"Candidate client IDs","IDs candidatos do cliente")}</th>
           </tr></thead>
           <tbody>{group.items.map(item=><tr>
             <td>{item.nameEn}</td>
@@ -92,19 +79,19 @@ const stats=[
             <td>{item.clientSource.clientCandidates.length
               ? <div class="client-candidates">{item.clientSource.clientCandidates.map(candidate=>
                 <div><code>{candidate.itemId}</code> <span class="client-raw">
-                  {pt?"Nível bruto":"Raw Lv"} {candidate.clientLevelRaw} · {candidate.clientGradeRaw}
+                  {complementaryText(lang,"Raw Lv","Nível bruto")} {candidate.clientLevelRaw} · {candidate.clientGradeRaw}
                 </span></div>)}
                 {item.clientSource.clientMatchStatus==="ambiguous-client-identity" &&
-                  <small class="unresolved">{pt?"IDs diferentes — requer revisão":"Different IDs — review required"}</small>}
+                  <small class="unresolved">{complementaryText(lang,"Different IDs — review required","IDs diferentes — requer revisão")}</small>}
                 </div>
-              : <span class="unresolved">{pt?"Sem correspondência no Miner":"No Miner name match"}</span>}</td>
+              : <span class="unresolved">{complementaryText(lang,"No Miner name match","Sem correspondência no Miner")}</span>}</td>
           </tr>)}</tbody>
         </table></div>
       </details>)}
     </div>
   </section>
   <section id="historical-evidence">
-    <h2>{pt?"Equipamentos analisados":"Equipment studied"}</h2>
+    <h2>{complementaryText(lang,"Equipment studied","Equipamentos analisados")}</h2>
     {examples.map(item=><article class="evidence-item">
       <div class="item-heading">
         <div>
@@ -113,58 +100,54 @@ const stats=[
         </div>
         <span class={item.legendaryBasis==="historical-table"?"observed":"pending"}>
           {item.legendaryBasis==="historical-table"
-            ?(pt?"L documentado":"L documented")
-            :(pt?"L estimado":"L estimated")}
+            ?(complementaryText(lang,"L documented","L documentado"))
+            :(complementaryText(lang,"L estimated","L estimado"))}
         </span>
       </div>
       <div class="table-scroll"><table>
-        <thead><tr><th>{pt?"Atributo":"Stat"}</th><th>+0</th><th>+10</th><th>L</th></tr></thead>
+        <thead><tr><th>{complementaryText(lang,"Stat","Atributo")}</th><th>+0</th><th>+10</th><th>L</th></tr></thead>
         <tbody>{stats.filter(field=>field.key in item.base).map(field=>
           <tr>
-            <th scope="row">{pt?field.pt:field.en}</th>
+            <th scope="row">{complementaryText(lang,field.en,field.pt)}</th>
             <td>{format(item.base[field.key])}</td>
-            <td>{format(item.plusTen[field.key])} <small>({pt?"calculado":"calculated"})</small></td>
+            <td>{format(item.plusTen[field.key])} <small>({complementaryText(lang,"calculated","calculado")})</small></td>
             <td class="legendary-value">{format(item.legendary[field.key])}
               <small>({item.legendaryBasis==="historical-table"
-                ? (pt?"fonte histórica":"historical source")
-                : (pt?"projeção":"projection")})</small></td>
+                ? (complementaryText(lang,"historical source","fonte histórica"))
+                : (complementaryText(lang,"projection","projeção"))})</small></td>
           </tr>
         )}</tbody>
       </table></div>
       {item.unchangedAtLegendary?.magicDefense !== undefined &&
-        <p class="note">{pt?"Defesa Mágica fixa":"Fixed Magic Defense"}:
+        <p class="note">{complementaryText(lang,"Fixed Magic Defense","Defesa Mágica fixa")}:
           <strong> {format(item.unchangedAtLegendary.magicDefense)}</strong> —
-          {pt?" não aplicar 4,3×":" do not apply 4.3×"}</p>}
-      <p class="note">{pt?item.notePt:item.noteEn}</p>
+          {complementaryText(lang," do not apply 4.3×"," não aplicar 4,3×")}</p>}
+      <p class="note">{complementaryText(lang,item.noteEn,item.notePt)}</p>
       {item.nameEn === "Dell'arte's Ambition" && <p class="detail-link">
-        <a href={prefix+"/items/legendary/dell-artes-ambition/"}>{pt
-          ? "Ver ficha detalhada do L equipado: atributos, Star Stones e efeitos"
-          : "View detailed equipped L profile: stats, Star Stones and special effects"}</a>
+        <a href={prefix+"/items/legendary/dell-artes-ambition/"}>{complementaryText(lang,"View detailed equipped L profile: stats, Star Stones and special effects","Ver ficha detalhada do L equipado: atributos, Star Stones e efeitos")}</a>
       </p>}
       <p class="sources">
         <a href={item.source.url} target="_blank" rel="noopener noreferrer">
-          {pt?"Fonte da tabela":"Table source"}: {item.source.label}
+          {complementaryText(lang,"Table source","Fonte da tabela")}: {item.source.label}
         </a>
         {item.eligibilitySource && <>
           {" · "}<a href={item.eligibilitySource.url} target="_blank" rel="noopener noreferrer">
-            {pt?"Lista de elegibilidade":"Eligibility list"}</a>
+            {complementaryText(lang,"Eligibility list","Lista de elegibilidade")}</a>
         </>}
       </p>
     </article>)}
   </section>
   <section id="calculator">
-    <h2>{pt?"Calculadora do multiplicador histórico":"Historical multiplier calculator"}</h2>
-    <p class="note">{pt
-      ?"Insira o valor de +0 de um atributo básico. Ative L somente após confirmar que o item é elegível; a calculadora não verifica a elegibilidade."
-      :"Enter the +0 value of a basic stat. Enable L only after confirming the item is eligible; the calculator cannot check eligibility."}</p>
+    <h2>{complementaryText(lang,"Historical multiplier calculator","Calculadora do multiplicador histórico")}</h2>
+    <p class="note">{complementaryText(lang,"Enter the +0 value of a basic stat. Enable L only after confirming the item is eligible; the calculator cannot check eligibility.","Insira o valor de +0 de um atributo básico. Ative L somente após confirmar que o item é elegível; a calculadora não verifica a elegibilidade.")}</p>
     <form id="legendary-form">
       <div class="form-grid">
-        <label>{pt?"Valor +0":"Base +0 stat"}
+        <label>{complementaryText(lang,"Base +0 stat","Valor +0")}
           <input id="legendary-base" name="base" inputmode="numeric" type="number" min="0" max="1000000000000" step="1" value="1350"/>
         </label>
         <label class="checkbox">
           <input id="legendary-eligible" type="checkbox" />
-          {pt?"Confirmo que este equipamento é elegível a L":"I have confirmed this equipment is L-eligible"}
+          {complementaryText(lang,"I have confirmed this equipment is L-eligible","Confirmo que este equipamento é elegível a L")}
         </label>
       </div>
       <div class="calc-values" aria-live="polite">
@@ -172,13 +155,15 @@ const stats=[
         <div><span>+10 · 4,0×</span><strong id="legendary-v10">5.400</strong></div>
         <div><span>L · 4,3×</span><strong id="legendary-vL">—</strong></div>
       </div>
-      <p id="legendary-calc-note" class="note">{pt?"L não habilitado.":"L disabled."}</p>
+      <p id="legendary-calc-note" class="note">{complementaryText(lang,"L disabled.","L não habilitado.")}</p>
     </form>
   </section>
  </main>
 </BaseLayout>
 <script>
   import { projectClassicStat } from "../data/equipment-enchant-projection.mjs";
+  import { complementaryText } from "../i18n/complementary-ui.mjs";
+  import { browserLocale, localeTag } from "../i18n/locales.mjs";
   const base=document.querySelector<HTMLInputElement>("#legendary-base");
   const eligible=document.querySelector<HTMLInputElement>("#legendary-eligible");
   const at0=document.querySelector<HTMLElement>("#legendary-v0");
@@ -186,8 +171,8 @@ const stats=[
   const atL=document.querySelector<HTMLElement>("#legendary-vL");
   const status=document.querySelector<HTMLElement>("#legendary-calc-note");
   const pageLang=document.documentElement.lang;
-  const pt=pageLang.toLowerCase().startsWith("pt");
-  const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+  const lang=browserLocale(pageLang)??"en";
+  const fmt=new Intl.NumberFormat(localeTag(lang));
   function render(){
     const value=Number(base?.value);
     const valid=base && base.value.trim()!=="" && Number.isSafeInteger(value) &&
@@ -197,10 +182,10 @@ const stats=[
     if(atL)atL.textContent=valid && eligible?.checked
       ?fmt.format(projectClassicStat(value,"L")):"—";
     if(status)status.textContent=!valid
-      ?(pt?"Informe um número inteiro válido.":"Enter a valid nonnegative integer.")
+      ?(complementaryText(lang,"Enter a valid nonnegative integer.","Informe um número inteiro válido."))
       :eligible?.checked
-        ?(pt?"Estimativa matemática, não uma leitura do jogo.":"Mathematical estimate, not an in-game reading.")
-        :(pt?"L não habilitado: confirme a elegibilidade antes de calcular.":"L disabled: verify eligibility before calculating.");
+        ?(complementaryText(lang,"Mathematical estimate, not an in-game reading.","Estimativa matemática, não uma leitura do jogo."))
+        :(complementaryText(lang,"L disabled: verify eligibility before calculating.","L não habilitado: confirme a elegibilidade antes de calcular."));
   }
   base?.addEventListener("input",render);
   eligible?.addEventListener("change",render);
