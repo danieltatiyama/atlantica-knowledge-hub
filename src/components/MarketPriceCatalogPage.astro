@@ -1,0 +1,243 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+interface Props {lang:"en"|"pt-br";}
+const {lang}=Astro.props;
+const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+---
+<BaseLayout lang={lang}
+ title={(pt?"Catálogo de preços do Market":"Market price catalog")+" | Atlantica Knowledge Hub"}
+ alternatePaths={{en:"/tools/market-prices/","pt-br":"/pt-br/tools/market-prices/"}}>
+ <main class="mpc-page" id="market-price-catalog" data-lang={lang}>
+  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <p class="mpc-eyebrow">ATLANTICA GLOBAL / NA · ITEM PRICES</p>
+  <h1>{pt?"Catálogo de preços do Market":"Market price catalog"}</h1>
+  <p class="mpc-intro">{pt
+   ?"Explore 421 preços de referência extraídos do cliente do jogo. As 128 coincidências relatadas por jogador e os 293 preços conciliados com uma fonte histórica têm evidências diferentes. Estes valores não são um feed ao vivo do Market."
+   :"Explore 421 reference prices extracted from the game client. The 128 player-reported matches and 293 historically crosschecked prices have different evidence sources. These are not a live Market feed."}</p>
+  <div class="mpc-summary" aria-label={pt?"Cobertura do catálogo":"Catalog coverage"}>
+   <div><strong>421</strong><span>{pt?"Preços do cliente":"Client prices"}</span></div>
+   <div><strong>293</strong><span>{pt?"Referências históricas coincidentes":"Historical matches"}</span></div>
+   <div><strong>128</strong><span>{pt?"Coincidências relatadas no jogo":"Player-reported matches"}</span></div>
+  </div>
+  <section class="mpc-panel">
+   <div class="mpc-heading"><h2>{pt?"Pesquisar itens":"Find item prices"}</h2>
+    <span>{pt?"Valores por unidade · Gold":"Per-unit values · Gold"}</span></div>
+   <div class="mpc-filters">
+    <label>{pt?"Pesquisar nome, categoria ou ItemID":"Search name, category or ItemID"}
+     <input type="search" id="mpc-search" autocomplete="off" placeholder={pt?"Nome ou ItemID…":"Name or ItemID…"} />
+    </label>
+    <label>{pt?"Categoria":"Category"}
+     <select id="mpc-category"><option value="all">{pt?"Todas":"All"}</option></select>
+    </label>
+    <label>{pt?"Tipo de evidência":"Evidence"}
+     <select id="mpc-evidence">
+      <option value="all">{pt?"Todas":"All"}</option>
+      <option value="historical-crosscheck">{pt?"Histórico 2025":"Historical 2025"}</option>
+      <option value="additional-candidate">{pt?"Relato do jogador":"Player report"}</option>
+     </select>
+    </label>
+    <label>{pt?"Ordenar por":"Sort by"}
+     <select id="mpc-sort">
+      <option value="name">{pt?"Nome A–Z":"Name A–Z"}</option>
+      <option value="price-asc">{pt?"Menor preço":"Lowest price"}</option>
+      <option value="price-desc">{pt?"Maior preço":"Highest price"}</option>
+      <option value="id">ItemID</option>
+     </select>
+    </label>
+   </div>
+   <p id="mpc-status" class="mpc-muted" role="status">{pt?"Carregando preços…":"Loading prices…"}</p>
+   <div class="mpc-table-wrap" role="region" tabindex="0"
+    aria-label={pt?"Tabela de preços pesquisável":"Searchable price table"}>
+    <table class="mpc-table">
+     <thead><tr>
+      <th>{pt?"Item":"Item"}</th><th>{pt?"Categoria":"Category"}</th>
+      <th>{pt?"Preço por unidade (Gold)":"Unit price (Gold)"}</th>
+      <th>{pt?"Evidência":"Evidence"}</th><th>{pt?"Detalhes":"Details"}</th>
+     </tr></thead>
+     <tbody id="mpc-rows"></tbody>
+    </table>
+   </div>
+   <div class="mpc-pagination">
+    <button type="button" id="mpc-prev">{pt?"Anterior":"Previous"}</button>
+    <span id="mpc-range" aria-live="polite"></span>
+    <button type="button" id="mpc-next">{pt?"Próxima":"Next"}</button>
+   </div>
+  </section>
+  <details class="mpc-methodology">
+   <summary>{pt?"Sobre os preços e como foram confirmados":"About these prices and their evidence"}</summary>
+   <div class="mpc-methodology-body">
+    <p>{pt
+     ?"A fonte primária é NPCTradeItem_ENG.ndt, extraída de uma instalação do cliente em 23/11/2026. A comparação histórica Jana4U 2025 coincide com 293 ItemIDs e seus preços. Os outros 128 foram informados como coincidentes por um jogador em 23/11/2026, em um único relato, sem capturas individuais."
+     :"The primary source is NPCTradeItem_ENG.ndt, extracted from an installed client on November 23, 2026. A historical Jana4U 2025 comparison matches 293 ItemIDs and their prices. The other 128 were reported as matching in a single player statement on November 23, 2026, without per-item screenshots."}</p>
+    <p>{pt
+     ?"Os dados do cliente NÃO comprovam que todas as ofertas fixas estejam disponíveis agora, nem que estes 421 itens representem todo o catálogo do Market. Os 231 itens de housing foram excluídos desta consulta. Os valores originais e a calculadora de crafting não foram alterados."
+     :"Client data do NOT prove that every fixed listing is available now or that these 421 entries exhaust the Market. The 231 housing entries are excluded. Original prices and the crafting calculator were not modified."}</p>
+    <p><a href={prefix+"/tools/market-prices/research/"}>{pt
+     ?"Abrir pesquisa técnica e minhas observações locais"
+     :"Open source research and my local observations"}</a></p>
+   </div>
+  </details>
+ </main>
+</BaseLayout>
+<script>
+ import {parseClientMarketPriceCatalog,filterClientMarketCatalog,clientItemDetailUrl}
+  from "../data/market-price-catalog.mjs";
+ import {parseMarketPriceReviewQueue,parsePlayerMarketAttestation}
+  from "../data/market-price-review.mjs";
+ type CatalogItem={itemId:string;name:string;category:string;referenceGold:string;
+  sourceLine:number;comparisonClass:string};
+ const root=document.getElementById("market-price-catalog");
+ if(root){
+  const pt=root.dataset.lang==="pt-br",locale=pt?"pt-BR":"en-US";
+  const $=(id:string)=>document.getElementById(id)!;
+  const search=$("mpc-search") as HTMLInputElement;
+  const category=$("mpc-category") as HTMLSelectElement;
+  const evidence=$("mpc-evidence") as HTMLSelectElement;
+  const sort=$("mpc-sort") as HTMLSelectElement;
+  const tableBody=$("mpc-rows"),status=$("mpc-status"),range=$("mpc-range");
+  const prev=$("mpc-prev") as HTMLButtonElement;
+  const next=$("mpc-next") as HTMLButtonElement;
+  const pageSize=50;
+  let catalog:CatalogItem[]=[];
+  let playerReport=new Set<string>();
+  let page=0;
+  const node=(tag:string,value?:string)=>{
+   const el=document.createElement(tag);
+   if(value!==undefined)el.textContent=value;
+   return el;
+  };
+  function draw(){
+   if(!catalog.length)return;
+   const filter={
+    query:search.value,category:category.value,evidence:evidence.value,
+    sort:sort.value,offset:page*pageSize,limit:pageSize,
+   };
+   let found=filterClientMarketCatalog(catalog,filter);
+   if(page&&page*pageSize>=found.total){
+    page=0;filter.offset=0;found=filterClientMarketCatalog(catalog,filter);
+   }
+   tableBody.replaceChildren();
+   const labels=pt?["Item","Categoria","Preço (Gold)","Evidência","Detalhes"]:
+    ["Item","Category","Price (Gold)","Evidence","Details"];
+   for(const item of found.rows){
+    const href=clientItemDetailUrl(item.itemId,pt?"pt-br":"en");
+    const tr=node("tr"),itemCell=node("td");
+    const itemLink=node("a",item.name) as HTMLAnchorElement;
+    itemLink.href=href;
+    itemCell.append(itemLink,node("small","#"+item.itemId));
+    const source=playerReport.has(item.itemId)?
+     (pt?"Coincide (relato do jogador)":"Match (player report)"):
+     item.comparisonClass==="historical-crosscheck"?
+      (pt?"Coincide com histórico":"Historical match"):
+      (pt?"Referência do cliente":"Client reference");
+    const detailCell=node("td"),link=node("a",pt?"Ver item":"View item") as HTMLAnchorElement;
+    link.href=href;detailCell.append(link);
+    const cells=[itemCell,node("td",item.category),
+     node("td",BigInt(item.referenceGold).toLocaleString(locale)),
+     node("td",source),detailCell];
+    cells.forEach((cell,i)=>{cell.dataset.label=labels[i];tr.append(cell);});
+    tableBody.append(tr);
+   }
+   const end=Math.min((page+1)*pageSize,found.total),start=found.total?page*pageSize+1:0;
+   status.textContent=pt?"Itens encontrados: "+found.total+" de 421":
+    "Found "+found.total+" of 421 items";
+   range.textContent=start+"–"+end+" / "+found.total;
+   prev.disabled=page===0;next.disabled=end>=found.total;
+  }
+  for(const input of [search,category,evidence,sort]){
+   input.addEventListener(input===search?"input":"change",()=>{page=0;draw();});
+  }
+  prev.addEventListener("click",()=>{page=Math.max(0,page-1);draw();});
+  next.addEventListener("click",()=>{page++;draw();});
+  async function start(){
+   try{
+    const [catalogResponse,queueResponse,reportResponse]=await Promise.all([
+     fetch("/data/client-npc-trade-prices/catalog.json"),
+     fetch("/data/client-npc-trade-prices/review-queue.json"),
+     fetch("/data/client-npc-trade-prices/player-report-2026-11-23.json"),
+    ]);
+    if(!catalogResponse.ok||!queueResponse.ok)throw Error("Price references unavailable");
+    catalog=parseClientMarketPriceCatalog(await catalogResponse.json()) as CatalogItem[];
+    const candidates=parseMarketPriceReviewQueue(await queueResponse.json());
+    const byId=new Map(candidates.map(c=>[c.itemId,c]));
+    const catalogCandidateIds=new Set(catalog.filter(x=>x.comparisonClass==="additional-candidate")
+     .map(x=>x.itemId));
+    if(catalogCandidateIds.size!==128||[...catalogCandidateIds].some(id=>!byId.has(id)))
+     throw Error("Catalog and source candidates disagree");
+    if(reportResponse.ok){
+     try{playerReport=parsePlayerMarketAttestation(await reportResponse.json(),byId);}
+     catch{playerReport=new Set<string>();}
+    }
+    const categories=[...new Set(catalog.map(x=>x.category))]
+     .sort((a,b)=>a.localeCompare(b,"en"));
+    for(const value of categories){
+     const option=node("option",value) as HTMLOptionElement;
+     option.value=value;category.append(option);
+    }
+    draw();
+   }catch{
+    status.textContent=pt?"Não foi possível carregar o catálogo de preços.":
+     "Could not load the price catalog.";
+   }
+  }
+  void start();
+ }
+</script>
+<style is:global>
+ .mpc-page{width:min(var(--content-width),94%);margin:0 auto;padding:28px 0 80px;color:var(--color-text)}
+ .mpc-page h1{font-size:clamp(1.8rem,3.5vw,2.6rem);margin:12px 0}
+ .mpc-page h2{font-size:1.38rem;color:var(--color-gold-light);margin:0}
+ .mpc-eyebrow{font-size:.77rem;letter-spacing:.13em;color:var(--color-accent)}
+ .mpc-intro{max-width:910px;line-height:1.55}
+ .mpc-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:25px 0 20px}
+ .mpc-summary>div{border:1px solid var(--color-border);background:var(--color-surface);
+  border-radius:7px;padding:16px;display:grid;gap:5px}
+ .mpc-summary strong{font-size:clamp(1.45rem,2.5vw,1.9rem);color:var(--color-gold-light)}
+ .mpc-summary span,.mpc-muted{color:var(--color-text-muted);font-size:.9rem}
+ .mpc-panel,.mpc-methodology{border:1px solid var(--color-border);border-radius:7px;
+  background:var(--color-surface);padding:clamp(12px,2vw,22px);margin:18px 0}
+ .mpc-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+ .mpc-heading span{font-size:.85rem;color:var(--color-text-muted)}
+ .mpc-filters{display:grid;grid-template-columns:2fr repeat(3,minmax(120px,1fr));
+  align-items:end;gap:12px;margin:20px 0 15px}
+ .mpc-filters label{display:grid;gap:6px;font-size:.86rem;min-width:0}
+ .mpc-page input,.mpc-page select{background:var(--color-background);color:var(--color-text);
+  border:1px solid var(--color-border);border-radius:5px;padding:9px;width:100%;min-height:42px;font:inherit}
+ .mpc-page :is(input,select,button,a):focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+ .mpc-table-wrap{overflow-x:auto;max-width:100%;border:1px solid var(--color-border);border-radius:5px}
+ .mpc-table{width:100%;min-width:640px;border-collapse:collapse;font-size:.92rem}
+ .mpc-table th{padding:12px 10px;text-align:left;background:var(--color-background);
+  color:var(--color-text);border-bottom:2px solid var(--color-border)}
+ .mpc-table td{padding:10px;border-bottom:1px solid var(--color-border);vertical-align:middle}
+ .mpc-table tbody tr:nth-child(even){background:var(--color-background)}
+ .mpc-table td:first-child a{font-weight:600;color:var(--color-gold-light);text-decoration:none}
+ .mpc-table td:first-child a:hover{text-decoration:underline}
+ .mpc-table td:first-child small{display:block;color:var(--color-text-muted);font-size:.78rem;margin-top:3px}
+ .mpc-table td:nth-child(3){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+ .mpc-table td:nth-child(4){color:var(--color-text-muted);font-size:.86rem}
+ .mpc-pagination{display:flex;gap:14px;justify-content:center;align-items:center;margin:18px 0 0}
+ .mpc-page button{min-height:39px;padding:7px 13px;font:inherit;cursor:pointer;
+  border-radius:5px;border:1px solid var(--color-border);background:var(--color-background);color:var(--color-text)}
+ .mpc-page button:hover{border-color:var(--color-accent)}
+ .mpc-page button:disabled{cursor:default;opacity:.48}
+ .mpc-methodology{padding:0;margin-top:24px}
+ .mpc-methodology summary{cursor:pointer;padding:17px 20px;color:var(--color-gold-light);font-weight:600}
+ .mpc-methodology-body{padding:0 20px 17px;line-height:1.6;color:var(--color-text-muted)}
+ .mpc-methodology-body a{color:var(--color-gold-light)}
+ @media(max-width:950px){.mpc-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+ @media(max-width:650px){
+  .mpc-page{padding-top:17px}.mpc-summary{gap:6px}
+  .mpc-summary>div{padding:10px 7px}.mpc-summary span{font-size:.72rem}
+  .mpc-filters{grid-template-columns:1fr}
+  .mpc-table{min-width:0}
+  .mpc-table thead{display:none}
+  .mpc-table tbody tr{display:grid;grid-template-columns:1fr 1fr;
+   gap:3px 8px;padding:11px 7px;border-bottom:1px solid var(--color-border)}
+  .mpc-table td{min-width:0;padding:4px 6px;border:0;overflow-wrap:anywhere;font-size:.85rem}
+  .mpc-table td::before{content:attr(data-label);display:block;font-size:.7rem;
+   margin-bottom:3px;color:var(--color-text-muted)}
+  .mpc-table td:first-child{grid-column:1/-1}
+  .mpc-table td:nth-child(3){text-align:left}
+  .mpc-table td:nth-child(4){grid-column:1/-1}
+ }
+</style>
