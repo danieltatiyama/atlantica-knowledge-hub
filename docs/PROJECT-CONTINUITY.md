@@ -4,7 +4,7 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.72 (visualizador de imagens global em artigos, zoom, teclado, galeria por artigo e EN/PT-BR)  
+**Última etapa implementada:** Stage 20.73 (substituição de captura VIP com informações de jogador, sincronizada com CMS dev/i18n)  
 **Último PR de funcionalidade integrado:** [#101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101) — Stage 20.72, lightbox global dos artigos, zoom, galeria e acessibilidade, CI e build aprovados na `main`. Os 16 screenshots compartilhados do VIP System permanecem inalterados. Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
@@ -443,6 +443,15 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Documento `docs/WIKI-ARTICLE-LIGHTBOX-STAGE-20-72.md`; validação: Node tests + Astro build na CI. **Conferir visualmente após o deploy**, especialmente zoom/fechamento/foco/mobile.
 - Feature integrada na `main` pelo [PR #101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101), com testes e build Astro aprovados. Resta inspeção no navegador após o deploy.
 
+### Stage 20.73 — Troca preventiva da primeira captura do Sistema VIP
+
+- O usuário enviou outra captura do menu *Aca VIP* sem informações do jogador, solicitando substituir a **primeira imagem** compartilhada nos artigos VIP EN/PT-BR.
+- Na `main`, os dois Markdown passam a apontar para `/images/guides/vip-system/vip-menu.png` e a antiga `public/images/guides/vip-system/image-1.png` é **retirada da árvore publicada** para não continuar sendo distribuída em novos builds nem ficar presa ao mesmo URL por cache.
+- A substituta mantém as dimensões **129×399**, é um PNG indexado otimizado a partir da imagem fornecida e possui Git blob SHA `c0341bdaa2f9a4748ec8d26e7b7118f58363c96d`. As outras 15 capturas permanecem idênticas e inalteradas; testes foram ajustados para exatamente 16 referências compartilhadas.
+- A `dev/i18n` usada pelo Pages CMS também precisa trocar a referência do guia para a nova imagem, disponibilizar o mesmo blob e excluir o antigo `public/images/guides/image-1.png` (referência genérica sem outros artigos dependentes), evitando uma republicação involuntária da captura antiga.
+- A exclusão da árvore atual **não reescreve histórico Git**, versões já publicadas ou caches externos antigos; não afirmar eliminação retroativa de todos os vestígios. Para remoção retroativa desses locais seria necessário um procedimento separado de privacidade e purga do histórico/cache.
+- Confirmar CI, integração dos dois PRs, atualização do deploy Cloudflare e que a imagem segura aparece em EN/PT-BR no site; verificar se o URL antigo da imagem retorna 404 após a publicação.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -474,6 +483,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.70 | [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93), [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94), [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) | Guia VIP aprovado/publicado no código; Pages CMS com ação de envio por PR para main e imagens específicas por guia |
 | 20.71 | [#99](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99) | Tradução integral VIP System em PT-BR, sem duplicação das 16 imagens e com navegação EN/PT-BR |
 | 20.72 | [#101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101) | Lightbox global para imagens de artigos, zoom, controles de teclado, navegação e temas |
+| 20.73 | PR em preparação | Substituição da primeira captura VIP por versão sem dados do jogador; atualização dos dois idiomas e do CMS |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -550,4 +560,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.72 integrada à `main` no PR #101, com GitHub Actions e build Astro concluídos com sucesso. O lightbox é global para imagens do corpo dos artigos em Guias, Eventos e Mercenários, com zoom 100–500%, ajuste à janela, teclado, galeria e controles EN/PT-BR. Nenhuma imagem original foi alterada. A validação visual real no navegador, nos seis temas e em mobile continua pendente após deploy Cloudflare. A Stage 20.71 e o fluxo CMS (#94/#95) permanecem integrados.**
+**Estado documentado: Stage 20.73 em implementação. Os artigos VIP EN/PT-BR da main e a fonte do Pages CMS em dev/i18n devem usar a nova captura do menu sem detalhes do jogador; os arquivos antigos são excluídos das árvores atuais, preservando as outras 15 imagens. Confirmar CI, merges e deploy. A substituição não expurga automaticamente histórico Git nem caches externos.**
