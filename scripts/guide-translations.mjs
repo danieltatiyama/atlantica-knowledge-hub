@@ -21,7 +21,13 @@ function entries(){
   const {sourceHash}=readEnglishGuide(raw,slug);
   for(const lang of TARGET_LOCALES){
    const existing=optional(pathFor(lang,slug));
-   result.push({slug,lang,sourceHash,state:translationState(existing,sourceHash),targetHash:existing===null?null:sha256(existing)});
+   const entry={slug,lang,sourceHash,state:translationState(existing,sourceHash),targetHash:existing===null?null:sha256(existing)};
+   if(["stale-draft","stale-published"].includes(entry.state)){
+    const candidate=candidatePath(entry);
+    if(existsSync(candidate))entry.candidate={path:candidate.replaceAll("\\","/"),sha256:sha256(read(candidate))};
+   }
+   if(entry.state==="awaiting-review")entry.candidate={path:pathFor(lang,slug).replaceAll("\\","/"),sha256:entry.targetHash};
+   result.push(entry);
   }
  }
  return result;
@@ -63,7 +69,7 @@ if(command==="status"){
  const rows=entries();
  mkdirSync(directory,{recursive:true});
  const skipped=[];
- for(const entry of rows.filter(x=>["missing","stale-draft","stale-published"].includes(x.state))){
+ for(const entry of rows.filter(x=>["missing","stale-draft","stale-published"].includes(x.state)&&!x.candidate)){
   try{output(join(directory,entry.slug+"."+entry.lang+".json"),JSON.stringify(request(entry.slug,entry.lang),null,2)+"\n");}
   catch(error){skipped.push({slug:entry.slug,lang:entry.lang,reason:error.message});}
  }
@@ -100,7 +106,13 @@ if(command==="status"){
  checkSlug(slug);checkLang(lang);
  if(!file||!candidateHash||targetHash===undefined)throw Error("Usage: approve SLUG LOCALE FILE CANDIDATE_SHA TARGET_SHA_OR_null");
  const destination=pathFor(lang,slug),current=optional(destination);
- const approved=approveTranslation({english:source(slug),slug,lang,candidate:read(file),expectedCandidateHash:candidateHash,currentTarget:current,expectedTargetHash:targetHash==="null"?null:targetHash});
+ const normalized=file.replaceAll("\\","/");
+ const original=source(slug),hash=readEnglishGuide(original,slug).sourceHash;
+ const currentHash=current===null?null:sha256(current);
+ const permitted=[destination.replaceAll("\\","/")];
+ if(currentHash)permitted.push(candidatePath({slug,lang,sourceHash:hash,targetHash:currentHash}).replaceAll("\\","/"));
+ if(!permitted.includes(normalized))throw Error("Candidate path must match the guide or current revision candidate");
+ const approved=approveTranslation({english:original,slug,lang,candidate:read(file),expectedCandidateHash:candidateHash,currentTarget:current,expectedTargetHash:targetHash==="null"?null:targetHash});
  // Only a separate reviewed PR should deliver these approved changes to main.
  mkdirSync(dirname(destination),{recursive:true});
  const tmp=destination+".translation-tmp";
