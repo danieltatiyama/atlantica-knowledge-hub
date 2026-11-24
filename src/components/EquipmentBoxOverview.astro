@@ -112,9 +112,7 @@ const description=selection
           </>
         ) : (
           <>
-            <p class="notice">{pt
-              ? (entry.interaction==="selection"?"A box é de seleção, mas ainda não identificamos sua lista de opções na captura.":"Ainda não há uma prévia de abertura capturada para esta box. Não é possível afirmar sua lista completa de resultados.")
-              : (entry.interaction==="selection"?"This selection box has no recovered option list yet.":"No opening preview has been captured for this box. Its complete result list has not been verified.")}</p>
+            <p class="notice">{entry.interaction==="selection"?complementaryText(lang,"This selection box has no recovered option list yet.","A box é de seleção, mas ainda não identificamos sua lista de opções na captura."):complementaryText(lang,"No opening preview has been captured for this box. Its complete result list has not been verified.","Ainda não há uma prévia de abertura capturada para esta box. Não é possível afirmar sua lista completa de resultados.")}</p>
             {entry.group==="variant" && entry.enhancementMin!==undefined && entry.enhancementMax!==undefined &&
               <p>{complementaryText(lang,"Player-reported enhancement range","Faixa informada pelo jogador")}:
                 <strong> +{entry.enhancementMin} {complementaryText(lang,"to","a")} +{entry.enhancementMax}</strong>.
