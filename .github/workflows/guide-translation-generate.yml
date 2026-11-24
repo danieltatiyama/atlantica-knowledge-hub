@@ -1,0 +1,99 @@
+name: Generate guide translation review drafts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/content/guides/**"
+      - "translation-review/**"
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Optional English guide slug (blank = all eligible)"
+        type: string
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: guide-translation-generation
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.ref == 'refs/heads/main' && vars.GUIDE_TRANSLATION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Check for pending translation review PR
+        id: pending
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pending=$(gh pr list --state open --limit 100 --json headRefName --jq 'any(.[]; .headRefName | startswith("translate/guides-"))')
+          echo "pending=$pending" >> "$GITHUB_OUTPUT"
+          if [ "$pending" = true ]; then echo "[IC] Existing generation PR requires review; no provider call made."; fi
+      - name: Install dependencies
+        if: steps.pending.outputs.pending == 'false'
+        run: npm ci
+      - name: Generate bounded translation candidates
+        if: steps.pending.outputs.pending == 'false'
+        env:
+          GUIDE_TRANSLATION_ENABLED: ${{ vars.GUIDE_TRANSLATION_ENABLED }}
+          GUIDE_TRANSLATION_API_URL: ${{ vars.GUIDE_TRANSLATION_API_URL }}
+          GUIDE_TRANSLATION_MODEL: ${{ vars.GUIDE_TRANSLATION_MODEL }}
+          GUIDE_TRANSLATION_MAX_REQUESTS: ${{ vars.GUIDE_TRANSLATION_MAX_REQUESTS || '7' }}
+          GUIDE_TRANSLATION_API_KEY: ${{ secrets.GUIDE_TRANSLATION_API_KEY }}
+          GUIDE_SLUG: ${{ inputs.slug || '' }}
+        shell: bash
+        run: |
+          node scripts/guide-translations.mjs generate "$GUIDE_SLUG" > "$RUNNER_TEMP/translation-report.json"
+          cat "$RUNNER_TEMP/translation-report.json"
+      - name: Stage only validated draft and review paths
+        if: steps.pending.outputs.pending == 'false'
+        id: changes
+        shell: bash
+        run: |
+          node scripts/stage-guide-translation-output.mjs "$RUNNER_TEMP/translation-report.json"
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Validate generated content
+        if: steps.changes.outputs.changed == 'true'
+        run: npm run build
+      - name: Open translation review pull request
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          git fetch origin main --no-tags
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo "::error::Main changed during generation; rerun on current main."; exit 1; }
+          branch="translate/guides-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          git switch -c "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs(guides): generate translation review drafts"
+          git push origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" --title "Review generated guide translations" --body "Machine-assisted translation drafts and isolated revision candidates. Existing published guides remain unchanged. Merge after CI; approve individual drafts separately after editorial review. No automatic publication."
+          gh workflow run validate-pr.yml --ref "$branch"
+      - name: Upload generation report
+        if: always() && steps.pending.outputs.pending == 'false'
+        uses: actions/upload-artifact@v7
+        with:
+          name: guide-translation-generation-report
+          path: ${{ runner.temp }}/translation-report.json
+          if-no-files-found: ignore
+          retention-days: 14

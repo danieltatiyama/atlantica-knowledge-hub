@@ -1,0 +1,90 @@
+name: Prepare approved guide translation PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "English guide slug"
+        required: true
+        type: string
+      locale:
+        description: "Translation locale"
+        required: true
+        type: choice
+        options:
+          - pt-br
+          - fr
+          - de
+          - es
+          - ko
+          - zh-hans
+          - ja
+      candidate_file:
+        description: "Reviewed draft or revision candidate repository path"
+        required: true
+        type: string
+      candidate_sha256:
+        description: "Exact SHA-256 of reviewed candidate"
+        required: true
+        type: string
+      target_sha256:
+        description: "Exact SHA-256 of existing target, or null if absent"
+        required: true
+        type: string
+      reviewed:
+        description: "I reviewed the translation, not just the automated checks"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: guide-translation-approval
+  cancel-in-progress: false
+
+jobs:
+  approve:
+    if: github.ref == 'refs/heads/main' && inputs.reviewed
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Approve reviewed source-bound draft locally
+        env:
+          SLUG: ${{ inputs.slug }}
+          LOCALE: ${{ inputs.locale }}
+          CANDIDATE: ${{ inputs.candidate_file }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha256 }}
+          TARGET_SHA: ${{ inputs.target_sha256 }}
+        shell: bash
+        run: |
+          node scripts/guide-translations.mjs approve "$SLUG" "$LOCALE" "$CANDIDATE" "$CANDIDATE_SHA" "$TARGET_SHA"
+          git add -- "src/content/guides/$LOCALE/$SLUG.md"
+          if git diff --cached --quiet; then echo "::error::No approval change"; exit 1; fi
+      - run: npm run build
+      - name: Open approved translation publication PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          git fetch origin main --no-tags
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo "::error::Main changed; recheck reviewed hashes."; exit 1; }
+          branch="translate/approval-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          git switch -c "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs(guides): prepare reviewed translation publication"
+          git push origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" --title "Publish reviewed guide translation" --body "Explicit editorial approval of the exact candidate hash and source revision. Final CI and PR review remain required; nothing is automatically merged."
+          gh workflow run validate-pr.yml --ref "$branch"

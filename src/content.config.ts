@@ -32,6 +32,11 @@ const guides = defineCollection({
     ),
 
     updatedAt: z.coerce.date(),
+    translationSourceHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+    translationMethod: z.enum(["machine-assisted"]).optional(),
+    translationProvider: z.string().max(100).optional(),
+    translationModel: z.string().max(150).optional(),
+    translationGlossaryVersion: z.string().max(30).optional(),
 
     draft: z.boolean().default(true),
     reviewStatus: z.enum([
