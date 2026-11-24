@@ -1,6 +1,6 @@
 ---
 import {catalogText} from "../i18n/catalog-ui.mjs";
-import {localePrefix,legacyLocale,localizedPaths,localeTag} from "../i18n/locales.mjs";
+import {localePrefix,legacyLocale,localizedPaths,localeTag,equipmentProfilePath} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import {EQUIPMENT_ITEM_CATALOG_BY_ID} from "../data/equipment-item-catalog";
@@ -139,7 +139,7 @@ const description = catalogText(lang,"Explore 2,462 equipment-like source IDs: 5
                 data-level={item.sourceIndex.rawLevel??""}
                 data-attack={item.sourceIndex.maxDamage??""}
                 data-ac={item.sourceIndex.physicalAC??""}>
-                <td><a href={prefix + "/items/" + item.id + "/"} lang="en" hreflang={localeTag(legacyLocale(lang))}>{item.nameEn}</a>
+                <td><a href={equipmentProfilePath(lang,item.id,item.reviewed)} lang="en" hreflang={localeTag(lang)}>{item.nameEn}</a>
                   {item.reviewed
                     ? <span class="profile-mark">{catalogText(lang,"Reviewed profile")}</span>
                     : <span class="profile-mark source-only">{catalogText(lang,"Client source")}</span>}</td>
