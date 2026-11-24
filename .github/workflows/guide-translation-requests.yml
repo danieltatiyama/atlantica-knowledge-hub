@@ -10,6 +10,11 @@ on:
       - "scripts/guide-translations.mjs"
       - ".github/workflows/guide-translation-requests.yml"
   workflow_dispatch:
+    inputs:
+      payload:
+        description: "Optional Pages CMS action context (not used in the report)"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -32,6 +37,8 @@ jobs:
       - run: npm ci
       - name: Export missing and stale translation requests
         run: node scripts/guide-translations.mjs export translation-requests
+      - name: Display editorial status in workflow summary
+        run: cat translation-requests/summary.md >> "$GITHUB_STEP_SUMMARY"
       - name: Publish read-only request artifact
         uses: actions/upload-artifact@v7
         with:

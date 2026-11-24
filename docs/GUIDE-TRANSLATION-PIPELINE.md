@@ -10,7 +10,16 @@ English remains the source of truth. Only approved, published English guides are
 - Manual/untracked: existing Portuguese or other manual translation is not overwritten. A maintainer must explicitly decide how to track it.
 - Stale published/draft: create a separate candidate under translation-review/{locale}/, bound to the original source and target hashes. The old public guide stays online until an approved replacement is merged.
 
-The six VIP System pilot translations are ChatGPT-assisted **drafts**, not native-speaker-reviewed content. They share all 16 existing image URLs; text inside screenshots remains unchanged. Drafts are excluded from public pages, navigation and search.
+Stage 20.77 published the six ChatGPT-assisted VIP translations and the six nation-dungeon-planning translations. They have not been reviewed by native speakers. VIP shares all 16 existing image URLs; text inside screenshots remains unchanged. Drafts are excluded from public pages, navigation and search.
+
+### Stage 20.79 — Editorial status from Pages CMS
+
+1. Create the English guide first on `dev/i18n`. Save with Draft enabled while writing.
+2. When actually approved, set Editorial Status to Approved, turn Draft off, save, and submit the publication PR. Only merge and deploy make it public.
+3. In Pages CMS select **Check guide translations (8 languages)**. It dispatches the read-only workflow on `main`. The Actions run summary shows every approved English source and its seven translation slots. Download the artifact for `status.json`, `summary.md` and available requests.
+4. Published and synchronized are separate: a manually maintained translation can be public without a source hash. An old published translation can be stale and remain online. Neither is overwritten automatically.
+
+The report reads main only; unpublished CMS changes are excluded. Manual Portuguese authoring remains available. No provider calls, repository commits or approval actions occur from this status button. The CMS action uses the documented `ref: main` and optional workflow `payload` input; see https://pagescms.org/docs/configuration/actions/.
 
 ## Free/offline workflow
 

@@ -4,6 +4,8 @@ import {stringify} from "yaml";
 import {providerConfig,translateViaProvider} from "./guide-translation-provider.mjs";
 import {TARGET_LOCALES,readEnglishGuide,prepareTranslation,translationRequest,finishTranslation,translationState,sha256,parseGuide,approveTranslation} from "./guide-translation-contract.mjs";
 
+import {editorialReport} from "./guide-translation-report.mjs";
+
 const root="src/content/guides";
 const slugPattern=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const read=path=>readFileSync(path,"utf8");
@@ -21,7 +23,8 @@ function entries(){
   const {sourceHash}=readEnglishGuide(raw,slug);
   for(const lang of TARGET_LOCALES){
    const existing=optional(pathFor(lang,slug));
-   const entry={slug,lang,sourceHash,state:translationState(existing,sourceHash),targetHash:existing===null?null:sha256(existing)};
+   const targetMeta=existing===null?null:parseGuide(existing).meta;
+   const entry={slug,lang,sourceHash,published:targetMeta?.draft===false&&targetMeta?.reviewStatus==="approved",state:translationState(existing,sourceHash),targetHash:existing===null?null:sha256(existing)};
    if(["stale-draft","stale-published"].includes(entry.state)){
     const candidate=candidatePath(entry);
     if(existsSync(candidate))entry.candidate={path:candidate.replaceAll("\\","/"),sha256:sha256(read(candidate))};
@@ -74,6 +77,7 @@ if(command==="status"){
   catch(error){skipped.push({slug:entry.slug,lang:entry.lang,reason:error.message});}
  }
  output(join(directory,"status.json"),JSON.stringify({entries:rows,skipped},null,2)+"\n");
+ output(join(directory,"summary.md"),editorialReport(rows,skipped));
  console.log("[IC] Requests exported:",directory,"| manual-review exceptions:",skipped.length);
 }else if(command==="request"){
  const [slug,lang]=args; console.log(JSON.stringify(request(slug,lang),null,2));
