@@ -1,8 +1,9 @@
 ---
 
 import { getCollection } from "astro:content";
-import { LOCALE_IDS, LOCALE_NAMES, languageDestination, localizedPaths, legacyLocale, localePrefix } from "../i18n/locales.mjs";
+import { LOCALE_IDS, LOCALE_NAMES, languageDestination, legacyLocale, localePrefix } from "../i18n/locales.mjs";
 import type { Lang } from "../i18n/ui";
+import { chromeText } from "../i18n/chrome";
 import GlobalSearch from "./GlobalSearch.astro";
 import type { CollectionEntry } from "astro:content";
 
@@ -30,32 +31,32 @@ const navigation = [
     active: pathname.startsWith(guidesHref),
   },
   {
-    label: lang === "pt-br" ? "Eventos" : "Events",
+    label: chromeText(lang,"Events",lang === "pt-br" ? "Eventos" : "Events"),
     href: eventsHref,
     active: pathname.startsWith(eventsHref),
   },
   {
-    label: lang === "pt-br" ? "Mercenários" : "Mercenaries",
+    label: chromeText(lang,"Mercenaries",lang === "pt-br" ? "Mercenários" : "Mercenaries"),
     href: mercenariesHref,
     active: pathname.startsWith(mercenariesHref),
   },
   {
-    label: lang === "pt-br" ? "Equipamentos" : "Equipment",
+    label: chromeText(lang,"Equipment",lang === "pt-br" ? "Equipamentos" : "Equipment"),
     href: itemsHref,
     active: pathname.startsWith(itemsHref) && !pathname.startsWith(allItemsHref),
   },
   {
-    label: lang === "pt-br" ? "Todos os itens" : "All Items",
+    label: chromeText(lang,"All Items",lang === "pt-br" ? "Todos os itens" : "All Items"),
     href: allItemsHref,
     active: pathname.startsWith(allItemsHref),
   },
   {
-    label: lang === "pt-br" ? "Monstros" : "Monsters",
+    label: chromeText(lang,"Monsters",lang === "pt-br" ? "Monstros" : "Monsters"),
     href: monstersHref,
     active: pathname.startsWith(monstersHref),
   },
   {
-    label: lang === "pt-br" ? "Ferramentas" : "Tools",
+    label: chromeText(lang,"Tools",lang === "pt-br" ? "Ferramentas" : "Tools"),
     href: lang === "pt-br" ? "/pt-br/tools/" : "/tools/",
     active: pathname.startsWith(lang === "pt-br" ? "/pt-br/tools/" : "/tools/"),
   },
@@ -124,7 +125,7 @@ import {
     </a>
 
 
-    <nav class="main-nav" aria-label="Main navigation">
+    <nav class="main-nav" aria-label={chromeText(lang,"Main navigation",lang==="pt-br"?"Navegação principal":"Main navigation")}>
       {navigation.map((item) => (
         <a
           href={item.href}
@@ -139,33 +140,33 @@ import {
       ))}
       <button class="wiki-global-trigger" type="button" data-global-search-open
         aria-label={lang === "pt-br" ? "Abrir busca global" : "Open global search"}>
-        ⌕ {lang === "pt-br" ? "Buscar" : "Search"}
+        ⌕ {chromeText(lang,"Search",lang === "pt-br" ? "Buscar" : "Search")}
       </button>
     </nav>
 
     <div class="header-controls" role="group"
-      aria-label={lang === "pt-br" ? "Preferências de aparência e idioma" : "Appearance and language preferences"}>
+      aria-label={chromeText(lang,"Appearance and language preferences",lang === "pt-br" ? "Preferências de aparência e idioma" : "Appearance and language preferences")}>
       <div class="theme-switcher header-control-group">
         <label for="site-theme" class="theme-label header-control-label">
-          {lang === "pt-br" ? "Tema" : "Theme"}
+          {chromeText(lang,"Theme",lang === "pt-br" ? "Tema" : "Theme")}
         </label>
         <select id="site-theme" class="theme-select header-control-select"
-          aria-label={lang === "pt-br" ? "Selecionar tema visual" : "Select visual theme"}>
+          aria-label={chromeText(lang,"Select visual theme",lang === "pt-br" ? "Selecionar tema visual" : "Select visual theme")}>
           <option value="atlantica">Atlantica</option>
-          <option value="dark">{lang === "pt-br" ? "Escuro" : "Dark"}</option>
-          <option value="light">{lang === "pt-br" ? "Claro" : "Light"}</option>
-          <option value="parchment">{lang === "pt-br" ? "Pergaminho" : "Parchment"}</option>
-          <option value="midnight">{lang === "pt-br" ? "Azul noturno" : "Midnight Blue"}</option>
-          <option value="contrast">{lang === "pt-br" ? "Alto contraste" : "High Contrast"}</option>
+          <option value="dark">{chromeText(lang,"Dark",lang === "pt-br" ? "Escuro" : "Dark")}</option>
+          <option value="light">{chromeText(lang,"Light",lang === "pt-br" ? "Claro" : "Light")}</option>
+          <option value="parchment">{chromeText(lang,"Parchment",lang === "pt-br" ? "Pergaminho" : "Parchment")}</option>
+          <option value="midnight">{chromeText(lang,"Midnight Blue",lang === "pt-br" ? "Azul noturno" : "Midnight Blue")}</option>
+          <option value="contrast">{chromeText(lang,"High Contrast",lang === "pt-br" ? "Alto contraste" : "High Contrast")}</option>
         </select>
       </div>
 
       <div class="language-switcher header-control-group">
         <label for="site-language" class="language-label header-control-label">
-          {lang === "pt-br" ? "Idioma" : "Language"}
+          {chromeText(lang,"Language",lang === "pt-br" ? "Idioma" : "Language")}
         </label>
         <select id="site-language" class="language-select header-control-select"
-          aria-label={lang === "pt-br" ? "Selecionar idioma" : "Select language"}
+          aria-label={chromeText(lang,"Select language",lang === "pt-br" ? "Selecionar idioma" : "Select language")}
           >
           {LOCALE_IDS.map(locale=><option value={locale} selected={lang===locale} data-target={getLanguageTarget(locale)}>{LOCALE_NAMES[locale]}</option>)}
         </select>
