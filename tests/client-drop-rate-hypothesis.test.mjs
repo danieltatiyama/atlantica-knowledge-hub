@@ -90,7 +90,7 @@ test("the wiki labels level-matched two-stage probabilities as estimates, never 
   const full=read("src/components/FullClientItemDatabasePage.astro");
   for(const source of [monster,codex,profile,full]){
     assert.ok(source.includes("formatLevelResolvedPercent"));
-    assert.match(source,/(NÃO|NOT).{0,90}(chance|odds|probab|verific)/i);
+    assert.match(source,/(NÃO|NOT).{0,90}(chance|odds|probab|verific|rates)/i);
     assert.ok(!source.includes("finalDropChance"));
     assert.ok(!source.includes("GroupBands.RawSum/100"));
   }
