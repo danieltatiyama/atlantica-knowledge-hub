@@ -1,11 +1,11 @@
 # Atlantica Online Knowledge Hub — Contexto para Continuidade
 
-**Última atualização:** 23/11/2026  
+**Última atualização:** 24/11/2026  
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.67 (relato de coincidência dos 128 preços do Market registrado com proveniência separada)  
-**Último PR integrado de funcionalidade:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) (Stage 20.67; CI aprovado e integrado à `main`).
+**Última etapa implementada:** Stage 20.68 (catálogo público de 421 preços do cliente, interface player-first e pesquisa técnica preservada)  
+**Último PR integrado de funcionalidade:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) (Stage 20.67). **Stage 20.68:** [PR #88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88), branch `feat/stage-20-68-market-price-catalog` (conferir integração e publicação).
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -397,6 +397,15 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Próximo passo: não repetir a coleta da mesma confirmação agregada; investigar possíveis preços fixos fora dos 421 itens gerais e, quando necessária evidência mais forte, recolher capturas datadas ou outra fonte independente.
 - Documentação: `docs/MARKET-PRICE-PLAYER-REPORT-STAGE-20-67.md`. Regressão: `tests/market-price-player-attestation-stage-20-67.test.mjs`.
 
+### Stage 20.68 — Catálogo público dos 421 preços (experiência voltada ao jogador)
+
+- Após a revisão visual da página Stage 20.67, o usuário aprovou torná-la um catálogo de preços com menos avisos técnicos. A rota padrão `/tools/market-prices/` e a variante PT-BR agora apresentam os **421 ItemIDs gerais nomeados** da tabela NPC do cliente, com busca, filtros de categoria/origem de evidência, ordenação por preço/nome/ID, 50 itens por página e links para `/items/database/?id=ItemID`.
+- As **293** coincidências históricas e as **128** coincidências declaradas por jogador são identificadas de forma distinta, sem confundir o relato agregado com auditoria independente do servidor. Toda a lista mantém preços do cliente como referência; NÃO declarar que os 421 representam o Market completo ou disponibilidade atual.
+- Pesquisa antiga, observações individuais locais e importação/exportação JSON continuam acessíveis, sem perda de dados, em `/tools/market-prices/research/` e `/pt-br/tools/market-prices/research/`.
+- Novo `public/data/client-npc-trade-prices/catalog.json` derivado exclusivamente de fontes arquivadas e reconciliadas pelo script `scripts/build-market-price-catalog.mjs` (421 entradas = 293+128). Identidade, preços e linhas originais são checados por fonte; arquivos base imutáveis, 231 housing fora do catálogo geral.
+- Implementação `src/components/MarketPriceCatalogPage.astro`, `src/data/market-price-catalog.mjs`, testes `tests/market-price-catalog-stage-20-68.test.mjs` e novo passo CI de integridade. Detalhes em `docs/MARKET-PRICE-CATALOG-STAGE-20-68.md`.
+- Verificação visual pendente após o deploy: mobile, outros cinco temas, ambos idiomas, filtros, paginação e deep links para itens.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -423,6 +432,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.65 | [#84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) | Extração real 652 preços NPC, 421 gerais nomeados, 293/293 históricos compatíveis; referência opt-in para calculadora |
 | 20.66 | [#85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
 | 20.67 | [#86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
+| 20.68 | [#88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) | Catálogo de 421 preços pesquisáveis, filtros e links para itens; ferramenta técnica preservada em /research/ |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -499,4 +509,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.67 integrada à `main` no PR #86, com CI concluído com sucesso. A declaração agregada do jogador cobre os 128 candidatos da Stage 20.66, sem ser uma auditoria independente; a interface EN/PT-BR distingue o relato das observações locais. Manter fontes NPC originais imutáveis. Conferir a interface visualmente após o deploy e procurar outras possíveis fontes de preços fora dos 421 registros gerais.**
+**Estado documentado: Stage 20.68 implementada no PR #88, com novo catálogo player-first dos 421 preços NPC do cliente; 293 comparações históricas e 128 relatos de jogador permanecem fontes distintas. As cinco categorias ausentes no cliente foram preservadas como não classificadas. O workbench técnico original fica em /tools/market-prices/research/ e conserva observações locais. Confirmar integração do PR #88 e deployment antes de considerar a nova interface publicada.**
