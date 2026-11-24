@@ -622,3 +622,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 **Estado documentado: Stage 20.73 integrada à `main` no PR #103, com CI e build aprovados, e à `dev/i18n` no PR #104. Os artigos VIP EN/PT-BR e a fonte do CMS apontam para `/images/guides/vip-system/vip-menu.png`; a captura antiga está ausente das árvores atuais dessas branches. As 15 imagens restantes não foram modificadas. Confirmar deploy e cache Cloudflare. A exclusão não reescreve histórico Git nem elimina cópias anteriores em caches externos.**
 
 **Continuação:** Stages 20.74–20.76 integradas nos PRs #107–109. O usuário decidiu continuar com traduções no próprio ChatGPT, adiando a escolha de provedor externo. Stage 20.77 no PR #110: revisão assistida dos seis textos VIP e tradução dos seis textos de planejamento de dungeons; 16 páginas de guias em oito idiomas após publicação. EN/PT-BR existentes e imagens preservados; Avalon e teste continuam rascunhos. As traduções recebem provenance machine-assisted, hash da origem e revisão assistida, sem atestado de falante nativo. Antes de atualizar, consultar o original e o estado do PR, preservar alterações manuais, executar CI e confirmar o deploy. O provedor permanece desativado; não é necessário configurar API, credenciais ou orçamento neste momento. Consultar docs/GUIDE-TRANSLATION-PIPELINE.md.
+
+
+### Stage 20.80e — complementary catalogs
+
+- Equipment box listings, registry/detail templates, historical Legendary research and Dell'arte's Ambition evidence views now have eight locale routes and localized UI. Calculator formulas, IDs, source data, names and uncertainty remain unchanged.
+- Approved English editorial box content is reused with an explicit fallback note until reviewed translations exist; no unapproved draft is published.
+- Dedicated reviewed profiles (551) are localized; 1,911 source-only items remain available via localized dynamic database profiles. Standalone legacy detail articles remain EN/PT-BR. Static asset ceiling remains 20,000.
+- Stage 20.81 (tools) and Stage 20.82 (verified official client names) are separate work; translations are editorial, not asserted official game terminology.

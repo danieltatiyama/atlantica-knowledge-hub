@@ -87,7 +87,7 @@ const clientFields = curatedFields ? [
             <div class="table-scroll"><table>
               <thead><tr><th>{equipmentText(lang,"Box","Box")}</th><th>{equipmentText(lang,"Box ID","ID da box")}</th><th>{equipmentText(lang,"Preview","Prévia")}</th></tr></thead>
               <tbody>{boxRefs.map((box) => <tr>
-                <td><a href={localePrefix(legacyLocale(lang)) + "/items/boxes/" + box.boxSlug + "/"}>{box.boxName}</a></td>
+                <td><a href={localePrefix(lang) + "/items/boxes/" + box.boxSlug + "/"}>{box.boxName}</a></td>
                 <td><code>{box.boxId}</code></td>
                 <td>{box.interaction === "selection"
                   ? (equipmentText(lang,"Player selection","Escolha de item"))

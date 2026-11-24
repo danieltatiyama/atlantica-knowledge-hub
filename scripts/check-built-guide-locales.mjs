@@ -94,3 +94,17 @@ function countFiles(directory){
 const assetCount=countFiles("dist");
 assert.ok(assetCount<=20000,"Static asset budget exceeded: "+assetCount);
 console.log("[IC] Verified localized reviewed profiles and source-only explorer links. Static assets: "+assetCount+"/20000.");
+
+for(const lang of LOCALE_IDS){
+ const prefix=localePrefix(lang);
+ for(const path of ["/items/boxes/","/items/boxes/spirit-equipment-box/","/items/legendary/","/items/legendary/dell-artes-ambition/"]){
+  const file="dist"+prefix+path+"index.html";
+  assert.ok(existsSync(file),file);
+  const html=readFileSync(file,"utf8");
+  assert.ok(html.includes('lang="'+localeTag(lang)+'"'),file);
+  for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),file+" missing alternate "+locale);
+ }
+ const html=readFileSync("dist"+prefix+"/items/index.html","utf8");
+ for(const path of ["/items/boxes/","/items/legendary/"])assert.ok(html.includes('href="'+prefix+path+'"'),prefix+" missing link "+path);
+}
+console.log("[IC] Verified localized boxes, legendary research and extended equipment pages.");

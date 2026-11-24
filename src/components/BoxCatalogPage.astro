@@ -1,27 +1,26 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { complementaryText } from "../i18n/complementary-ui.mjs";
+import { localePrefix, localeTag, localizedPaths, legacyLocale, equipmentProfilePath } from "../i18n/locales.mjs";
 import { getCollection } from "astro:content";
 import { EQUIPMENT_BOXES } from "../data/equipment-box-registry";
 import { getCapturedEquipmentPool } from "../data/equipment-box-captured-pools";
 import { getCapturedSelectionPool } from "../data/equipment-box-selection-pools";
-interface Props { lang: "en" | "pt-br"; }
+interface Props { lang: string; }
 const { lang } = Astro.props;
-const pt = lang === "pt-br";
-const prefix = pt ? "/pt-br" : "";
+const prefix=localePrefix(lang);
 const base = prefix + "/items/boxes/";
 const editorialEntries = (await getCollection("boxes", ({data}) =>
   !data.draft && data.reviewStatus === "approved" &&
-  data.evidenceStatus !== "client-config" && data.lang === lang))
+  data.evidenceStatus !== "client-config" && data.lang === legacyLocale(lang)))
   .map((entry)=>({id:entry.id.split("/").slice(1).join("/"),...entry.data,capturedItemCount:entry.data.outcomes.length}));
 const editorSlugs = new Set(editorialEntries.map(entry=>entry.id));
 const registryEntries = EQUIPMENT_BOXES.filter(box=>!editorSlugs.has(box.slug)).map(box=>({
   id:box.slug,
   title:box.name,
   description:box.group==="variant"
-    ? (pt?"Variante de equipment box: mesmo conjunto da box base; faixa de aprimoramento informada pelo jogador."
-        :"Equipment box variant: same base pool; enhancement range reported by the player.")
-    : (pt?"Box padrão identificada no jogo; lista de recompensas aguardando validação."
-        :"In-game standard equipment box; item list awaiting verification."),
+    ? (complementaryText(lang,"Equipment box variant: same base pool; enhancement range reported by the player.","Variante de equipment box: mesmo conjunto da box base; faixa de aprimoramento informada pelo jogador."))
+    : (complementaryText(lang,"In-game standard equipment box; item list awaiting verification.","Box padrão identificada no jogo; lista de recompensas aguardando validação.")),
   itemUniqueId:box.itemUniqueId,
   boxType:box.interaction==="selection" ? "selection" as const : "random" as const,
   region:"global" as const,
@@ -33,77 +32,72 @@ const registryEntries = EQUIPMENT_BOXES.filter(box=>!editorSlugs.has(box.slug)).
 }));
 const entries = [...editorialEntries,...registryEntries]
   .sort((a,b)=>((a.catalogGroup==="equipment-variant")?1:0)-((b.catalogGroup==="equipment-variant")?1:0)
-     ||a.title.localeCompare(b.title,pt?"pt-BR":"en"));
-const pageTitle = pt ? "Boxes e Recompensas" : "Boxes & Rewards";
-const subtitle = pt
-  ? "Consulte o conteúdo de boxes, formas de obtenção e probabilidades verificadas por região."
-  : "Explore box contents, possible rewards and region-specific verified probabilities.";
-const caution = pt
-  ? "Taxas divulgadas para KR, JP ou outra região não são automaticamente válidas para Global. Valores internos do cliente não são porcentagens confirmadas."
-  : "Published odds for KR, JP or another region do not automatically apply to Global. Raw client weights are not verified percentages.";
+     ||a.title.localeCompare(b.title,localeTag(lang)));
+const pageTitle = complementaryText(lang,"Boxes & Rewards","Boxes e Recompensas");
+const subtitle = complementaryText(lang,"Explore box contents, possible rewards and region-specific verified probabilities.","Consulte o conteúdo de boxes, formas de obtenção e probabilidades verificadas por região.");
+const caution = complementaryText(lang,"Published odds for KR, JP or another region do not automatically apply to Global. Raw client weights are not verified percentages.","Taxas divulgadas para KR, JP ou outra região não são automaticamente válidas para Global. Valores internos do cliente não são porcentagens confirmadas.");
 const boxTypes = ["random","selection","fixed","unknown"];
 ---
 <BaseLayout title={pageTitle+" | Atlantica Knowledge Hub"} description={subtitle} lang={lang}
-  alternatePaths={{en:"/items/boxes/","pt-br":"/pt-br/items/boxes/"}}>
+  alternatePaths={localizedPaths("/items/boxes/")}>
 <main class="container">
-  <nav class="breadcrumb"><a href={prefix+"/"}>{pt?"Início":"Home"}</a><span>/</span>
-    <span>{pt?"Itens":"Items"}</span><span>/</span><span>{pageTitle}</span>
+  <nav class="breadcrumb"><a href={prefix+"/"}>{complementaryText(lang,"Home","Início")}</a><span>/</span>
+    <span>{complementaryText(lang,"Items","Itens")}</span><span>/</span><span>{pageTitle}</span>
   </nav>
   <header class="intro">
-    <p class="eyebrow">{pt?"CATÁLOGO DE ITENS":"ITEM DATABASE"}</p>
+    <p class="eyebrow">{complementaryText(lang,"ITEM DATABASE","CATÁLOGO DE ITENS")}</p>
     <h1>{pageTitle}</h1><p>{subtitle}</p>
     <p class="notice">{caution}</p>
   </header>
   <section class="catalog" aria-label={pageTitle}>
     <div class="filters">
-      <label><span>{pt?"Grupo":"Group"}</span>
-        <select id="boxes-scope"><option value="">{pt?"Todos":"All"}</option>
-          <option value="standard-equipment">{pt?"Boxes padrão":"Standard boxes"}</option>
-          <option value="equipment-variant">{pt?"Supreme / Enchanted / Infused":"Supreme / Enchanted / Infused"}</option>
+      <label><span>{complementaryText(lang,"Group","Grupo")}</span>
+        <select id="boxes-scope"><option value="">{complementaryText(lang,"All","Todos")}</option>
+          <option value="standard-equipment">{complementaryText(lang,"Standard boxes","Boxes padrão")}</option>
+          <option value="equipment-variant">{complementaryText(lang,"Supreme / Enchanted / Infused","Supreme / Enchanted / Infused")}</option>
         </select>
       </label>
-      <label><span>{pt?"Buscar box":"Search boxes"}</span>
-        <input type="search" id="boxes-search" placeholder={pt?"Nome da box...":"Box name..."} autocomplete="off"/>
+      <label><span>{complementaryText(lang,"Search boxes","Buscar box")}</span>
+        <input type="search" id="boxes-search" placeholder={complementaryText(lang,"Box name...","Nome da box...")} autocomplete="off"/>
       </label>
-      <label><span>{pt?"Tipo":"Type"}</span>
-        <select id="boxes-type"><option value="">{pt?"Todos":"All types"}</option>
+      <label><span>{complementaryText(lang,"Type","Tipo")}</span>
+        <select id="boxes-type"><option value="">{complementaryText(lang,"All types","Todos")}</option>
           {boxTypes.map(type=><option value={type}>{type}</option>)}
         </select>
       </label>
-      <label><span>{pt?"Região":"Region"}</span>
-        <select id="boxes-region"><option value="">{pt?"Todas":"All regions"}</option>
+      <label><span>{complementaryText(lang,"Region","Região")}</span>
+        <select id="boxes-region"><option value="">{complementaryText(lang,"All regions","Todas")}</option>
           {["global","kr","jp","other","unknown"].map(region=><option value={region}>{region.toUpperCase()}</option>)}
         </select>
       </label>
     </div>
-    <p class="scope-note">{pt
-      ? "Catálogo focado em Equipment Boxes gerais: 26 padrão e 7 variantes. Boxes de classe (Melee, Ranged e Magic) não estão incluídas."
-      : "Focused on general Equipment Boxes: 26 standard and 7 variants. Melee, Ranged and Magic class-specific boxes are excluded."}</p>
+    <p class="scope-note">{complementaryText(lang,"Focused on general Equipment Boxes: 26 standard and 7 variants. Melee, Ranged and Magic class-specific boxes are excluded.","Catálogo focado em Equipment Boxes gerais: 26 padrão e 7 variantes. Boxes de classe (Melee, Ranged e Magic) não estão incluídas.")}</p>
     <p class="count" aria-live="polite"><span id="boxes-count">{entries.length}</span>
-      {pt?" boxes encontradas":" boxes found"}</p>
+      {complementaryText(lang," boxes found"," boxes encontradas")}</p>
     <div class="grid">
       {entries.map(box=>(
         <article class="item" data-box data-query={(box.title+" "+box.description+" "+(box.itemUniqueId??"")).toLowerCase()}
           data-type={box.boxType} data-region={box.region} data-scope={box.catalogGroup??"standard-equipment"}>
-          <div class="meta"><span>{box.catalogGroup==="equipment-variant" ? (pt?"VARIANTE":"VARIANT") : (pt?"PADRÃO":"STANDARD")}</span><span>{box.region.toUpperCase()}</span></div>
+          <div class="meta"><span>{box.catalogGroup==="equipment-variant" ? (complementaryText(lang,"VARIANT","VARIANTE")) : (complementaryText(lang,"STANDARD","PADRÃO"))}</span><span>{box.region.toUpperCase()}</span></div>
           <h2><a href={base+box.id+"/"}>{box.title}</a></h2>
-          <p>{box.description}</p>
+          <p lang={editorSlugs.has(box.id)?localeTag(legacyLocale(lang)):localeTag(lang)}>{box.description}</p>
+          {editorSlugs.has(box.id)&&lang!==legacyLocale(lang)&&<small>{complementaryText(lang,"This article body is shown in English until a reviewed translation is available.")}</small>}
           <span class="sub">{box.contentsEvidence === "server-preview-captured"
-            ? (pt?"Lista capturada durante a abertura":"Game-transmitted item list")
+            ? (complementaryText(lang,"Game-transmitted item list","Lista capturada durante a abertura"))
             : box.contentsEvidence === "official-published"
-              ? (pt?"Lista oficial de recompensas":"Official reward list")
-              : (pt?"Lista ainda não capturada":"List not yet captured")} · {box.capturedItemCount} {pt?"itens":"items"}</span>
+              ? (complementaryText(lang,"Official reward list","Lista oficial de recompensas"))
+              : (complementaryText(lang,"List not yet captured","Lista ainda não capturada"))} · {box.capturedItemCount} {complementaryText(lang,"items","itens")}</span>
           <p class="rate-note">{box.boxType === "selection"
-            ? (pt?"Seleção de item — não é sorteio":"Player choice — not a random draw")
+            ? (complementaryText(lang,"Player choice — not a random draw","Seleção de item — não é sorteio"))
             : box.oddsStatus === "regional-published"
-              ? (pt?"Taxas regionais publicadas":"Published regional rates")
-              : (pt?"Probabilidades desconhecidas":"Unknown drop rates")}</p>
+              ? (complementaryText(lang,"Published regional rates","Taxas regionais publicadas"))
+              : (complementaryText(lang,"Unknown drop rates","Probabilidades desconhecidas"))}</p>
         </article>
       ))}
     </div>
-    <p class="empty" id="boxes-empty" data-none={pt?"Nenhuma box corresponde à pesquisa.":"No matching boxes."}
-      data-unpublished={pt?"Ainda não há boxes aprovadas para publicação.":"No boxes approved for publication yet."}
-      hidden={entries.length>0}>{pt?"Ainda não há boxes aprovadas para publicação.":"No boxes approved for publication yet."}</p>
+    <p class="empty" id="boxes-empty" data-none={complementaryText(lang,"No matching boxes.","Nenhuma box corresponde à pesquisa.")}
+      data-unpublished={complementaryText(lang,"No boxes approved for publication yet.","Ainda não há boxes aprovadas para publicação.")}
+      hidden={entries.length>0}>{complementaryText(lang,"No boxes approved for publication yet.","Ainda não há boxes aprovadas para publicação.")}</p>
   </section>
 </main>
 </BaseLayout>

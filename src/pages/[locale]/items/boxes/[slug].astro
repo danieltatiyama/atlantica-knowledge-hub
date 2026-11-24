@@ -1,0 +1,28 @@
+---
+import BoxArticle from "../../../../components/BoxArticle.astro";
+import EquipmentBoxOverview from "../../../../components/EquipmentBoxOverview.astro";
+import { EQUIPMENT_BOXES } from "../../../../data/equipment-box-registry";
+import type { EquipmentBoxEntry } from "../../../../data/equipment-box-registry";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+import { NEW_GUIDE_LOCALES } from "../../../../i18n/locales.mjs";
+export async function getStaticPaths() {
+  const published=await getCollection("boxes",({data})=>
+    data.lang==="en" && !data.draft && data.reviewStatus==="approved" &&
+    data.evidenceStatus!=="client-config");
+  const slugs=new Set(published.map(box=>box.id.split("/").slice(1).join("/")));
+  return NEW_GUIDE_LOCALES.flatMap(lang=>[
+    ...published.map(box=>({params:{locale:lang,slug:box.id.split("/").slice(1).join("/")},props:{box,lang}})),
+    ...EQUIPMENT_BOXES.filter(entry=>!slugs.has(entry.slug))
+      .map(entry=>({params:{locale:lang,slug:entry.slug},props:{entry,lang}})),
+  ]);
+}
+interface Props {
+  lang:string;
+  box?: CollectionEntry<"boxes">;
+  entry?: EquipmentBoxEntry;
+}
+const {box,entry,lang}=Astro.props;
+---
+{box ? <BoxArticle box={box} lang={lang} /> : entry ? <EquipmentBoxOverview entry={entry} lang={lang} /> : null}
