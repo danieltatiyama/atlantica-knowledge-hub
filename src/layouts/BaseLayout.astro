@@ -12,6 +12,7 @@ import "../styles/themes.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingWikiNavigator from "../components/FloatingWikiNavigator.astro";
+import ArticleImageLightbox from "../components/ArticleImageLightbox.astro";
 
 interface Props {
   title: string;
@@ -142,6 +143,7 @@ const alternateLinks = Object.entries(alternatePaths ?? {})
     <slot />
 
     <FloatingWikiNavigator lang={lang === "pt-br" ? "pt-br" : "en"} />
+    <ArticleImageLightbox lang={lang === "pt-br" ? "pt-br" : "en"} />
 
     <Footer />
   </body>
