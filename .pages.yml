@@ -2,6 +2,15 @@
 
 
 actions:
+  - name: guide-translation-status
+    label: "Check guide translations (8 languages)"
+    workflow: guide-translation-requests.yml
+    ref: main
+    confirm:
+      title: "Check published guide translations?"
+      message: "Reads approved English guides from main. Open the GitHub Actions run summary for the language matrix and download the request artifact. No content is changed or translated automatically."
+      button: "Check translations"
+
   - name: submit-guide-publication
     label: "Submit approved guide for publication (PR)"
     workflow: pages-cms-guide-submit.yml
@@ -108,7 +117,7 @@ actions:
     ref: current
     confirm:
       title: "Create a new draft?"
-      message: "This will create and commit a draft article to dev/i18n. Existing articles will never be overwritten."
+      message: "Create the English source first; use the Portuguese option only for a manually maintained translation with the same identifier. Saves a draft to dev/i18n without overwriting existing articles."
       button: "Create draft"
     fields:
       - name: language
@@ -209,6 +218,8 @@ content:
         - subcategory
         - updatedAt
         - draft
+        - reviewStatus
+        - translationKey
       sort:
         - updatedAt
         - title
@@ -235,7 +246,7 @@ content:
         type: string
         required: true
         pattern: "^[a-z0-9-]+$"
-        description: "Unique article ID shared by translations."
+        description: "Stable ID shared by all translations. Write the English source first, submit it for publication, then use Check guide translations (8 languages)."
 
       - name: lang
         label: Language
@@ -373,6 +384,8 @@ content:
         - subcategory
         - updatedAt
         - draft
+        - reviewStatus
+        - translationKey
       sort:
         - updatedAt
         - title
@@ -399,7 +412,7 @@ content:
         type: string
         required: true
         pattern: "^[a-z0-9-]+$"
-        description: "Identificador compartilhado entre as traduções do artigo."
+        description: "ID estável compartilhado pelas traduções. Publique primeiro a fonte em inglês e use Check guide translations (8 languages). Traduções manuais não são sobrescritas."
 
       - name: lang
         label: Idioma
