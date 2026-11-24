@@ -36,7 +36,7 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
       <span>{equipmentText(lang,"unit per batch (equipment rule)","unidade por batch (regra do equipamento)")}</span>
       <span>{equipmentText(lang,"Steps of","Incrementos de")} {fmt.format(batch.increment)}</span>
       <span>{equipmentText(lang,"Maximum output per operation","Limite por operação")}: {fmt.format(batch.maxPerOperation)}</span>
-      <span>{equipmentText(lang,"Up to","Até")} {fmt.format(batch.maxBatchesPerOperation)} batches</span>
+      <span>{equipmentText(lang,"Up to","Até")} {fmt.format(batch.maxBatchesPerOperation)} {equipmentText(lang,"batches","batches")}</span>
     </p>:<p class="note">{batch?.status==="conflict"?
       (equipmentText(lang,"Conflicting original Unit values; no canonical batch.","Unit diverge nos arquivos; batch não consolidado.")) :
       (equipmentText(lang,"No original batch quantity identified.","Tamanho do batch não identificado nas fontes originais."))}</p>}
