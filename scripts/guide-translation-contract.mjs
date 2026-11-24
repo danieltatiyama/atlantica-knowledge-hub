@@ -41,7 +41,7 @@ const protectedPattern=new RegExp("("+[
  "https?:\\/\\/[^\\s<>]+",
  "(?<![A-Za-z0-9_])(?:"+termPattern+")(?![A-Za-z0-9_])",
  "(?<![A-Za-z0-9_])[+-]?\\d+(?:[.,:]\\d+)*(?:%|h|s|m)?(?![A-Za-z0-9_])",
- "\\*\\*|__|\\*|~{2}|\\|"
+ "\\*\\*|__|\\*|_|~{2}|\\|"
 ].join("|")+")","g");
 const tokenPattern=/⟦AO\d{5}⟧/g;
 const forbidden=/(?:^|\n)[ \t]*(?:\x60{3}|~{3}|<|!\[.*\]\[|\[[^\]]+\]:)|<[^>\n]+>|\\[^\n]|⟦AO|\x60{2}/;
@@ -63,7 +63,7 @@ function restore(translated,part){
  const expected=part.tokens.map(x=>x.token);
  if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error("Protected token sequence changed");
  const remainder=translated.replace(tokenPattern,"");
- if(/[0-9*|~]|⟦|⟧/.test(remainder)||/https?:\/\//i.test(remainder)||/^\s*(?:#{1,6}\s|>\s|[-+]\s|[-=_]{3,}\s*$)/.test(remainder))throw Error("New number, markup or link introduced");
+ if(/[0-9*_|~]|⟦|⟧/.test(remainder)||/https?:\/\//i.test(remainder)||/^\s*(?:#{1,6}\s|>\s|[-+]\s|[-=_]{3,}\s*$)/.test(remainder))throw Error("New number, markup or link introduced");
  let result=translated;
  for(const item of part.tokens)result=result.replace(item.token,()=>item.value);
  return result;
@@ -80,7 +80,15 @@ export function prepareTranslation(raw,slug,lang){
   return id;
  };
  const title=add(source.meta.title),description=add(source.meta.description);
- const lines=source.body.split("\n").map(line=>{
+ const rawLines=source.body.split("\n");
+ const paragraphs=[];
+ const ordinary=line=>Boolean(line.trim())&&!/^\s|^(?:#{1,6}\s|>|[-+*]\s|\d+[.)]\s|\||!\[|\[|\x60|~|<)/.test(line);
+ for(const line of rawLines){
+  const last=paragraphs.at(-1);
+  if(last!==undefined&&ordinary(last)&&ordinary(line)&&!last.endsWith("  ")&&!last.endsWith("\\"))paragraphs[paragraphs.length-1]=last+" "+line;
+  else paragraphs.push(line);
+ }
+ const lines=paragraphs.map(line=>{
   if(!line.trim()||/^\s*(?:[-*_]\s*){3,}$/.test(line)||
     /^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/.test(line))return {literal:line};
   if(/^\s{4}|\t/.test(line))throw Error("Indented code or tab indentation requires manual translation");
