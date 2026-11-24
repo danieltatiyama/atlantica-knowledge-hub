@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.70 (guia VIP System enviado à `main` e fluxo CMS de submissão de guias aprovados por PR)  
-**Guia VIP System:** [PR #93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93) integrado à `main` com 16 screenshots. **Fluxo CMS:** [PR #94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) (`main`) e [PR #95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) (`dev/i18n`). Conferir integração e deploy.
+**Últimos PRs integrados:** [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93) (guia VIP System, 16 imagens), [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) (fluxo CMS aprovado na `main`) e [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) (suporte em `dev/i18n`). CI aprovado; conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -529,4 +529,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.70 — publicação do VIP System integrada à `main` no PR #93 com as 16 imagens preservadas e testes aprovados. O fluxo de publicação do Pages CMS (PR #94 na main, PR #95 na dev/i18n) valida aprovação editorial, cria PR específico e exige merge + deploy; verificar se ambos foram integrados. O Cloudflare ainda não teve sua publicação verificada visualmente. O histórico original do guia permanece em dev/i18n, e nenhum merge integral entre branches foi feito.**
+**Estado documentado: Stage 20.70 — guia VIP System integrado na `main` pelo PR #93 (16 imagens originais, metadados aprovados, CI aprovado). O novo fluxo explícito de publicação do Pages CMS foi integrado pelo PR #94 (`main`, CI e build editorial aprovados) e pelo PR #95 (`dev/i18n`), preservando a separação das branches. O fluxo submete apenas guias aprovados com imagens correspondentes para PR específico, sem fazer deploy direto. Ainda não foi possível confirmar o deploy Cloudflare ou testar a ação com uma execução real do CMS; o repositório deve permitir que GitHub Actions crie PRs. Conferir esses dois pontos ao próximo uso.**
