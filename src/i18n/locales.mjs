@@ -9,6 +9,8 @@ export const localeTag = lang => ({"pt-br":"pt-BR","zh-hans":"zh-Hans"}[lang] ??
 export const localePrefix = lang => lang==="en"?"":"/"+lang;
 export const isLocale = lang => LOCALE_IDS.includes(lang);
 export const legacyLocale = lang => lang==="pt-br"?"pt-br":"en";
+export const LOCALIZED_CATALOG_PATHS = ["/items/","/events/","/mercenaries/"];
+export const catalogPath = (lang,path) => localePrefix(LOCALIZED_CATALOG_PATHS.includes(path)?lang:legacyLocale(lang))+path;
 export const guidePath = (lang,slug="") => localePrefix(lang)+"/guides/"+(slug?slug+"/":"");
 export const localizedPaths = path => Object.fromEntries(LOCALE_IDS.map(lang=>[lang,localePrefix(lang)+path]));
 export function browserLocale(value){
@@ -24,6 +26,7 @@ export function languageDestination({lang,path,guideAlternates}){
  const plain=normalized.replace(/^\/(?:pt-br|fr|de|es|ko|zh-hans|ja)(?=\/)/,"");
  if(plain==="/")return localePrefix(lang)+"/";
  if(plain==="/guides/")return guidePath(lang);
+ if(LOCALIZED_CATALOG_PATHS.includes(plain))return catalogPath(lang,plain);
  if(/^\/(events|mercenaries|items|monsters|tools|explore)(\/|$)/.test(plain)){
   if(NEW_GUIDE_LOCALES.includes(lang))return localePrefix(lang)+"/";
   const listing=/^\/(events|mercenaries|monsters)(\/|$)/.exec(plain);
