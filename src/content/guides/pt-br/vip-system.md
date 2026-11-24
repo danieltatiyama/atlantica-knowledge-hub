@@ -16,7 +16,7 @@ O novo sistema VIP é semelhante ao de alguns jogos para dispositivos móveis ou
 
 Ele pode ser acessado pelo seguinte menu:
 
-![Captura de tela do sistema VIP](/images/guides/vip-system/image-1.png)
+![Captura de tela do sistema VIP](/images/guides/vip-system/vip-menu.png)
 
 ## Como funciona
 
