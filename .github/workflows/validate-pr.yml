@@ -147,6 +147,9 @@ jobs:
       - name: Validate approved-only Pages CMS guide publication submission
         run: node --test tests/guide-publication-cms.test.mjs
 
+      - name: Validate shared-image VIP System pt-BR translation
+        run: node --test tests/vip-system-pt-br-translation.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 

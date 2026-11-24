@@ -4,7 +4,7 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.70 (guia VIP System enviado à `main` e fluxo CMS de submissão de guias aprovados por PR)  
+**Última etapa implementada:** Stage 20.71 (tradução integral do guia VIP System para PT-BR, reaproveitando as mesmas 16 imagens e metadados editoriais aprovados)  
 **Últimos PRs integrados:** [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93) (guia VIP System, 16 imagens), [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) (fluxo CMS aprovado na `main`) e [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) (suporte em `dev/i18n`). CI aprovado; conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
@@ -424,6 +424,15 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - O usuário ainda precisa **integrar o PR de cada guia** e confirmar o deploy Cloudflare. O workflow com `GITHUB_TOKEN` pode exigir habilitar no repositório a permissão de Actions para criar PRs. Informações e limites em `docs/GUIDE-PUBLISHING.md`.
 - Testes: `tests/vip-system-guide-publication.test.mjs` e `tests/guide-publication-cms.test.mjs`. Aprovação editorial não é evidência independente de cada mecânica de jogo.
 
+### Stage 20.71 — Tradução portuguesa do guia VIP System
+
+- O usuário solicitou a tradução integral da versão inglesa já publicada `src/content/guides/en/vip-system.md` e autorização para **reutilizar as 16 imagens existentes**, sem duplicá-las.
+- Novo guia `src/content/guides/pt-br/vip-system.md` com título **Sistema VIP**, `translationKey: vip-system`, `category: game-systems`, `subcategory: others`, `draft: false` e `reviewStatus: approved`. Mantidas a estrutura, os conceitos e as quantidades (22 XP diários gratuitos, níveis 0 a 12) da fonte inglesa, sem modificar seu conteúdo.
+- As 16 referências usam exatamente os mesmos caminhos `/images/guides/vip-system/image-N.png` do artigo inglês; nenhuma imagem foi regenerada ou copiada, apenas reaproveitada. As imagens são capturas do jogo e podem conter textos em inglês.
+- A rota prevista `/pt-br/guides/vip-system/` é gerada automaticamente pela estrutura atual `src/pages/pt-br/guides/[slug].astro`. O seletor EN/PT-BR do artigo reconhece o mesmo `translationKey` nas duas versões.
+- Teste `tests/vip-system-pt-br-translation.test.mjs` valida metadados, 16 referências em ordem, imagens existentes, rotas e navegação bilíngue. Novo passo no workflow de validação de PR.
+- <https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99>: validar CI e integrar à `main`. Depois, verificar o deploy do Cloudflare; a integração ao GitHub por si só não confirma publicação em produção.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -453,6 +462,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.68 | [#88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) | Catálogo de 421 preços pesquisáveis, filtros e links para itens; ferramenta técnica preservada em /research/ |
 | 20.69 | [#90](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/90) | Inclusão de Game Systems → Others/Outros na Wiki, CMS e gerador de guias; complemento `dev/i18n` no [#91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) |
 | 20.70 | [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93), [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94), [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) | Guia VIP aprovado/publicado no código; Pages CMS com ação de envio por PR para main e imagens específicas por guia |
+| 20.71 | [#99](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99) | Tradução integral VIP System em PT-BR, sem duplicação das 16 imagens e com navegação EN/PT-BR |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -529,4 +539,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.70 — guia VIP System integrado na `main` pelo PR #93 (16 imagens originais, metadados aprovados, CI aprovado). O novo fluxo explícito de publicação do Pages CMS foi integrado pelo PR #94 (`main`, CI e build editorial aprovados) e pelo PR #95 (`dev/i18n`), preservando a separação das branches. O fluxo submete apenas guias aprovados com imagens correspondentes para PR específico, sem fazer deploy direto. Ainda não foi possível confirmar o deploy Cloudflare ou testar a ação com uma execução real do CMS; o repositório deve permitir que GitHub Actions crie PRs. Conferir esses dois pontos ao próximo uso.**
+**Estado documentado: Stage 20.71 — tradução PT-BR do VIP System preparada em PR #99, baseada na versão inglesa já publicada na `main`, com 16 imagens reutilizadas e testes de correspondência. A navegação bilíngue já tem suporte nativo pelo `translationKey`. Conferir CI, integração e publicação efetiva no Cloudflare. O fluxo CMS de publicação de guias aprovados (PRs #94 e #95) continua integrado.**
