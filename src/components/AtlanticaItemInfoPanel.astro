@@ -1,4 +1,7 @@
 ---
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 /**
  * Atlantica-inspired item information panel.
  * Visual presentation only; all numbers are exact original client-source
@@ -9,33 +12,32 @@ import {RAW_STATS_FIELDS} from "../data/full-client-stats-tools.mjs";
 import {labelForClientField} from "../data/client-item-stat-summary.mjs";
 import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
 
-interface Props { lang:"en"|"pt-br"; itemId:string; }
+interface Props { lang:Lang; itemId:string; }
 const {lang,itemId}=Astro.props;
-const pt=lang==="pt-br";
 const profile=getClientEquipmentSourceProfile(itemId);
 if(!profile)throw Error("Atlantica item panel requires an exact existing equipment-like client source ID");
 const {item,summary,detail}=profile;
 const batch=summarizeCraftBatch(detail.s);
-const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const fmt=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
 const groups=[
-  {id:"attack",heading:pt?"ATAQUE":"ATTACK"},
-  {id:"defense",heading:pt?"DEFESA":"DEFENSE"},
-  {id:"attributes",heading:pt?"ATRIBUTOS":"ATTRIBUTES"},
-  {id:"other",heading:pt?"BÔNUS":"BONUSES"},
+  {id:"attack",heading:equipmentText(lang,"ATTACK","ATAQUE")},
+  {id:"defense",heading:equipmentText(lang,"DEFENSE","DEFESA")},
+  {id:"attributes",heading:equipmentText(lang,"ATTRIBUTES","ATRIBUTOS")},
+  {id:"other",heading:equipmentText(lang,"BONUSES","BÔNUS")},
 ].map(section=>({
   ...section,
   fields:RAW_STATS_FIELDS.filter(field=>field.group===section.id&&summary?.fields.has(field.key))
-    .map(field=>({key:field.key,label:labelForClientField(field.key,pt),
+    .map(field=>({key:field.key,label:equipmentText(lang,labelForClientField(field.key,false),labelForClientField(field.key,true)),
       observation:summary.fields.get(field.key)})),
 })).filter(section=>section.fields.length);
 const showBatch=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
 ---
-<aside class="ao-item-tooltip" aria-label={pt?"Painel de informações do item, estilo Atlantica":"Atlantica-style item information panel"}>
+<aside class="ao-item-tooltip" aria-label={equipmentText(lang,"Atlantica-style item information panel","Painel de informações do item, estilo Atlantica")}>
   <div class="tooltip-bracket tooltip-bracket-top" aria-hidden="true"></div>
   <div class="tooltip-content">
     <div class="tooltip-topline">
-      <span>{pt?"INFORMAÇÕES DO ITEM":"ITEM INFORMATION"}</span>
-      <span class="client-marker">{pt?"DADOS DO CLIENTE":"CLIENT SOURCE"}</span>
+      <span>{equipmentText(lang,"ITEM INFORMATION","INFORMAÇÕES DO ITEM")}</span>
+      <span class="client-marker">{equipmentText(lang,"CLIENT SOURCE","DADOS DO CLIENTE")}</span>
     </div>
     <div class="tooltip-identity">
       <div class="item-emblem" aria-hidden="true"><span>✧</span></div>
@@ -47,21 +49,21 @@ const showBatch=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
     <div class="tooltip-divider" aria-hidden="true"></div>
     <dl class="tooltip-basic">
       <div>
-        <dt>{pt?"Nível nos arquivos":"Client-file level"}</dt>
+        <dt>{equipmentText(lang,"Client-file level","Nível nos arquivos")}</dt>
         <dd>{item.rawLevel??"—"}</dd>
       </div>
       <div>
-        <dt>{pt?"Grade original":"Original grade"}</dt>
+        <dt>{equipmentText(lang,"Original grade","Grade original")}</dt>
         <dd>{item.rawGrade??"—"}</dd>
       </div>
       <div>
-        <dt>{pt?"Definições":"Source records"}</dt>
+        <dt>{equipmentText(lang,"Source records","Definições")}</dt>
         <dd>{fmt.format(detail.s.length)}</dd>
       </div>
       <div>
-        <dt>{pt?"Situação":"Evidence"}</dt>
-        <dd>{item.reviewed?(pt?"Ficha revisada":"Reviewed article"):
-          (pt?"Extraído do cliente":"Client source only")}</dd>
+        <dt>{equipmentText(lang,"Evidence","Situação")}</dt>
+        <dd>{item.reviewed?(equipmentText(lang,"Reviewed article","Ficha revisada")):
+          (equipmentText(lang,"Client source only","Extraído do cliente"))}</dd>
       </div>
     </dl>
     {groups.length>0&&<div class="tooltip-sections">
@@ -73,31 +75,23 @@ const showBatch=batch.batchSize!==null&&batch.maxBatchesPerOperation>0;
             {field.observation.values.join(" / ")}
             {field.observation.status!=="consistent"&&
               <small>{field.observation.status==="conflict"
-                ?(pt?"divergência":"conflict")
-                :(pt?"parcial":"partial")}
+                ?(equipmentText(lang,"conflict","divergência"))
+                :(equipmentText(lang,"partial","parcial"))}
               {" "+field.observation.observedIn+"/"+field.observation.sourceCount}</small>}
           </dd>
         </div>)}</dl>
       </section>)}
     </div>}
-    {groups.length===0&&<p class="tooltip-empty">{pt
-      ?"Nenhum atributo numérico publicado para este ID."
-      :"No original numeric attributes are published for this ID."}</p>}
+    {groups.length===0&&<p class="tooltip-empty">{equipmentText(lang,"No original numeric attributes are published for this ID.","Nenhum atributo numérico publicado para este ID.")}</p>}
     {showBatch&&<div class="tooltip-batch">
-      <span>{pt?"Produção por batch":"Production per batch"}</span>
+      <span>{equipmentText(lang,"Production per batch","Produção por batch")}</span>
       <strong>{fmt.format(batch.batchSize)}</strong>
-      <small>{pt?"Limite por operação":"Per-operation limit"}: {fmt.format(batch.maxPerOperation)} ·
-        {pt?"até":"up to"} {fmt.format(batch.maxBatchesPerOperation)} batches</small>
-      {batch.status==="partial"&&<small>{pt
-        ?"Unit registrado em parte dos arquivos"
-        :"Unit recorded in only some original source files"}</small>}
+      <small>{equipmentText(lang,"Per-operation limit","Limite por operação")}: {fmt.format(batch.maxPerOperation)} ·
+        {equipmentText(lang,"up to","até")} {fmt.format(batch.maxBatchesPerOperation)} batches</small>
+      {batch.status==="partial"&&<small>{equipmentText(lang,"Unit recorded in only some original source files","Unit registrado em parte dos arquivos")}</small>}
     </div>}
-    {batch.status==="conflict"&&<p class="tooltip-batch-warning">{pt
-      ?"Batch indefinido: valores Unit divergentes nos registros originais."
-      :"Batch withheld: original source Unit values conflict."}</p>}
-    <p class="tooltip-disclaimer">{pt
-      ?"Painel inspirado no visual do jogo. Valores brutos extraídos dos arquivos do cliente, não uma captura de tooltip nem atributos garantidos no servidor. O máximo de 10.000 é uma regra de jogo informada pelo jogador."
-      :"Visual inspired by the game. Values are original client-file data, not a captured in-game tooltip or verified live-server stats. The 10,000 limit is a player-reported gameplay rule."}</p>
+    {batch.status==="conflict"&&<p class="tooltip-batch-warning">{equipmentText(lang,"Batch withheld: original source Unit values conflict.","Batch indefinido: valores Unit divergentes nos registros originais.")}</p>}
+    <p class="tooltip-disclaimer">{equipmentText(lang,"Visual inspired by the game. Values are original client-file data, not a captured in-game tooltip or verified live-server stats. The 10,000 limit is a player-reported gameplay rule.","Painel inspirado no visual do jogo. Valores brutos extraídos dos arquivos do cliente, não uma captura de tooltip nem atributos garantidos no servidor. O máximo de 10.000 é uma regra de jogo informada pelo jogador.")}</p>
   </div>
   <div class="tooltip-bracket tooltip-bracket-bottom" aria-hidden="true"></div>
 </aside>
