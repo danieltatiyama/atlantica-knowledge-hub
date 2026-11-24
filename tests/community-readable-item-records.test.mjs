@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {itemDbText} from "../src/i18n/item-db-ui.mjs";
 import {buildClientRecipeViews} from "../src/data/client-craft-recipe-views.mjs";
 
 const read=path=>readFileSync(path,"utf8");
@@ -53,11 +54,16 @@ test("different materials and conflicting batch units are explicit, never guesse
 
 test("community item detail prioritizes use, crafting and sources before audit data",()=>{
   const page=read("src/components/FullClientItemDatabasePage.astro");
-  assert.ok(page.includes('pt?"FICHA DO ITEM":"ITEM INFORMATION"'));
-  assert.ok(page.includes('pt?"Informações do item":"About this item"'));
-  assert.ok(page.includes('pt?"Como fabricar":"Crafting materials"'));
-  assert.ok(page.includes('pt?"Onde obter":"Where to find"'));
-  assert.ok(page.includes('pt?"Dados originais dos arquivos":"Original client records"'));
+  assert.ok(page.includes('itemDbText(lang,"ITEM INFORMATION")'));
+  assert.equal(itemDbText("pt-br","ITEM INFORMATION"),"FICHA DO ITEM");
+  assert.ok(page.includes('itemDbText(lang,"About this item")'));
+  assert.equal(itemDbText("pt-br","About this item"),"Informações do item");
+  assert.ok(page.includes('itemDbText(lang,"Crafting materials")'));
+  assert.equal(itemDbText("pt-br","Crafting materials"),"Como fabricar");
+  assert.ok(page.includes('itemDbText(lang,"Where to find")'));
+  assert.equal(itemDbText("pt-br","Where to find"),"Onde obter");
+  assert.ok(page.includes('itemDbText(lang,"Original client records")'));
+  assert.equal(itemDbText("pt-br","Original client records"),"Dados originais dos arquivos");
   assert.ok(page.includes('node("details",undefined,"wiki-technical")'));
   assert.ok(page.includes('buildClientRecipeViews(data.s)'));
   assert.ok(page.includes('recipe.sourceRows.map'));
