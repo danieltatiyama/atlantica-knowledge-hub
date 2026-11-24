@@ -571,6 +571,16 @@ export const catalogRows=[
     "일부 도감과 도구는 아직 영어로만 제공됩니다.",
     "部分图鉴和工具仍仅提供英文版本。",
     "一部の図鑑とツールはまだ英語のみ対応しています。"
+  ],
+  [
+    "Open section →",
+    "Abrir seção →",
+    "Ouvrir la section →",
+    "Bereich öffnen →",
+    "Abrir sección →",
+    "섹션 열기 →",
+    "打开栏目 →",
+    "セクションを開く →"
   ]
 ];
 const messages=new Map(catalogRows.map(row=>[row[0],row]));
