@@ -1,0 +1,36 @@
+name: Prepare guide translation requests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/content/guides/en/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guide-translation-requests
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Export missing and stale translation requests
+        run: node scripts/guide-translations.mjs export translation-requests
+      - name: Publish read-only request artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: guide-translation-requests
+          path: translation-requests/
+          retention-days: 14
