@@ -157,11 +157,12 @@ jobs:
         run: node --test tests/wiki-eight-locales.test.mjs tests/wiki-shared-localization.test.mjs
 
       - name: Validate guide translation pipeline without external API
-        run: node --test tests/guide-translation-pipeline.test.mjs
+        run: node --test tests/guide-translation-pipeline.test.mjs tests/guide-editorial-status.test.mjs
 
       - name: Smoke test offline translation request export
         run: |
           node scripts/guide-translations.mjs export "$RUNNER_TEMP/translation-requests-smoke"
+          test -s "$RUNNER_TEMP/translation-requests-smoke/summary.md"
           node --input-type=module -e 'import {readFileSync} from "node:fs"; const status=JSON.parse(readFileSync(process.argv[1],"utf8")); if(!Array.isArray(status.entries)||status.entries.length===0)throw Error("Missing translation status entries"); console.log("[IC] Translation status entries:",status.entries.length);' "$RUNNER_TEMP/translation-requests-smoke/status.json"
 
       - name: Validate Astro build
