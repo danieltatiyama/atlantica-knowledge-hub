@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.68 (catálogo público de 421 preços do cliente, interface player-first e pesquisa técnica preservada)  
-**Último PR integrado de funcionalidade:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) (Stage 20.67). **Stage 20.68:** em branch `feat/stage-20-68-market-price-catalog`, PR a verificar.
+**Último PR integrado de funcionalidade:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) (Stage 20.67). **Stage 20.68:** [PR #88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88), branch `feat/stage-20-68-market-price-catalog` (conferir integração e publicação).
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -432,7 +432,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.65 | [#84](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/84) | Extração real 652 preços NPC, 421 gerais nomeados, 293/293 históricos compatíveis; referência opt-in para calculadora |
 | 20.66 | [#85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
 | 20.67 | [#86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
-| 20.68 | PR em preparação | Catálogo de 421 preços pesquisáveis, filtros e links para itens; ferramenta técnica preservada em /research/ |
+| 20.68 | [#88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) | Catálogo de 421 preços pesquisáveis, filtros e links para itens; ferramenta técnica preservada em /research/ |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -509,4 +509,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.68 em desenvolvimento para publicar uma interface player-first dos 421 preços NPC do cliente, preservando as evidências históricas e o relato dos 128 itens em fontes separadas. O formulário técnico original fica disponível em /tools/market-prices/research/, sem alterar preços nem dados locais. Verificar PR, GitHub Actions, integração e posteriormente o deploy antes de declarar a etapa publicada.**
+**Estado documentado: Stage 20.68 implementada no PR #88, com novo catálogo player-first dos 421 preços NPC do cliente; 293 comparações históricas e 128 relatos de jogador permanecem fontes distintas. As cinco categorias ausentes no cliente foram preservadas como não classificadas. O workbench técnico original fica em /tools/market-prices/research/ e conserva observações locais. Confirmar integração do PR #88 e deployment antes de considerar a nova interface publicada.**
