@@ -156,8 +156,14 @@ jobs:
       - name: Validate eight guide locales and language routing
         run: node --test tests/wiki-eight-locales.test.mjs
 
+      - name: Validate guide translation pipeline without external API
+        run: node --test tests/guide-translation-pipeline.test.mjs
+
       - name: Validate Astro build
         run: npm run build
+
+      - name: Check managed translation publication gates
+        run: node scripts/check-built-translations.mjs
 
       - name: Check generated localized pages and hreflang
         run: node scripts/check-built-guide-locales.mjs
