@@ -116,7 +116,7 @@ const clientFields = curatedFields ? [
               <td>{field.label}</td><td><code>{field.value}</code></td>
             </tr>)}</tbody>
           </table></div>
-          <p class="provenance">{equipmentText(lang,"Evidence","Evidência")}: <strong>Extracted</strong>
+          <p class="provenance">{equipmentText(lang,"Evidence","Evidência")}: <strong>{equipmentText(lang,"Extracted","Extraído")}</strong>
             {APPROVED_EQUIPMENT_SOURCE_SNAPSHOT &&
               <> · {equipmentText(lang,"Snapshot","Snapshot")}: <code>{APPROVED_EQUIPMENT_SOURCE_SNAPSHOT}</code></>}
           </p>
