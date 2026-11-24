@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import {readFileSync,existsSync} from "node:fs";
+import {readFileSync,existsSync,readdirSync} from "node:fs";
 import {LOCALE_IDS,localePrefix,localeTag} from "../src/i18n/locales.mjs";
 import {sharedText} from "../src/i18n/shared-ui.mjs";
 import {catalogText} from "../src/i18n/catalog-ui.mjs";
 import {itemDbText} from "../src/i18n/item-db-ui.mjs";
 import {monsterText} from "../src/i18n/monster-ui.mjs";
-import {legacyLocale} from "../src/i18n/locales.mjs";
+import {legacyLocale,NEW_GUIDE_LOCALES} from "../src/i18n/locales.mjs";
+import {equipmentText} from "../src/i18n/equipment-ui.mjs";
 for(const lang of LOCALE_IDS){
  for(const path of ["/","/guides/"]){
   const file="dist"+localePrefix(lang)+path+"index.html";
@@ -43,7 +44,7 @@ for(const lang of LOCALE_IDS){
   for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),file+" missing alternate "+locale);
   if(path==="/items/"){
    assert.equal((html.match(/\bdata-item-row(?:[\s=>])/g)||[]).length,2462,file+" equipment count");
-   assert.ok(html.includes('href="'+legacyPrefix+'/items/1/"'),file+" original detail link");
+   assert.ok(html.includes('href="'+prefix+'/items/1/"'),file+" original detail link");
    assert.ok(html.includes(catalogText(lang,"Search name or ID")),file);
   }
  }
@@ -74,3 +75,22 @@ for(const lang of LOCALE_IDS){
  for(const alternate of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(alternate)+'"'),file+" missing alternate "+alternate);
 }
 console.log("[IC] Verified eight localized bestiary and loot codex pages.");
+
+for(const lang of LOCALE_IDS){
+ const path="dist"+localePrefix(lang)+"/items/";
+ const ids=readdirSync(path,{withFileTypes:true}).filter(entry=>entry.isDirectory()&&/^[1-9]\d*$/.test(entry.name));
+ assert.equal(ids.length,NEW_GUIDE_LOCALES.includes(lang)?551:2462,path+" equipment profiles");
+ const html=readFileSync(path+"1/index.html","utf8");
+ assert.ok(html.includes('lang="'+localeTag(lang)+'"'),path);
+ for(const [en,pt] of [["EQUIPMENT ITEM CATALOG","CATÁLOGO DE EQUIPAMENTOS"],["Item sections","Seções do item"],["CLIENT SOURCE","DADOS DO CLIENTE"]])
+  assert.ok(html.includes(equipmentText(lang,en,pt)),path+" missing "+en);
+ for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),path+" missing alternate "+locale);
+ const catalog=readFileSync(path+"index.html","utf8");
+ if(NEW_GUIDE_LOCALES.includes(lang))assert.ok(catalog.includes('href="/'+lang+'/items/database/?id='),path+" source-only localized link");
+}
+function countFiles(directory){
+ return readdirSync(directory,{withFileTypes:true}).reduce((sum,entry)=>sum+(entry.isDirectory()?countFiles(directory+"/"+entry.name):1),0);
+}
+const assetCount=countFiles("dist");
+assert.ok(assetCount<=20000,"Static asset budget exceeded: "+assetCount);
+console.log("[IC] Verified localized reviewed profiles and source-only explorer links. Static assets: "+assetCount+"/20000.");
