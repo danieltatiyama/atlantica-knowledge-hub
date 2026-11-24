@@ -4,6 +4,7 @@ import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { SUBCATEGORY_IDS } from "./data/guide-taxonomy";
 import { GUIDE_SUBCATEGORIES } from "./data/guide-taxonomy";
+import { localeIds } from "./i18n/locales.mjs";
 
 const guides = defineCollection({
   loader: glob({
@@ -17,12 +18,7 @@ const guides = defineCollection({
 
     translationKey: z.string(),
 
-    lang: z.enum([
-      "en",
-      "pt-br",
-      "fr",
-      "ja",
-    ]),
+    lang: z.enum(localeIds),
 
     category: z.enum([
       "nation-dungeons",

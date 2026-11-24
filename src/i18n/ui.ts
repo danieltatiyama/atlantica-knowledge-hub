@@ -1,10 +1,8 @@
 
+import { additionalUi } from "./additional-ui";
+import { localeNames } from "./locales.mjs";
 export const defaultLang = "en" as const;
-
-export const languages = {
-  en: "English",
-  "pt-br": "Português (Brasil)",
-} as const;
+export const languages = localeNames;
 
 const en = {
   // Navigation
@@ -186,6 +184,7 @@ const ptBr = {
 export const ui = {
   en,
   "pt-br": ptBr,
+  ...additionalUi,
 };
 
 export type Lang = keyof typeof ui;
