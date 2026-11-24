@@ -475,6 +475,13 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Testes de paridade, chamadas e controles dinâmicos em `tests/wiki-shared-localization.test.mjs`; verificação de textos no HTML gerado em `scripts/check-built-guide-locales.mjs`. Nomes de itens e monstros permanecem nos dados do cliente; módulos de catálogos e ferramentas ainda usam rotas EN/PT-BR, com fallback explícito.
 - Não traduzir novamente os artigos existentes nem inventar nomes oficiais. Confirmar CI e deploy antes de declarar a mudança publicada.
 
+### Stage 20.79 — Fluxo editorial e matriz de traduções
+
+- O Pages CMS de `dev/i18n` não tinha os campos de aprovação que a ação de publicação exige. A configuração de guias EN/PT-BR agora contém os mesmos controles de Draft e Editorial Status da main, com status e translationKey visíveis nas listagens.
+- Ação **Check guide translations (8 languages)** consulta a main via workflow `guide-translation-requests.yml`, somente leitura, sem API de tradução ou escrita de conteúdo. A matriz em `summary.md` também aparece no resumo do GitHub Actions; o artifact continua disponibilizando `status.json` e os pedidos.
+- O relatório distingue cobertura publicada, sincronização por hash, tradução manual e candidatos de revisão. Rascunhos ingleses e mudanças não integradas do CMS ficam fora. Nenhuma tradução existente foi modificada.
+- Testes: `tests/guide-editorial-status.test.mjs`, export real no CI. Conferir PRs, CI e a ação real no Pages CMS antes de declarar o fluxo validado visualmente.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
