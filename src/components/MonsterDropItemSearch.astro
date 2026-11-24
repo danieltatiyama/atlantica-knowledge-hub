@@ -1,73 +1,72 @@
 ---
+import {monsterText} from "../i18n/monster-ui.mjs";
+import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 /**
  * A level-filtered client-side index of the 822 ItemIDs with audited source-loot
  * references. This is source discovery, not probability estimation.
  */
-interface Props{lang:"en"|"pt-br";}
+interface Props{lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br";
+
 ---
 <section class="ao-drop-finder" id="item-drop-search" data-lang={lang}
-  aria-label={pt?"Buscar fontes de drops pelo item":"Find monster drop references by item"}>
+  aria-label={monsterText(lang,"loot","Find monster drop references by item")}>
   <div class="finder-header">
     <div class="finder-sigil" aria-hidden="true">✦</div>
     <div>
-      <p class="finder-overline">{pt?"CÓDICE DE OBTENÇÃO":"LOOT CODEX"}</p>
-      <h2>{pt?"Onde encontrar um item?":"Find an item's source"}</h2>
-      <p>{pt
-        ?"Pesquise pelo nome inglês ou ItemID para descobrir monstros que podem fornecer cada item, considerando as faixas de nível dos arquivos do cliente."
-        :"Search an English name or ItemID to see creatures that may drop it, using the game's original client level brackets."}</p>
+      <p class="finder-overline">{monsterText(lang,"loot","LOOT CODEX")}</p>
+      <h2>{monsterText(lang,"loot","Find an item's source")}</h2>
+      <p>{monsterText(lang,"loot","Search an English name or ItemID to see creatures that may drop it, using the game's original client level brackets.")}</p>
     </div>
   </div>
   <div class="finder-filters">
-    <label for="drop-item-query">{pt?"Item ou ID do cliente":"Original item name or ID"}
+    <label for="drop-item-query">{monsterText(lang,"loot","Original item name or ID")}
       <input id="drop-item-query" type="search" autocomplete="off" disabled
-        placeholder={pt?"Ex.: Ruby, 5335, Equipment Box":"E.g. Ruby, 5335, Equipment Box"}/>
+        placeholder={monsterText(lang,"loot","E.g. Ruby, 5335, Equipment Box")}/>
     </label>
-    <label for="drop-item-mode">{pt?"Referência do cliente":"Original reference type"}
+    <label for="drop-item-mode">{monsterText(lang,"loot","Original reference type")}
       <select id="drop-item-mode" disabled>
-        <option value="">{pt?"Todas as fontes":"All source types"}</option>
-        <option value="direct">{pt?"Drop direto":"Direct drop"}</option>
-        <option value="group">{pt?"Drop por faixa de nível":"Level-matched drop"}</option>
+        <option value="">{monsterText(lang,"loot","All source types")}</option>
+        <option value="direct">{monsterText(lang,"loot","Direct drop")}</option>
+        <option value="group">{monsterText(lang,"loot","Level-matched drop")}</option>
       </select>
     </label>
   </div>
-  <p class="finder-status" id="drop-item-status" role="status">{pt
-    ?"Carregando índice de itens com drops por nível…"
-    :"Loading indexed source-loot item identities…"}</p>
+  <p class="finder-status" id="drop-item-status" role="status">{monsterText(lang,"loot","Loading indexed source-loot item identities…")}</p>
   <div id="drop-item-list" class="finder-list" hidden>
     <div class="finder-list-head">
-      <span>{pt?"Item registrado":"Original item"}</span>
-      <span>{pt?"Referências diretas":"Direct"}</span>
-      <span>{pt?"Por faixa de nível":"Level-matched"}</span>
+      <span>{monsterText(lang,"loot","Original item")}</span>
+      <span>{monsterText(lang,"loot","Direct")}</span>
+      <span>{monsterText(lang,"loot","Level-matched")}</span>
     </div>
     <div id="drop-item-rows"></div>
     <div class="finder-navigation">
-      <button id="drop-item-prev" type="button" disabled>{pt?"Anterior":"Previous"}</button>
+      <button id="drop-item-prev" type="button" disabled>{monsterText(lang,"loot","Previous")}</button>
       <span id="drop-item-pages" aria-live="polite"></span>
-      <button id="drop-item-next" type="button" disabled>{pt?"Próxima":"Next"}</button>
+      <button id="drop-item-next" type="button" disabled>{monsterText(lang,"loot","Next")}</button>
     </div>
   </div>
   <section id="drop-item-result" class="finder-result" hidden>
     <div class="finder-result-head">
       <div>
-        <p class="finder-overline">{pt?"REGISTROS DO CLIENTE":"CLIENT SOURCE EVIDENCE"}</p>
+        <p class="finder-overline">{monsterText(lang,"loot","CLIENT SOURCE EVIDENCE")}</p>
         <h3 id="drop-item-result-name"></h3>
       </div>
-      <button id="drop-item-close" type="button">{pt?"Fechar":"Close"}</button>
+      <button id="drop-item-close" type="button">{monsterText(lang,"loot","Close")}</button>
     </div>
     <div id="drop-item-result-body"></div>
   </section>
-  <p class="finder-note">{pt
-    ?"Os drops são filtrados pela faixa correspondente ao nível da criatura nos arquivos do cliente. A porcentagem combinada é uma estimativa, NÃO uma chance confirmada no servidor. Os dados brutos ficam em Ver origem."
-    :"Drops are filtered by the level bracket matching each client creature. The combined percentage is an estimate, NOT verified live-server odds. Original values remain in View source."}</p>
+  <p class="finder-note">{monsterText(lang,"loot","Drops are filtered by the level bracket matching each client creature. The combined percentage is an estimate, NOT verified live-server odds. Original values remain in View source.")}</p>
 </section>
 <script>
+  import {monsterText} from "../i18n/monster-ui.mjs";
+  import {localePrefix,localeTag} from "../i18n/locales.mjs";
   import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
   import {estimatedTwoStagePercent,formatLevelResolvedPercent} from "../data/client-monster-drop-resolver.mjs";
   const root=document.getElementById("item-drop-search") as HTMLElement|null;
   if(root){
-    const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const lang=root.dataset.lang??"en",prefix=localePrefix(lang);
     const get=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
     const query=get<HTMLInputElement>("drop-item-query");
     const mode=get<HTMLSelectElement>("drop-item-mode");
@@ -81,7 +80,7 @@ const pt=lang==="pt-br";
     const resultName=get<HTMLElement>("drop-item-result-name");
     const resultBody=get<HTMLElement>("drop-item-result-body");
     const close=get<HTMLButtonElement>("drop-item-close");
-    const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+    const nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
     const ID=/^[1-9]\d{0,12}$/;
     const asText=(value:unknown)=>value===null||value===undefined?"—":String(value);
     const create=(tag:string,content?:string,cls?:string)=>{
@@ -111,17 +110,17 @@ const pt=lang==="pt-br";
         button.addEventListener("click",()=>void showItem(id,true));
         row.append(button);
         row.append(create("span",nf.format(direct)+" · "+nf.format(directCreatures)+" "+
-          (pt?"criaturas":"creatures"),"finder-count"));
+          (monsterText(lang,"loot","creatures")),"finder-count"));
         row.append(create("span",nf.format(group)+" · "+nf.format(groupCreatures)+" "+
-          (pt?"criaturas":"creatures"),"finder-count"));
+          (monsterText(lang,"loot","creatures")),"finder-count"));
         fragment.append(row);
       }
       rows.append(fragment);
       const total=Math.ceil(filtered.length/pageSize);
-      pages.textContent=(pt?"Página ":"Page ")+(total?page+1:0)+" / "+total;
+      pages.textContent=(monsterText(lang,"loot","Page "))+(total?page+1:0)+" / "+total;
       prev.disabled=page===0;next.disabled=page+1>=total;
       status.textContent=nf.format(filtered.length)+" / "+nf.format(all.length)+
-        (pt?" itens com referências de loot":" source-loot ItemIDs");
+        (monsterText(lang,"loot"," source-loot ItemIDs"));
     }
     function apply(){
       const q=query.value.trim().toLocaleLowerCase();
@@ -155,14 +154,14 @@ const pt=lang==="pt-br";
       const header=create("h4",title+" ("+nf.format(sourceRows.length)+")");
       section.append(header);
       const info=create("p",type==="direct"?
-        (pt?"Drops registrados diretamente para a criatura.":"Source records tied directly to the creature."):
-        (pt?"Itens da faixa de nível selecionada nos arquivos. A chance combinada é estimada; consulte a origem para as duas taxas brutas.":"Items from the selected client level bracket. The combined rate is estimated; source details preserve both original raw rates."),
+        (monsterText(lang,"loot","Source records tied directly to the creature.")):
+        (monsterText(lang,"loot","Items from the selected client level bracket. The combined rate is estimated; source details preserve both original raw rates.")),
         "finder-evidence-note");
       section.append(info);
       const wrapper=create("div",undefined,"finder-scroll");
       const table=create("table"),head=create("thead"),headRow=create("tr");
-      const headers=[pt?"Criatura":"Creature",pt?"Chance estimada":"Estimated rate",
-        pt?"Quantidade":"Amount",pt?"Origem":"Source"];
+      const headers=[monsterText(lang,"loot","Creature"),monsterText(lang,"loot","Estimated rate"),
+        monsterText(lang,"loot","Amount"),monsterText(lang,"loot","Source")];
       headers.forEach(label=>headRow.append(create("th",label)));
       head.append(headRow);
       const tbody=create("tbody");table.append(head,tbody);wrapper.append(table);
@@ -183,15 +182,15 @@ const pt=lang==="pt-br";
           tr.append(first);
           const pct=type==="direct"?Number(entry[3])/100:
             estimatedTwoStagePercent(entry[5],entry[6]);
-          tr.append(create("td",formatLevelResolvedPercent(pct,pt?"pt-br":"en")));
+          tr.append(create("td",formatLevelResolvedPercent(pct,lang)));
           tr.append(create("td",type==="direct"
             ?asText(entry[5])+"–"+asText(entry[6])
             :asText(entry[9])+"–"+asText(entry[10])));
           const evidence=create("td"),details=create("details"),summary=create("summary",
-            pt?"Ver origem":"View source");
+            monsterText(lang,"loot","View source"));
           details.append(summary);
           const sourceLines=type==="direct"
-            ?[["RawRate",entry[3]],[pt?"Linha":"Row",entry[2]],["Slot",entry[4]]]
+            ?[["RawRate",entry[3]],[monsterText(lang,"loot","Row"),entry[2]],["Slot",entry[4]]]
             :[["GroupID",entry[2]],["Band",entry[8]],["RawRate ref",entry[5]],
               ["RawRate item",entry[6]],["Reference row",entry[3]],
               ["Item row",entry[4]],["Slot",entry[7]]];
@@ -205,7 +204,7 @@ const pt=lang==="pt-br";
         }
         tbody.append(fragment);
         shown=Math.min(sourceRows.length,shown+50);
-        button.textContent=(pt?"Mostrar mais 50 · ":"Show 50 more · ")+
+        button.textContent=(monsterText(lang,"loot","Show 50 more · "))+
           nf.format(shown)+" / "+nf.format(sourceRows.length);
         if(shown>=sourceRows.length)button.remove();
       };
@@ -222,13 +221,13 @@ const pt=lang==="pt-br";
       if(!row)return;
       selected=itemId;result.hidden=false;
       resultName.textContent=row[1]+" · #"+itemId;
-      resultBody.replaceChildren(create("p",pt?"Consultando fontes originais…":"Loading original source rows…","finder-evidence-note"));
+      resultBody.replaceChildren(create("p",monsterText(lang,"loot","Loading original source rows…"),"finder-evidence-note"));
       if(push)history.pushState({}, "",nextUrl(itemId));
       try{
         const source=await getOriginalSourceItem(itemId);
         if(selected!==itemId)return;
         const fragment=document.createDocumentFragment();
-        const itemLink=create("a",pt?"Abrir ficha completa do item":"Open full item profile") as HTMLAnchorElement;
+        const itemLink=create("a",monsterText(lang,"loot","Open full item profile")) as HTMLAnchorElement;
         itemLink.href=prefix+"/items/database/?id="+encodeURIComponent(itemId);
         fragment.append(itemLink);
         if(source){
@@ -237,16 +236,14 @@ const pt=lang==="pt-br";
             direct.length!==row[2]||group.length!==row[3])
             throw Error("Original source index counts mismatch");
           if(direct.length)appendEvidence(fragment as unknown as HTMLElement,
-            pt?"Referências diretas":"Direct creature references",direct,"direct");
+            monsterText(lang,"loot","Direct creature references"),direct,"direct");
           if(group.length)appendEvidence(fragment as unknown as HTMLElement,
-            pt?"Referências por grupo":"Derived group references",group,"group");
+            monsterText(lang,"loot","Derived group references"),group,"group");
         }
         resultBody.replaceChildren(fragment);
         result.scrollIntoView({behavior:"smooth",block:"start"});
       }catch{
-        if(selected===itemId)resultBody.replaceChildren(create("p",pt
-          ?"Não foi possível validar o arquivo de origem do item."
-          :"Original item source file could not be validated.","finder-evidence-note"));
+        if(selected===itemId)resultBody.replaceChildren(create("p",monsterText(lang,"loot","Original item source file could not be validated."),"finder-evidence-note"));
       }
     }
     close.addEventListener("click",()=>{
@@ -280,9 +277,7 @@ const pt=lang==="pt-br";
         const selected=new URL(location.href).searchParams.get("item");
         if(selected)void showItem(selected,false);
       }catch{
-        status.textContent=pt
-          ?"Índice de itens com drops indisponível ou incompatível com este snapshot."
-          :"Original item drop discovery index is unavailable or mismatched.";
+        status.textContent=monsterText(lang,"loot","Original item drop discovery index is unavailable or mismatched.");
       }
     })();
   }
