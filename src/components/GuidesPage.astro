@@ -1,4 +1,5 @@
 ---
+import {sharedText} from "../i18n/shared-ui.mjs";
 import type { Lang } from "../i18n/ui";
 import { useTranslations } from "../i18n/utils";
 
@@ -68,7 +69,7 @@ const subcategories = SUBCATEGORY_IDS.map((id) => ({
   alternatePaths={localizedPaths("/guides/")}
 >
   <main class="container">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <nav class="breadcrumbs" aria-label={sharedText(lang,"Breadcrumb")}>
       <a href={lang === "en" ? "/" : `/${lang}/`}>
         {t("nav.home")}
       </a>
