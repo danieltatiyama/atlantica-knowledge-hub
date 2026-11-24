@@ -1,6 +1,8 @@
 ---
 import { useTranslations } from "../i18n/utils";
 import type { Lang } from "../i18n/ui";
+import { localePaths, isFullLocale } from "../i18n/locales.mjs";
+import { guideLocaleNotices } from "../i18n/guide-locale-notices";
 
 interface Props {
   lang: Lang;
@@ -21,7 +23,7 @@ const sections = [
       : "Equipment catalog with 2,462 equipment-like IDs, boxes, and source-backed item profiles.",
     symbol: "◈",
     theme: "items",
-    href: lang === "en" ? "/items/" : "/pt-br/items/",
+    href: lang === "pt-br" ? "/pt-br/items/" : "/items/",
   },
   {
     title: lang === "pt-br" ? "Todos os itens" : "All Items",
@@ -30,7 +32,7 @@ const sections = [
       : "Search 23,586 client item IDs, including materials, consumables and equipment. Explore crafting, uses and possible drops.",
     symbol: "✦",
     theme: "items",
-    href: lang === "en" ? "/items/database/" : "/pt-br/items/database/",
+    href: lang === "pt-br" ? "/pt-br/items/database/" : "/items/database/",
   },
   {
     title: lang === "pt-br" ? "Eventos e Atualizações" : "Events & Updates",
@@ -39,7 +41,7 @@ const sections = [
       : "Curated event calendar and recent updates.",
     symbol: "✧",
     theme: "events",
-    href: lang === "en" ? "/events/" : "/pt-br/events/",
+    href: lang === "pt-br" ? "/pt-br/events/" : "/events/",
   },
   {
     title: lang === "pt-br" ? "Monstros e Drops" : "Monsters & Drops",
@@ -48,7 +50,7 @@ const sections = [
       : "Explore original client creature and loot-source records as they pass source review. Raw rates are not confirmed drop percentages.",
     symbol: "◈",
     theme: "monsters",
-    href: lang === "en" ? "/monsters/" : "/pt-br/monsters/",
+    href: lang === "pt-br" ? "/pt-br/monsters/" : "/monsters/",
   },
   {
     title: lang === "pt-br" ? "Mercenários" : "Mercenaries",
@@ -57,7 +59,7 @@ const sections = [
       : "Mercenary profiles and skills with verified evidence.",
     symbol: "⚔",
     theme: "mercenaries",
-    href: lang === "en" ? "/mercenaries/" : "/pt-br/mercenaries/",
+    href: lang === "pt-br" ? "/pt-br/mercenaries/" : "/mercenaries/",
   },
   {
     title: t("home.gameGuides"),
@@ -78,12 +80,12 @@ const sections = [
     description: t("home.toolsDesc"),
     symbol: "⚙",
     theme: "tools",
-    href: lang === "en" ? "/tools/" : "/pt-br/tools/",
+    href: lang === "pt-br" ? "/pt-br/tools/" : "/tools/",
   },
 ];
 
 ---
-<BaseLayout title={siteName} lang={lang} alternatePaths={{en: "/", "pt-br": "/pt-br/",}}>
+<BaseLayout title={siteName} lang={lang} alternatePaths={localePaths("/")}>
   <main class="container home-main">
     <section class="hero">
     
@@ -94,6 +96,7 @@ const sections = [
       <p class="subtitle">
         {t("home.description")}
       </p>
+      {!isFullLocale(lang) && <p class="subtitle">{guideLocaleNotices[lang]}</p>}
 
       <button class="button home-search-launch" type="button" data-global-search-open>
         {lang === "pt-br" ? "Pesquisar itens, monstros e guias" : "Search items, monsters and guides"}

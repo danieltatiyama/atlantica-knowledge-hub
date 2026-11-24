@@ -4,7 +4,8 @@ import { getCollection, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import type { Lang } from "../i18n/ui";
 import { useTranslations } from "../i18n/utils";
-import { GUIDE_SUBCATEGORIES } from "../data/guide-taxonomy";
+import { GUIDE_SUBCATEGORIES, guideSubcategoryLabel } from "../data/guide-taxonomy";
+import { localeTags } from "../i18n/locales.mjs";
 
 interface Props {
   guide: CollectionEntry<"guides">;
@@ -17,7 +18,7 @@ const t = useTranslations(lang);
 const { Content } = await render(guide);
 
 const updatedAt = guide.data.updatedAt.toLocaleDateString(
-  lang === "pt-br" ? "pt-BR" : "en-US",
+  localeTags[lang],
   {
     year: "numeric",
     month: "long",
@@ -53,8 +54,7 @@ const translations = await getCollection(
   "guides",
   ({ data }) =>
     !data.draft &&
-    data.translationKey === guide.data.translationKey &&
-    (data.lang === "en" || data.lang === "pt-br")
+    data.translationKey === guide.data.translationKey
 );
 
 const alternatePaths: Partial<Record<Lang, string>> = {};
@@ -62,13 +62,6 @@ const alternatePaths: Partial<Record<Lang, string>> = {};
 if (translations.length > 1) {
   for (const translation of translations) {
     const translationLang = translation.data.lang;
-
-    if (
-      translationLang !== "en" &&
-      translationLang !== "pt-br"
-    ) {
-      continue;
-    }
 
     const slug = translation.id.replace(/^[^/]+\//, "");
 
@@ -96,7 +89,7 @@ const navigableGuides = [...categoryGuides].sort(
   (a, b) =>
     a.data.title.localeCompare(
       b.data.title,
-      lang === "pt-br" ? "pt-BR" : "en"
+      localeTags[lang]
     ) || a.id.localeCompare(b.id)
 );
 
@@ -152,7 +145,7 @@ const relatedGuides = categoryGuides
       {subcategoryInfo && subcategoryHref && (
         <>
           <a href={subcategoryHref}>
-            {subcategoryInfo.labels[lang]}
+            {guideSubcategoryLabel(guide.data.subcategory!, lang)}
           </a>
           <span>/</span>
         </>
@@ -171,7 +164,7 @@ const relatedGuides = categoryGuides
         {subcategoryInfo && subcategoryHref && (
           <p class="article-subcategory">
             <a href={subcategoryHref}>
-              {subcategoryInfo.labels[lang]}
+              {guideSubcategoryLabel(guide.data.subcategory!, lang)}
             </a>
           </p>
         )}

@@ -10,6 +10,8 @@ import "../styles/global.css";
 import "../styles/themes.css";
 
 import Header from "../components/Header.astro";
+import type { Lang } from "../i18n/ui";
+import { localeTags, localeIds } from "../i18n/locales.mjs";
 import Footer from "../components/Footer.astro";
 import FloatingWikiNavigator from "../components/FloatingWikiNavigator.astro";
 import ArticleImageLightbox from "../components/ArticleImageLightbox.astro";
@@ -18,7 +20,7 @@ interface Props {
   title: string;
   description?: string;
   lang?: string;
-  alternatePaths?: Partial<Record<"en" | "pt-br", string>>;
+  alternatePaths?: Partial<Record<Lang, string>>;
 }
 
 
@@ -43,14 +45,14 @@ const canonicalUrl = new URL(
 const alternateLinks = Object.entries(alternatePaths ?? {})
   .filter(([, path]) => Boolean(path))
   .map(([locale, path]) => ({
-    hreflang: locale === "pt-br" ? "pt-BR" : locale,
+    hreflang: localeTags[locale as Lang] ?? locale,
     href: new URL(path, siteUrl).href,
   }));
 
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={localeTags[lang as Lang] ?? lang}>
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -88,49 +90,20 @@ const alternateLinks = Object.entries(alternatePaths ?? {})
     ))}
 
     {Astro.url.pathname === "/" && (
-      <script is:inline>
+      <script is:inline define:vars={{ supportedLocales: localeIds }}>
         (() => {
-          const storageKey = "atlantica.language";
-
           let savedLanguage = null;
-
-          try {
-            savedLanguage = localStorage.getItem(storageKey);
-          } catch {
-            // Continue using the browser preference.
+          try { savedLanguage = localStorage.getItem("atlantica.language"); } catch {}
+          let selected = supportedLocales.includes(savedLanguage) ? savedLanguage : null;
+          if (!selected) {
+            const prefs = navigator.languages?.length ? navigator.languages : [navigator.language];
+            for (const value of prefs) {
+              const base = String(value).toLowerCase().split("-")[0];
+              const candidate = base === "pt" ? "pt-br" : base === "zh" ? "zh-hans" : base;
+              if (supportedLocales.includes(candidate)) { selected = candidate; break; }
+            }
           }
-
-          // Explicit user preference always wins.
-          if (savedLanguage === "en") {
-            return;
-          }
-
-          if (savedLanguage === "pt-br") {
-            window.location.replace(
-              "/pt-br/" + window.location.search + window.location.hash
-            );
-            return;
-          }
-
-          // No saved preference: inspect browser languages.
-          const browserLanguages =
-            navigator.languages?.length
-              ? navigator.languages
-              : [navigator.language];
-
-          const preferredLanguage = browserLanguages
-            .map((language) =>
-              language.toLowerCase().split("-")[0]
-            )
-            .find((language) =>
-              language === "en" || language === "pt"
-            );
-
-          if (preferredLanguage === "pt") {
-            window.location.replace(
-              "/pt-br/" + window.location.search + window.location.hash
-            );
-          }
+          if (selected && selected !== "en") window.location.replace("/"+selected+"/"+window.location.search+window.location.hash);
         })();
       </script>
     )}

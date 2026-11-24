@@ -83,3 +83,8 @@ h3 {
   font-weight: 400;
   letter-spacing: 0.015em;
 }
+
+/* CJK scripts need system font fallbacks; do not force Latin serif glyphs. */
+html:lang(ko) { --font-primary: "Source Sans 3", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; --font-heading: var(--font-primary); }
+html:lang(zh) { --font-primary: "Source Sans 3", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; --font-heading: var(--font-primary); }
+html:lang(ja) { --font-primary: "Source Sans 3", "Yu Gothic", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", sans-serif; --font-heading: var(--font-primary); }
