@@ -2,6 +2,30 @@
 
 
 actions:
+  - name: submit-guide-publication
+    label: "Submit approved guide for publication (PR)"
+    workflow: pages-cms-guide-submit.yml
+    ref: current
+    confirm:
+      title: "Submit an approved guide to the public website?"
+      message: "Run from dev/i18n. The guide must be saved with Draft disabled and Editorial Status Approved. Creates a PR to main with the guide and linked images; the website updates only after review, merge and deployment."
+      button: "Create publication PR"
+    fields:
+      - name: language
+        label: Guide language
+        type: select
+        required: true
+        default: en
+        options:
+          - label: English
+            value: en
+          - label: Português
+            value: pt-br
+      - name: translationKey
+        label: Guide identifier (translationKey)
+        type: text
+        required: true
+
   - name: create-guide-preview
     label: "Create guide from template (TEST)"
     workflow: pages-cms-guide-preview.yml
@@ -273,14 +297,14 @@ content:
         label: Draft
         type: boolean
         default: true
-        description: "Only disable Draft when Editorial Status is Approved. Otherwise, the site build will fail."
+        description: "Saving here does not publish. To submit: turn Draft off, select Approved, save on dev/i18n, then use Submit approved guide for publication (PR). The PR must be merged to main."
 
       - name: reviewStatus
         label: Editorial Status
         type: select
         required: false
         default: draft
-        description: "Editorial review stage. Approval does not publish the article automatically."
+        description: "Approved + Draft off makes this guide eligible for the Submit approved guide for publication (PR) action, but publishing requires the PR to merge into main."
         options:
           values:
             - name: draft
@@ -435,14 +459,14 @@ content:
         label: Rascunho
         type: boolean
         default: true
-        description: "Desative Rascunho apenas quando o Status Editorial estiver como Aprovado. Caso contrário, o build falhará."
+        description: "Salvar no CMS não publica no site. Para enviar: desative Rascunho, selecione Aprovado, salve em dev/i18n e use a ação Submit approved guide for publication (PR). O PR precisa ser integrado à main."
 
       - name: reviewStatus
         label: Status Editorial
         type: select
         required: false
         default: draft
-        description: "Etapa de revisão editorial. A aprovação não publica automaticamente o artigo."
+        description: "Aprovado + Rascunho desativado permite enviar o guia pela ação Submit approved guide for publication (PR). A publicação depende da integração na main."
         options:
           values:
             - name: draft
