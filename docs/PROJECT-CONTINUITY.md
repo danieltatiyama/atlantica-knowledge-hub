@@ -4,7 +4,7 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa implementada:** Stage 20.69 (subcategoria Others/Outros em Game Systems, com taxonomia, Pages CMS e gerador de rascunhos alinhados)  
+**Última etapa implementada:** Stage 20.70 (VIP System integrado à main no PR #93 e fluxo de solicitação de publicação de guias via Pages CMS em PRs de implementação)  
 **Último PR integrado de funcionalidade:** [PR #90](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/90) (Stage 20.69; validação completa e build editorial aprovados na `main`). **Suporte de rascunhos `dev/i18n`:** [PR #91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) integrado.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
@@ -415,6 +415,14 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - A branch `dev/i18n` diverge muito da `main`; o [PR #91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) aplica a atualização mínima do CMS/gerador naquela branch, sem mesclar as branches inteiras.
 - Novos testes: `tests/game-systems-others-subcategory.test.mjs`. Nenhum artigo existente foi reclassificado nem publicado automaticamente.
 
+### Stage 20.70 — Publicação do guia VIP System e fluxo seguro de Pages CMS
+
+- O artigo do usuário `src/content/guides/en/vip-system.md` foi integrado à `main` no [PR #93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93), com `draft: false`, `reviewStatus: approved` e **16 imagens** originais copiadas em `public/images/guides/vip-system/`. As imagens mantiveram os bytes originais; URLs foram isoladas para evitar colisão com outros guias. Não presumir que a publicação Cloudflare tenha concluído sem conferir o site.
+- O Pages CMS salva na branch `dev/i18n`, **não publica automaticamente**. Adicionada a ação *Request publication PR for approved guide (DEV)* em `.pages.yml`, com workflow `.github/workflows/pages-cms-guide-publication.yml` e os scripts `scripts/guide-publication-plan.mjs` e `scripts/request-guide-publication.mjs`.
+- A nova ação exige artigo aprovado e `draft: false`, copia apenas o guia selecionado e imagens referenciadas para branch baseada em `main`, abre PR para revisão/CI, mas **não faz merge automático**. Bloqueia caminhos inseguros, imagens ausentes, colisões e execução fora de `dev/i18n`. Pode requerer habilitar a permissão de criação de PR por GitHub Actions no repositório.
+- Os arquivos do fluxo precisam ser integrados em `main` (workflow_dispatch disponível) e `dev/i18n` (CMS e scripts fonte). A alteração do VIP na `dev/i18n` também reconcilia o campo `reviewStatus: approved` com o estado publicado. Teste: `tests/guide-publication-workflow.test.mjs`. Guia: `docs/GUIDE-PUBLICATION-FLOW.md`.
+- Fluxo correto: editar/aprovar no CMS → Request publication PR → validar/mesclar PR → confirmar deploy Cloudflare. Não selecionar novamente o VIP System, que já está na `main` e é protegido contra sobrescrita.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
@@ -443,6 +451,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.67 | [#86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
 | 20.68 | [#88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) | Catálogo de 421 preços pesquisáveis, filtros e links para itens; ferramenta técnica preservada em /research/ |
 | 20.69 | [#90](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/90) | Inclusão de Game Systems → Others/Outros na Wiki, CMS e gerador de guias; complemento `dev/i18n` no [#91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) |
+| 20.70 | [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93) + PRs do fluxo CMS | Guia VIP publicado em main com 16 imagens; solicitação de PR de publicação integrada ao Pages CMS |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -519,4 +528,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.69 integrada na `main` pelo PR #90 (GitHub Actions e build editorial aprovados) e na `dev/i18n` pelo PR #91. Game Systems contém agora `others` com rótulos Others/Outros em inglês e português, disponível no filtro de Guias, Pages CMS e criador de rascunhos. Nenhum artigo existente foi reclassificado ou publicado. A inspeção visual da Stage 20.68 permanece independente desta alteração.**
+**Estado documentado: Stage 20.70 em andamento. O guia VIP System está integrado à `main` no PR #93 e contém as 16 imagens originais. Os PRs de melhoria do fluxo CMS precisam passar CI e ser integrados à `main` e à `dev/i18n`. O site Cloudflare e seu deploy ainda não foram independentemente confirmados pela ferramenta de acesso externo.**
