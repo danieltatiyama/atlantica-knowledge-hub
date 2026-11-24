@@ -1,4 +1,7 @@
 ---
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import type { EquipmentItemCatalogEntry } from "../data/equipment-item-catalog";
 import { getCuratedEquipmentMetadata, APPROVED_EQUIPMENT_SOURCE_SNAPSHOT } from "../data/curated-equipment-metadata";
@@ -15,10 +18,9 @@ import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
 import MonsterItemSources from "./MonsterItemSources.astro";
 import ClientRawRequirementsSection from "./ClientRawRequirementsSection.astro";
 
-interface Props { lang: "en" | "pt-br"; item: EquipmentItemCatalogEntry; }
+interface Props { lang:Lang; item: EquipmentItemCatalogEntry; }
 const { lang, item } = Astro.props;
-const pt = lang === "pt-br";
-const prefix = pt ? "/pt-br" : "";
+const prefix=localePrefix(lang);
 const base = prefix + "/items/";
 const boxRefs = [...item.boxReferences].sort((a,b)=>a.boxName.localeCompare(b.boxName,"en"));
 const title = item.nameEn;
@@ -28,81 +30,73 @@ const sourceAttributes = getClientItemAttributes(item.id);
 const curated = getCuratedEquipmentMetadata(item.id);
 const curatedFields = curated?.fields;
 const clientFields = curatedFields ? [
-  { label: pt ? "Categoria no cliente" : "Client category", value: curatedFields.clientCategory },
-  { label: pt ? "Nível bruto do cliente" : "Raw client level", value: curatedFields.clientLevelRaw },
-  { label: pt ? "Grade bruta do cliente" : "Raw client grade", value: curatedFields.clientGradeRaw },
+  { label: equipmentText(lang,"Client category","Categoria no cliente"), value: curatedFields.clientCategory },
+  { label: equipmentText(lang,"Raw client level","Nível bruto do cliente"), value: curatedFields.clientLevelRaw },
+  { label: equipmentText(lang,"Raw client grade","Grade bruta do cliente"), value: curatedFields.clientGradeRaw },
 ].filter((field) => field.value !== undefined) : [];
 ---
 <BaseLayout lang={lang} title={title + " | Atlantica Knowledge Hub"}
-  description={(pt ? "Informações de equipamento, ID e referências a boxes capturadas: " : "Equipment item ID and captured box references: ") + title}
-  alternatePaths={{en:"/items/" + item.id + "/", "pt-br":"/pt-br/items/" + item.id + "/"}}>
+  description={(equipmentText(lang,"Equipment item ID and captured box references: ","Informações de equipamento, ID e referências a boxes capturadas: ")) + title}
+  alternatePaths={localizedPaths("/items/"+item.id+"/")}>
   <main class="container" data-wiki-nav-root="true">
-    <nav class="breadcrumb"><a href={base}>{pt ? "← Voltar ao catálogo" : "← Back to item catalog"}</a></nav>
+    <nav class="breadcrumb"><a href={base}>{equipmentText(lang,"← Back to item catalog","← Voltar ao catálogo")}</a></nav>
     <article>
       <header>
-        <p class="eyebrow">{pt ? "CATÁLOGO DE EQUIPAMENTOS" : "EQUIPMENT ITEM CATALOG"}</p>
+        <p class="eyebrow">{equipmentText(lang,"EQUIPMENT ITEM CATALOG","CATÁLOGO DE EQUIPAMENTOS")}</p>
         <h1>{title}</h1>
         <div class="meta">
-          <span>{pt ? "ID do item (Unique)" : "Item ID (Unique)"}: <code>{item.id}</code></span>
-          <span>{pt ? "Nome em inglês do cliente NA" : "NA client English name"}</span>
+          <span>{equipmentText(lang,"Item ID (Unique)","ID do item (Unique)")}: <code>{item.id}</code></span>
+          <span>{equipmentText(lang,"NA client English name","Nome em inglês do cliente NA")}</span>
         </div>
-        <p class="evidence">{pt
-          ? "Nome associado a partir de arquivos de equipamento e localização em inglês do cliente. Ainda não há tradução oficial em português verificada."
-          : "English name reconciled from client equipment definitions and NA localization. This does not establish equipment stats or current item availability."}</p>
+        <p class="evidence">{equipmentText(lang,"English name reconciled from client equipment definitions and NA localization. This does not establish equipment stats or current item availability.","Nome associado a partir de arquivos de equipamento e localização em inglês do cliente. Ainda não há tradução oficial em português verificada.")}</p>
       </header>
       <AtlanticaItemInfoPanel lang={lang} itemId={item.id} />
       <p class="source-export">
-        <a href="/data/client-equipment-grades.csv" download>{pt
-          ?"Exportar CSV: tabelas +0 a +10 dos 551 equipamentos"
-          :"Download CSV: +0 to +10 tables for all 551 equipment items"}</a>
-        <small>{pt
-          ?"Atributos +1..+10 são projeções históricas; MagicDef, EV e MoveSpeed ficam fixos."
-          :"+1..+10 values are historical projections; MagicDef, EV and MoveSpeed stay fixed."}</small>
+        <a href="/data/client-equipment-grades.csv" download>{equipmentText(lang,"Download CSV: +0 to +10 tables for all 551 equipment items","Exportar CSV: tabelas +0 a +10 dos 551 equipamentos")}</a>
+        <small>{equipmentText(lang,"+1..+10 values are historical projections; MagicDef, EV and MoveSpeed stay fixed.","Atributos +1..+10 são projeções históricas; MagicDef, EV e MoveSpeed ficam fixos.")}</small>
       </p>
       <p class="full-db-link">
-        <a href={prefix+"/tools/crafting/?id="+item.id}>
-          {pt?"Calcular materiais deste item":"Calculate crafting materials for this item"}
+        <a href={localePrefix(legacyLocale(lang))+"/tools/crafting/?id="+item.id}>
+          {equipmentText(lang,"Calculate crafting materials for this item","Calcular materiais deste item")}
         </a>
       </p>
       <p class="full-db-link">
         <a href={prefix+"/items/database/?id="+item.id}>
-          {pt?"Ver todas as definições deste ID no banco completo do cliente":"Inspect this ID in the complete original client database"}
+          {equipmentText(lang,"Inspect this ID in the complete original client database","Ver todas as definições deste ID no banco completo do cliente")}
         </a>
       </p>
-      <nav class="page-sections" aria-label={pt ? "Seções do item" : "Item sections"}>
-        <a href="#item-stats">{pt ? "Atributos" : "Stats"}</a>
-        <a href="#item-sources">{pt ? "Fontes" : "Source"}</a>
-        <a href="#item-crafting">{pt ? "Fabricação" : "Crafting"}</a>
-        <a href="#item-used-in">{pt ? "Usado em receitas" : "Used in crafting"}</a>
-        {sourceFacts && <a href="#client-crafting">{pt?"Materiais do cliente":"Client materials"}</a>}
-        {sourceAttributes && <a href="#client-requirements">{pt?"Requisitos brutos":"Raw requirements"}</a>}
-        {sourceFacts && <a href="#client-facts">{pt ? "Arquivos do jogo" : "Game files"}</a>}
-        {sourceAttributes && <a href="#client-attributes">{pt ? "Atributos brutos" : "Raw attributes"}</a>}
+      <nav class="page-sections" aria-label={equipmentText(lang,"Item sections","Seções do item")}>
+        <a href="#item-stats">{equipmentText(lang,"Stats","Atributos")}</a>
+        <a href="#item-sources">{equipmentText(lang,"Source","Fontes")}</a>
+        <a href="#item-crafting">{equipmentText(lang,"Crafting","Fabricação")}</a>
+        <a href="#item-used-in">{equipmentText(lang,"Used in crafting","Usado em receitas")}</a>
+        {sourceFacts && <a href="#client-crafting">{equipmentText(lang,"Client materials","Materiais do cliente")}</a>}
+        {sourceAttributes && <a href="#client-requirements">{equipmentText(lang,"Raw requirements","Requisitos brutos")}</a>}
+        {sourceFacts && <a href="#client-facts">{equipmentText(lang,"Game files","Arquivos do jogo")}</a>}
+        {sourceAttributes && <a href="#client-attributes">{equipmentText(lang,"Raw attributes","Atributos brutos")}</a>}
       </nav>
       <ClientItemStatSummary lang={lang} data={sourceAttributes} />
       <ItemKnowledgeSections lang={lang} profile={profile} section="overview" />
       <ItemKnowledgeSections lang={lang} profile={profile} section="stats" />
       <section id="item-sources">
-        <h2>{pt ? "Fontes de obtenção" : "Source"}</h2>
-        <h3>{pt ? "Prévia de Equipment Boxes" : "Equipment Box previews"}</h3>
+        <h2>{equipmentText(lang,"Source","Fontes de obtenção")}</h2>
+        <h3>{equipmentText(lang,"Equipment Box previews","Prévia de Equipment Boxes")}</h3>
         {boxRefs.length ? (
           <>
-            <p class="note">{pt
-              ? "As boxes abaixo transmitiram este ID em suas listas durante as capturas de 22/11/2026. Isso não confirma probabilidades, disponibilidade permanente nem quantidade recebida."
-              : "These boxes transmitted this item ID in their previews captured on November 22, 2026. This does not confirm drop odds, permanent availability or reward quantity."}</p>
+            <p class="note">{equipmentText(lang,"These boxes transmitted this item ID in their previews captured on November 22, 2026. This does not confirm drop odds, permanent availability or reward quantity.","As boxes abaixo transmitiram este ID em suas listas durante as capturas de 22/11/2026. Isso não confirma probabilidades, disponibilidade permanente nem quantidade recebida.")}</p>
             <div class="table-scroll"><table>
-              <thead><tr><th>{pt ? "Box" : "Box"}</th><th>{pt ? "ID da box" : "Box ID"}</th><th>{pt ? "Prévia" : "Preview"}</th></tr></thead>
+              <thead><tr><th>{equipmentText(lang,"Box","Box")}</th><th>{equipmentText(lang,"Box ID","ID da box")}</th><th>{equipmentText(lang,"Preview","Prévia")}</th></tr></thead>
               <tbody>{boxRefs.map((box) => <tr>
-                <td><a href={prefix + "/items/boxes/" + box.boxSlug + "/"}>{box.boxName}</a></td>
+                <td><a href={localePrefix(legacyLocale(lang)) + "/items/boxes/" + box.boxSlug + "/"}>{box.boxName}</a></td>
                 <td><code>{box.boxId}</code></td>
                 <td>{box.interaction === "selection"
-                  ? (pt ? "Escolha de item" : "Player selection")
-                  : (pt ? "Lista de possíveis resultados" : "Random-box preview")}</td>
+                  ? (equipmentText(lang,"Player selection","Escolha de item"))
+                  : (equipmentText(lang,"Random-box preview","Lista de possíveis resultados"))}</td>
               </tr>)}</tbody>
             </table></div>
           </>
         ) : (
-          <p>{pt ? "Nenhuma associação de box capturada para este item." : "No captured box association for this item."}</p>
+          <p>{equipmentText(lang,"No captured box association for this item.","Nenhuma associação de box capturada para este item.")}</p>
         )}
       </section>
       <MonsterItemSources lang={lang} itemId={item.id} />
@@ -114,25 +108,21 @@ const clientFields = curatedFields ? [
       <ClientItemAttributesSection lang={lang} data={sourceAttributes} />
       {curated && (
         <section class="curated">
-          <h2>{pt ? "Metadados extraídos e revisados" : "Reviewed client-extracted metadata"}</h2>
-          <p class="note">{pt
-            ? "Fonte do cliente selecionada por revisão editorial. Estes campos são valores brutos extraídos, não comprovações de requisitos, atributos ou disponibilidade no jogo."
-            : "Client source selected through editorial review. These are extracted raw fields, not independently verified equipment requirements, stats or current availability."}</p>
+          <h2>{equipmentText(lang,"Reviewed client-extracted metadata","Metadados extraídos e revisados")}</h2>
+          <p class="note">{equipmentText(lang,"Client source selected through editorial review. These are extracted raw fields, not independently verified equipment requirements, stats or current availability.","Fonte do cliente selecionada por revisão editorial. Estes campos são valores brutos extraídos, não comprovações de requisitos, atributos ou disponibilidade no jogo.")}</p>
           <div class="table-scroll"><table>
-            <thead><tr><th>{pt ? "Campo" : "Field"}</th><th>{pt ? "Valor bruto" : "Raw value"}</th></tr></thead>
+            <thead><tr><th>{equipmentText(lang,"Field","Campo")}</th><th>{equipmentText(lang,"Raw value","Valor bruto")}</th></tr></thead>
             <tbody>{clientFields.map((field) => <tr>
               <td>{field.label}</td><td><code>{field.value}</code></td>
             </tr>)}</tbody>
           </table></div>
-          <p class="provenance">{pt ? "Evidência" : "Evidence"}: <strong>Extracted</strong>
+          <p class="provenance">{equipmentText(lang,"Evidence","Evidência")}: <strong>Extracted</strong>
             {APPROVED_EQUIPMENT_SOURCE_SNAPSHOT &&
-              <> · {pt ? "Snapshot" : "Snapshot"}: <code>{APPROVED_EQUIPMENT_SOURCE_SNAPSHOT}</code></>}
+              <> · {equipmentText(lang,"Snapshot","Snapshot")}: <code>{APPROVED_EQUIPMENT_SOURCE_SNAPSHOT}</code></>}
           </p>
         </section>
       )}
-      {!profile && !sourceFacts && !sourceAttributes && <p class="pending-note">{pt
-        ? "Esta ficha ainda não possui atributos revisados. As informações serão adicionadas conforme forem documentadas com fontes."
-        : "This item has no reviewed gameplay stats yet. Its profile will expand when source-backed information becomes available."}</p>}
+      {!profile && !sourceFacts && !sourceAttributes && <p class="pending-note">{equipmentText(lang,"This item has no reviewed gameplay stats yet. Its profile will expand when source-backed information becomes available.","Esta ficha ainda não possui atributos revisados. As informações serão adicionadas conforme forem documentadas com fontes.")}</p>}
     </article>
   </main>
 </BaseLayout>
