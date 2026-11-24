@@ -3,6 +3,8 @@ import { equipmentText, hasEquipmentMessage } from "./equipment-ui.mjs";
 import { complementaryRowsA } from "./complementary-ui-a.mjs";
 import { complementaryRowsB } from "./complementary-ui-b.mjs";
 const extra=[
+["This selection box has no recovered option list yet.","La liste d'options de ce coffre de sélection n'a pas encore été récupérée.","Die Auswahlliste dieser Truhe wurde noch nicht erfasst.","Aún no se ha recuperado la lista de opciones de este cofre de selección.","이 선택 상자의 선택 목록은 아직 확보되지 않았습니다.","尚未获取此选择宝箱的选项列表。","この選択ボックスの選択肢一覧は未取得です。"],
+["No opening preview has been captured for this box. Its complete result list has not been verified.","Aucun aperçu d'ouverture n'a été capturé pour ce coffre. Sa liste complète de résultats n'est pas vérifiée.","Für diese Truhe wurde noch keine Öffnungsvorschau erfasst. Die vollständige Ergebnisliste ist nicht bestätigt.","No se ha capturado una vista previa de apertura de este cofre. Su lista completa de resultados no está verificada.","이 상자의 개봉 미리보기는 아직 확보되지 않았습니다. 전체 결과 목록은 확인되지 않았습니다.","尚未捕获此宝箱的开启预览，完整结果列表未经验证。","このボックスの開封プレビューは未取得で、結果の完全な一覧は未確認です。"],
   [
     "This article body is shown in English until a reviewed translation is available.",
     "Le texte de cet article reste en anglais en attendant une traduction vérifiée.",
