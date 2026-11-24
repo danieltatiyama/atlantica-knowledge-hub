@@ -24,7 +24,7 @@ function metadataValue(frontmatter,key){
 
 export function prepareGuidePublication(markdown,{language,translationKey}){
  if(!allowedLanguages.has(language)||typeof translationKey!=="string"||
-   !safeSlug.test(translationKey))throw Error("Invalid language or translation key");
+   !safeSlug.test(translationKey)||translationKey.length>80)throw Error("Invalid language or translation key");
  if(typeof markdown!=="string"||markdown.length>250000)
    throw Error("Invalid guide file size");
  const frontmatter=markdown.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
