@@ -153,6 +153,9 @@ jobs:
       - name: Validate accessible global article image lightbox
         run: node --test tests/wiki-article-image-lightbox.test.mjs
 
+      - name: Validate eight-language guide architecture and VIP translations
+        run: node --test tests/guide-eight-locales.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
