@@ -1,0 +1,49 @@
+name: Request Reviewed Guide Publication PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: "Pages CMS JSON payload"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: guide-publication-${{ github.ref }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  open-publication-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify source branch
+        shell: bash
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/dev/i18n" ]; then
+            echo "::error::Guide publication requests can only originate from dev/i18n."
+            exit 1
+          fi
+
+      - name: Checkout the guide source branch
+        uses: actions/checkout@v7
+        with:
+          ref: dev/i18n
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Validate and create scoped publication PR
+        env:
+          CMS_PAYLOAD: ${{ inputs.payload }}
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/request-guide-publication.mjs
