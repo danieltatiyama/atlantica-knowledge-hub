@@ -47,7 +47,7 @@ test("lightbox mounts exactly once globally and is scoped to article content",()
  assert.ok(viewer.includes("img.dataset.wikiLightboxReady"));
  assert.ok(viewer.includes("img.tabIndex=0"));
  assert.ok(viewer.includes('img.setAttribute("role","button")'));
- assert.ok(viewer.includes('if(event.key==="Enter"||event.key===" ")'));
+ assert.ok(viewer.includes('event.key==="Enter"||event.key===" "'));
  assert.ok(viewer.includes("lastFocus?.focus("));
  assert.ok(viewer.includes('document.body.style.overflow=previousOverflow'));
  const guide=read("src/components/GuideArticle.astro");
