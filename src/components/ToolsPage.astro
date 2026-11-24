@@ -1,24 +1,27 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:"en"|"pt-br";}
+import {toolText,calendarWeekday} from "../i18n/tools-ui.mjs";
+import {localePrefix,localeTag,localizedPaths,catalogPath,legacyLocale} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 const cards=[
- {name:pt?"Qualidade dos dados":"Data quality",description:pt?"Cobertura e consistência dos índices do cliente.":"Client source coverage and integrity.",href:prefix+"/tools/data-quality/"},
- {name:pt?"Calculadora de crafting":"Crafting calculator",description:pt?"Calcule materiais e dependências.":"Plan materials and dependencies.",href:prefix+"/tools/crafting/"},
- {name:pt?"Calendário de Nation Dungeons":"Nation Dungeon calendar",description:pt?"Planeje runs e cooldowns.":"Plan runs and cooldowns.",href:prefix+"/tools/nation-dungeons/"},
- {name:pt?"Catálogo de preços do Market":"Market price catalog",description:pt?"Consulte 421 preços de referência por nome, categoria ou ItemID.":"Browse 421 client price references by name, category or ItemID.",href:prefix+"/tools/market-prices/"},
+ {name:toolText(lang,"Data quality","Qualidade dos dados"),description:toolText(lang,"Client source coverage and integrity.","Cobertura e consistência dos índices do cliente."),href:catalogPath(lang,"/tools/data-quality/")},
+ {name:toolText(lang,"Crafting calculator","Calculadora de crafting"),description:toolText(lang,"Plan materials and dependencies.","Calcule materiais e dependências."),href:catalogPath(lang,"/tools/crafting/")},
+ {name:toolText(lang,"Nation Dungeon calendar","Calendário de Nation Dungeons"),description:toolText(lang,"Plan runs and cooldowns.","Planeje runs e cooldowns."),href:catalogPath(lang,"/tools/nation-dungeons/")},
+ {name:toolText(lang,"Market price catalog","Catálogo de preços do Market"),description:toolText(lang,"Browse 421 client price references by name, category or ItemID.","Consulte 421 preços de referência por nome, categoria ou ItemID."),href:catalogPath(lang,"/tools/market-prices/")},
 ];
 ---
-<BaseLayout title={(pt?"Ferramentas":"Tools")+" | Atlantica Knowledge Hub"}
- lang={lang} alternatePaths={{en:"/tools/","pt-br":"/pt-br/tools/"}}>
+<BaseLayout title={(toolText(lang,"Tools","Ferramentas"))+" | Atlantica Knowledge Hub"}
+ lang={lang} alternatePaths={localizedPaths("/tools/")}>
  <main class="tools-index">
   <p class="eyebrow">ATLANTICA GLOBAL / NA</p>
-  <h1>{pt?"Ferramentas e calculadoras":"Tools & calculators"}</h1>
-  <p>{pt?"Ferramentas comunitárias baseadas na Wiki.":"Community tools using Wiki data."}</p>
+  <h1>{toolText(lang,"Tools & calculators","Ferramentas e calculadoras")}</h1>
+  <p>{toolText(lang,"Community tools using Wiki data.","Ferramentas comunitárias baseadas na Wiki.")}</p>
   <div class="tool-grid">{cards.map(card=>card.href
-    ? <a href={card.href}><h2>{card.name}</h2><p>{card.description}</p></a>
-    : <div class="future-tool"><h2>{card.name}</h2><p>{card.description}</p><small>{pt?"Em desenvolvimento":"Coming soon"}</small></div>
+    ? <a href={card.href}><h2>{card.name}</h2><p>{card.description}</p>{lang!==legacyLocale(lang)&&!card.href.startsWith(prefix+"/")&&<small>{toolText(lang,"Available in English for now.")}</small>}</a>
+    : <div class="future-tool"><h2>{card.name}</h2><p>{card.description}</p><small>{toolText(lang,"Coming soon","Em desenvolvimento")}</small></div>
   )}</div>
  </main>
 </BaseLayout>
