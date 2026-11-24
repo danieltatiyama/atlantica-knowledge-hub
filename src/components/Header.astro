@@ -1,6 +1,8 @@
 ---
 
 import { getCollection } from "astro:content";
+import { LOCALE_IDS, LOCALE_NAMES, languageDestination, localizedPaths, legacyLocale, localePrefix } from "../i18n/locales.mjs";
+import type { Lang } from "../i18n/ui";
 import GlobalSearch from "./GlobalSearch.astro";
 import type { CollectionEntry } from "astro:content";
 
@@ -10,11 +12,11 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
-const eventsHref = lang === "en" ? "/events/" : `/${lang}/events/`;
-const mercenariesHref = lang === "en" ? "/mercenaries/" : `/${lang}/mercenaries/`;
-const itemsHref = lang === "en" ? "/items/" : `/${lang}/items/`;
-const allItemsHref = lang === "en" ? "/items/database/" : `/${lang}/items/database/`;
-const monstersHref = lang === "en" ? "/monsters/" : `/${lang}/monsters/`;
+const eventsHref = localePrefix(legacyLocale(lang))+"/events/";
+const mercenariesHref = localePrefix(legacyLocale(lang))+"/mercenaries/";
+const itemsHref = localePrefix(legacyLocale(lang))+"/items/";
+const allItemsHref = localePrefix(legacyLocale(lang))+"/items/database/";
+const monstersHref = localePrefix(legacyLocale(lang))+"/monsters/";
 
 const navigation = [
   {
@@ -65,13 +67,12 @@ const navigation = [
 ];
 
 
-type SupportedLang = "en" | "pt-br";
+type SupportedLang = Lang;
 
 const publishedGuides = await getCollection(
   "guides",
   ({ data }) =>
-    !data.draft &&
-    (data.lang === "en" || data.lang === "pt-br")
+    !data.draft
 );
 
 function getGuideUrl(guide: CollectionEntry<"guides">): string {
@@ -93,48 +94,8 @@ const currentGuide = publishedGuides.find(
 );
 
 function getLanguageTarget(targetLang: SupportedLang): string {
-  const prefix = targetLang === "en"
-    ? ""
-    : `/${targetLang}`;
-
-  // Article: find the corresponding translation.
-  if (currentGuide) {
-    const translation = publishedGuides.find(
-      (guide) =>
-        guide.data.lang === targetLang &&
-        guide.data.translationKey ===
-          currentGuide.data.translationKey
-    );
-
-    return translation
-      ? getGuideUrl(translation)
-      : `${prefix}/guides/`;
-  }
-
-  // Guides listing: preserve the page type.
-  if (
-    normalizedPath === "/guides/" ||
-    normalizedPath === "/pt-br/guides/"
-  ) {
-    return `${prefix}/guides/`;
-  }
-
-  // New curated collections: preserve their listing type when switching languages.
-  if (normalizedPath.startsWith("/events/") || normalizedPath.startsWith("/pt-br/events/")) {
-    return `${prefix}/events/`;
-  }
-  if (normalizedPath.startsWith("/mercenaries/") || normalizedPath.startsWith("/pt-br/mercenaries/")) {
-    return `${prefix}/mercenaries/`;
-  }
-  if (normalizedPath.startsWith("/items/") || normalizedPath.startsWith("/pt-br/items/")) {
-    return `${prefix}${normalizedPath.replace(/^\/pt-br(?=\/)/, "")}`;
-  }
-  if (normalizedPath.startsWith("/monsters/") ||
-      normalizedPath.startsWith("/pt-br/monsters/")) {
-    return `${prefix}/monsters/`;
-  }
-  // Home or other pages.
-  return `${prefix}/`;
+  const guideAlternates = currentGuide ? Object.fromEntries(publishedGuides.filter(guide=>guide.data.translationKey===currentGuide.data.translationKey).map(guide=>[guide.data.lang,getGuideUrl(guide)])) : undefined;
+  return languageDestination({lang:targetLang,path:normalizedPath,guideAlternates}) ?? "/";
 }
 
 
@@ -205,10 +166,8 @@ import {
         </label>
         <select id="site-language" class="language-select header-control-select"
           aria-label={lang === "pt-br" ? "Selecionar idioma" : "Select language"}
-          data-target-en={getLanguageTarget("en")}
-          data-target-pt-br={getLanguageTarget("pt-br")}>
-          <option value="en" selected={lang === "en"}>English</option>
-          <option value="pt-br" selected={lang === "pt-br"}>Português (Brasil)</option>
+          >
+          {LOCALE_IDS.map(locale=><option value={locale} selected={lang===locale} data-target={getLanguageTarget(locale)}>{LOCALE_NAMES[locale]}</option>)}
         </select>
       </div>
     </div>
@@ -562,16 +521,7 @@ import {
   languageSelect?.addEventListener("change", () => {
     const selectedLanguage = languageSelect.value;
 
-    if (
-      selectedLanguage !== "en" &&
-      selectedLanguage !== "pt-br"
-    ) {
-      return;
-    }
-
-    const destination = selectedLanguage === "en"
-      ? languageSelect.dataset.targetEn
-      : languageSelect.dataset.targetPtBr;
+    const destination = languageSelect.selectedOptions[0]?.dataset.target;
 
     if (!destination) {
       return;
@@ -590,12 +540,10 @@ import {
     const currentPath = window.location.pathname;
 
     const isHome =
-      currentPath === "/" ||
-      currentPath === "/pt-br/";
+      /^\/(?:pt-br\/|fr\/|de\/|es\/|ko\/|zh-hans\/|ja\/)?$/.test(currentPath);
 
     const isGuideListing =
-      currentPath === "/guides/" ||
-      currentPath === "/pt-br/guides/";
+      /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/guides\/$/.test(currentPath);
     const isMonsterCatalog =
       currentPath === "/monsters/" ||
       currentPath === "/pt-br/monsters/";
