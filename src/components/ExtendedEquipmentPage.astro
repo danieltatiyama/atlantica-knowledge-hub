@@ -1,28 +1,29 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { complementaryText } from "../i18n/complementary-ui.mjs";
+import { localePrefix, localeTag, localizedPaths, legacyLocale, equipmentProfilePath } from "../i18n/locales.mjs";
 import facts from "../data/extended-equipment-facts.json";
 import { getReviewedExtendedFacts } from "../data/extended-equipment-facts-gate.mjs";
 import { EQUIPMENT_ITEM_NAMES_EN } from "../data/equipment-item-names-en";
 
-interface Props { lang: "en" | "pt-br"; slug: string; }
+interface Props { lang: string; slug: string; }
 const {lang,slug}=Astro.props;
-const pt=lang==="pt-br";
-const prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 const all=getReviewedExtendedFacts(facts,EQUIPMENT_ITEM_NAMES_EN);
 const item=all.find(entry=>entry.slug===slug);
 if(!item)throw new Error("Unreviewed extended equipment slug; cannot render");
-const n=(value:number)=>new Intl.NumberFormat(pt?"pt-BR":"en-US").format(value);
+const n=(value:number)=>new Intl.NumberFormat(localeTag(lang)).format(value);
 const base=item.derived.bareL;
 const gems=item.socketedModifiers;
 const observed=item.observedTooltip;
 const derived=item.derived;
 const stats=[
- {label:pt?"Ataque":"Attack",observed:n(observed.attackMin)+" – "+n(observed.attackMax),
+ {label:complementaryText(lang,"Attack","Ataque"),observed:n(observed.attackMin)+" – "+n(observed.attackMax),
    base:n(base.attackMin)+" – "+n(base.attackMax),
    stones:"+"+n(derived.socketAttackTotal.min)+" – +"+n(derived.socketAttackTotal.max)},
- {label:pt?"Força":"Strength",observed:"+"+n(observed.strength)},
- {label:pt?"Inteligência":"Intelligence",observed:"+"+n(observed.intelligence)},
- {label:pt?"Vitalidade":"Vitality",observed:"+"+n(observed.vitality)},
+ {label:complementaryText(lang,"Strength","Força"),observed:"+"+n(observed.strength)},
+ {label:complementaryText(lang,"Intelligence","Inteligência"),observed:"+"+n(observed.intelligence)},
+ {label:complementaryText(lang,"Vitality","Vitalidade"),observed:"+"+n(observed.vitality)},
  {label:"Critical",observed:n(observed.critical),stones:"+"+n(gems.count*gems.perStone.criticalRate)},
  {label:"Multi-Hit Rate",observed:n(observed.multiHitRate),stones:"+"+n(gems.count*gems.perStone.multiHitRate)},
  {label:"AP Mod.",observed:n(observed.actionPowerMod),stones:"+"+n(gems.count*gems.perStone.action)},
@@ -30,49 +31,40 @@ const stats=[
 ];
 ---
 <BaseLayout lang={lang} title={item.nameEn+" — L | Atlantica Knowledge Hub"}
- description={pt
-   ?"Ficha documentada a partir de screenshot de equipamento lendário, separando atributos e bônus de pedras."
-   :"Screenshot-documented Legendary equipment profile separating intrinsic stats from socket modifiers."}
- alternatePaths={{
-  en:"/items/legendary/"+slug+"/",
-  "pt-br":"/pt-br/items/legendary/"+slug+"/"
- }}>
+ description={complementaryText(lang,"Screenshot-documented Legendary equipment profile separating intrinsic stats from socket modifiers.","Ficha documentada a partir de screenshot de equipamento lendário, separando atributos e bônus de pedras.")}
+ alternatePaths={localizedPaths("/items/legendary/"+slug+"/")}>
  <main class="container">
-   <nav class="breadcrumb"><a href={prefix+"/items/legendary/"}>{pt?"← Encantamento L":"← Legendary enhancement"}</a></nav>
+   <nav class="breadcrumb"><a href={prefix+"/items/legendary/"}>{complementaryText(lang,"← Legendary enhancement","← Encantamento L")}</a></nav>
    <article>
     <header>
-      <p class="eyebrow">{pt?"FICHA DE EQUIPAMENTO • EVIDÊNCIA DO JOGO":"ITEM PROFILE • IN-GAME EVIDENCE"}</p>
+      <p class="eyebrow">{complementaryText(lang,"ITEM PROFILE • IN-GAME EVIDENCE","FICHA DE EQUIPAMENTO • EVIDÊNCIA DO JOGO")}</p>
       <h1><span class="legend">L</span> {item.nameEn}</h1>
-      <p class="lead">{pt
-        ?"Uma configuração lendária observada no jogo, com três Star Stones. O ID numérico do item ainda não foi conciliado com o catálogo público."
-        :"An in-game Legendary configuration with three Star Stones. The numeric item ID has not yet been reconciled with the public catalog."}</p>
+      <p class="lead">{complementaryText(lang,"An in-game Legendary configuration with three Star Stones. The numeric item ID has not yet been reconciled with the public catalog.","Uma configuração lendária observada no jogo, com três Star Stones. O ID numérico do item ainda não foi conciliado com o catálogo público.")}</p>
       <div class="summary">
-        <div><span>{pt?"Tipo":"Type"}</span><strong>{item.typeEn}</strong></div>
-        <div><span>{pt?"Nível mínimo":"Minimum level"}</span><strong>Lv. {item.minimumLevel}</strong></div>
-        <div><span>{pt?"Grau":"Grade"}</span><strong>{item.grade}</strong></div>
+        <div><span>{complementaryText(lang,"Type","Tipo")}</span><strong>{item.typeEn}</strong></div>
+        <div><span>{complementaryText(lang,"Minimum level","Nível mínimo")}</span><strong>Lv. {item.minimumLevel}</strong></div>
+        <div><span>{complementaryText(lang,"Grade","Grau")}</span><strong>{item.grade}</strong></div>
       </div>
     </header>
 
     <nav class="toc">
-      <a href="#stats">{pt?"Atributos":"Stats"}</a>
+      <a href="#stats">{complementaryText(lang,"Stats","Atributos")}</a>
       <a href="#sockets">Star Stones</a>
-      <a href="#classes">{pt?"Classes":"Classes"}</a>
-      <a href="#effects">{pt?"Efeitos":"Effects"}</a>
-      <a href="#crafting">{pt?"Fabricação":"Crafting"}</a>
-      <a href="#references">{pt?"Referências":"References"}</a>
+      <a href="#classes">{complementaryText(lang,"Classes","Classes")}</a>
+      <a href="#effects">{complementaryText(lang,"Effects","Efeitos")}</a>
+      <a href="#crafting">{complementaryText(lang,"Crafting","Fabricação")}</a>
+      <a href="#references">{complementaryText(lang,"References","Referências")}</a>
     </nav>
 
     <section id="stats">
-      <h2>{pt?"Atributos: configuração observada":"Stats: observed configuration"}</h2>
-      <p class="note">{pt
-        ?"A coluna final é a leitura do tooltip do jogo. O valor lendário sem pedras é uma estimativa baseada em +0 × 4,3; as contribuições das pedras vêm do tooltip. Não confundir os três."
-        :"The final column is the in-game tooltip reading. The bare L value is an estimate from +0 × 4.3; the Star Stone contributions come from the tooltip. These are different evidence types."}</p>
+      <h2>{complementaryText(lang,"Stats: observed configuration","Atributos: configuração observada")}</h2>
+      <p class="note">{complementaryText(lang,"The final column is the in-game tooltip reading. The bare L value is an estimate from +0 × 4.3; the Star Stone contributions come from the tooltip. These are different evidence types.","A coluna final é a leitura do tooltip do jogo. O valor lendário sem pedras é uma estimativa baseada em +0 × 4,3; as contribuições das pedras vêm do tooltip. Não confundir os três.")}</p>
       <div class="table-scroll"><table>
         <thead><tr>
-          <th>{pt?"Atributo":"Stat"}</th>
-          <th>{pt?"L sem pedras (modelo)":"Bare L (model)"}</th>
-          <th>{pt?"Bônus das pedras":"Stone contributions"}</th>
-          <th>{pt?"L equipado (captura)":"Equipped L (screenshot)"}</th>
+          <th>{complementaryText(lang,"Stat","Atributo")}</th>
+          <th>{complementaryText(lang,"Bare L (model)","L sem pedras (modelo)")}</th>
+          <th>{complementaryText(lang,"Stone contributions","Bônus das pedras")}</th>
+          <th>{complementaryText(lang,"Equipped L (screenshot)","L equipado (captura)")}</th>
         </tr></thead>
         <tbody>{stats.map(s=><tr>
           <th scope="row">{s.label}</th>
@@ -81,78 +73,68 @@ const stats=[
           <td class="observed-value">{s.observed}</td>
         </tr>)}</tbody>
       </table></div>
-      <p class="footnote">{pt
-        ?"Força, Inteligência e Vitalidade +1.715 constam no tooltip, mas não deduzimos automaticamente a origem da Inteligência a partir da tabela comunitária +0. Magic Skill Lv. +48 também é um valor do tooltip."
-        :"Strength, Intelligence and Vitality +1,715 are in the screenshot, but the historic +0 table does not establish the origin of Intelligence. Magic Skill Lv. +48 is likewise a tooltip observation."}</p>
+      <p class="footnote">{complementaryText(lang,"Strength, Intelligence and Vitality +1,715 are in the screenshot, but the historic +0 table does not establish the origin of Intelligence. Magic Skill Lv. +48 is likewise a tooltip observation.","Força, Inteligência e Vitalidade +1.715 constam no tooltip, mas não deduzimos automaticamente a origem da Inteligência a partir da tabela comunitária +0. Magic Skill Lv. +48 também é um valor do tooltip.")}</p>
     </section>
 
     <section id="sockets">
-      <h2>{pt?"Pedras equipadas (Star Stones)":"Equipped Star Stones"}</h2>
+      <h2>{complementaryText(lang,"Equipped Star Stones","Pedras equipadas (Star Stones)")}</h2>
       <p><strong>{gems.count} × {gems.itemName}</strong></p>
       <div class="table-scroll"><table>
-        <thead><tr><th>{pt?"Atributo":"Stat"}</th>
-          <th>{pt?"Cada pedra":"Per stone"}</th>
-          <th>{pt?"Três pedras":"All stones"}</th></tr></thead>
+        <thead><tr><th>{complementaryText(lang,"Stat","Atributo")}</th>
+          <th>{complementaryText(lang,"Per stone","Cada pedra")}</th>
+          <th>{complementaryText(lang,"All stones","Três pedras")}</th></tr></thead>
         <tbody>
           <tr><th>Critical Rate</th><td>+{gems.perStone.criticalRate}</td><td>+{gems.count*gems.perStone.criticalRate}</td></tr>
           <tr><th>Multi-Hit Rate</th><td>+{gems.perStone.multiHitRate}</td><td>+{gems.count*gems.perStone.multiHitRate}</td></tr>
           <tr><th>Action</th><td>+{gems.perStone.action}</td><td>+{gems.count*gems.perStone.action}</td></tr>
-          <tr><th>{pt?"Aumento de ataque":"Attack Enhance"}</th>
+          <tr><th>{complementaryText(lang,"Attack Enhance","Aumento de ataque")}</th>
             <td>+{gems.perStone.attackEnhancePercent}%<small>
               (+{n(gems.perStone.displayedAttackBonusMin)} – +{n(gems.perStone.displayedAttackBonusMax)})</small></td>
             <td>+{n(derived.socketAttackTotal.min)} – +{n(derived.socketAttackTotal.max)}</td>
           </tr>
         </tbody>
       </table></div>
-      <p class="formula">{pt?"Conferência do ataque":"Attack reconciliation"}:
+      <p class="formula">{complementaryText(lang,"Attack reconciliation","Conferência do ataque")}:
         {n(base.attackMin)} + {gems.count} × {n(derived.perStoneAttack.min)} = <strong>{n(observed.attackMin)}</strong>
         {" · "}
         {n(base.attackMax)} + {gems.count} × {n(derived.perStoneAttack.max)} = <strong>{n(observed.attackMax)}</strong>
       </p>
-      <p class="footnote">{pt
-        ?"A coincidência exata sustenta a decomposição matemática, mas o valor sem pedras não foi medido isoladamente nesta captura."
-        :"The exact match supports this mathematical decomposition, but the unmodified L attack was not observed separately in this screenshot."}</p>
+      <p class="footnote">{complementaryText(lang,"The exact match supports this mathematical decomposition, but the unmodified L attack was not observed separately in this screenshot.","A coincidência exata sustenta a decomposição matemática, mas o valor sem pedras não foi medido isoladamente nesta captura.")}</p>
     </section>
 
     <section id="classes">
-      <h2>{pt?"Classes permitidas":"Class restrictions"}</h2>
-      <p class="note">{pt
-        ?"Rótulos preservados conforme a captura, inclusive ocorrências repetidas."
-        :"Labels retained as shown in the screenshot, including repeated class labels."}</p>
+      <h2>{complementaryText(lang,"Class restrictions","Classes permitidas")}</h2>
+      <p class="note">{complementaryText(lang,"Labels retained as shown in the screenshot, including repeated class labels.","Rótulos preservados conforme a captura, inclusive ocorrências repetidas.")}</p>
       <div class="class-list">{item.eligibleClasses.map(c=><span>{c}</span>)}</div>
     </section>
 
     <section id="effects">
-      <h2>{pt?"Efeitos especiais":"Special effects"}</h2>
+      <h2>{complementaryText(lang,"Special effects","Efeitos especiais")}</h2>
       {item.specialEffects.map(effect=><div class="effect">
         <strong>{effect.kind==="legendary-debuff"
-          ?(pt?"Debuff de arma lendária":"Legendary weapon debuff")
-          :(pt?"Bônus condicional de classe":"Conditional class bonus")}</strong>
-        <p>{pt?effect.descriptionPt:effect.descriptionEn}</p>
+          ?(complementaryText(lang,"Legendary weapon debuff","Debuff de arma lendária"))
+          :(complementaryText(lang,"Conditional class bonus","Bônus condicional de classe"))}</strong>
+        <p>{complementaryText(lang,effect.descriptionEn,effect.descriptionPt)}</p>
       </div>)}
-      <p class="footnote">{pt
-        ?"Efeitos especiais não foram derivados da fórmula de encantamento nem somados automaticamente aos atributos físicos."
-        :"Special effects were not derived from enchantment scaling or automatically added to raw attack stats."}</p>
+      <p class="footnote">{complementaryText(lang,"Special effects were not derived from enchantment scaling or automatically added to raw attack stats.","Efeitos especiais não foram derivados da fórmula de encantamento nem somados automaticamente aos atributos físicos.")}</p>
     </section>
 
     <section id="crafting">
-      <h2>{pt?"Fabricação e obtenção":"Crafting and acquisition"}</h2>
-      <p class="note">{pt
-        ?"A documentação comunitária histórica indica que não é fabricável. A captura não informa receita, materiais, local de drop ou chance de obtenção; permanecem não verificados para a versão atual."
-        :"Historical community documentation lists this item as not craftable. The screenshot does not establish a recipe, materials, drop location or acquisition chance for the current game."}</p>
+      <h2>{complementaryText(lang,"Crafting and acquisition","Fabricação e obtenção")}</h2>
+      <p class="note">{complementaryText(lang,"Historical community documentation lists this item as not craftable. The screenshot does not establish a recipe, materials, drop location or acquisition chance for the current game.","A documentação comunitária histórica indica que não é fabricável. A captura não informa receita, materiais, local de drop ou chance de obtenção; permanecem não verificados para a versão atual.")}</p>
     </section>
 
     <section id="references">
-      <h2>{pt?"Referências e confiança":"Sources and confidence"}</h2>
+      <h2>{complementaryText(lang,"Sources and confidence","Referências e confiança")}</h2>
       <dl class="sources">
-        <div><dt>{pt?"Leitura do item e Star Stones":"Equipment and Star Stone tooltip"}</dt>
-          <dd>{item.evidence.tooltip.label} — <strong>{pt?"observado no jogo":"observed in-game"}</strong></dd></div>
-        <div><dt>{pt?"Atributos +0 e projeção L":"Historic +0 stats and modeled L"}</dt>
+        <div><dt>{complementaryText(lang,"Equipment and Star Stone tooltip","Leitura do item e Star Stones")}</dt>
+          <dd>{item.evidence.tooltip.label} — <strong>{complementaryText(lang,"observed in-game","observado no jogo")}</strong></dd></div>
+        <div><dt>{complementaryText(lang,"Historic +0 stats and modeled L","Atributos +0 e projeção L")}</dt>
           <dd><a href={item.evidence.baseline.url} target="_blank" rel="noopener noreferrer">
-            {item.evidence.baseline.label}</a> — {pt?"modelo histórico":"historical model"}</dd></div>
-        <div><dt>{pt?"Fabricação":"Crafting"}</dt>
+            {item.evidence.baseline.label}</a> — {complementaryText(lang,"historical model","modelo histórico")}</dd></div>
+        <div><dt>{complementaryText(lang,"Crafting","Fabricação")}</dt>
           <dd><a href={item.evidence.crafting.url} target="_blank" rel="noopener noreferrer">
-            {item.evidence.crafting.label}</a> — {pt?"histórico":"historical"}</dd></div>
+            {item.evidence.crafting.label}</a> — {complementaryText(lang,"historical","histórico")}</dd></div>
       </dl>
     </section>
    </article>
