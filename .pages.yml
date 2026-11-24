@@ -2,6 +2,15 @@
 
 
 actions:
+  - name: guide-translation-status
+    label: "Check guide translations (8 languages)"
+    workflow: guide-translation-requests.yml
+    ref: main
+    confirm:
+      title: "Check published guide translations?"
+      message: "Reads approved English guides from main. Open the GitHub Actions run summary for the language matrix and download the request artifact. No content is changed or translated automatically."
+      button: "Check translations"
+
   - name: submit-guide-publication
     label: "Submit approved guide for publication (PR)"
     workflow: pages-cms-guide-submit.yml
@@ -108,7 +117,7 @@ actions:
     ref: current
     confirm:
       title: "Create a new draft?"
-      message: "This will create and commit a draft article to dev/i18n. Existing articles will never be overwritten."
+      message: "Create the English source first; use the Portuguese option only for a manually maintained translation with the same identifier. Saves a draft to dev/i18n without overwriting existing articles."
       button: "Create draft"
     fields:
       - name: language
@@ -211,6 +220,8 @@ content:
         - subcategory
         - updatedAt
         - draft
+        - reviewStatus
+        - translationKey
       sort:
         - updatedAt
         - title
@@ -237,7 +248,7 @@ content:
         type: string
         required: true
         pattern: "^[a-z0-9-]+$"
-        description: "Unique article ID shared by translations."
+        description: "Stable ID shared by all translations. Write the English source first, submit it for publication, then use Check guide translations (8 languages)."
 
       - name: lang
         label: Language
@@ -305,7 +316,22 @@ content:
         label: Draft
         type: boolean
         default: true
-        description: "Indicates if the article is a draft and not yet ready for publication."
+        description: "Saving here does not publish. To submit: turn Draft off, select Approved, save on dev/i18n, then use Submit approved guide for publication (PR). The PR must be merged to main."
+
+      - name: reviewStatus
+        label: Editorial Status
+        type: select
+        required: false
+        default: draft
+        description: "Approved + Draft off makes this guide eligible for the Submit approved guide for publication (PR) action, but publishing requires the PR to merge into main."
+        options:
+          values:
+            - name: draft
+              label: Draft
+            - name: in-review
+              label: In Review
+            - name: approved
+              label: Approved
 
       - name: body
         label: Article Content
@@ -360,6 +386,8 @@ content:
         - subcategory
         - updatedAt
         - draft
+        - reviewStatus
+        - translationKey
       sort:
         - updatedAt
         - title
@@ -386,7 +414,7 @@ content:
         type: string
         required: true
         pattern: "^[a-z0-9-]+$"
-        description: "Identificador compartilhado entre as traduções do artigo."
+        description: "ID estável compartilhado pelas traduções. Publique primeiro a fonte em inglês e use Check guide translations (8 languages). Traduções manuais não são sobrescritas."
 
       - name: lang
         label: Idioma
@@ -454,7 +482,22 @@ content:
         label: Rascunho
         type: boolean
         default: true
-        description: "Indica se o artigo é um rascunho e ainda não está pronto para publicação."
+        description: "Salvar no CMS não publica no site. Para enviar: desative Rascunho, selecione Aprovado, salve em dev/i18n e use a ação Submit approved guide for publication (PR). O PR precisa ser integrado à main."
+
+      - name: reviewStatus
+        label: Status Editorial
+        type: select
+        required: false
+        default: draft
+        description: "Aprovado + Rascunho desativado permite enviar o guia pela ação Submit approved guide for publication (PR). A publicação depende da integração na main."
+        options:
+          values:
+            - name: draft
+              label: Em elaboração
+            - name: in-review
+              label: Em revisão
+            - name: approved
+              label: Aprovado
 
       - name: body
         label: Conteúdo do Artigo
