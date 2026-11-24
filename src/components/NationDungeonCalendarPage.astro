@@ -1,113 +1,108 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:"en"|"pt-br";}
+import {toolText,calendarWeekday} from "../i18n/tools-ui.mjs";
+import {localePrefix,localeTag,localizedPaths,catalogPath,legacyLocale} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 ---
-<BaseLayout lang={lang} title={(pt?"Calendário de Nation Dungeons":"Nation Dungeon calendar")+" | Atlantica Knowledge Hub"}
- alternatePaths={{en:"/tools/nation-dungeons/","pt-br":"/pt-br/tools/nation-dungeons/"}}>
+<BaseLayout lang={lang} title={(toolText(lang,"Nation Dungeon calendar","Calendário de Nation Dungeons"))+" | Atlantica Knowledge Hub"}
+ alternatePaths={localizedPaths("/tools/nation-dungeons/")}>
  <main class="nd-calendar" id="nation-calendar" data-lang={lang}>
-  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <nav><a href={prefix+"/tools/"}>{toolText(lang,"← Tools","← Ferramentas")}</a></nav>
   <p class="eyebrow">ATLANTICA GLOBAL / NA · SERVER RESET</p>
-  <h1>{pt?"Calendário de Nation Dungeons":"Nation Dungeon calendar"}</h1>
-  <p class="nd-intro">{pt
-   ?"Planeje runs normais e horários fixos semanais a partir do reset das 06:00 no servidor (America/Los_Angeles). Horário de verão é tratado automaticamente. As alterações ficam neste navegador ou podem ser exportadas."
-   :"Plan ordinary runs and permanent weekly slots from the 06:00 server reset (America/Los_Angeles). Daylight saving is handled automatically. Plans are stored in this browser or exported."}</p>
+  <h1>{toolText(lang,"Nation Dungeon calendar","Calendário de Nation Dungeons")}</h1>
+  <p class="nd-intro">{toolText(lang,"Plan ordinary runs and permanent weekly slots from the 06:00 server reset (America/Los_Angeles). Daylight saving is handled automatically. Plans are stored in this browser or exported.","Planeje runs normais e horários fixos semanais a partir do reset das 06:00 no servidor (America/Los_Angeles). Horário de verão é tratado automaticamente. As alterações ficam neste navegador ou podem ser exportadas.")}</p>
   <section class="nd-panel">
-   <h2>{pt?"Visualização":"View"}</h2>
+   <h2>{toolText(lang,"View","Visualização")}</h2>
    <div class="nd-controls">
-    <label>{pt?"Dungeon":"Dungeon"}<select id="nd-selected-dungeon">
+    <label>{toolText(lang,"Dungeon","Dungeon")}<select id="nd-selected-dungeon">
      <option>Avalon</option><option>Babel</option><option>Yggdrasil</option><option>Alcatraz</option><option>Pirate</option>
     </select></label>
-    <label>{pt?"Fuso horário da visualização":"Viewing timezone"}<select id="nd-timezone">
-     <option value="local">{pt?"Meu fuso (automático)":"My timezone (automatic)"}</option>
-     <option value="America/Los_Angeles">Server (Los Angeles)</option>
+    <label>{toolText(lang,"Viewing timezone","Fuso horário da visualização")}<select id="nd-timezone">
+     <option value="local">{toolText(lang,"My timezone (automatic)","Meu fuso (automático)")}</option>
+     <option value="America/Los_Angeles">{toolText(lang,"Server (Los Angeles)","Servidor (Los Angeles)")}</option>
      <option value="UTC">UTC</option>
      <option value="America/Sao_Paulo">São Paulo</option>
      <option value="Europe/Paris">Paris</option>
      <option value="Asia/Tokyo">Tokyo</option>
     </select></label>
-    <label>{pt?"Data inicial no fuso selecionado":"Start date in selected timezone"}<input id="nd-start-date" type="date"/></label>
-    <label>{pt?"Intervalo":"Horizon"}<select id="nd-horizon"><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
-    <label>{pt?"Orientação":"Orientation"}<select id="nd-orientation">
-     <option value="time-rows">{pt?"Horas × Dias":"Hours × Days"}</option>
-     <option value="day-rows">{pt?"Dias × Horas":"Days × Hours"}</option>
+    <label>{toolText(lang,"Start date in selected timezone","Data inicial no fuso selecionado")}<input id="nd-start-date" type="date"/></label>
+    <label>{toolText(lang,"Horizon","Intervalo")}<select id="nd-horizon"><option value="7">{toolText(lang,"7 days","7 dias")}</option><option value="14">{toolText(lang,"14 days","14 dias")}</option><option value="30">{toolText(lang,"30 days","30 dias")}</option></select></label>
+    <label>{toolText(lang,"Orientation","Orientação")}<select id="nd-orientation">
+     <option value="time-rows">{toolText(lang,"Hours × Days","Horas × Dias")}</option>
+     <option value="day-rows">{toolText(lang,"Days × Hours","Dias × Horas")}</option>
     </select></label>
    </div>
    <p id="nd-view-status" role="status"></p>
    <div class="nd-legend">
-    <span class="ready">{pt?"Disponível":"Ready"}</span>
-    <span class="cooldown">{pt?"Em cooldown":"Cooldown"}</span>
-    <span class="conflict">{pt?"Run incompatível":"Conflicting run"}</span>
-    <span class="gap">{pt?"Hora inexistente (DST)":"Nonexistent hour (DST)"}</span>
+    <span class="ready">{toolText(lang,"Ready","Disponível")}</span>
+    <span class="cooldown">{toolText(lang,"Cooldown","Em cooldown")}</span>
+    <span class="conflict">{toolText(lang,"Conflicting run","Run incompatível")}</span>
+    <span class="gap">{toolText(lang,"Nonexistent hour (DST)","Hora inexistente (DST)")}</span>
    </div>
-   <p class="nd-grid-caption">{pt
-    ?"Cada célula representa uma hora no fuso escolhido. Verde = dungeon disponível; vermelho = cooldown. Símbolos indicam runs cadastradas."
-    :"Each cell is one hour in the selected timezone. Green = dungeon ready; red = cooldown. Markers indicate scheduled runs."}</p>
-   <div class="nd-table-wrap" role="region" tabindex="0" aria-label={pt?"Grade do calendário com rolagem":"Scrollable dungeon calendar grid"}><table id="nd-grid" aria-label={pt?"Disponibilidade por hora":"Hourly availability"}></table></div>
-   <p class="nd-hint">{pt
-    ?"O calendário indica disponibilidade calculada a partir das runs registradas. Uma run em cooldown é marcada como conflito e não reinicia o timer. Horas repetidas no fim do horário de verão usam a primeira ocorrência."
-    :"Readiness is estimated from registered runs. A run during cooldown is marked as conflicting and does not restart the timer. Repeated clocks at DST fallback use the first occurrence."}</p>
+   <p class="nd-grid-caption">{toolText(lang,"Each cell is one hour in the selected timezone. Green = dungeon ready; red = cooldown. Markers indicate scheduled runs.","Cada célula representa uma hora no fuso escolhido. Verde = dungeon disponível; vermelho = cooldown. Símbolos indicam runs cadastradas.")}</p>
+   <div class="nd-table-wrap" role="region" tabindex="0" aria-label={toolText(lang,"Scrollable dungeon calendar grid","Grade do calendário com rolagem")}><table id="nd-grid" aria-label={toolText(lang,"Hourly availability","Disponibilidade por hora")}></table></div>
+   <p class="nd-hint">{toolText(lang,"Readiness is estimated from registered runs. A run during cooldown is marked as conflicting and does not restart the timer. Repeated clocks at DST fallback use the first occurrence.","O calendário indica disponibilidade calculada a partir das runs registradas. Uma run em cooldown é marcada como conflito e não reinicia o timer. Horas repetidas no fim do horário de verão usam a primeira ocorrência.")}</p>
   </section>
   <div class="nd-edit-grid">
    <section class="nd-panel">
-    <h2>{pt?"Adicionar ou editar run":"Add or edit a run"}</h2>
+    <h2>{toolText(lang,"Add or edit a run","Adicionar ou editar run")}</h2>
     <form id="nd-event-form">
      <div class="nd-controls">
-      <label>{pt?"Dungeon":"Dungeon"}<select id="nd-edit-dungeon">
+      <label>{toolText(lang,"Dungeon","Dungeon")}<select id="nd-edit-dungeon">
        <option>Avalon</option><option>Babel</option><option>Yggdrasil</option><option>Alcatraz</option><option>Pirate</option>
       </select></label>
-      <label>{pt?"Tipo":"Type"}<select id="nd-edit-type">
-       <option value="normal">{pt?"Run individual":"Single run"}</option>
-       <option value="fixed">{pt?"Fixa semanal":"Weekly fixed"}</option>
+      <label>{toolText(lang,"Type","Tipo")}<select id="nd-edit-type">
+       <option value="normal">{toolText(lang,"Single run","Run individual")}</option>
+       <option value="fixed">{toolText(lang,"Weekly fixed","Fixa semanal")}</option>
       </select></label>
-      <label id="nd-date-label">{pt?"Data no servidor":"Server date"}<input id="nd-edit-date" type="date" required/></label>
-      <label id="nd-weekday-label" hidden>{pt?"Dia semanal no servidor":"Server weekday"}<select id="nd-edit-weekday">
-       <option value="1">Monday</option><option value="2">Tuesday</option>
-       <option value="3">Wednesday</option><option value="4">Thursday</option>
-       <option value="5">Friday</option><option value="6">Saturday</option>
-       <option value="0">Sunday</option>
+      <label id="nd-date-label">{toolText(lang,"Server date","Data no servidor")}<input id="nd-edit-date" type="date" required/></label>
+      <label id="nd-weekday-label" hidden>{toolText(lang,"Server weekday","Dia semanal no servidor")}<select id="nd-edit-weekday">
+       <option value="1">{calendarWeekday(lang,1)}</option><option value="2">{calendarWeekday(lang,2)}</option>
+       <option value="3">{calendarWeekday(lang,3)}</option><option value="4">{calendarWeekday(lang,4)}</option>
+       <option value="5">{calendarWeekday(lang,5)}</option><option value="6">{calendarWeekday(lang,6)}</option>
+       <option value="0">{calendarWeekday(lang,0)}</option>
       </select></label>
-      <label>{pt?"Horas após reset (R+)":"Hours after reset (R+)"}<input id="nd-edit-offset-hours" type="number" min="0" max="23" step="1" value="6" required/></label>
-      <label>{pt?"Minutos extras":"Extra minutes"}<input id="nd-edit-offset-minutes" type="number" min="0" max="59" step="1" value="0" required/></label>
+      <label>{toolText(lang,"Hours after reset (R+)","Horas após reset (R+)")}<input id="nd-edit-offset-hours" type="number" min="0" max="23" step="1" value="6" required/></label>
+      <label>{toolText(lang,"Extra minutes","Minutos extras")}<input id="nd-edit-offset-minutes" type="number" min="0" max="59" step="1" value="0" required/></label>
      </div>
-     <div class="nd-buttons"><button type="submit" id="nd-save-run">{pt?"Salvar run":"Save run"}</button>
-      <button type="button" id="nd-cancel-edit">{pt?"Cancelar edição":"Cancel edit"}</button></div>
+     <div class="nd-buttons"><button type="submit" id="nd-save-run">{toolText(lang,"Save run","Salvar run")}</button>
+      <button type="button" id="nd-cancel-edit">{toolText(lang,"Cancel edit","Cancelar edição")}</button></div>
     </form>
-    <p class="nd-hint">{pt
-     ?"Exemplo: segunda-feira, R+6 significa segunda às 12:00 no horário do servidor."
-     :"Example: Monday, R+6 means Monday at 12:00 server time."}</p>
+    <p class="nd-hint">{toolText(lang,"Example: Monday, R+6 means Monday at 12:00 server time.","Exemplo: segunda-feira, R+6 significa segunda às 12:00 no horário do servidor.")}</p>
    </section>
    <section class="nd-panel">
-    <h2>{pt?"Cooldowns configuráveis":"Configurable cooldowns"}</h2>
+    <h2>{toolText(lang,"Configurable cooldowns","Cooldowns configuráveis")}</h2>
     <form id="nd-cooldown-form">
      <div class="nd-controls" id="nd-cooldown-inputs"></div>
-     <button type="submit">{pt?"Salvar cooldowns":"Save cooldowns"}</button>
+     <button type="submit">{toolText(lang,"Save cooldowns","Salvar cooldowns")}</button>
     </form>
-    <p class="nd-hint">{pt
-     ?"Valores iniciais do planejamento anterior; ajuste se as regras do servidor mudarem. Horas são contadas como duração real, inclusive durante mudanças de DST."
-     :"Initial values come from prior planning; change them if the server rules change. Cooldowns are elapsed hours, including across DST transitions."}</p>
+    <p class="nd-hint">{toolText(lang,"Initial values come from prior planning; change them if the server rules change. Cooldowns are elapsed hours, including across DST transitions.","Valores iniciais do planejamento anterior; ajuste se as regras do servidor mudarem. Horas são contadas como duração real, inclusive durante mudanças de DST.")}</p>
    </section>
   </div>
   <section class="nd-panel">
-   <h2>{pt?"Runs registradas e horários fixos":"Saved runs and weekly slots"}</h2>
+   <h2>{toolText(lang,"Saved runs and weekly slots","Runs registradas e horários fixos")}</h2>
    <ul id="nd-rule-list"></ul>
    <div class="nd-buttons">
-    <button type="button" id="nd-export">{pt?"Exportar JSON":"Export JSON"}</button>
-    <label class="nd-file-label">{pt?"Importar JSON":"Import JSON"}<input id="nd-import" type="file" accept=".json,application/json"/></label>
-    <button type="button" id="nd-share">{pt?"Criar link compartilhável":"Create shareable link"}</button>
+    <button type="button" id="nd-export">{toolText(lang,"Export JSON","Exportar JSON")}</button>
+    <label class="nd-file-label">{toolText(lang,"Import JSON","Importar JSON")}<input id="nd-import" type="file" accept=".json,application/json"/></label>
+    <button type="button" id="nd-share">{toolText(lang,"Create shareable link","Criar link compartilhável")}</button>
    </div>
-   <input type="text" id="nd-share-link" readonly hidden aria-label={pt?"Link para compartilhar":"Share link"}/>
+   <input type="text" id="nd-share-link" readonly hidden aria-label={toolText(lang,"Share link","Link para compartilhar")}/>
    <p id="nd-action-status" role="status"></p>
   </section>
  </main>
 </BaseLayout>
 <script>
+ import {toolText,calendarWeekday} from "../i18n/tools-ui.mjs";
+ import {localeTag} from "../i18n/locales.mjs";
  import {SERVER_TIME_ZONE,DUNGEON_COOLDOWNS_HOURS,emptyNationPlan,validateNationPlan,
    addCalendarDays,zonedWallToEpoch,zonedParts,expandNationRuns,availabilityAt} from "../data/nation-dungeon-calendar.mjs";
  const root=document.getElementById("nation-calendar");
  if(root){
-  const pt=root.dataset.lang==="pt-br";
+  const lang=root.dataset.lang??"en";
   const $=(id:string)=>document.getElementById(id)!;
   const selected=$("nd-selected-dungeon") as HTMLSelectElement;
   const zoneSelect=$("nd-timezone") as HTMLSelectElement;
@@ -126,8 +121,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   const list=$("nd-rule-list"),cooldownInputs=$("nd-cooldown-inputs");
   const cacheKey="atlantica.nd-calendar.v1",viewKey="atlantica.nd-view.v1";
   const systemZone=Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
-  const weekdays=pt?["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"]:
-    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const weekdays=Array.from({length:7},(_,day)=>calendarWeekday(lang,day,"short"));
   const dungeons=Object.keys(DUNGEON_COOLDOWNS_HOURS);
   const node=(tag:string,text?:string)=>{
    const el=document.createElement(tag);if(text!==undefined)el.textContent=text;return el;
@@ -153,13 +147,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    try{
     const decoded=atob(shared.replace(/-/g,"+").replace(/_/g,"/"));
     plan=validateNationPlan(JSON.parse(decoded));
-    actionStatus.textContent=pt?"Plano compartilhado carregado (não salvo até você alterar).":
-      "Shared plan loaded (not saved until you edit).";
-   }catch{actionStatus.textContent=pt?"Link compartilhado inválido.":"Invalid shared plan link.";}
+    actionStatus.textContent=toolText(lang,"Shared plan loaded (not saved until you edit).","Plano compartilhado carregado (não salvo até você alterar).");
+   }catch{actionStatus.textContent=toolText(lang,"Invalid shared plan link.","Link compartilhado inválido.");}
   }
   const persist=()=>{
    try{localStorage.setItem(cacheKey,JSON.stringify(plan));}
-   catch{actionStatus.textContent=pt?"Armazenamento bloqueado; exporte seu plano.":"Storage blocked; export your plan.";}
+   catch{actionStatus.textContent=toolText(lang,"Storage blocked; export your plan.","Armazenamento bloqueado; exporte seu plano.");}
   };
   const saveView=()=>{
    try{localStorage.setItem(viewKey,JSON.stringify({
@@ -178,12 +171,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    for(const rule of plan.rules){
     const li=node("li");
     const dateInfo=rule.type==="fixed"
-      ?(pt?"Toda ":"Every ")+weekdays[rule.weekday]
+      ?(toolText(lang,"Every ","Toda "))+weekdays[rule.weekday]
       :rule.serverDate;
     const off=Math.floor(rule.offsetMinutes/60)+":"+
       String(rule.offsetMinutes%60).padStart(2,"0");
     li.append(node("span",rule.dungeon+" · "+dateInfo+" · R+"+off));
-    const edit=node("button",pt?"Editar":"Edit") as HTMLButtonElement;
+    const edit=node("button",toolText(lang,"Edit","Editar")) as HTMLButtonElement;
     edit.type="button";edit.addEventListener("click",()=>{
      editingId=rule.id;dungeon.value=rule.dungeon;type.value=rule.type;
      if(rule.type==="normal")serverDate.value=rule.serverDate;
@@ -192,14 +185,14 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      minutes.value=String(rule.offsetMinutes%60);toggleType();
      form.scrollIntoView({behavior:"smooth",block:"center"});
     });
-    const remove=node("button",pt?"Excluir":"Delete") as HTMLButtonElement;
+    const remove=node("button",toolText(lang,"Delete","Excluir")) as HTMLButtonElement;
     remove.type="button";remove.addEventListener("click",()=>{
      plan=validateNationPlan({...plan,rules:plan.rules.filter(x=>x.id!==rule.id)});
      persist();renderAll();
     });
     li.append(edit,remove);list.append(li);
    }
-   if(!plan.rules.length)list.append(node("li",pt?"Nenhuma run cadastrada.":"No runs registered."));
+   if(!plan.rules.length)list.append(node("li",toolText(lang,"No runs registered.","Nenhuma run cadastrada.")));
   }
   function renderCooldowns(){
    cooldownInputs.replaceChildren();
@@ -233,30 +226,30 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const td=node("td");
     const epoch=zonedWallToEpoch(date,hour,0,tz);
     if(epoch===null){
-     td.className="gap";td.textContent="—";td.title=pt?"Hora inexistente por horário de verão":"Hour skipped by daylight saving";
+     td.className="gap";td.textContent="—";td.title=toolText(lang,"Hour skipped by daylight saving","Hora inexistente por horário de verão");
      return td;
     }
     const value=availabilityAt(epoch,name,runs,plan);
     td.className=value.ready?"ready":"cooldown";
     if(value.ready)readySlots++;else cooldownSlots++;
     td.title=date+" "+String(hour).padStart(2,"0")+":00 "+tz+
-      " · "+(value.ready?(pt?"Disponível":"Ready"):(pt?"Em cooldown":"Cooldown"));
+      " · "+(value.ready?(toolText(lang,"Ready","Disponível")):(toolText(lang,"Cooldown","Em cooldown")));
     td.setAttribute("aria-label",td.title);
     const matching=events.get(date+"|"+hour)??[];
     for(const run of matching){
      const label=node("span",run.accepted?"●":"!");
      label.className=run.accepted?"run-event":"run-conflict";
-     label.title=(run.type==="fixed"?"Fixed":"Single")+" R+"+
+     label.title=(run.type==="fixed"?toolText(lang,"Fixed","Fixa"):toolText(lang,"Single","Individual"))+" R+"+
        Math.floor(run.offsetMinutes/60)+":"+String(run.offsetMinutes%60).padStart(2,"0")+
-       (run.accepted?" · OK":" · Cooldown conflict");
+       (run.accepted?" · OK":" · "+toolText(lang,"Cooldown conflict","Conflito de cooldown"));
      td.append(label);
     }
     return td;
    };
    const thead=node("thead"),head=node("tr");
-   const topLeft=node("th",daysOnColumns?(pt?"Hora":"Hour"):(pt?"Dia":"Day")) as HTMLTableCellElement;
+   const topLeft=node("th",daysOnColumns?(toolText(lang,"Hour","Hora")):(toolText(lang,"Day","Dia"))) as HTMLTableCellElement;
    topLeft.scope="col";head.append(topLeft);
-   const weekdayFormatter=new Intl.DateTimeFormat(pt?"pt-BR":"en-US",{
+   const weekdayFormatter=new Intl.DateTimeFormat(lang==="en"?"en-US":localeTag(lang),{
     weekday:"short",timeZone:"UTC",
    });
    for(const key of (daysOnColumns?dates:hoursList)){
@@ -291,10 +284,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    grid.append(body);
    conflicts=selectedRuns.filter(r=>!r.accepted&&
      dates.includes(zonedParts(r.epoch,tz).date)).length;
-   status.textContent=(pt?"Fuso: ":"Timezone: ")+tz+" · "+
-    (pt?"Disponível":"Ready")+": "+readySlots+" · "+
-    (pt?"Cooldown":"Cooldown")+": "+cooldownSlots+" · "+
-    (pt?"Conflitos":"Conflicts")+": "+conflicts;
+   status.textContent=(toolText(lang,"Timezone: ","Fuso: "))+tz+" · "+
+    (toolText(lang,"Ready","Disponível"))+": "+readySlots+" · "+
+    (toolText(lang,"Cooldown","Cooldown"))+": "+cooldownSlots+" · "+
+    (toolText(lang,"Conflicts","Conflitos"))+": "+conflicts;
   }
   function renderAll(){renderRules();renderCooldowns();renderCalendar();}
   const updateView=()=>{saveView();renderCalendar();};
@@ -313,8 +306,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    try{
     plan=validateNationPlan({...plan,rules:[...plan.rules.filter(x=>x.id!==editingId),rule]});
     editingId="";persist();renderAll();
-    actionStatus.textContent=pt?"Run registrada.":"Run saved.";
-   }catch(err){actionStatus.textContent=(pt?"Erro: ":"Error: ")+(err instanceof Error?err.message:String(err));}
+    actionStatus.textContent=toolText(lang,"Run saved.","Run registrada.");
+   }catch(err){actionStatus.textContent=(toolText(lang,"Error: ","Erro: "))+(err instanceof Error?err.message:String(err));}
   });
   $("nd-cancel-edit").addEventListener("click",()=>{
    editingId="";form.reset();serverDate.value=zonedParts(Date.now(),SERVER_TIME_ZONE).date;toggleType();
@@ -326,8 +319,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     cooldowns[input.dataset.dungeon!]=Number(input.value);
    try{
     plan=validateNationPlan({...plan,cooldowns});persist();renderAll();
-    actionStatus.textContent=pt?"Cooldowns atualizados.":"Cooldowns updated.";
-   }catch(e){actionStatus.textContent=pt?"Valor de cooldown inválido.":"Invalid cooldown value.";}
+    actionStatus.textContent=toolText(lang,"Cooldowns updated.","Cooldowns atualizados.");
+   }catch(e){actionStatus.textContent=toolText(lang,"Invalid cooldown value.","Valor de cooldown inválido.");}
   });
   $("nd-export").addEventListener("click",()=>{
    const data=new Blob([JSON.stringify(plan,null,2)],{type:"application/json"});
@@ -340,8 +333,8 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    const file=input.files?.[0];if(!file)return;
    void file.text().then(text=>{
     plan=validateNationPlan(JSON.parse(text));editingId="";persist();renderAll();
-    actionStatus.textContent=pt?"Plano importado.":"Plan imported.";
-   }).catch(()=>{actionStatus.textContent=pt?"JSON inválido.":"Invalid JSON plan.";});
+    actionStatus.textContent=toolText(lang,"Plan imported.","Plano importado.");
+   }).catch(()=>{actionStatus.textContent=toolText(lang,"Invalid JSON plan.","JSON inválido.");});
    input.value="";
   });
   $("nd-share").addEventListener("click",()=>{
@@ -352,11 +345,11 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const field=$("nd-share-link") as HTMLInputElement;
     field.hidden=false;field.value=url.toString();field.select();
     void navigator.clipboard?.writeText(field.value).catch(()=>{});
-    actionStatus.textContent=pt?"Link pronto abaixo para copiar.":"Share link ready below; copy it.";
-   }catch{actionStatus.textContent=pt?"Plano grande demais para link; exporte JSON.":"Plan too large for link; export JSON.";}
+    actionStatus.textContent=toolText(lang,"Share link ready below; copy it.","Link pronto abaixo para copiar.");
+   }catch{actionStatus.textContent=toolText(lang,"Plan too large for link; export JSON.","Plano grande demais para link; exporte JSON.");}
   });
   try{renderAll();}catch(e){
-   status.textContent=(pt?"Não foi possível gerar calendário: ":"Could not render calendar: ")+
+   status.textContent=(toolText(lang,"Could not render calendar: ","Não foi possível gerar calendário: "))+
     (e instanceof Error?e.message:String(e));
   }
  }
