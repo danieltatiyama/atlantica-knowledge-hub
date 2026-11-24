@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.68 (catálogo público de 421 preços do cliente, interface player-first e pesquisa técnica preservada)  
-**Último PR integrado de funcionalidade:** [PR #86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) (Stage 20.67). **Stage 20.68:** [PR #88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88), branch `feat/stage-20-68-market-price-catalog` (conferir integração e publicação).
+**Último PR integrado de funcionalidade:** [PR #88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) (Stage 20.68; GitHub Actions aprovado e integrado à `main`).
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -509,4 +509,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.68 implementada no PR #88, com novo catálogo player-first dos 421 preços NPC do cliente; 293 comparações históricas e 128 relatos de jogador permanecem fontes distintas. As cinco categorias ausentes no cliente foram preservadas como não classificadas. O workbench técnico original fica em /tools/market-prices/research/ e conserva observações locais. Confirmar integração do PR #88 e deployment antes de considerar a nova interface publicada.**
+**Estado documentado: Stage 20.68 integrada na `main` pelo PR #88, com CI aprovado. Catálogo player-first possui 421 preços NPC do cliente, 293 comparações históricas e 128 coincidências relatadas pelo jogador como fontes distintas. Cinco categorias originais vazias permanecem não classificadas. O workbench técnico e as observações locais ficam preservados em /tools/market-prices/research/. A publicação no Cloudflare e a validação visual do novo catálogo ainda precisam ser confirmadas; testes de CI não substituem esse passo.**
