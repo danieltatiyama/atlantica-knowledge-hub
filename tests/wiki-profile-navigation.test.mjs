@@ -8,7 +8,7 @@ test("full item catalog offers section navigation and crosslinked acquisition",(
     "wiki-item-monsters","wiki-item-technical"])assert.ok(s.includes(id),id);
   assert.ok(s.includes('jump.setAttribute("aria-label"'));
   assert.ok(s.includes('details.prepend(jump)'));
-  assert.ok(s.includes('codex.href=prefix+"/monsters/?item="+encodeURIComponent(id)'));
+  assert.ok(s.includes('codex.href=localePrefix(lang)+"/monsters/?item="+encodeURIComponent(id)'));
   assert.ok(s.includes('link.href="#"+target'));
   assert.ok(s.includes('d.open=true'));
   assert.ok(!s.includes("details.innerHTML"));
