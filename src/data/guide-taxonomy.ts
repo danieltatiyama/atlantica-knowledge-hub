@@ -79,3 +79,57 @@ export const GUIDE_SUBCATEGORIES: Record<
     labels: { en: "Others", "pt-br": "Outros" },
   },
 };
+
+// Preserve existing bilingual taxonomy data; extra labels are presentation-only.
+import type { Locale } from "../i18n/locales.mjs";
+const localizedSubcategoryIds = ["skills","builds-formations","crafting","equipment-enhancement","others"] as const;
+const extraSubcategoryLabels = {
+  "fr": [
+    "Compétences",
+    "Configurations et formations",
+    "Fabrication",
+    "Équipement et amélioration",
+    "Autres"
+  ],
+  "de": [
+    "Fähigkeiten",
+    "Builds und Formationen",
+    "Herstellung",
+    "Ausrüstung und Verbesserung",
+    "Sonstiges"
+  ],
+  "es": [
+    "Habilidades",
+    "Configuraciones y formaciones",
+    "Fabricación",
+    "Equipamiento y mejoras",
+    "Otros"
+  ],
+  "ko": [
+    "스킬",
+    "빌드 및 진형",
+    "제작",
+    "장비 및 강화",
+    "기타"
+  ],
+  "zh-hans": [
+    "技能",
+    "配装与阵型",
+    "制作",
+    "装备与强化",
+    "其他"
+  ],
+  "ja": [
+    "スキル",
+    "ビルドと陣形",
+    "製造",
+    "装備と強化",
+    "その他"
+  ]
+};
+export function guideSubcategoryLabel(id:GuideSubcategory,lang:Locale):string {
+ const labels=GUIDE_SUBCATEGORIES[id].labels;
+ if(lang==="en"||lang==="pt-br")return labels[lang];
+ const index=localizedSubcategoryIds.findIndex(value=>value===id);
+ return index<0?labels.en:extraSubcategoryLabels[lang][index];
+}
