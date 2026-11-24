@@ -89,7 +89,9 @@ test("header keeps appearance and language in one aligned control group",()=>{
   assert.ok(controls.includes('class="theme-select header-control-select"'));
   assert.ok(controls.includes('class="language-select header-control-select"'));
   assert.ok(controls.includes('"Idioma" : "Language"'));
-  assert.ok(controls.includes('data-target-en={getLanguageTarget("en")}'));
+  assert.ok(controls.includes("LOCALE_IDS.map(locale"));
+  assert.ok(controls.includes("data-target={getLanguageTarget(locale)}"));
+  assert.ok(header.includes("languageSelect.selectedOptions[0]?.dataset.target"));
   assert.ok(header.includes('display: grid;'));
   assert.ok(header.includes('grid-template-columns: minmax(180px, 1fr) auto minmax(316px, 1fr)'));
   assert.ok(header.includes('height: 40px'));
