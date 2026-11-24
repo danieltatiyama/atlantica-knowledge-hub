@@ -468,6 +468,13 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - O gerador de rascunhos e os quatro seletores do Pages CMS aceitam a nova opção; a branch editorial `dev/i18n` recebe atualização equivalente da taxonomia bilíngue, gerador e CMS.
 - Teste de regressão: `tests/mercenaries-introduction-subcategory.test.mjs`. Nenhum artigo foi criado, publicado ou reclassificado automaticamente. Verificar PRs, CI e deploy antes de considerar a mudança disponível em produção.
 
+### Stage 20.78 — Traduções complementares da interface compartilhada
+
+- O seletor de idioma já disponibilizava os oito idiomas, mas a auditoria identificou textos exclusivamente EN/PT-BR na Home e nos componentes compartilhados. A captura do jogador também foi afetada pelo tradutor automático do navegador.
+- `src/i18n/shared-ui.mjs` registra 67 mensagens em oito idiomas para cards da Home, busca global, rodapé, navegação flutuante, lightbox, breadcrumbs e acessibilidade. O layout entrega o idioma real aos controles e protege os nomes dos idiomas no seletor contra tradução automática.
+- Testes de paridade, chamadas e controles dinâmicos em `tests/wiki-shared-localization.test.mjs`; verificação de textos no HTML gerado em `scripts/check-built-guide-locales.mjs`. Nomes de itens e monstros permanecem nos dados do cliente; módulos de catálogos e ferramentas ainda usam rotas EN/PT-BR, com fallback explícito.
+- Não traduzir novamente os artigos existentes nem inventar nomes oficiais. Confirmar CI e deploy antes de declarar a mudança publicada.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
