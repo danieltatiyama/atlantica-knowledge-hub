@@ -1,6 +1,7 @@
 import {readFileSync,writeFileSync,mkdirSync,readdirSync,existsSync,renameSync} from "node:fs";
 import {join,dirname} from "node:path";
 import {stringify} from "yaml";
+import {providerConfig,translateViaProvider} from "./guide-translation-provider.mjs";
 import {TARGET_LOCALES,readEnglishGuide,prepareTranslation,translationRequest,finishTranslation,translationState,sha256,parseGuide,approveTranslation} from "./guide-translation-contract.mjs";
 
 const root="src/content/guides";
@@ -32,8 +33,8 @@ function request(slug,lang){
  return {...translationRequest(plan),slug,sourceHash:plan.source.sourceHash,
   targetHash:target===null?null:sha256(target),state:translationState(target,plan.source.sourceHash)};
 }
-function apply(file,{replaceManaged=false}={}){
- const response=JSON.parse(read(file));
+function candidatePath(entry){return join("translation-review",entry.lang,entry.slug+"."+entry.sourceHash.slice(0,16)+"."+entry.targetHash.slice(0,16)+".md");}
+function applyResponse(response,{replaceManaged=false}={}){
  const {slug,targetLanguage:lang,sourceHash,targetHash,segments,provider,model}=response;
  checkSlug(slug);checkLang(lang);
  if(response.schemaVersion!==1||typeof provider!=="string"||!provider.trim()||provider.length>100||
@@ -48,11 +49,12 @@ function apply(file,{replaceManaged=false}={}){
  if(current!==null){const {meta,body}=parseGuide(markdown);markdown="---\n"+stringify({...meta,translationPreviousHash:targetHash},{lineWidth:0})+"---\n"+body;}
  // A stale published translation is never demoted in place. Store an isolated
  // candidate for review; publication is a separate explicit editorial action.
- const destination=current===null?path:join("translation-review",lang,slug+"."+sourceHash.slice(0,16)+"."+targetHash.slice(0,16)+".md");
+ const destination=current===null?path:candidatePath({slug,lang,sourceHash,targetHash});
  output(destination,markdown);
  return {slug,lang,state,destination,candidateHash:sha256(markdown),targetHash};
 }
-export {entries,request,apply};
+function apply(file,options){return applyResponse(JSON.parse(read(file)),options);}
+export {entries,request,apply,applyResponse};
 const [command,...args]=process.argv.slice(2);
 if(command==="status"){
  console.log(JSON.stringify(entries(),null,2));
@@ -73,6 +75,26 @@ if(command==="status"){
  const [file,flag]=args;
  if(!file||flag&&flag!=="--replace-managed")throw Error("Usage: apply RESPONSE.json [--replace-managed]");
  console.log(JSON.stringify(apply(file,{replaceManaged:flag==="--replace-managed"})));
+}else if(command==="generate"){
+ const config=providerConfig();
+ const [filterSlug]=args;
+ if(filterSlug)checkSlug(filterSlug);
+ const rows=entries().filter(entry=>(!filterSlug||entry.slug===filterSlug)&&["missing","stale-draft","stale-published"].includes(entry.state)&&
+  (entry.targetHash===null||!existsSync(candidatePath(entry))));
+ const generated=[],skipped=[];
+ let calls=0;
+ for(const entry of rows){
+  if(calls>=config.limit)break;
+  try{
+   const prepared=request(entry.slug,entry.lang);
+   calls++;
+   const response=await translateViaProvider(prepared,config);
+   generated.push(applyResponse(response,{replaceManaged:entry.state!=="missing"}));
+  }catch(error){skipped.push({slug:entry.slug,lang:entry.lang,reason:error.message});}
+ }
+ // Machine-readable report is used by the PR workflow, not shown to public readers.
+ console.log(JSON.stringify({generated,skipped,calls,remaining:Math.max(0,rows.length-generated.length)},null,2));
+ if(skipped.length&&!generated.length)process.exitCode=1;
 }else if(command==="approve"){
  const [slug,lang,file,candidateHash,targetHash]=args;
  checkSlug(slug);checkLang(lang);
@@ -86,5 +108,5 @@ if(command==="status"){
  renameSync(tmp,destination);
  console.log("[IC] Approved locally; submit a reviewed PR:",destination);
 }else{
- throw Error("Usage: status | export [directory] | request SLUG LOCALE | apply RESPONSE.json [--replace-managed] | approve SLUG LOCALE FILE CANDIDATE_SHA TARGET_SHA_OR_null");
+ throw Error("Usage: status | export [directory] | request SLUG LOCALE | apply RESPONSE.json [--replace-managed] | generate [SLUG] | approve SLUG LOCALE FILE CANDIDATE_SHA TARGET_SHA_OR_null");
 }
