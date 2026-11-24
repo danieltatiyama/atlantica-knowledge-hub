@@ -20,7 +20,8 @@ test("all six bilingual themes have selector options and CSS palettes",()=>{
     assert.ok(header.includes(translation),translation);
   }
   assert.ok(header.includes('for="site-theme"'));
-  assert.ok(header.includes('aria-label={lang === "pt-br"'));
+  assert.ok(header.includes('aria-label={chromeText(lang,"Select visual theme",'));
+  assert.ok(header.includes('aria-label={chromeText(lang,"Appearance and language preferences",'));
   assert.ok(header.includes('themeSelect?.')||header.includes('themeSelect.addEventListener("change"'));
 });
 
