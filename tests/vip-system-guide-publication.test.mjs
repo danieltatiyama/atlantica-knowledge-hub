@@ -22,7 +22,7 @@ test("all 16 guide images exist and match approved Git blobs (safe replacement +
  const linked=[...guide.matchAll(/!\[[^\]]*\]\((\/images\/guides\/vip-system\/(?:image-\d+|vip-menu)\.png)\)/g)]
    .map(x=>x[1]);
  assert.equal(linked.length,sourceImageFiles.length);
- assert.equal(new Set(linked).size,sourceImageIds.length);
+ assert.equal(new Set(linked).size,sourceImageFiles.length);
  for(let i=0;i<sourceImageFiles.length;i++){
   const filename=sourceImageFiles[i];
   const path="public/images/guides/vip-system/"+filename;
