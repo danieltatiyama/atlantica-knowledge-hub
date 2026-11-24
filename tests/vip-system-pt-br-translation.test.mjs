@@ -4,7 +4,7 @@ import {readFileSync,existsSync} from "node:fs";
 
 const english=readFileSync("src/content/guides/en/vip-system.md","utf8");
 const portuguese=readFileSync("src/content/guides/pt-br/vip-system.md","utf8");
-const getImages=source=>[...source.matchAll(/!\[[^\]]*\]\((\/images\/guides\/vip-system\/image-\d+\.png)\)/g)].map(x=>x[1]);
+const getImages=source=>[...source.matchAll(/!\[[^\]]*\]\((\/images\/guides\/vip-system\/(?:image-\d+|vip-menu)\.png)\)/g)].map(x=>x[1]);
 
 test("Portuguese VIP System is a published and approved translation of the same article",()=>{
  for(const field of ["translationKey: vip-system","category: game-systems",

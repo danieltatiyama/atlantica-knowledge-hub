@@ -86,7 +86,7 @@ test("accessible bilingual dialog provides zoom, keyboard and pointer navigation
 test("VIP System EN/PT-BR images remain the original shared URLs",()=>{
  const en=read("src/content/guides/en/vip-system.md");
  const pt=read("src/content/guides/pt-br/vip-system.md");
- const refs=text=>[...text.matchAll(/\/images\/guides\/vip-system\/image-\d+\.png/g)]
+ const refs=text=>[...text.matchAll(/\/images\/guides\/vip-system\/(?:image-\d+|vip-menu)\.png/g)]
   .map(match=>match[0]);
  assert.equal(refs(pt).length,16);
  assert.deepEqual(refs(pt),refs(en));
