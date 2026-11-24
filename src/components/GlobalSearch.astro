@@ -50,7 +50,6 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
   const status=document.getElementById("wiki-search-status") as HTMLElement|null;
   const results=document.getElementById("wiki-search-results") as HTMLUListElement|null;
   const lang=dialog?.dataset.lang??"en";
-  const pt=lang==="pt-br";
   type RecordRow={kind:string;id:string;title:string;detail:string;href:string};
   let records:RecordRow[]|null=null;
   let loading:Promise<RecordRow[]>|null=null;
@@ -83,7 +82,7 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
       ]);
       const guideTag=document.getElementById("wiki-search-guides");
       const guides=guideTag?JSON.parse(guideTag.textContent||"[]"):[];
-      const data=buildWikiSearchRecords(itemShards,monsterShards,guides,pt?"pt-br":"en");
+      const data=buildWikiSearchRecords(itemShards,monsterShards,guides,lang);
       if(data.filter((row:RecordRow)=>row.kind==="item").length!==22702||
          data.filter((row:RecordRow)=>row.kind==="monster").length!==4351)
         throw Error("Incomplete search source records");
