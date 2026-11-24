@@ -1,37 +1,40 @@
 ---
+import {monsterText} from "../i18n/monster-ui.mjs";
+import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 /** Player-facing source links filtered by each creature's original level Band. */
-interface Props {lang:"en"|"pt-br";itemId:string;}
+interface Props {lang:Lang;itemId:string;}
 const {lang,itemId}=Astro.props;
-const pt=lang==="pt-br";
+
 ---
 <section class="monster-item-sources" data-item-id={itemId} data-lang={lang}
-  aria-label={pt?"Onde conseguir este item em monstros":"Monsters that may drop this item"}>
-  <h2>{pt?"Quais monstros podem dropar este item?":"Which monsters may drop this item?"}</h2>
-  <p class="drop-disclaimer">{pt
-    ?"Mostramos apenas os itens das faixas de nível compatíveis com cada criatura nos arquivos do cliente. Os percentuais são estimativas, NÃO taxas verificadas no servidor."
-    :"Only items from the client level bracket matching each creature are shown. Percentages are estimates, NOT verified live-server drop rates."}</p>
-  <p class="monster-item-status" role="status">{pt?"Carregando monstros…":"Loading creature sources…"}</p>
+  aria-label={monsterText(lang,"source","Monsters that may drop this item")}>
+  <h2>{monsterText(lang,"source","Which monsters may drop this item?")}</h2>
+  <p class="drop-disclaimer">{monsterText(lang,"source","Only items from the client level bracket matching each creature are shown. Percentages are estimates, NOT verified live-server drop rates.")}</p>
+  <p class="monster-item-status" role="status">{monsterText(lang,"source","Loading creature sources…")}</p>
   <div class="monster-item-results" hidden>
     <div class="monster-scroll">
       <table>
         <thead><tr>
-          <th>{pt?"Criatura":"Creature"}</th>
-          <th>{pt?"Chance estimada":"Estimated rate"}</th>
-          <th>{pt?"Quantidade possível":"Possible amount"}</th>
-          <th>{pt?"Origem":"Source"}</th>
+          <th>{monsterText(lang,"source","Creature")}</th>
+          <th>{monsterText(lang,"source","Estimated rate")}</th>
+          <th>{monsterText(lang,"source","Possible amount")}</th>
+          <th>{monsterText(lang,"source","Source")}</th>
         </tr></thead>
         <tbody></tbody>
       </table>
     </div>
   </div>
   <p class="monster-catalog-link">
-    <a href={(pt?"/pt-br":"")+"/monsters/?item="+encodeURIComponent(itemId)}>
-      {pt?"Explorar este item no códice de drops":"Explore this item in the loot codex"}</a>
+    <a href={localePrefix(lang)+"/monsters/?item="+encodeURIComponent(itemId)}>
+      {monsterText(lang,"source","Explore this item in the loot codex")}</a>
     <span aria-hidden="true"> · </span>
-    <a href={(pt?"/pt-br":"")+"/monsters/"}>{pt?"Explorar criaturas":"Browse creatures"}</a>
+    <a href={localePrefix(lang)+"/monsters/"}>{monsterText(lang,"source","Browse creatures")}</a>
   </p>
 </section>
 <script>
+  import {monsterText} from "../i18n/monster-ui.mjs";
+  import {localePrefix,localeTag} from "../i18n/locales.mjs";
   import {formatLevelResolvedPercent,estimatedTwoStagePercent} from
     "../data/client-monster-drop-resolver.mjs";
   let manifestPromise:Promise<any>|null=null;
@@ -47,7 +50,7 @@ const pt=lang==="pt-br";
   };
   const raw=(value:unknown)=>value===null||value===undefined?"—":String(value);
   for(const section of document.querySelectorAll<HTMLElement>(".monster-item-sources")){
-    const id=section.dataset.itemId??"",pt=section.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const id=section.dataset.itemId??"",lang=section.dataset.lang??"en",prefix=localePrefix(lang);
     const state=section.querySelector<HTMLElement>(".monster-item-status")!;
     const container=section.querySelector<HTMLElement>(".monster-item-results")!;
     const tbody=container.querySelector("tbody")!;
@@ -72,9 +75,7 @@ const pt=lang==="pt-br";
           throw Error("Level-resolved source shard invalid");
         const entry=shard.items?.[id];
         if(!entry){
-          state.textContent=pt
-            ?"Nenhum drop compatível com a faixa de nível registrada. Isso não prova ausência no servidor."
-            :"No drop matches the recorded level bracket. This does not prove it cannot drop on the server.";
+          state.textContent=monsterText(lang,"source","No drop matches the recorded level bracket. This does not prove it cannot drop on the server.");
           return;
         }
         const sources=[
@@ -97,18 +98,18 @@ const pt=lang==="pt-br";
             creatureCell.append(link);
             creatureCell.append(node("small"," #"+charId));
             tr.append(creatureCell);
-            tr.append(node("td",formatLevelResolvedPercent(source.pct,pt?"pt-br":"en")));
+            tr.append(node("td",formatLevelResolvedPercent(source.pct,lang)));
             tr.append(node("td",raw(source.min)+"–"+raw(source.max)));
             const technical=node("td"),details=node("details");
-            details.append(node("summary",pt?"Ver origem":"View source"));
+            details.append(node("summary",monsterText(lang,"source","View source")));
             const dl=node("dl");
             const fields=source.kind==="direct"
-              ?[["RawRate",source.row[3]],[pt?"Registro":"Source row",source.row[2]],
+              ?[["RawRate",source.row[3]],[monsterText(lang,"source","Source row"),source.row[2]],
                 ["Slot",source.row[4]]]
               :[["GroupID",source.row[2]],["Band",source.row[8]],
                 ["RawRate ref",source.row[5]],["RawRate item",source.row[6]],
-                [pt?"Linha referência":"Ref row",source.row[3]],
-                [pt?"Linha item":"Item row",source.row[4]],
+                [monsterText(lang,"source","Ref row"),source.row[3]],
+                [monsterText(lang,"source","Item row"),source.row[4]],
                 ["Slot",source.row[7]]];
             for(const [label,value] of fields){
               const box=node("div");box.append(node("dt",String(label)),node("dd",raw(value)));
@@ -119,7 +120,7 @@ const pt=lang==="pt-br";
           }
           tbody.append(fragment);
           shown=Math.min(sources.length,shown+75);
-          more.textContent=(pt?"Mostrar mais 75 · ":"Show 75 more · ")+
+          more.textContent=(monsterText(lang,"source","Show 75 more · "))+
             shown+" / "+sources.length;
           if(shown===sources.length)more.remove();
         };
@@ -128,11 +129,10 @@ const pt=lang==="pt-br";
           container.append(more);
         }
         render();container.hidden=false;
-        state.textContent=(pt?"Referências de drops compatíveis com o nível: ":"Level-matched drop records: ")+
+        state.textContent=(monsterText(lang,"source","Level-matched drop records: "))+
           sources.length;
       }catch{
-        state.textContent=pt?"Não foi possível validar os drops por faixa de nível."
-          :"Level-matched creature sources failed to load or validate.";
+        state.textContent=monsterText(lang,"source","Level-matched creature sources failed to load or validate.");
       }
     })();
   }

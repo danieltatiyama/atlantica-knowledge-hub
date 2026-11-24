@@ -68,7 +68,7 @@ test("community item detail prioritizes use, crafting and sources before audit d
   assert.ok(page.includes('buildClientRecipeViews(data.s)'));
   assert.ok(page.includes('recipe.sourceRows.map'));
   assert.ok(page.includes('itemCell.append(linkItem(materialId'));
-  assert.ok(page.includes('find.href=prefix+"/monsters/?item="'));
+  assert.ok(page.includes('find.href=localePrefix(lang)+"/monsters/?item="'));
   const display=page.slice(page.indexOf("        addItemOverview(details,row,data)"),
     page.indexOf("      }catch{",page.indexOf("        addItemOverview(details,row,data)")));
   for(const snippet of ["addItemOverview(details,row,data)",

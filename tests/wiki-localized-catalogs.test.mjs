@@ -23,7 +23,7 @@ test("catalog dictionaries have a unique label in every locale",()=>{
  }
 });
 test("localized listing routes preserve locale and unsupported detail paths do not pretend to be translated",()=>{
- assert.deepEqual(LOCALIZED_CATALOG_PATHS,["/items/","/events/","/mercenaries/","/items/database/"]);
+ assert.deepEqual(LOCALIZED_CATALOG_PATHS,["/items/","/events/","/mercenaries/","/items/database/","/monsters/"]);
  for(const lang of LOCALE_IDS){
   for(const path of LOCALIZED_CATALOG_PATHS){
    assert.equal(catalogPath(lang,path),localePrefix(lang)+path);

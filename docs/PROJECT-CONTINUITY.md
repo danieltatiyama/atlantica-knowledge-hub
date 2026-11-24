@@ -495,6 +495,12 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Preservados 23.586 IDs, 22.702 nomes, 7.560 IDs com atributos numéricos e regras de crafting e drops; formatação de percentuais aceita locale sem alteração da inferência. Testes de mensagens, placeholders, rotas, dados e build. Não presumir revisão linguística nativa, nem publicação Cloudflare sem confirmação.
 - Próxima etapa: 20.80c — banco de monstros e fontes de drops; depois fichas individuais e páginas complementares.
 
+### Stage 20.80c — Bestiário e códice de drops multilíngues
+
+- `MonsterDatabasePage.astro`, `MonsterDropItemSearch.astro` e `MonsterItemSources.astro` utilizam dicionários por escopo em `monster-ui.mjs` para oito idiomas. Rotas adicionais `/[locale]/monsters/`, Home, cabeçalho, pesquisa global e links do banco de itens preservam idioma e parâmetros `?id=` / `?item=`.
+- Os 4.351 IDs, 9.959 drops diretos, 822 ItemIDs com drops por nível e 197 referências sem faixa correspondente continuam inalterados. Nomes, valores brutos, arquivos e regra BandKey permanecem originais. Traduções não revisadas por falantes nativos.
+- CI: testes de completude, links e páginas geradas. Próximas etapas 20.80d/e: fichas de equipamentos e páginas complementares; não declarar o conjunto completo antes dessas etapas.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |

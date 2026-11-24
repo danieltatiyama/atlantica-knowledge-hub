@@ -18,7 +18,7 @@ const eventsHref = catalogPath(lang,"/events/");
 const mercenariesHref = catalogPath(lang,"/mercenaries/");
 const itemsHref = catalogPath(lang,"/items/");
 const allItemsHref = catalogPath(lang,"/items/database/");
-const monstersHref = localePrefix(legacyLocale(lang))+"/monsters/";
+const monstersHref = catalogPath(lang,"/monsters/");
 
 const navigation = [
   {
@@ -547,8 +547,7 @@ import {
     const isGuideListing =
       /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/guides\/$/.test(currentPath);
     const isMonsterCatalog =
-      currentPath === "/monsters/" ||
-      currentPath === "/pt-br/monsters/";
+      /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/monsters\/$/.test(currentPath);
 
     const isItemDatabase = /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/items\/database\/$/.test(currentPath);
     // Preserve category filters and selected ItemID on localized listings.
