@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {monsterText} from "../src/i18n/monster-ui.mjs";
 
 const read=path=>readFileSync(path,"utf8");
 
@@ -9,10 +10,12 @@ test("bestiary shows all level-matched possible item rows in one table, then raw
   const a=page.indexOf("async function openCreature");
   const b=page.indexOf('    close.addEventListener(',a);
   const content=page.slice(a,b);
-  assert.ok(content.includes('pt?"Itens que podem aparecer":"Possible monster drops"'));
+  assert.ok(content.includes('monsterText(lang,"db","Possible monster drops")'));
+  assert.equal(monsterText("pt-br","db","Possible monster drops"),"Itens que podem aparecer");
   assert.ok(content.includes("resolveClientCreatureDrops(entity,rawLoot,groupData)"));
   assert.ok(content.includes("appendItemTable(directSection,selected.rows)"));
-  assert.ok(content.includes('pt?"Registros originais do cliente":"Original client records"'));
+  assert.ok(content.includes('monsterText(lang,"db","Original client records")'));
+  assert.equal(monsterText("pt-br","db","Original client records"),"Registros originais do cliente");
   assert.ok(content.includes('node("details",undefined,"community-creature-audit")'));
   assert.ok(content.indexOf("body.append(directSection)")<
     content.indexOf("body.append(audit)"));
@@ -27,10 +30,12 @@ test("player-facing rows show selected item rate and quantity; original group fi
   assert.ok(table.includes("formatLevelResolvedPercent(source.estimatedPercent"));
   assert.ok(table.includes('itemLink(source.itemId,source.name)'));
   assert.ok(table.includes('node("details",undefined,"client-record-row")'));
-  assert.ok(table.includes('pt?"Ver origem":"View source"'));
+  assert.ok(table.includes('monsterText(lang,"db","View source")'));
+  assert.equal(monsterText("pt-br","db","View source"),"Ver origem");
   for(const field of ["GroupID","Band","BandKey","RawRate","Reference row","Item source row","Source row"])
     assert.ok(table.includes(field),field);
-  assert.ok(table.includes('pt?"Quantidade":"Amount"'));
+  assert.ok(table.includes('monsterText(lang,"db","Amount")'));
+  assert.equal(monsterText("pt-br","db","Amount"),"Quantidade");
   assert.ok(!table.includes(".innerHTML"));
 });
 
