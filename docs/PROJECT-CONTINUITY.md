@@ -488,6 +488,13 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Preservados os 2.462 IDs, nomes em inglês, categorias brutas, valores, filtros e ordenação. Fichas de equipamentos, boxes, pesquisa lendária, banco completo de itens e monstros permanecem EN/PT-BR. As listagens avisam sobre páginas e nomes em inglês; eventos e mercenários exibem somente artigos aprovados e verificados, em inglês para idiomas adicionais.
 - Testes de cobertura, rotas, fonte e HTML gerado em `tests/wiki-localized-catalogs.test.mjs` e `scripts/check-built-guide-locales.mjs`. Não declarar a Stage 20.80 integralmente concluída: próximos incrementos são banco completo de itens, monstros/drops, fichas e boxes. Nomes oficiais por idioma dependem de fonte de localização verificada.
 
+### Stage 20.80b — Banco completo de itens multilíngue
+
+- `FullClientItemDatabasePage.astro` oferece interface nos oito idiomas, incluindo busca, filtros, atributos, comparação, fichas carregadas por ID, receitas, materiais, batch, fontes de drops, dados originais e estados dinâmicos. Dicionário `item-db-ui.mjs` e suas duas partes: 215 mensagens/termos, com placeholders protegidos. Nomes de itens/monstros, categorias e códigos técnicos originais permanecem preservados.
+- Seis rotas adicionais `/[locale]/items/database/`; Home, cabeçalho, catálogo de equipamentos e busca global direcionam à página localizada. Troca de idioma preserva `?id=`. Fichas individuais de equipamentos, monstros, ferramentas e boxes ainda usam fallback EN/PT-BR. CSV mantém esquema e delimitadores EN/PT-BR para compatibilidade; aviso explícito nos demais idiomas.
+- Preservados 23.586 IDs, 22.702 nomes, 7.560 IDs com atributos numéricos e regras de crafting e drops; formatação de percentuais aceita locale sem alteração da inferência. Testes de mensagens, placeholders, rotas, dados e build. Não presumir revisão linguística nativa, nem publicação Cloudflare sem confirmação.
+- Próxima etapa: 20.80c — banco de monstros e fontes de drops; depois fichas individuais e páginas complementares.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |
