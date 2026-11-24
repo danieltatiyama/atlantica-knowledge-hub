@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {sharedText} from "../src/i18n/shared-ui.mjs";
+import {LOCALE_IDS} from "../src/i18n/locales.mjs";
 
 const read=path=>readFileSync(path,"utf8");
 
@@ -13,10 +15,14 @@ test("header differentiates equipment from all 23,586 client items in both local
   assert.ok(header.includes('active: pathname.startsWith(allItemsHref)'));
   assert.ok(!header.includes('label: lang === "pt-br" ? "Itens" : "Items"'));
   const home=read("src/components/HomePage.astro");
-  assert.ok(home.includes('"Equipamentos e Boxes"'));
-  assert.ok(home.includes('"Todos os itens"'));
+  assert.ok(home.includes('sharedText(lang,"Equipment & Boxes")'));
+  assert.ok(home.includes('sharedText(lang,"All Items")'));
+  assert.equal(sharedText("pt-br","Equipment & Boxes"),"Equipamentos e Boxes");
+  assert.equal(sharedText("pt-br","All Items"),"Todos os itens");
+  for(const lang of LOCALE_IDS)assert.notEqual(sharedText(lang,"Equipment & Boxes"),sharedText(lang,"All Items"));
   assert.ok(home.includes('"/items/database/"'));
-  assert.ok(home.includes("23.586"));
+  assert.ok(home.includes("23,586"));
+  assert.match(sharedText("pt-br","Search 23,586 client item IDs, including materials, consumables and equipment. Explore crafting, uses and possible drops."),/23\.586/);
 });
 
 test("one reusable navigation is installed once in BaseLayout and available in information pages",()=>{
@@ -46,8 +52,14 @@ test("floating index has left, right, hide and recover controls with persisted p
   assert.ok(nav.includes('if(event.key==="Escape")'));
   assert.ok(nav.includes('data-side="right"'));
   assert.ok(nav.includes('aria-pressed="true"'));
-  assert.ok(nav.includes('aria-label={pt?"Esconder navegação":"Hide navigation"}'));
-  assert.ok(nav.includes('aria-label={pt?"Mostrar navegação de seções":"Show section navigation"}'));
+  assert.ok(nav.includes('aria-label={sharedText(lang,"Hide navigation")}'));
+  assert.ok(nav.includes('aria-label={sharedText(lang,"Show section navigation")}'));
+  assert.equal(sharedText("pt-br","Hide navigation"),"Esconder navegação");
+  assert.equal(sharedText("pt-br","Show section navigation"),"Mostrar navegação de seções");
+  for(const lang of LOCALE_IDS){
+    assert.ok(sharedText(lang,"Hide navigation").trim());
+    assert.ok(sharedText(lang,"Show section navigation").trim());
+  }
   assert.ok(nav.includes('(max-width: 1700px)'));
 });
 
