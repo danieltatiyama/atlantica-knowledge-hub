@@ -144,6 +144,9 @@ jobs:
       - name: Validate published VIP System metadata and 16 archived images
         run: node --test tests/vip-system-guide-publication.test.mjs
 
+      - name: Validate approved-only Pages CMS guide publication submission
+        run: node --test tests/guide-publication-cms.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
