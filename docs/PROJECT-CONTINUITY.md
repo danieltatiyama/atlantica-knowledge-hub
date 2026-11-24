@@ -412,7 +412,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - A definição canônica `src/data/guide-taxonomy.ts` alimenta os filtros de Guias e a validação do schema em `src/content.config.ts`, mantendo a associação obrigatória `others → game-systems`.
 - Os quatro seletores pertinentes do Pages CMS em `.pages.yml` foram atualizados: ações de prévia/criação de guias e coleções editoriais EN e PT-BR.
 - `scripts/create-guide.mjs` aceita `--subcategory others` apenas no template `game-systems`; o modo de prévia continua sem escrita de arquivos.
-- A branch `dev/i18n` diverge muito da `main`; para que a geração de rascunhos do CMS naquela branch funcione, será aplicada uma alteração mínima em PR próprio contra `dev/i18n`, sem mesclar as duas branches inteiras.
+- A branch `dev/i18n` diverge muito da `main`; o [PR #91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) aplica a atualização mínima do CMS/gerador naquela branch, sem mesclar as branches inteiras.
 - Novos testes: `tests/game-systems-others-subcategory.test.mjs`. Nenhum artigo existente foi reclassificado nem publicado automaticamente.
 
 ## 7. Histórico das etapas recentes
@@ -442,7 +442,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.66 | [#85](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/85) | Fila reproduzível de 128 candidatos, workbench bilíngue de observações locais e JSON auditável |
 | 20.67 | [#86](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/86) | Confirmação relatada pelo jogador para os 128 candidatos, proveniência auditável e exibição separada da verificação independente |
 | 20.68 | [#88](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/88) | Catálogo de 421 preços pesquisáveis, filtros e links para itens; ferramenta técnica preservada em /research/ |
-| 20.69 | PR a registrar | Inclusão de Game Systems → Others/Outros na Wiki, CMS e gerador de guias |
+| 20.69 | [#90](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/90) | Inclusão de Game Systems → Others/Outros na Wiki, CMS e gerador de guias; complemento `dev/i18n` no [#91](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/91) |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
@@ -519,4 +519,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.69 em implementação. A subcategoria `others` de Game Systems deve estar disponível nos filtros de Guias, Pages CMS EN/PT-BR e geração de rascunhos. Confirmar o PR da `main`, o PR correspondente de `dev/i18n` e as verificações automatizadas. A Stage 20.68 permanece integrada; sua inspeção visual posterior continua independente desta alteração.**
+**Estado documentado: Stage 20.69 implementada em PRs #90 (`main`) e #91 (`dev/i18n`), aguardando validação e integração. A subcategoria `others` de Game Systems é exibida nos filtros de Guias e no Pages CMS EN/PT-BR, e aceita rascunhos no gerador sem reclassificar artigos existentes. A Stage 20.68 permanece integrada; sua inspeção visual posterior continua independente desta alteração.**
