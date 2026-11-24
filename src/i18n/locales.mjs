@@ -25,7 +25,9 @@ export function languageDestination({lang,path,guideAlternates}){
  if(plain==="/")return localePrefix(lang)+"/";
  if(plain==="/guides/")return guidePath(lang);
  if(/^\/(events|mercenaries|items|monsters|tools|explore)(\/|$)/.test(plain)){
-  return localePrefix(legacyLocale(lang))+plain;
+  if(NEW_GUIDE_LOCALES.includes(lang))return localePrefix(lang)+"/";
+  const listing=/^\/(events|mercenaries|monsters)(\/|$)/.exec(plain);
+  return localePrefix(lang)+(listing?"/"+listing[1]+"/":plain);
  }
  return localePrefix(lang)+"/";
 }
