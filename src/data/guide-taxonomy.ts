@@ -5,6 +5,7 @@ export const SUBCATEGORY_IDS = [
   "yggdrasil",
   "alcatraz",
   "pirate",
+  "introduction",
   "skills",
   "builds-formations",
   "crafting",
@@ -51,6 +52,10 @@ export const GUIDE_SUBCATEGORIES: Record<
   pirate: {
     category: "nation-dungeons",
     labels: { en: "Pirate", "pt-br": "Pirate" },
+  },
+  introduction: {
+    category: "mercenaries",
+    labels: { en: "Introduction", "pt-br": "Introdução" },
   },
   skills: {
     category: "mercenaries",
