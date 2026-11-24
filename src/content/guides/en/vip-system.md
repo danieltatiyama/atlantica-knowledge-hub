@@ -16,7 +16,7 @@ The new VIP system is similar to some mobile/browser games where a user can get 
 
 It can be accessed from the following menu:
 
-![image.png](/images/guides/image-1.png)
+![image.png](/images/guides/vip-system/vip-menu.png)
 
 ## How It Works
 
