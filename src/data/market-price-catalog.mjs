@@ -19,7 +19,7 @@ export function parseClientMarketPriceCatalog(source){
   if(!Array.isArray(row)||row.length!==6)throw Error("Malformed client price catalog entry");
   const [itemId,name,category,referenceGold,sourceLine,comparisonClass]=row;
   if(!validId(itemId)||ids.has(itemId)||!validText(name,200)||
-   !validText(category,100)||!validGold(referenceGold)||
+   (category!==""&&!validText(category,100))||!validGold(referenceGold)||
    !Number.isInteger(sourceLine)||sourceLine<1||!CLASSES.has(comparisonClass))
    throw Error("Invalid client price catalog entry");
   ids.add(itemId);classes[comparisonClass]++;
