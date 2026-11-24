@@ -150,6 +150,9 @@ jobs:
       - name: Validate shared-image VIP System pt-BR translation
         run: node --test tests/vip-system-pt-br-translation.test.mjs
 
+      - name: Validate accessible global article image lightbox
+        run: node --test tests/wiki-article-image-lightbox.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
