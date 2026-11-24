@@ -1,15 +1,18 @@
 
 ---
+import {sharedText} from "../i18n/shared-ui.mjs";
+import {getLangFromUrl} from "../i18n/utils";
+const lang=getLangFromUrl(Astro.url);
 const currentYear = new Date().getFullYear();
 ---
 
 <footer>
   <p>
-    Atlantica Knowledge Hub — Community Project
+    Atlantica Knowledge Hub — {sharedText(lang,"Community Project")}
   </p>
   <p class="copyright">
     © {currentYear} Atlantica Knowledge Hub.
-    Unofficial community resource.
+    {sharedText(lang,"Unofficial community resource.")}
   </p>
 </footer>
 
