@@ -138,6 +138,9 @@ jobs:
           node scripts/build-market-price-catalog.mjs --check
           node --test tests/market-price-catalog-stage-20-68.test.mjs
 
+      - name: Validate Game Systems Others guide subcategory and Pages CMS
+        run: node --test tests/game-systems-others-subcategory.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
