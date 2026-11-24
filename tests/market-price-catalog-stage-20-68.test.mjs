@@ -30,6 +30,8 @@ test("catalog exactly reproduces 421 original NPC client rows from immutable sou
  assert.equal(rows.filter(x=>x.comparisonClass==="historical-crosscheck").length,293);
  assert.equal(rows.filter(x=>x.comparisonClass==="additional-candidate").length,128);
  assert.equal(catalog.marketFixedPriceVerified,false);
+ assert.equal(rows.filter(x=>x.category==="").length,5,
+  "Five source-empty categories must remain unclassified");
 });
 
 test("293 historical matches and 128 reported matches remain different evidence types",()=>{
