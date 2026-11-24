@@ -60,8 +60,8 @@ const navigation = [
   },
   {
     label: chromeText(lang,"Tools",lang === "pt-br" ? "Ferramentas" : "Tools"),
-    href: lang === "pt-br" ? "/pt-br/tools/" : "/tools/",
-    active: pathname.startsWith(lang === "pt-br" ? "/pt-br/tools/" : "/tools/"),
+    href: catalogPath(lang,"/tools/"),
+    active: pathname.startsWith(catalogPath(lang,"/tools/")),
   },
   {
     label: t("nav.explore"),
