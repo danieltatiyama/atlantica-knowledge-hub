@@ -501,6 +501,13 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Os 4.351 IDs, 9.959 drops diretos, 822 ItemIDs com drops por nível e 197 referências sem faixa correspondente continuam inalterados. Nomes, valores brutos, arquivos e regra BandKey permanecem originais. Traduções não revisadas por falantes nativos.
 - CI: testes de completude, links e páginas geradas. Próximas etapas 20.80d/e: fichas de equipamentos e páginas complementares; não declarar o conjunto completo antes dessas etapas.
 
+### Stage 20.80d — Fichas de equipamentos e limite de arquivos
+
+- Dicionário `equipment-ui.mjs` reutiliza termos dos dicionários anteriores e acrescenta mensagens das fichas, painel de item, requisitos, dados originais, fabricação e projeções. Os componentes de ficha revisada e de origem foram adaptados sem modificar os dados.
+- Seis idiomas adicionais recebem as 551 fichas revisadas estáticas. Os 1.911 equipamentos de origem continuam com fichas dedicadas EN/PT-BR e apontam para a ficha dinâmica localizada do banco completo nos demais idiomas. Todas as 2.462 identidades têm destino no idioma selecionado; a versão detalhada original permanece acessível. O cabeçalho usa alternates reais para fichas revisadas e preserva o ID no fallback.
+- Gerar 2.462 × 8 = 19.696 páginas de equipamento, além dos demais assets, deixaria o deploy próximo ou acima do teto de 20.000 arquivos do Cloudflare Workers Free. Não assumir plano pago; CI verifica limite de 20.000 assets. Referência: https://developers.cloudflare.com/workers/platform/limits/#static-assets.
+- Testes de tradução, rotas, contagem e HTML. Restam páginas de boxes e pesquisa lendária (20.80e), ferramentas (20.81) e nomes oficiais (20.82). As traduções não são revisão nativa. Conferir deploy Cloudflare.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |

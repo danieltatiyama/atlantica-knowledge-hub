@@ -1,13 +1,15 @@
 ---
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import type {ClientEquipmentFacts,ClientSourceDefinition} from "../data/client-equipment-facts";
 import {CLIENT_EQUIPMENT_SOURCE_SNAPSHOT} from "../data/client-equipment-facts";
 import {EQUIPMENT_ITEM_NAMES_EN} from "../data/equipment-item-names-en";
 import {getClientMaterialName} from "../data/client-material-names-en.mjs";
 
-interface Props {lang:"en"|"pt-br"; item?:ClientEquipmentFacts;}
+interface Props {lang:Lang; item?:ClientEquipmentFacts;}
 const {lang,item}=Astro.props;
-const pt=lang==="pt-br";
-const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const fmt=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
 const raws=[
   {key:"category",en:"Source category",pt:"Categoria de origem"},
   {key:"levelRaw",en:"Client level (raw)",pt:"Nível bruto do cliente"},
@@ -22,28 +24,24 @@ const formatValue=(x:string|number|null)=>x===null||x===""?"—":
   typeof x==="number"?fmt.format(x):x;
 ---
 {item && <section id="client-facts">
-  <h2>{pt?"Dados extraídos dos arquivos do jogo":"Values extracted from game files"}</h2>
-  <p class="source-note">{pt
-    ?"Definições de origem do cliente NA, preservando arquivo, categoria, nível, grade, unidade, workload e referências estruturadas de materiais. Não são atributos de combate confirmados no tooltip. Valores divergentes não foram unidos automaticamente."
-    :"NA client source definitions with file, category, level, grade, unit, work and structured material references. These are not independently verified tooltip combat stats. Conflicting values are never silently merged."}</p>
-  <p class="source-note">{pt?"Snapshot do Miner":"Miner snapshot"}:
+  <h2>{equipmentText(lang,"Values extracted from game files","Dados extraídos dos arquivos do jogo")}</h2>
+  <p class="source-note">{equipmentText(lang,"NA client source definitions with file, category, level, grade, unit, work and structured material references. These are not independently verified tooltip combat stats. Conflicting values are never silently merged.","Definições de origem do cliente NA, preservando arquivo, categoria, nível, grade, unidade, workload e referências estruturadas de materiais. Não são atributos de combate confirmados no tooltip. Valores divergentes não foram unidos automaticamente.")}</p>
+  <p class="source-note">{equipmentText(lang,"Miner snapshot","Snapshot do Miner")}:
     <code>{CLIENT_EQUIPMENT_SOURCE_SNAPSHOT}</code> ·
-    {pt?"Identidade: nome oficial do cliente conciliado com ID revisado":"Identity: official client name reconciled with reviewed ID"}</p>
-  {item.variantSourceSets.length>1 && <p class="variants-note">{pt
-    ?"Os grupos abaixo representam diferenças entre definições de arquivos. Isso NÃO confirma que existam variantes diferentes dentro do jogo."
-    :"The groups below represent differing file definitions. They do NOT prove separate in-game equipment variants."}</p>}
+    {equipmentText(lang,"Identity: official client name reconciled with reviewed ID","Identidade: nome oficial do cliente conciliado com ID revisado")}</p>
+  {item.variantSourceSets.length>1 && <p class="variants-note">{equipmentText(lang,"The groups below represent differing file definitions. They do NOT prove separate in-game equipment variants.","Os grupos abaixo representam diferenças entre definições de arquivos. Isso NÃO confirma que existam variantes diferentes dentro do jogo.")}</p>}
   {item.variantSourceSets.map(variant=><details class="source-variant"
     open={item.variantSourceSets.length===1}>
-    <summary>{pt?"Conjunto de definições":"Source definition set"} {variant.variantIndex}
-      <small> ({variant.recordIds.length} {pt?"registro(s)":"record(s)"})</small></summary>
+    <summary>{equipmentText(lang,"Source definition set","Conjunto de definições")} {variant.variantIndex}
+      <small> ({variant.recordIds.length} {equipmentText(lang,"record(s)","registro(s)")})</small></summary>
     {members(variant.recordIds).map(record=><div class="source-record">
       <h3>{record.file} <small>· {record.role==="general"
-        ?(pt?"tabela geral":"general table"):(pt?"tabela específica":"specific table")}</small></h3>
+        ?(equipmentText(lang,"general table","tabela geral")):(equipmentText(lang,"specific table","tabela específica"))}</small></h3>
       <div class="table-scroll"><table><tbody>
-        {raws.map(field=><tr><th>{pt?field.pt:field.en}</th>
+        {raws.map(field=><tr><th>{equipmentText(lang,field.en,field.pt)}</th>
           <td><code>{formatValue(record[field.key])}</code></td></tr>)}
       </tbody></table></div>
-      <h4>{pt?"Referências de materiais (cliente)":"Material references (client)"}</h4>
+      <h4>{equipmentText(lang,"Material references (client)","Referências de materiais (cliente)")}</h4>
       {record.ingredients.length?(
         <div class="materials">
           {record.ingredients.map(material=><span class="material">
@@ -51,22 +49,16 @@ const formatValue=(x:string|number|null)=>x===null||x===""?"—":
             {" ×"}{fmt.format(material.quantity)}
           </span>)}
         </div>
-      ):<p class="source-note">{pt
-        ?(record.ingredientsStatus==="unsupported"
-          ?"Expressão de materiais não interpretada automaticamente."
-          :"Nenhum material estruturado confirmado nesta definição.")
-        :(record.ingredientsStatus==="unsupported"
-          ?"Material expression not automatically parsed."
-          :"No confirmed structured materials in this definition.")}</p>}
-      <p class="source-footnote">{pt?"Registro do Miner":"Miner record"}:
+      ):<p class="source-note">{record.ingredientsStatus==="unsupported"
+        ?equipmentText(lang,"Material expression not automatically parsed.","Expressão de materiais não interpretada automaticamente.")
+        :equipmentText(lang,"No confirmed structured materials in this definition.","Nenhum material estruturado confirmado nesta definição.")}</p>}
+      <p class="source-footnote">{equipmentText(lang,"Miner record","Registro do Miner")}:
         <code>{record.recordId}</code> ·
-        {pt?"Estado da receita":"Recipe parsing"}:
+        {equipmentText(lang,"Recipe parsing","Estado da receita")}:
         <code>{record.ingredientsStatus}</code></p>
     </div>)}
   </details>)}
-  <p class="source-note">{pt
-    ?"Um registro com materiais ou workload não confirma, sozinho, que o item seja fabricável ou obtido por determinada fonte. Probabilidades de drop não foram calculadas."
-    :"A record containing materials or work does not, by itself, prove craftability or a particular acquisition method. No drop probabilities have been calculated."}</p>
+  <p class="source-note">{equipmentText(lang,"A record containing materials or work does not, by itself, prove craftability or a particular acquisition method. No drop probabilities have been calculated.","Um registro com materiais ou workload não confirma, sozinho, que o item seja fabricável ou obtido por determinada fonte. Probabilidades de drop não foram calculadas.")}</p>
 </section>}
 <style>
   section{margin:32px 0}

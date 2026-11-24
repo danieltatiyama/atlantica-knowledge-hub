@@ -1,29 +1,31 @@
 ---
-interface Props {lang:"en"|"pt-br"; itemId:string;}
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang; itemId:string;}
 const {lang,itemId}=Astro.props;
-const pt=lang==="pt-br";
-const prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 ---
-<section class="craft-backlinks" data-item-id={itemId} data-prefix={prefix} data-lang={lang} aria-label={pt?"Uso do item em fabricação":"Used in crafting"}>
-  <h2>{pt?"Usado em fabricação":"Used in crafting"}</h2>
-  <p class="craft-caution">{pt
-    ?"Relações invertidas dos materiais decodificados em ItemType*.ndt. São definições dos arquivos do cliente, não receitas confirmadas como disponíveis no servidor."
-    :"Reverse links from decoded ItemType*.ndt source material lists. These are client file definitions, not recipes confirmed available on the live server."}</p>
-  <p class="craft-backlinks-status" role="status">{pt?"Consultando referências de material…":"Checking material references…"}</p>
+<section class="craft-backlinks" data-item-id={itemId} data-prefix={prefix} data-lang={lang} aria-label={equipmentText(lang,"Used in crafting","Uso do item em fabricação")}>
+  <h2>{equipmentText(lang,"Used in crafting","Usado em fabricação")}</h2>
+  <p class="craft-caution">{equipmentText(lang,"Reverse links from decoded ItemType*.ndt source material lists. These are client file definitions, not recipes confirmed available on the live server.","Relações invertidas dos materiais decodificados em ItemType*.ndt. São definições dos arquivos do cliente, não receitas confirmadas como disponíveis no servidor.")}</p>
+  <p class="craft-backlinks-status" role="status">{equipmentText(lang,"Checking material references…","Consultando referências de material…")}</p>
   <div class="craft-backlinks-table" hidden>
     <div class="craft-scroll"><table>
-      <thead><tr><th>{pt?"Item fabricado":"Crafted item"}</th>
-        <th>{pt?"Quantidade utilizada":"Quantity used"}</th>
-        <th>{pt?"Registro de origem":"Source evidence"}</th></tr></thead>
+      <thead><tr><th>{equipmentText(lang,"Crafted item","Item fabricado")}</th>
+        <th>{equipmentText(lang,"Quantity used","Quantidade utilizada")}</th>
+        <th>{equipmentText(lang,"Source evidence","Registro de origem")}</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
 </section>
 <script>
+  import {equipmentText} from "../i18n/equipment-ui.mjs";
+  import {localeTag} from "../i18n/locales.mjs";
   const wrappers=document.querySelectorAll<HTMLElement>(".craft-backlinks");
   for(const section of wrappers){
     const id=section.dataset.itemId??"";
-    const pt=section.dataset.lang==="pt-br",prefix=section.dataset.prefix??"";
+    const lang=section.dataset.lang??"en",prefix=section.dataset.prefix??"";
     const info=section.querySelector<HTMLElement>(".craft-backlinks-status")!;
     const table=section.querySelector<HTMLElement>(".craft-backlinks-table")!;
     const tbody=section.querySelector<HTMLTableSectionElement>("tbody")!;
@@ -38,9 +40,7 @@ const prefix=pt?"/pt-br":"";
           !Array.isArray(meta.files))throw Error("Craft manifest mismatch");
         const filename="used-by-"+String(Math.floor(Number(id)/1000)).padStart(2,"0")+".json";
         if(!meta.files.includes(filename)){
-          info.textContent=pt
-            ?"Nenhuma utilização decodificada para este item neste snapshot."
-            :"No decoded usage for this item in the available client snapshot.";
+          info.textContent=equipmentText(lang,"No decoded usage for this item in the available client snapshot.","Nenhuma utilização decodificada para este item neste snapshot.");
           return;
         }
         const response=await fetch("/data/client-items/crafting/"+filename);
@@ -50,9 +50,7 @@ const prefix=pt?"/pt-br":"";
           data.bucket!==Math.floor(Number(id)/1000))throw Error("Craft shard mismatch");
         const rows=data.items?.[id]??[];
         if(!Array.isArray(rows)||!rows.length){
-          info.textContent=pt
-            ?"Nenhuma utilização decodificada para este item neste snapshot."
-            :"No decoded usage for this item in the available client snapshot.";
+          info.textContent=equipmentText(lang,"No decoded usage for this item in the available client snapshot.","Nenhuma utilização decodificada para este item neste snapshot.");
           return;
         }
         for(const row of rows){
@@ -65,17 +63,15 @@ const prefix=pt?"/pt-br":"";
           const itemTd=document.createElement("td");itemTd.append(link);
           itemTd.append(document.createTextNode(" (#"+productId+")"));
           const quantityTd=document.createElement("td");
-          quantityTd.textContent=new Intl.NumberFormat(pt?"pt-BR":"en-US").format(quantity);
+          quantityTd.textContent=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang)).format(quantity);
           const sourceTd=document.createElement("td");
           sourceTd.textContent=records.map(n=>"#"+n).join(", ");
           tr.append(itemTd,quantityTd,sourceTd);tbody.append(tr);
         }
         table.hidden=false;
-        info.textContent=(pt?"Referências de receitas encontradas: ":"Recipe references found: ")+rows.length;
+        info.textContent=(equipmentText(lang,"Recipe references found: ","Referências de receitas encontradas: "))+rows.length;
       }catch{
-        info.textContent=pt
-          ?"Não foi possível carregar as referências de fabricação."
-          :"Could not load the original craft references.";
+        info.textContent=equipmentText(lang,"Could not load the original craft references.","Não foi possível carregar as referências de fabricação.");
       }
     }
     void load();

@@ -1,108 +1,100 @@
 ---
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import type {ClientItemAttributes} from "../data/client-item-attributes";
 import {CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT} from "../data/client-item-attributes";
 import {summarizeClientRawFields,buildHistoricalClientProjection,labelForClientField}
   from "../data/client-item-stat-summary.mjs";
 
 interface Props {
-  lang:"en"|"pt-br";
+  lang:Lang;
   data?:ClientItemAttributes;
   showHistoricalProjection?:boolean;
 }
 const {lang,data,showHistoricalProjection=true}=Astro.props;
-const pt=lang==="pt-br";
 const summary=data?summarizeClientRawFields(data):null;
 const preview=data&&showHistoricalProjection?buildHistoricalClientProjection(data):null;
-const number=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const number=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
 const format=value=>typeof value==="number"?number.format(value):value;
 const heading={
-  attack:pt?"Poder de ataque":"Attack power",
-  defense:pt?"Defesa e resistência":"Defense and resistance",
-  attributes:pt?"Atributos básicos":"Base attributes",
-  other:pt?"Outros bônus do cliente":"Other client bonuses",
+  attack:equipmentText(lang,"Attack power","Poder de ataque"),
+  defense:equipmentText(lang,"Defense and resistance","Defesa e resistência"),
+  attributes:equipmentText(lang,"Base attributes","Atributos básicos"),
+  other:equipmentText(lang,"Other client bonuses","Outros bônus do cliente"),
 };
 const progressionFields=preview?.fields??[];
 const baselineOnlyFields=preview?.baselineOnlyFields??[];
 const fixedFields=preview?.fixedFields??[];
 ---
-{data && summary && <section class="source-summary" aria-label={pt?"Resumo dos atributos extraídos":"Client attribute summary"}>
+{data && summary && <section class="source-summary" aria-label={equipmentText(lang,"Client attribute summary","Resumo dos atributos extraídos")}>
   <div class="summary-heading">
     <div>
-      <p class="eyebrow">{pt?"ARQUIVOS DO CLIENTE":"CLIENT SOURCE FILES"}</p>
-      <h2>{pt?"Atributos básicos do equipamento":"Equipment base attributes"}</h2>
+      <p class="eyebrow">{equipmentText(lang,"CLIENT SOURCE FILES","ARQUIVOS DO CLIENTE")}</p>
+      <h2>{equipmentText(lang,"Equipment base attributes","Atributos básicos do equipamento")}</h2>
     </div>
-    <span class="snapshot">{pt?"Snapshot":"Snapshot"} {CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT}</span>
+    <span class="snapshot">{equipmentText(lang,"Snapshot","Snapshot")} {CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT}</span>
   </div>
-  <p class="provenance">{pt
-    ?"Valores brutos extraídos de Items.csv. Uma correspondência de nome e ID confirma a origem do registro, não o valor exibido pelo servidor ou a possibilidade de aprimoramento."
-    :"Raw values extracted from Items.csv. A matching source item name and ID confirms provenance, not live-server tooltip stats or enhancement eligibility."}</p>
+  <p class="provenance">{equipmentText(lang,"Raw values extracted from Items.csv. A matching source item name and ID confirms provenance, not live-server tooltip stats or enhancement eligibility.","Valores brutos extraídos de Items.csv. Uma correspondência de nome e ID confirma a origem do registro, não o valor exibido pelo servidor ou a possibilidade de aprimoramento.")}</p>
   <div class="stat-groups">
     {summary.visibleGroups.map(group=><div class="stat-group">
       <h3>{heading[group.group]}</h3>
       <dl>
         {group.fields.map(field=><div class="stat-item">
-          <dt>{pt?field.pt:field.en}</dt>
+          <dt>{equipmentText(lang,field.en,field.pt)}</dt>
           <dd>{field.status==="conflict"
-            ? <span class="different">{pt?"Divergente":"Different values"}</span>
+            ? <span class="different">{equipmentText(lang,"Different values","Divergente")}</span>
             : <strong>{field.value}</strong>}
             {field.status==="partial" &&
-              <small>{pt?"Em":"In"} {field.observedIn}/{field.sourceCount} {pt?"fontes":"sources"}</small>}
+              <small>{equipmentText(lang,"In","Em")} {field.observedIn}/{field.sourceCount} {equipmentText(lang,"sources","fontes")}</small>}
           </dd>
         </div>)}
       </dl>
     </div>)}
   </div>
-  {summary.visibleGroups.length===0&&<p class="provenance">{pt
-    ?"Nenhum valor diferente de zero nos campos básicos revisados. A tabela de origem abaixo preserva todos os zeros e campos adicionais."
-    :"No nonzero values in the reviewed key fields. The raw source table below retains all zeroes and additional fields."}</p>}
-  <p class="source-status">{summary.sourceCount} {pt?"registro(s) originais de Items.csv":"original Items.csv source record(s)"}
+  {summary.visibleGroups.length===0&&<p class="provenance">{equipmentText(lang,"No nonzero values in the reviewed key fields. The raw source table below retains all zeroes and additional fields.","Nenhum valor diferente de zero nos campos básicos revisados. A tabela de origem abaixo preserva todos os zeros e campos adicionais.")}</p>}
+  <p class="source-status">{summary.sourceCount} {equipmentText(lang,"original Items.csv source record(s)","registro(s) originais de Items.csv")}
     · {summary.conflictCount===0
-      ? (pt?"Atributos em comum sem divergências":"Shared attributes agree")
-      : (pt?`${summary.conflictCount} campo(s) com valores diferentes`:`${summary.conflictCount} conflicting field(s)`)}
-    {summary.partialCount>0&&<> · {pt?"Alguns campos só existem em parte dos arquivos":"Some fields exist in only some source records"}</>}
+      ? (equipmentText(lang,"Shared attributes agree","Atributos em comum sem divergências"))
+      : equipmentText(lang,"{count} conflicting field(s)","{count} campo(s) com valores diferentes",{count:summary.conflictCount})}
+    {summary.partialCount>0&&<> · {equipmentText(lang,"Some fields exist in only some source records","Alguns campos só existem em parte dos arquivos")}</>}
   </p>
   {summary.conflictCount>0&&<div class="diff-panel">
-    <h3>{pt?"Valores que precisam de revisão":"Values needing source review"}</h3>
+    <h3>{equipmentText(lang,"Values needing source review","Valores que precisam de revisão")}</h3>
     {summary.fields.filter(field=>field.status==="conflict").map(field=>
-      <p><strong>{labelForClientField(field.key,pt)}</strong>: {data.sourceRows
+      <p><strong>{equipmentText(lang,labelForClientField(field.key,false),labelForClientField(field.key,true))}</strong>: {data.sourceRows
         .filter(row=>field.key in row.fieldsRaw)
         .map(row=>`#${row.sourceRowNumber}: ${row.fieldsRaw[field.key]}`).join(" · ")}</p>)}
   </div>}
   {preview&&preview.rows.length>0&&
     <details class="historical" open>
-      <summary>{pt?"Tabela de atributos +0 a +10 — modelo histórico":"Equipment stats +0 to +10 — historical model"}</summary>
+      <summary>{equipmentText(lang,"Equipment stats +0 to +10 — historical model","Tabela de atributos +0 a +10 — modelo histórico")}</summary>
       <div class="historical-inner">
-        <p class="historical-warning">{pt
-          ?"SIMULAÇÃO HISTÓRICA, NÃO VALORES CONFIRMADOS NO SERVIDOR. +0 utiliza os números brutos de Items.csv; +1 a +10 usam os multiplicadores históricos APENAS em ataque, defesa física e atributos básicos. Defesa mágica (MagicDef), evasão (EV) e velocidade de movimento (MoveSpeed) são mantidas FIXAS em todos os graus. Nenhuma linha L é inferida. Esta tabela não comprova que o item possa ser aprimorado."
-          :"HISTORICAL MODEL, NOT CONFIRMED SERVER STATS. +0 uses raw Items.csv values; +1 to +10 apply historical multipliers ONLY to attack, physical armor and primary attributes. Magic Defense (MagicDef), evasion (EV) and movement speed (MoveSpeed) remain FIXED at all grades. L is never inferred. This table does not prove the item can be upgraded."}</p>
-        {preview.excluded.length>0&&<p class="historical-warning">{pt
-          ?"Atributos sem projeção por conflito ou valor fracionário (visíveis nos registros brutos):"
-          :"Fields not projected due to a conflict or fractional value (visible in raw records):"}
+        <p class="historical-warning">{equipmentText(lang,"HISTORICAL MODEL, NOT CONFIRMED SERVER STATS. +0 uses raw Items.csv values; +1 to +10 apply historical multipliers ONLY to attack, physical armor and primary attributes. Magic Defense (MagicDef), evasion (EV) and movement speed (MoveSpeed) remain FIXED at all grades. L is never inferred. This table does not prove the item can be upgraded.","SIMULAÇÃO HISTÓRICA, NÃO VALORES CONFIRMADOS NO SERVIDOR. +0 utiliza os números brutos de Items.csv; +1 a +10 usam os multiplicadores históricos APENAS em ataque, defesa física e atributos básicos. Defesa mágica (MagicDef), evasão (EV) e velocidade de movimento (MoveSpeed) são mantidas FIXAS em todos os graus. Nenhuma linha L é inferida. Esta tabela não comprova que o item possa ser aprimorado.")}</p>
+        {preview.excluded.length>0&&<p class="historical-warning">{equipmentText(lang,"Fields not projected due to a conflict or fractional value (visible in raw records):","Atributos sem projeção por conflito ou valor fracionário (visíveis nos registros brutos):")}
           {" "}{preview.excluded.join(", ")}
         </p>}
         {preview.fixedConflicts.length>0&&<p class="historical-warning">
-          {pt?"Atributos fixos divergentes foram omitidos da tabela:":"Conflicting fixed attributes were omitted from the table:"}
+          {equipmentText(lang,"Conflicting fixed attributes were omitted from the table:","Atributos fixos divergentes foram omitidos da tabela:")}
           {" "}{preview.fixedConflicts.join(", ")}
         </p>}
-        <p class="model-footer">{pt
-          ?"Colunas com × = progressão calculada. Colunas com = = mesmo valor bruto do cliente em todos os graus; não são multiplicadas. Um valor 0 ou ausente não foi inventado para preencher colunas."
-          :"Columns marked × are historical projections. Columns marked = repeat the exact client source value at all grades; they are never multiplied. Missing or zero values were not invented to fill the table."}</p>
+        <p class="model-footer">{equipmentText(lang,"Columns marked × are historical projections. Columns marked = repeat the exact client source value at all grades; they are never multiplied. Missing or zero values were not invented to fill the table.","Colunas com × = progressão calculada. Colunas com = = mesmo valor bruto do cliente em todos os graus; não são multiplicadas. Um valor 0 ou ausente não foi inventado para preencher colunas.")}</p>
         <div class="table-scroll">
           <table class="progression">
             <thead><tr>
-              <th scope="col">{pt?"Grau":"Grade"}</th>
+              <th scope="col">{equipmentText(lang,"Grade","Grau")}</th>
               {progressionFields.map(field=><th scope="col">
-                {labelForClientField(field,pt)} <small class="multiplier-mark">×</small>
+                {equipmentText(lang,labelForClientField(field,false),labelForClientField(field,true))} <small class="multiplier-mark">×</small>
               </th>)}
               {baselineOnlyFields.map(field=><th scope="col" class="baseline-only-header" title={
-                pt?"Valor original em +0; sem projeção de grau":"Original +0 value; no grade projection available"
-              }>{labelForClientField(field,pt)} <small>+0</small></th>)}
+                equipmentText(lang,"Original +0 value; no grade projection available","Valor original em +0; sem projeção de grau")
+              }>{equipmentText(lang,labelForClientField(field,false),labelForClientField(field,true))} <small>+0</small></th>)}
               {fixedFields.map(field=><th scope="col" class="fixed-header" title={
-                pt?"Valor bruto fixo do cliente, não multiplicado":"Unchanged raw client source value, never multiplied"
-              }>{labelForClientField(field.key,pt)} <small class="fixed-mark">=</small>
-                {field.status==="partial"&&<small class="partial-source">{field.observedIn}/{field.sourceCount} {pt?"fontes":"sources"}</small>}
+                equipmentText(lang,"Unchanged raw client source value, never multiplied","Valor bruto fixo do cliente, não multiplicado")
+              }>{equipmentText(lang,labelForClientField(field.key,false),labelForClientField(field.key,true))} <small class="fixed-mark">=</small>
+                {field.status==="partial"&&<small class="partial-source">{field.observedIn}/{field.sourceCount} {equipmentText(lang,"sources","fontes")}</small>}
               </th>)}
-              <th scope="col">{pt?"Natureza do valor":"Basis"}</th>
+              <th scope="col">{equipmentText(lang,"Basis","Natureza do valor")}</th>
             </tr></thead>
             <tbody>{preview.rows.map(row=><tr class={row.grade===0?"baseline":undefined}>
               <th scope="row">+{row.grade}</th>
@@ -113,19 +105,17 @@ const fixedFields=preview?.fixedFields??[];
               {fixedFields.map(field=><td class="fixed-value">{row.values[field.key]}</td>)}
               <td class={row.status==="historical-estimate"?"estimated":undefined}>
                 {row.status==="client-raw-baseline"
-                  ?(pt?"Extraído do cliente":"Client raw baseline")
-                  :(pt?"Estimativa histórica":"Historical estimate")}
+                  ?(equipmentText(lang,"Client raw baseline","Extraído do cliente"))
+                  :(equipmentText(lang,"Historical estimate","Estimativa histórica"))}
               </td>
             </tr>)}</tbody>
           </table>
         </div>
-        <p class="model-footer">{pt
-          ?"Modelo das colunas ×: 1,0; 1,2; 1,4; 1,6; 1,8; 2,1; 2,4; 2,8; 3,2; 3,6; 4,0. Valores inteiros são arredondados para baixo. Defesa mágica, evasão e velocidade de movimento conservam seus números de origem. Habilidades, crítico e HitRate não foram projetados. L depende de evidência específica."
-          :"Multipliers for × columns: 1.0; 1.2; 1.4; 1.6; 1.8; 2.1; 2.4; 2.8; 3.2; 3.6; 4.0. Integer results are rounded down. Magic Defense, evasion and movement speed preserve their original values. Skills, critical and HitRate are not projected. L needs item-specific evidence."}</p>
+        <p class="model-footer">{equipmentText(lang,"Multipliers for × columns: 1.0; 1.2; 1.4; 1.6; 1.8; 2.1; 2.4; 2.8; 3.2; 3.6; 4.0. Integer results are rounded down. Magic Defense, evasion and movement speed preserve their original values. Skills, critical and HitRate are not projected. L needs item-specific evidence.","Modelo das colunas ×: 1,0; 1,2; 1,4; 1,6; 1,8; 2,1; 2,4; 2,8; 3,2; 3,6; 4,0. Valores inteiros são arredondados para baixo. Defesa mágica, evasão e velocidade de movimento conservam seus números de origem. Habilidades, crítico e HitRate não foram projetados. L depende de evidência específica.")}</p>
       </div>
     </details>}
-  <p class="see-raw">{pt?"Referências e campos completos na seção":"See original source rows and every field in"}
-    {" "}<a href="#client-attributes">{pt?"Atributos brutos extraídos":"Raw extracted attributes"}</a>.</p>
+  <p class="see-raw">{equipmentText(lang,"See original source rows and every field in","Referências e campos completos na seção")}
+    {" "}<a href="#client-attributes">{equipmentText(lang,"Raw extracted attributes","Atributos brutos extraídos")}</a>.</p>
 </section>}
 <style>
   .source-summary{border:1px solid var(--color-border);background:var(--color-surface);

@@ -1,4 +1,7 @@
 ---
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ClientCraftingBacklinks from "./ClientCraftingBacklinks.astro";
 import MonsterItemSources from "./MonsterItemSources.astro";
@@ -11,27 +14,26 @@ import {
 import {RAW_STATS_FIELDS} from "../data/full-client-stats-tools.mjs";
 import {labelForClientField} from "../data/client-item-stat-summary.mjs";
 
-interface Props {lang:"en"|"pt-br"; itemId:string;}
+interface Props {lang:Lang; itemId:string;}
 const {lang,itemId}=Astro.props;
-const pt=lang==="pt-br";
-const prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 const profile=getClientEquipmentSourceProfile(itemId);
 if(!profile)throw Error("Missing original source equipment ID");
 const {item,detail,rawStats,summary}=profile;
 if(item.reviewed)throw Error("Reviewed equipment must keep its existing manually curated profile");
-const fmt=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const fmt=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
 const materialStates=["parsed-client-material","parsed-client-recipe"];
 const groupLabels={
-  attack:pt?"Ataque":"Attack",
-  defense:pt?"Defesa e resistência":"Defense and resistance",
-  attributes:pt?"Atributos básicos":"Primary attributes",
-  other:pt?"Outros atributos":"Other source attributes",
+  attack:equipmentText(lang,"Attack","Ataque"),
+  defense:equipmentText(lang,"Defense and resistance","Defesa e resistência"),
+  attributes:equipmentText(lang,"Primary attributes","Atributos básicos"),
+  other:equipmentText(lang,"Other source attributes","Outros atributos"),
 };
 const groups=["attack","defense","attributes","other"]
   .map(group=>({name:groupLabels[group],
     fields:RAW_STATS_FIELDS.filter(f=>f.group===group&&summary?.fields.has(f.key))
       .map(f=>({key:f.key,
-        label:labelForClientField(f.key,pt),obs:summary.fields.get(f.key)}))
+        label:equipmentText(lang,labelForClientField(f.key,false),labelForClientField(f.key,true)),obs:summary.fields.get(f.key)}))
   })).filter(g=>g.fields.length);
 const recipesMap=new Map();
 for(const def of detail.s){
@@ -42,7 +44,7 @@ for(const def of detail.s){
   if(!recipesMap.has(signature)){
     recipesMap.set(signature,{materials:materialPairs.map(([id,qty])=>({
       id,qty,name:getOriginalClientItemIdentity(id)?.nameEn??null,
-      url:getSourceItemLink(id,prefix),
+      url:getSourceItemLink(id,localePrefix(legacyLocale(lang))),
     })),definitions:[]});
   }
   recipesMap.get(signature).definitions.push({rowId,file,role,category,work,unit});
@@ -56,53 +58,47 @@ const craftBatch=summarizeCraftBatch(detail.s);
 const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation>0;
 ---
 <BaseLayout lang={lang} title={item.nameEn+" | Atlantica Knowledge Hub"}
-  description={(pt?"Equipamento de categoria semelhante extraído dos arquivos do cliente: ":"Equipment-like source item from the client files: ")+item.nameEn}
+  description={(equipmentText(lang,"Equipment-like source item from the client files: ","Equipamento de categoria semelhante extraído dos arquivos do cliente: "))+item.nameEn}
   alternatePaths={{en:"/items/"+item.id+"/", "pt-br":"/pt-br/items/"+item.id+"/"}}>
   <main class="equipment-source-page" data-wiki-nav-root="true">
-    <nav class="breadcrumbs"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
+    <nav class="breadcrumbs"><a href={prefix+"/items/"}>{equipmentText(lang,"← Equipment catalog","← Catálogo de equipamentos")}</a></nav>
     <header>
       <p class="eyebrow">ATLANTICA GLOBAL / NA · CLIENT SNAPSHOT 1</p>
       <h1>{item.nameEn}</h1>
       <p class="identity">
         <span>ID <code>{item.id}</code></span>
         <span>{item.sourceCategory}</span>
-        <span>{pt?"Ficha baseada nos arquivos do cliente":"Client-source item profile"}</span>
+        <span>{equipmentText(lang,"Client-source item profile","Ficha baseada nos arquivos do cliente")}</span>
       </p>
-      <p class="source-caution">{pt
-        ?"Esta ficha foi gerada a partir de definições do cliente e ainda não passou pela revisão editorial dos 551 equipamentos originais. A categoria indica semelhança com equipamentos, mas não comprova que o item esteja equipável, disponível ou fabricável no servidor atual."
-        :"This profile is generated from original client definitions and is not one of the 551 manually reviewed equipment profiles. Its source category is equipment-like, but does not confirm that the item can be equipped, obtained or crafted on the current server."}</p>
-      <nav class="quicklinks" aria-label={pt?"Seções da ficha":"Profile sections"}>
-        <a href="#base-info">{pt?"Informações":"Overview"}</a>
-        <a href="#stats">{pt?"Atributos":"Stats"}</a>
-        <a href="#crafting">{pt?"Fabricação":"Crafting"}</a>
-        <a href="#obtain">{pt?"Obtenção":"How to obtain"}</a>
-        <a href="#sources">{pt?"Fontes":"Source evidence"}</a>
-        <a href="#used-in">{pt?"Usado em receitas":"Used in crafting"}</a>
+      <p class="source-caution">{equipmentText(lang,"This profile is generated from original client definitions and is not one of the 551 manually reviewed equipment profiles. Its source category is equipment-like, but does not confirm that the item can be equipped, obtained or crafted on the current server.","Esta ficha foi gerada a partir de definições do cliente e ainda não passou pela revisão editorial dos 551 equipamentos originais. A categoria indica semelhança com equipamentos, mas não comprova que o item esteja equipável, disponível ou fabricável no servidor atual.")}</p>
+      <nav class="quicklinks" aria-label={equipmentText(lang,"Profile sections","Seções da ficha")}>
+        <a href="#base-info">{equipmentText(lang,"Overview","Informações")}</a>
+        <a href="#stats">{equipmentText(lang,"Stats","Atributos")}</a>
+        <a href="#crafting">{equipmentText(lang,"Crafting","Fabricação")}</a>
+        <a href="#obtain">{equipmentText(lang,"How to obtain","Obtenção")}</a>
+        <a href="#sources">{equipmentText(lang,"Source evidence","Fontes")}</a>
+        <a href="#used-in">{equipmentText(lang,"Used in crafting","Usado em receitas")}</a>
       </nav>
     </header>
 
     <AtlanticaItemInfoPanel lang={lang} itemId={item.id} />
     <section id="base-info">
-      <h2>{pt?"Informações do item":"Item overview"}</h2>
+      <h2>{equipmentText(lang,"Item overview","Informações do item")}</h2>
       <dl class="facts">
-        <div><dt>{pt?"ID do cliente":"Client ID"}</dt><dd><code>{item.id}</code></dd></div>
-        <div><dt>{pt?"Categoria de origem":"Source category"}</dt><dd>{item.sourceCategory}</dd></div>
-        <div><dt>{pt?"Nível bruto registrado":"Recorded raw level"}</dt><dd>{item.rawLevel??"—"}</dd></div>
-        <div><dt>{pt?"Grade bruta registrada":"Recorded source grade"}</dt><dd>{item.rawGrade??"—"}</dd></div>
-        <div><dt>{pt?"Definições originais":"Original source definitions"}</dt><dd>{sourceCount}</dd></div>
-        <div><dt>{pt?"Registros de atributos":"Numeric source records"}</dt><dd>{rawStats?.length??0}</dd></div>
+        <div><dt>{equipmentText(lang,"Client ID","ID do cliente")}</dt><dd><code>{item.id}</code></dd></div>
+        <div><dt>{equipmentText(lang,"Source category","Categoria de origem")}</dt><dd>{item.sourceCategory}</dd></div>
+        <div><dt>{equipmentText(lang,"Recorded raw level","Nível bruto registrado")}</dt><dd>{item.rawLevel??"—"}</dd></div>
+        <div><dt>{equipmentText(lang,"Recorded source grade","Grade bruta registrada")}</dt><dd>{item.rawGrade??"—"}</dd></div>
+        <div><dt>{equipmentText(lang,"Original source definitions","Definições originais")}</dt><dd>{sourceCount}</dd></div>
+        <div><dt>{equipmentText(lang,"Numeric source records","Registros de atributos")}</dt><dd>{rawStats?.length??0}</dd></div>
       </dl>
-      <p class="subtle">{pt
-        ?"Nível e grade são propriedades extraídas, não necessariamente requisitos de personagem, regras de melhoria ou confirmações de obtenção."
-        :"Source level and grade are extracted properties, not necessarily character requirements, enhancement rules or availability claims."}</p>
+      <p class="subtle">{equipmentText(lang,"Source level and grade are extracted properties, not necessarily character requirements, enhancement rules or availability claims.","Nível e grade são propriedades extraídas, não necessariamente requisitos de personagem, regras de melhoria ou confirmações de obtenção.")}</p>
     </section>
 
     <section id="stats">
-      <h2>{pt?"Atributos de origem":"Original client attributes"}</h2>
+      <h2>{equipmentText(lang,"Original client attributes","Atributos de origem")}</h2>
       {summary&&groups.length?<>
-        <p class="subtle">{pt
-          ?"Valores numéricos brutos de Items.csv; zeros, campos ausentes, cobertura parcial e fontes divergentes são preservados. Não representam necessariamente a ficha exibida no servidor."
-          :"Raw numeric Items.csv fields. Zeros, missing values, partial coverage and source disagreements remain distinct. Not necessarily live-server tooltip values."}</p>
+        <p class="subtle">{equipmentText(lang,"Raw numeric Items.csv fields. Zeros, missing values, partial coverage and source disagreements remain distinct. Not necessarily live-server tooltip values.","Valores numéricos brutos de Items.csv; zeros, campos ausentes, cobertura parcial e fontes divergentes são preservados. Não representam necessariamente a ficha exibida no servidor.")}</p>
         <div class="stat-groups">{groups.map(group=><div class="stat-group">
           <h3>{group.name}</h3>
           <dl>{group.fields.map(field=><div>
@@ -110,105 +106,85 @@ const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation
             <dd>
               <strong>{field.obs.values.join(" / ")}</strong>
               {field.obs.status!=="consistent"&&<small class={field.obs.status}>
-                {field.obs.status==="conflict"?(pt?"Divergente":"Conflict"):(pt?"Parcial":"Partial")}
+                {field.obs.status==="conflict"?(equipmentText(lang,"Conflict","Divergente")):(equipmentText(lang,"Partial","Parcial"))}
                 {" · "+field.obs.observedIn+"/"+field.obs.sourceCount}
               </small>}
             </dd>
           </div>)}</dl>
         </div>)}</div>
-        <details class="raw-source"><summary>{pt?"Registros numéricos originais e IDs de origem":"Original raw numeric records and source row IDs"}</summary>
+        <details class="raw-source"><summary>{equipmentText(lang,"Original raw numeric records and source row IDs","Registros numéricos originais e IDs de origem")}</summary>
           <div class="table-scroll"><table>
-            <thead><tr><th>{pt?"Registro":"Source row"}</th><th>{pt?"Campo":"Field"}</th><th>{pt?"Valor":"Raw value"}</th></tr></thead>
+            <thead><tr><th>{equipmentText(lang,"Source row","Registro")}</th><th>{equipmentText(lang,"Field","Campo")}</th><th>{equipmentText(lang,"Raw value","Valor")}</th></tr></thead>
             <tbody>{longSourceRows.flatMap(row=>row.values.map(([key,value])=><tr>
               <td>#{row.sourceRow}</td><td>{key}</td><td>{value}</td>
             </tr>))}</tbody>
           </table></div>
         </details>
         <p class="subtle"><a href={prefix+"/items/database/?id="+encodeURIComponent(item.id)}>
-          {pt?"Ver modelos históricos +0 a +10 e dados originais no explorador":"Explore historical +0–+10 estimates and complete raw records"}
-        </a>. {pt
-          ?"Projeções são modelos antigos e não comprovam que o item aceita encantamento."
-          :"Any projections are historical models, not proof that this item can be enhanced."}</p>
-      </>:<p class="subtle">{pt
-        ?"Nenhum registro numérico seguro foi identificado para este ID na extração publicada. Dados ausentes não são zero."
-        :"No verified client numeric source rows are published for this ID. Missing source data is not zero."}</p>}
+          {equipmentText(lang,"Explore historical +0–+10 estimates and complete raw records","Ver modelos históricos +0 a +10 e dados originais no explorador")}
+        </a>. {equipmentText(lang,"Any projections are historical models, not proof that this item can be enhanced.","Projeções são modelos antigos e não comprovam que o item aceita encantamento.")}</p>
+      </>:<p class="subtle">{equipmentText(lang,"No verified client numeric source rows are published for this ID. Missing source data is not zero.","Nenhum registro numérico seguro foi identificado para este ID na extração publicada. Dados ausentes não são zero.")}</p>}
     </section>
 
     <section id="crafting">
-      <h2>{pt?"Receita de fabricação":"Crafting recipe"}</h2>
+      <h2>{equipmentText(lang,"Crafting recipe","Receita de fabricação")}</h2>
       <div class="craft-batch">
-        <h3>{pt?"Tamanho do batch de produção":"Production batch size"}</h3>
+        <h3>{equipmentText(lang,"Production batch size","Tamanho do batch de produção")}</h3>
         {usableBatch?<p>
           <strong>{fmt.format(craftBatch.batchSize)}</strong>
-          {pt?"unidades por fabricação registrada":"units per source production unit"}
-          <span> · {pt?"Incrementos de":"Steps of"} {fmt.format(craftBatch.increment)}</span>
-          <span> · {pt?"Limite por operação":"Operation limit"} {fmt.format(craftBatch.maxPerOperation)}</span>
-          <span> · {pt?"Máximo de batches":"Maximum batches"} {fmt.format(craftBatch.maxBatchesPerOperation)}</span>
+          {equipmentText(lang,"units per source production unit","unidades por fabricação registrada")}
+          <span> · {equipmentText(lang,"Steps of","Incrementos de")} {fmt.format(craftBatch.increment)}</span>
+          <span> · {equipmentText(lang,"Operation limit","Limite por operação")} {fmt.format(craftBatch.maxPerOperation)}</span>
+          <span> · {equipmentText(lang,"Maximum batches","Máximo de batches")} {fmt.format(craftBatch.maxBatchesPerOperation)}</span>
         </p>:<p class="subtle">{craftBatch.status==="conflict"
-          ?(pt?"Os arquivos apresentam valores de Unit divergentes; não foi selecionado um batch."
-            :"Source files contain different Unit values; no batch was selected.")
-          :(pt?"Tamanho do batch ainda não identificado nos arquivos do cliente."
-            :"No production batch quantity is identified in the available client records.")}</p>}
-        {craftBatch.status==="partial"&&<small>{pt?"Batch informado em apenas parte das definições originais.":"Batch value is present in only some original source records."}</small>}
-        <p class="subtle">{pt
-          ?"Unit é um valor bruto do ItemType. O limite de 10.000 unidades por operação é uma regra de jogo informada pelo jogador, separada dos dados extraídos. A existência da receita não é garantida no servidor atual."
-          :"Unit is a raw ItemType field. The 10,000-output-per-operation limit is a player-reported gameplay rule kept separate from the client-source record. Crafting availability is not confirmed."}</p>
+          ?(equipmentText(lang,"Source files contain different Unit values; no batch was selected.","Os arquivos apresentam valores de Unit divergentes; não foi selecionado um batch."))
+          :(equipmentText(lang,"No production batch quantity is identified in the available client records.","Tamanho do batch ainda não identificado nos arquivos do cliente."))}</p>}
+        {craftBatch.status==="partial"&&<small>{equipmentText(lang,"Batch value is present in only some original source records.","Batch informado em apenas parte das definições originais.")}</small>}
+        <p class="subtle">{equipmentText(lang,"Unit is a raw ItemType field. The 10,000-output-per-operation limit is a player-reported gameplay rule kept separate from the client-source record. Crafting availability is not confirmed.","Unit é um valor bruto do ItemType. O limite de 10.000 unidades por operação é uma regra de jogo informada pelo jogador, separada dos dados extraídos. A existência da receita não é garantida no servidor atual.")}</p>
       </div>
-      <p class="subtle">{pt
-        ?"Ingredientes e quantidades foram decodificados dos registros ItemType*.ndt. Não comprovam que a receita esteja disponível na interface de fabricação atual. Listas distintas são mantidas separadas."
-        :"Ingredients and quantities were parsed from ItemType*.ndt source definitions. These are not confirmation of a usable recipe in the live crafting interface. Distinct ingredient lists remain separate."}</p>
+      <p class="subtle">{equipmentText(lang,"Ingredients and quantities were parsed from ItemType*.ndt source definitions. These are not confirmation of a usable recipe in the live crafting interface. Distinct ingredient lists remain separate.","Ingredientes e quantidades foram decodificados dos registros ItemType*.ndt. Não comprovam que a receita esteja disponível na interface de fabricação atual. Listas distintas são mantidas separadas.")}</p>
       {recipes.length?<>
-        {recipes.length>1&&<p class="caution">{pt
-          ?"As fontes registram receitas divergentes. Todas são exibidas sem escolher uma como definitiva."
-          :"The source files contain differing ingredient lists; all are displayed without claiming a canonical gameplay recipe."}</p>}
+        {recipes.length>1&&<p class="caution">{equipmentText(lang,"The source files contain differing ingredient lists; all are displayed without claiming a canonical gameplay recipe.","As fontes registram receitas divergentes. Todas são exibidas sem escolher uma como definitiva.")}</p>}
         {recipes.map((recipe,index)=><div class="recipe-block">
-          <h3>{pt?"Receita de origem":"Source recipe"} {recipes.length>1?index+1:""}</h3>
-          <p class="subtle">{pt?"Arquivos e registros":"Files and source rows"}: {recipe.definitions.map(d=>d.file+" (#"+d.rowId+")").join(" · ")}</p>
+          <h3>{equipmentText(lang,"Source recipe","Receita de origem")} {recipes.length>1?index+1:""}</h3>
+          <p class="subtle">{equipmentText(lang,"Files and source rows","Arquivos e registros")}: {recipe.definitions.map(d=>d.file+" (#"+d.rowId+")").join(" · ")}</p>
           <div class="table-scroll"><table>
-            <thead><tr><th>{pt?"Material":"Ingredient"}</th><th>ID</th><th>{pt?"Quantidade":"Quantity"}</th></tr></thead>
+            <thead><tr><th>{equipmentText(lang,"Ingredient","Material")}</th><th>ID</th><th>{equipmentText(lang,"Quantity","Quantidade")}</th></tr></thead>
             <tbody>{recipe.materials.map(m=><tr>
               <td>
-                <a href={m.url}>{m.name??(pt?"Nome não conciliado":"Unreconciled name")}</a>
-                <small class="ingredient-obtain"><a href={prefix+"/monsters/?item="+encodeURIComponent(m.id)}>{pt?"Ver fontes de drop":"Find monster sources"}</a></small>
+                <a href={m.url}>{m.name??(equipmentText(lang,"Unreconciled name","Nome não conciliado"))}</a>
+                <small class="ingredient-obtain"><a href={prefix+"/monsters/?item="+encodeURIComponent(m.id)}>{equipmentText(lang,"Find monster sources","Ver fontes de drop")}</a></small>
               </td>
               <td><code>{m.id}</code></td><td>{fmt.format(m.qty)}</td>
             </tr>)}</tbody>
           </table></div>
         </div>)}
-      </>:<p class="subtle">{pt
-        ?"Nenhuma lista de ingredientes estruturada foi encontrada para este item. Isso não demonstra que ele não possa ser fabricado."
-        :"No structured original ingredient list is available for this item. This does not prove that crafting is impossible."}</p>}
-      {materialsUnavailable&&<p class="caution">{pt
-        ?"Algumas definições possuem expressões de materiais ainda não decodificadas."
-        :"Some source definitions contain unparsed material expressions."}</p>}
-      {noRecipeSource&&recipes.length>0&&<p class="caution">{pt
-        ?"Outras definições não registram materiais. A ausência não é uma receita vazia."
-        :"Other source definitions have no material list. Missing does not mean an empty recipe."}</p>}
+      </>:<p class="subtle">{equipmentText(lang,"No structured original ingredient list is available for this item. This does not prove that crafting is impossible.","Nenhuma lista de ingredientes estruturada foi encontrada para este item. Isso não demonstra que ele não possa ser fabricado.")}</p>}
+      {materialsUnavailable&&<p class="caution">{equipmentText(lang,"Some source definitions contain unparsed material expressions.","Algumas definições possuem expressões de materiais ainda não decodificadas.")}</p>}
+      {noRecipeSource&&recipes.length>0&&<p class="caution">{equipmentText(lang,"Other source definitions have no material list. Missing does not mean an empty recipe.","Outras definições não registram materiais. A ausência não é uma receita vazia.")}</p>}
     </section>
 
     <section id="obtain">
-      <h2>{pt?"Onde conseguir":"How to obtain"}</h2>
-      <p class="subtle">{pt
-        ?"A base de drops extraídos do cliente já foi importada. Consulte as referências por criatura e por grupo abaixo; elas não comprovam drops ativos nem probabilidades no servidor atual."
-        :"Original client-source monster drops have been imported. Browse direct and grouped references below; these do not establish active drops or probabilities on the current server."}</p>
+      <h2>{equipmentText(lang,"How to obtain","Onde conseguir")}</h2>
+      <p class="subtle">{equipmentText(lang,"Original client-source monster drops have been imported. Browse direct and grouped references below; these do not establish active drops or probabilities on the current server.","A base de drops extraídos do cliente já foi importada. Consulte as referências por criatura e por grupo abaixo; elas não comprovam drops ativos nem probabilidades no servidor atual.")}</p>
     </section>
 
     <MonsterItemSources lang={lang} itemId={item.id} />
 
     <section id="sources">
-      <h2>{pt?"Proveniência dos arquivos do cliente":"Original client file evidence"}</h2>
+      <h2>{equipmentText(lang,"Original client file evidence","Proveniência dos arquivos do cliente")}</h2>
       <div class="table-scroll"><table>
-        <thead><tr><th>{pt?"Registro":"Source row"}</th><th>{pt?"Arquivo":"File"}</th><th>{pt?"Tipo":"Role"}</th>
-          <th>{pt?"Categoria":"Category"}</th><th>Work</th><th>Unit</th><th>{pt?"Materiais":"Material parser"}</th></tr></thead>
+        <thead><tr><th>{equipmentText(lang,"Source row","Registro")}</th><th>{equipmentText(lang,"File","Arquivo")}</th><th>{equipmentText(lang,"Role","Tipo")}</th>
+          <th>{equipmentText(lang,"Category","Categoria")}</th><th>Work</th><th>Unit</th><th>{equipmentText(lang,"Material parser","Materiais")}</th></tr></thead>
         <tbody>{detail.s.map(source=><tr>
           <td>#{source[0]}</td><td>{source[1]}</td><td>{source[2]}</td>
           <td>{source[3]}</td><td>{source[6]??"—"}</td><td>{source[7]??"—"}</td>
           <td>{source[8]}</td>
         </tr>)}</tbody>
       </table></div>
-      {detail.v.length>1&&<p class="subtle">{pt?"Agrupamentos de registros nos arquivos":"Source file record groupings"}:
+      {detail.v.length>1&&<p class="subtle">{equipmentText(lang,"Source file record groupings","Agrupamentos de registros nos arquivos")}:
         {detail.v.map((v,i)=><span> {i+1}: {v.map(x=>"#"+x).join(", ")} ·</span>)}
-        {pt?" Não representam variantes equipáveis comprovadas.":" These are not verified playable variants."}</p>}
+        {equipmentText(lang," These are not verified playable variants."," Não representam variantes equipáveis comprovadas.")}</p>}
     </section>
 
     <div id="used-in"><ClientCraftingBacklinks lang={lang} itemId={item.id}/></div>

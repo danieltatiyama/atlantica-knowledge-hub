@@ -1,10 +1,12 @@
 ---
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import {getClientRawRequirements,CLIENT_RAW_REQUIREMENTS_SNAPSHOT}
   from "../data/client-source-requirements.mjs";
 
-interface Props {lang:"en"|"pt-br"; itemId:string;}
+interface Props {lang:Lang; itemId:string;}
 const {lang,itemId}=Astro.props;
-const pt=lang==="pt-br";
 const requirements=getClientRawRequirements(itemId);
 const classLists=requirements?.classSourceRows??[];
 const differed=classLists.length>1&&classLists.some(
@@ -12,36 +14,26 @@ const differed=classLists.length>1&&classLists.some(
 );
 ---
 {requirements&&<section id="client-requirements">
-  <h2>{pt?"Requisitos registrados no cliente":"Client source requirements"}</h2>
-  <p class="note">{pt
-    ?"Campos originais de Items.csv, não uma tradução de requisitos do jogo. As restrições podem variar entre arquivos gerais e específicos; uma lista ausente não significa que todas as classes sejam permitidas."
-    :"Original Items.csv fields, not verified player-facing requirement descriptions. General and specific files can contain different restrictions; a missing class list does not mean every class can equip an item."}</p>
+  <h2>{equipmentText(lang,"Client source requirements","Requisitos registrados no cliente")}</h2>
+  <p class="note">{equipmentText(lang,"Original Items.csv fields, not verified player-facing requirement descriptions. General and specific files can contain different restrictions; a missing class list does not mean every class can equip an item.","Campos originais de Items.csv, não uma tradução de requisitos do jogo. As restrições podem variar entre arquivos gerais e específicos; uma lista ausente não significa que todas as classes sejam permitidas.")}</p>
   <dl class="raw-level">
-    <div><dt><code>MakeSkillLevel</code> ({pt?"bruto":"raw"})</dt>
+    <div><dt><code>MakeSkillLevel</code> ({equipmentText(lang,"raw","bruto")})</dt>
       <dd><strong>{requirements.makeSkillLevelRaw}</strong></dd></div>
-    <div><dt>{pt?"Linhas de origem":"Source row numbers"}</dt>
+    <div><dt>{equipmentText(lang,"Source row numbers","Linhas de origem")}</dt>
       <dd>{requirements.makeSkillSourceRows.map(num=>"#"+num).join(", ")}</dd></div>
-    <div><dt>{pt?"Snapshot":"Snapshot"}</dt><dd>{CLIENT_RAW_REQUIREMENTS_SNAPSHOT}</dd></div>
+    <div><dt>{equipmentText(lang,"Snapshot","Snapshot")}</dt><dd>{CLIENT_RAW_REQUIREMENTS_SNAPSHOT}</dd></div>
   </dl>
-  <p class="note">{pt
-    ?"MakeSkillLevel identifica um campo de fabricação no cliente; não é o nível mínimo de personagem para equipar nem comprova que a receita esteja disponível."
-    :"MakeSkillLevel is a client crafting-related field; it is not the character level required to equip the item and does not establish that a recipe is currently accessible."}</p>
+  <p class="note">{equipmentText(lang,"MakeSkillLevel is a client crafting-related field; it is not the character level required to equip the item and does not establish that a recipe is currently accessible.","MakeSkillLevel identifica um campo de fabricação no cliente; não é o nível mínimo de personagem para equipar nem comprova que a receita esteja disponível.")}</p>
   {classLists.length>0 ? <details class="class-list">
-    <summary>{pt?"Códigos ClassType por arquivo de origem":"ClassType codes by original source row"}
+    <summary>{equipmentText(lang,"ClassType codes by original source row","Códigos ClassType por arquivo de origem")}
       {" "}({classLists.length})</summary>
-    <p class="note">{pt
-      ?"Os códigos CLS_* foram mantidos exatamente como aparecem no cliente. Ainda não atribuímos nomes legíveis às classes sem uma tabela de correspondência revisada."
-      :"CLS_* tokens are preserved as client source codes. No player-facing class name is inferred until a separate verified class mapping is available."}</p>
-    {differed&&<p class="source-warning">{pt
-      ?"As listas nos registros são diferentes. Isso pode representar uma ampliação de classes no arquivo específico, mas não confirma, por si só, as permissões atuais do servidor."
-      :"Source-row lists differ. A specific source might include more class codes, but this alone does not establish the current server's playable restrictions."}</p>}
+    <p class="note">{equipmentText(lang,"CLS_* tokens are preserved as client source codes. No player-facing class name is inferred until a separate verified class mapping is available.","Os códigos CLS_* foram mantidos exatamente como aparecem no cliente. Ainda não atribuímos nomes legíveis às classes sem uma tabela de correspondência revisada.")}</p>
+    {differed&&<p class="source-warning">{equipmentText(lang,"Source-row lists differ. A specific source might include more class codes, but this alone does not establish the current server's playable restrictions.","As listas nos registros são diferentes. Isso pode representar uma ampliação de classes no arquivo específico, mas não confirma, por si só, as permissões atuais do servidor.")}</p>}
     {classLists.map(row=><div class="class-row">
-      <h3>{pt?"Linha":"Source row"} #{row.sourceRowNumber}</h3>
+      <h3>{equipmentText(lang,"Source row","Linha")} #{row.sourceRowNumber}</h3>
       <div class="codes">{row.classCodes.map(code=><code>{code}</code>)}</div>
     </div>)}
-  </details> : <p class="source-warning">{pt
-    ?"Nenhum código ClassType foi encontrado para este item nas linhas analisadas. Requisitos de classe permanecem desconhecidos."
-    :"No ClassType codes were present in the analyzed source rows. Class eligibility remains unknown."}</p>}
+  </details> : <p class="source-warning">{equipmentText(lang,"No ClassType codes were present in the analyzed source rows. Class eligibility remains unknown.","Nenhum código ClassType foi encontrado para este item nas linhas analisadas. Requisitos de classe permanecem desconhecidos.")}</p>}
 </section>}
 <style>
   section{margin:32px 0;padding:18px 20px;border:1px solid var(--color-border);border-radius:5px}

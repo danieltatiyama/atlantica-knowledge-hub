@@ -125,7 +125,7 @@ const title=itemDbText(lang,"Full client item database");
 </BaseLayout>
 <script>
   import {itemDbText} from "../i18n/item-db-ui.mjs";
-  import {localePrefix,legacyLocale,localeTag} from "../i18n/locales.mjs";
+  import {localePrefix,legacyLocale,localeTag,equipmentProfilePath} from "../i18n/locales.mjs";
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
   import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
   import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
@@ -886,7 +886,8 @@ const title=itemDbText(lang,"Full client item database");
         const a=node("a",row[8]===1
           ?(itemDbText(lang,"Open reviewed equipment profile"))
           :(itemDbText(lang,"Open client-source equipment profile"))) as HTMLAnchorElement;
-        a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
+        a.href=row[8]===1?equipmentProfilePath(lang,id,true):prefix+"/items/"+id+"/";
+        a.hreflang=localeTag(row[8]===1?lang:legacyLocale(lang));p.append(a);details.append(p);}
       if(row[6]!=="named"){
         details.append(node("p",label(row[6]),"subtle"));detail.scrollIntoView({behavior:"smooth",block:"start"});return;
       }
@@ -901,7 +902,8 @@ const title=itemDbText(lang,"Full client item database");
           const a=node("a",row[8]===1
             ?(itemDbText(lang,"Open reviewed equipment profile"))
             :(itemDbText(lang,"Open client-source equipment profile"))) as HTMLAnchorElement;
-          a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
+          a.href=row[8]===1?equipmentProfilePath(lang,id,true):prefix+"/items/"+id+"/";
+        a.hreflang=localeTag(row[8]===1?lang:legacyLocale(lang));p.append(a);details.append(p);}
         addItemOverview(details,row,data);
         addCraftBatchInformation(details,data,row);
         addCraftRecipeTables(details,data);

@@ -1,36 +1,32 @@
 ---
+import {equipmentText} from "../i18n/equipment-ui.mjs";
+import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import type {ClientItemAttributes} from "../data/client-item-attributes";
 import {CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT} from "../data/client-item-attributes";
 
-interface Props {lang:"en"|"pt-br"; data?:ClientItemAttributes;}
+interface Props {lang:Lang; data?:ClientItemAttributes;}
 const {lang,data}=Astro.props;
-const pt=lang==="pt-br";
 ---
 {data && <section id="client-attributes">
-  <h2>{pt?"Atributos brutos extraídos do cliente":"Raw attributes extracted from game client"}</h2>
-  <p class="client-note">{pt
-    ?"Estes valores são a transcrição numérica dos campos de Items.csv, preservando o nome original de cada coluna e o número da linha de origem. Eles não representam uma medição de dano real, um tooltip validado, a fórmula de enhancement ou os atributos de um equipamento L."
-    :"These are numeric strings extracted from Items.csv, preserving each original field name and source row number. They are not measured damage, verified live tooltip values, an enhancement formula or stats for an L-grade item."}</p>
-  <p class="client-note">{pt?"Snapshot do Miner":"Miner snapshot"}:
+  <h2>{equipmentText(lang,"Raw attributes extracted from game client","Atributos brutos extraídos do cliente")}</h2>
+  <p class="client-note">{equipmentText(lang,"These are numeric strings extracted from Items.csv, preserving each original field name and source row number. They are not measured damage, verified live tooltip values, an enhancement formula or stats for an L-grade item.","Estes valores são a transcrição numérica dos campos de Items.csv, preservando o nome original de cada coluna e o número da linha de origem. Eles não representam uma medição de dano real, um tooltip validado, a fórmula de enhancement ou os atributos de um equipamento L.")}</p>
+  <p class="client-note">{equipmentText(lang,"Miner snapshot","Snapshot do Miner")}:
     <code>{CLIENT_ATTRIBUTE_SOURCE_SNAPSHOT}</code>
-    · {pt?"Origem: Items.csv, nome inglês/ID conciliados":"Source: Items.csv, reviewed English name/ID"}</p>
-  {data.sourceRows.length>1&&<p class="source-conflicts">{pt
-    ?"Este ID tem várias linhas de origem. Valores divergentes são exibidos separadamente, sem seleção automática."
-    :"This ID has multiple source rows. Conflicting values are shown separately, without automatic selection."}</p>}
+    · {equipmentText(lang,"Source: Items.csv, reviewed English name/ID","Origem: Items.csv, nome inglês/ID conciliados")}</p>
+  {data.sourceRows.length>1&&<p class="source-conflicts">{equipmentText(lang,"This ID has multiple source rows. Conflicting values are shown separately, without automatic selection.","Este ID tem várias linhas de origem. Valores divergentes são exibidos separadamente, sem seleção automática.")}</p>}
   {data.sourceRows.map((row,i)=><details class="client-record" open={data.sourceRows.length===1}>
-    <summary>{pt?"Registro de origem":"Source row"} #{row.sourceRowNumber}
-      <small> · {Object.keys(row.fieldsRaw).length} {pt?"campos":"fields"}</small></summary>
+    <summary>{equipmentText(lang,"Source row","Registro de origem")} #{row.sourceRowNumber}
+      <small> · {Object.keys(row.fieldsRaw).length} {equipmentText(lang,"fields","campos")}</small></summary>
     <div class="source-table"><table>
-      <thead><tr><th>{pt?"Campo do arquivo":"Client file field"}</th><th>{pt?"Valor bruto":"Raw value"}</th></tr></thead>
+      <thead><tr><th>{equipmentText(lang,"Client file field","Campo do arquivo")}</th><th>{equipmentText(lang,"Raw value","Valor bruto")}</th></tr></thead>
       <tbody>{Object.entries(row.fieldsRaw).map(([field,value])=><tr>
         <th scope="row"><code>{field}</code></th>
         <td><code>{value}</code></td>
       </tr>)}</tbody>
     </table></div>
   </details>)}
-  <p class="client-note">{pt
-    ?"Para descobrir a fórmula exata de combate, esses campos ainda precisam ser relacionados aos bônus de enhancement, habilidades, efeitos e às regras do servidor."
-    :"Determining actual combat formulas still requires mapping enhancement, skills, special effects and server behavior to these raw client values."}</p>
+  <p class="client-note">{equipmentText(lang,"Determining actual combat formulas still requires mapping enhancement, skills, special effects and server behavior to these raw client values.","Para descobrir a fórmula exata de combate, esses campos ainda precisam ser relacionados aos bônus de enhancement, habilidades, efeitos e às regras do servidor.")}</p>
 </section>}
 <style>
   section{margin:34px 0}

@@ -1,0 +1,14 @@
+---
+import ItemDetailPage from "../../../components/ItemDetailPage.astro";
+import {EQUIPMENT_ITEM_CATALOG_BY_ID} from "../../../data/equipment-item-catalog";
+import {NEW_GUIDE_LOCALES} from "../../../i18n/locales.mjs";
+// Keep the static asset count bounded: the 1,911 additional source-only IDs
+// remain accessible through the localized full item database, not duplicate HTML.
+export function getStaticPaths(){
+ return NEW_GUIDE_LOCALES.flatMap(lang=>[...EQUIPMENT_ITEM_CATALOG_BY_ID.keys()].map(id=>({params:{locale:lang,id},props:{lang,id}})));
+}
+const {lang,id}=Astro.props;
+const item=EQUIPMENT_ITEM_CATALOG_BY_ID.get(id);
+if(!item)throw Error("Reviewed equipment missing: "+id);
+---
+<ItemDetailPage lang={lang} item={item}/>

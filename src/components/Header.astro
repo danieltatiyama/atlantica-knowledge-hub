@@ -8,6 +8,8 @@ import { chromeText } from "../i18n/chrome";
 import GlobalSearch from "./GlobalSearch.astro";
 import type { CollectionEntry } from "astro:content";
 
+interface Props {alternatePaths?: Partial<Record<Lang,string>>;}
+const {alternatePaths}=Astro.props;
 const siteName = "Atlantica Knowledge Hub";
 const pathname = Astro.url.pathname;
 const lang = getLangFromUrl(Astro.url);
@@ -97,7 +99,7 @@ const currentGuide = publishedGuides.find(
 
 function getLanguageTarget(targetLang: SupportedLang): string {
   const guideAlternates = currentGuide ? Object.fromEntries(publishedGuides.filter(guide=>guide.data.translationKey===currentGuide.data.translationKey).map(guide=>[guide.data.lang,getGuideUrl(guide)])) : undefined;
-  return languageDestination({lang:targetLang,path:normalizedPath,guideAlternates}) ?? "/";
+  return languageDestination({lang:targetLang,path:normalizedPath,guideAlternates,itemAlternates:alternatePaths}) ?? "/";
 }
 
 
