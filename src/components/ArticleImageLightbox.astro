@@ -1,35 +1,36 @@
 ---
-interface Props {lang:"en"|"pt-br";}
+import {sharedText} from "../i18n/shared-ui.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br";
 ---
 <div id="wiki-image-lightbox" class="wiki-image-lightbox" data-lang={lang}
  role="dialog" aria-modal="true" aria-labelledby="wiki-lightbox-title"
  aria-describedby="wiki-lightbox-hint" hidden>
  <div class="wiki-lightbox-toolbar">
   <div class="wiki-lightbox-meta">
-   <strong id="wiki-lightbox-title">{pt?"Visualizador de imagens":"Image viewer"}</strong>
+   <strong id="wiki-lightbox-title">{sharedText(lang,"Image viewer")}</strong>
    <span id="wiki-lightbox-position" aria-live="polite"></span>
   </div>
   <div class="wiki-lightbox-controls" role="group"
-   aria-label={pt?"Controles da imagem":"Image controls"}>
+   aria-label={sharedText(lang,"Image controls")}>
    <button type="button" id="wiki-lightbox-prev"
-    aria-label={pt?"Imagem anterior":"Previous image"} title={pt?"Imagem anterior (←)":"Previous image (←)"}>‹</button>
+    aria-label={sharedText(lang,"Previous image")} title={sharedText(lang,"Previous image")+" (←)"}>‹</button>
    <button type="button" id="wiki-lightbox-next"
-    aria-label={pt?"Próxima imagem":"Next image"} title={pt?"Próxima imagem (→)":"Next image (→)"}>›</button>
+    aria-label={sharedText(lang,"Next image")} title={sharedText(lang,"Next image")+" (→)"}>›</button>
    <span class="wiki-lightbox-divider" aria-hidden="true"></span>
    <button type="button" id="wiki-lightbox-minus"
-    aria-label={pt?"Diminuir zoom":"Zoom out"} title={pt?"Diminuir zoom (-)":"Zoom out (-)"}>−</button>
+    aria-label={sharedText(lang,"Zoom out")} title={sharedText(lang,"Zoom out")+" (-)"}>−</button>
    <span class="wiki-lightbox-zoom" id="wiki-lightbox-zoom" aria-live="polite">100%</span>
    <button type="button" id="wiki-lightbox-plus"
-    aria-label={pt?"Aumentar zoom":"Zoom in"} title={pt?"Aumentar zoom (+)":"Zoom in (+)"}>+</button>
+    aria-label={sharedText(lang,"Zoom in")} title={sharedText(lang,"Zoom in")+" (+)"}>+</button>
    <button type="button" id="wiki-lightbox-fit"
-    aria-label={pt?"Ajustar à janela":"Fit to window"} title={pt?"Ajustar à janela (0)":"Fit to window (0)"}>
-    {pt?"Ajustar":"Fit"}
+    aria-label={sharedText(lang,"Fit to window")} title={sharedText(lang,"Fit to window")+" (0)"}>
+    {sharedText(lang,"Fit")}
    </button>
    <span class="wiki-lightbox-divider" aria-hidden="true"></span>
    <button type="button" id="wiki-lightbox-close" class="wiki-lightbox-close"
-    aria-label={pt?"Fechar visualizador de imagens":"Close image viewer"} title={pt?"Fechar (Esc)":"Close (Esc)"}>×</button>
+    aria-label={sharedText(lang,"Close image viewer")} title={sharedText(lang,"Close")+" (Esc)"}>×</button>
   </div>
  </div>
  <div id="wiki-lightbox-stage" class="wiki-lightbox-stage">
@@ -39,18 +40,17 @@ const pt=lang==="pt-br";
  </div>
  <div class="wiki-lightbox-footer">
   <span id="wiki-lightbox-caption"></span>
-  <small id="wiki-lightbox-hint">{pt
-   ?"←/→: imagens · +/−: zoom · 0: ajustar · Esc: fechar"
-   :"←/→: images · +/−: zoom · 0: fit · Esc: close"}</small>
+  <small id="wiki-lightbox-hint">{sharedText(lang,"←/→: images · +/−: zoom · 0: fit · Esc: close")}</small>
  </div>
 </div>
 <script>
+ import {sharedText} from "../i18n/shared-ui.mjs";
  import {clampLightboxZoom,cycleLightboxIndex,fitLightboxImage}
   from "../lib/article-image-lightbox.mjs";
 
  const dialog=document.getElementById("wiki-image-lightbox") as HTMLElement | null;
  if(dialog){
-  const pt=dialog.dataset.lang==="pt-br";
+  const lang=dialog.dataset.lang??"en";
   const get=(id:string)=>document.getElementById(id)!;
   const stage=get("wiki-lightbox-stage") as HTMLElement;
   const canvas=get("wiki-lightbox-canvas") as HTMLElement;
@@ -111,9 +111,9 @@ const pt=lang==="pt-br";
    if(current<0)return;
    const source=gallery[current];
    const alt=source.getAttribute("alt")?.trim()||
-    (pt?"Imagem do artigo":"Article image");
+    (sharedText(lang,"Article image"));
    const url=source.currentSrc||source.src;
-   title.textContent=pt?"Visualizador de imagens":"Image viewer";
+   title.textContent=sharedText(lang,"Image viewer");
    caption.textContent=alt;
    display.alt=alt;
    zoom=1;
@@ -148,8 +148,7 @@ const pt=lang==="pt-br";
   }
   display.addEventListener("load",()=>updateDimensions());
   display.addEventListener("error",()=>{
-   caption.textContent=pt?"Não foi possível carregar esta imagem.":
-    "Could not load this image.";
+   caption.textContent=sharedText(lang,"Could not load this image.");
   });
   const navigate=(delta:number)=>{
    if(gallery.length>1)show(cycleLightboxIndex(current,delta,gallery.length));
@@ -175,7 +174,7 @@ const pt=lang==="pt-br";
    if(!eligible(img))continue;
    img.tabIndex=0;
    img.setAttribute("role","button");
-   img.setAttribute("aria-label",(pt?"Ampliar imagem":"Expand image")+
+   img.setAttribute("aria-label",(sharedText(lang,"Expand image"))+
     (img.alt?": "+img.alt:""));
    img.dataset.wikiLightboxReady="true";
   }
