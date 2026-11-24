@@ -139,3 +139,31 @@ export function translationState(raw,sourceHash){
  if(meta.translationSourceHash===sourceHash)return meta.draft?"awaiting-review":"current";
  return meta.draft?"stale-draft":"stale-published";
 }
+
+export function approveTranslation({english,slug,lang,candidate,expectedCandidateHash,currentTarget=null,expectedTargetHash=null}){
+ if(!TARGET_LOCALES.includes(lang))throw Error("Invalid target language");
+ const source=readEnglishGuide(english,slug);
+ if(sha256(candidate)!==expectedCandidateHash)throw Error("Candidate changed after review");
+ if((currentTarget===null?null:sha256(currentTarget))!==expectedTargetHash)
+  throw Error("Target changed after review");
+ const {meta,body}=parseGuide(candidate);
+ if(meta.lang!==lang||meta.translationKey!==slug||
+  meta.category!==source.meta.category||meta.subcategory!==source.meta.subcategory||
+  String(meta.updatedAt)!==String(source.meta.updatedAt)||
+  meta.translationSourceHash!==source.sourceHash||
+  meta.translationMethod!=="machine-assisted"||meta.draft!==true||meta.reviewStatus!=="in-review")
+  throw Error("Candidate is not a current translation awaiting editorial review");
+ if(currentTarget!==null&&currentTarget!==candidate){
+  const previous=parseGuide(currentTarget).meta;
+  if(previous.lang!==lang||previous.translationKey!==slug||!previous.translationSourceHash)
+   throw Error("Existing manually authored or untracked translation is protected");
+  if(meta.translationPreviousHash!==expectedTargetHash)
+   throw Error("Candidate does not match the previous target version");
+ }
+ const imageUrls=text=>[...text.matchAll(/!\[[^\]\n]*\]\(([^)\n]+)\)/g)].map(m=>m[1]);
+ if(JSON.stringify(imageUrls(body))!==JSON.stringify(imageUrls(source.body)))
+  throw Error("Candidate image paths or order differ from the English source");
+ const approved={...meta,draft:false,reviewStatus:"approved"};
+ delete approved.translationPreviousHash;
+ return "---\n"+stringify(approved,{lineWidth:0})+"---\n"+body;
+}
