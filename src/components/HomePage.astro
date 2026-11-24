@@ -2,8 +2,8 @@
 import {sharedText} from "../i18n/shared-ui.mjs";
 import { useTranslations } from "../i18n/utils";
 import type { Lang } from "../i18n/ui";
-import { localizedPaths, legacyLocale, NEW_GUIDE_LOCALES } from "../i18n/locales.mjs";
-import { chromeText } from "../i18n/chrome";
+import { localizedPaths, legacyLocale, NEW_GUIDE_LOCALES, catalogPath } from "../i18n/locales.mjs";
+import { catalogText } from "../i18n/catalog-ui.mjs";
 
 interface Props {
   lang: Lang;
@@ -22,7 +22,7 @@ const sections = [
     description: sharedText(lang,"Equipment catalog with 2,462 equipment-like IDs, boxes, and source-backed item profiles."),
     symbol: "◈",
     theme: "items",
-    href: legacyLocale(lang) === "en" ? "/items/" : "/pt-br/items/",
+    href: catalogPath(lang,"/items/"),
   },
   {
     title: sharedText(lang,"All Items"),
@@ -36,7 +36,7 @@ const sections = [
     description: sharedText(lang,"Curated event calendar and recent updates."),
     symbol: "✧",
     theme: "events",
-    href: legacyLocale(lang) === "en" ? "/events/" : "/pt-br/events/",
+    href: catalogPath(lang,"/events/"),
   },
   {
     title: sharedText(lang,"Monsters & Drops"),
@@ -50,7 +50,7 @@ const sections = [
     description: sharedText(lang,"Mercenary profiles and skills with verified evidence."),
     symbol: "⚔",
     theme: "mercenaries",
-    href: legacyLocale(lang) === "en" ? "/mercenaries/" : "/pt-br/mercenaries/",
+    href: catalogPath(lang,"/mercenaries/"),
   },
   {
     title: t("home.gameGuides"),
@@ -99,7 +99,7 @@ const sections = [
 
     <section id="topics">
       <h2>{t("home.discover")}</h2>
-      {NEW_GUIDE_LOCALES.includes(lang) && <p>{chromeText(lang,"fallback")}</p>}
+      {NEW_GUIDE_LOCALES.includes(lang) && <p>{catalogText(lang,"Some catalogs and tools are still available only in English.")}</p>}
       <div class="grid">
         {sections.map((section) => (
           <article class="card">
@@ -123,7 +123,7 @@ const sections = [
 
               <span class="card-status">
                 {section.href && NEW_GUIDE_LOCALES.includes(lang) && !section.href.startsWith("/"+lang+"/") ? sharedText(lang,"English ↗") : section.href
-                  ? t("home.openGuides")
+                  ? catalogText(lang,"Open section →")
                   : t("shared.comingSoon")}
               </span>
             </div>
