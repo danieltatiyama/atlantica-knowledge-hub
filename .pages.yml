@@ -58,6 +58,8 @@ actions:
             value: crafting
           - label: "Game Systems - Equipment & Enhancement"
             value: equipment-enhancement
+          - label: "Game Systems - Others"
+            value: others
 
       - name: title
         label: Article title
@@ -130,6 +132,8 @@ actions:
             value: crafting
           - label: "Game Systems - Equipment & Enhancement"
             value: equipment-enhancement
+          - label: "Game Systems - Others"
+            value: others
 
       - name: title
         label: Article title
@@ -254,6 +258,8 @@ content:
               label: "Game Systems - Crafting"
             - name: equipment-enhancement
               label: "Game Systems - Equipment & Enhancement"
+            - name: others
+              label: "Game Systems - Others"
 
       - name: updatedAt
         label: Last Updated
@@ -414,6 +420,8 @@ content:
               label: "Sistemas do Jogo - Fabricação"
             - name: equipment-enhancement
               label: "Sistemas do Jogo - Equipamentos e Aprimoramento"
+            - name: others
+              label: "Sistemas do Jogo - Outros"
 
       - name: updatedAt
         label: Última Atualização
