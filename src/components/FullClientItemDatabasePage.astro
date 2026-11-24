@@ -1,135 +1,131 @@
 ---
+import {itemDbText} from "../i18n/item-db-ui.mjs";
+import {localePrefix,localizedPaths,localeTag,legacyLocale} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:"en"|"pt-br";}
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br";
-const prefix=pt?"/pt-br":"";
-const title=pt?"Banco completo de itens do cliente":"Full client item database";
+const prefix=localePrefix(lang);
+const fallback=legacyLocale(lang)!==lang;
+const nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
+const title=itemDbText(lang,"Full client item database");
 ---
 <BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
-  description={pt?"Índice pesquisável dos 23.586 IDs extraídos dos arquivos do cliente Atlantica Global.":"Searchable source index of 23,586 original Atlantica Global game-client item IDs."}
-  alternatePaths={{en:"/items/database/", "pt-br":"/pt-br/items/database/"}}>
+  description={itemDbText(lang,"Searchable source index of 23,586 original Atlantica Global game-client item IDs.")}
+  alternatePaths={localizedPaths("/items/database/")}>
   <main class="container" id="full-client-db" data-lang={lang} data-wiki-nav-root="true">
-    <nav class="breadcrumb"><a href={prefix+"/items/"}>{pt?"← Catálogo de equipamentos":"← Equipment catalog"}</a></nav>
+    <nav class="breadcrumb"><a href={prefix+"/items/"}>{itemDbText(lang,"← Equipment catalog")}</a></nav>
     <header>
       <p class="eyebrow">GLOBAL / NA · MINER SNAPSHOT 1</p>
       <h1>{title}</h1>
-      <p class="intro">{pt
-        ?"Pesquise um item pelo nome ou ID para consultar seus atributos, materiais de fabricação, receitas relacionadas e possíveis fontes de obtenção."
-        :"Search an item by name or ID to see its attributes, crafting materials, recipes that use it, and possible acquisition sources."}</p>
+      <p class="intro">{itemDbText(lang,"Search an item by name or ID to see its attributes, crafting materials, recipes that use it, and possible acquisition sources.")}</p>
       <details class="reader-guide">
-        <summary>{pt?"Como ler as informações desta wiki":"How to read the item information"}</summary>
-        <p>{pt
-          ?"Primeiro mostramos o que é útil para jogar. As definições técnicas ficam em Dados originais dos arquivos, ao final de cada ficha. Você pode abrir um ingrediente para ver sua própria ficha ou consultar seus possíveis drops."
-          :"Useful player information comes first. Technical definitions are available under Original client records at the bottom of each item page. Open any ingredient to see its own page or find its possible monster drops."}</p>
-        <p>{pt
-          ?"Taxas em % são estimativas baseadas no valor dos arquivos, e não chances verificadas. A ausência de uma receita ou drop não prova que ele não exista no servidor."
-          :"Percentages are client-based estimates, not verified probabilities. Missing recipes or drops do not prove they are unavailable in-game."}</p>
+        <summary>{itemDbText(lang,"How to read the item information")}</summary>
+        <p>{itemDbText(lang,"Useful player information comes first. Technical definitions are available under Original client records at the bottom of each item page. Open any ingredient to see its own page or find its possible monster drops.")}</p>
+        <p>{itemDbText(lang,"Percentages are client-based estimates, not verified probabilities. Missing recipes or drops do not prove they are unavailable in-game.")}</p>
       </details>
-      <p class="caution">{pt
-        ?"Nomes, níveis, grades e materiais são dados extraídos do cliente, não garantias de existência no servidor, disponibilidade atual, obtenção ou fabricação. Um mesmo nome pode existir em IDs diferentes. Colisões de identidade permanecem sem nome atribuído."
-        :"Names, levels, grades and materials are client-extracted fields, not proof of live-server existence, availability, acquisition or craftability. One English name can belong to different item IDs. Identity collisions remain unnamed."}</p>
+      {fallback && <p class="caution">{itemDbText(lang,"English names and raw source categories are preserved. Linked equipment profiles, monster pages and tools may still open in English.")}</p>}
+      <p class="caution">{itemDbText(lang,"Names, levels, grades and materials are client-extracted fields, not proof of live-server existence, availability, acquisition or craftability. One English name can belong to different item IDs. Identity collisions remain unnamed.")}</p>
     </header>
 
-    <section class="coverage" aria-label={pt?"Cobertura":"Coverage"}>
-      <div><strong>23.586</strong><small>{pt?"IDs de origem":"Source IDs"}</small></div>
-      <div><strong>22.702</strong><small>{pt?"Nomes conciliados":"Named IDs"}</small></div>
-      <div><strong>884</strong><small>{pt?"IDs sem identidade única":"Unresolved IDs"}</small></div>
-      <div><strong>27.281</strong><small>{pt?"Definições de arquivo":"Source records"}</small></div>
+    <section class="coverage" aria-label={itemDbText(lang,"Coverage")}>
+      <div><strong>{nf.format(23586)}</strong><small>{itemDbText(lang,"Source IDs")}</small></div>
+      <div><strong>{nf.format(22702)}</strong><small>{itemDbText(lang,"Named IDs")}</small></div>
+      <div><strong>{nf.format(884)}</strong><small>{itemDbText(lang,"Unresolved IDs")}</small></div>
+      <div><strong>{nf.format(27281)}</strong><small>{itemDbText(lang,"Source records")}</small></div>
     </section>
 
-    <section class="search-panel" aria-label={pt?"Pesquisar itens":"Search items"}>
-      <h2 class="search-title">{pt?"Pesquisar itens":"Find items"}</h2>
+    <section class="search-panel" aria-label={itemDbText(lang,"Search items")}>
+      <h2 class="search-title">{itemDbText(lang,"Find items")}</h2>
       <div class="search-grid">
-        <label>{pt?"Nome em inglês ou ID":"English name or ID"}
-          <input type="search" id="db-query" autocomplete="off" placeholder={pt?"Ex.: Spirit Sword, Immortal Bow, 24120":"e.g. Spirit Sword, Immortal Bow, 24120"}/>
+        <label>{itemDbText(lang,"English name or ID")}
+          <input type="search" id="db-query" autocomplete="off" placeholder={itemDbText(lang,"e.g. Spirit Sword, Immortal Bow, 24120")}/>
         </label>
-        <label>{pt?"Categoria original":"Original source category"}
-          <select id="db-category"><option value="">{pt?"Todas as categorias":"All categories"}</option></select>
+        <label>{itemDbText(lang,"Original source category")}
+          <select id="db-category"><option value="">{itemDbText(lang,"All categories")}</option></select>
         </label>
-        <label>{pt?"Estado da identidade":"Identity status"}
+        <label>{itemDbText(lang,"Identity status")}
           <select id="db-identity">
-            <option value="">{pt?"Todos os IDs":"All IDs"}</option>
-            <option value="named">{pt?"Nome identificado":"Official name identified"}</option>
-            <option value="collision">{pt?"Nome divergente no mesmo ID":"Conflicting names for ID"}</option>
-            <option value="unresolved">{pt?"Sem nome identificado":"No resolved name"}</option>
+            <option value="">{itemDbText(lang,"All IDs")}</option>
+            <option value="named">{itemDbText(lang,"Official name identified")}</option>
+            <option value="collision">{itemDbText(lang,"Conflicting names for ID")}</option>
+            <option value="unresolved">{itemDbText(lang,"No resolved name")}</option>
           </select>
         </label>
-        <label>{pt?"Ordenação":"Sort by"}
+        <label>{itemDbText(lang,"Sort by")}
           <select id="db-sort">
-            <option value="id">{pt?"ID crescente":"Ascending ID"}</option>
-            <option value="name">{pt?"Nome A–Z":"Name A–Z"}</option>
-            <option value="level">{pt?"Nível bruto decrescente":"Raw level descending"}</option>
+            <option value="id">{itemDbText(lang,"Ascending ID")}</option>
+            <option value="name">{itemDbText(lang,"Name A–Z")}</option>
+            <option value="level">{itemDbText(lang,"Raw level descending")}</option>
           </select>
         </label>
       </div>
       <label class="equipment-toggle">
         <input type="checkbox" id="db-equipment-only"/>
-        <span>{pt?"Mostrar somente categorias semelhantes a equipamentos (classificação do cliente, não elegibilidade comprovada)":"Show only equipment-like source categories (not confirmed equip/enhancement eligibility)"}</span>
+        <span>{itemDbText(lang,"Show only equipment-like source categories (not confirmed equip/enhancement eligibility)")}</span>
       </label>
 
-      <section class="stats-workbench" aria-label={pt?"Filtrar atributos de origem":"Filter original numeric attributes"}>
-        <h2>{pt?"Atributos numéricos do cliente":"Original client numeric attributes"}</h2>
-        <p class="subtle">{pt
-          ?"Filtro opcional sobre os 7.560 IDs com atributos de Items.csv. Os arquivos de atributos só são carregados quando você escolher um campo. Limites inclusivos usam valores brutos de +0, sem multiplicadores. Valores ausentes ou conflitantes são excluídos do filtro; valores parciais são identificados na ficha."
-          :"Optional filter across 7,560 IDs with Items.csv fields. Numeric shards load only after choosing a field. Inclusive bounds use raw +0 values, never enhancement multipliers. Missing or conflicting fields do not match; partial source values are identified in item details."}</p>
+      <section class="stats-workbench" aria-label={itemDbText(lang,"Filter original numeric attributes")}>
+        <h2>{itemDbText(lang,"Original client numeric attributes")}</h2>
+        <p class="subtle">{itemDbText(lang,"Optional filter across 7,560 IDs with Items.csv fields. Numeric shards load only after choosing a field. Inclusive bounds use raw +0 values, never enhancement multipliers. Missing or conflicting fields do not match; partial source values are identified in item details.")}</p>
         <div class="stats-grid">
-          <label>{pt?"Campo numérico":"Numeric field"}
+          <label>{itemDbText(lang,"Numeric field")}
             <select id="db-stat-field">
-              <option value="">{pt?"Sem filtro numérico":"No numeric field filter"}</option>
+              <option value="">{itemDbText(lang,"No numeric field filter")}</option>
             </select>
           </label>
-          <label>{pt?"Mínimo bruto":"Raw minimum"}
-            <input id="db-stat-min" type="number" step="any" placeholder={pt?"Sem mínimo":"No minimum"} disabled/>
+          <label>{itemDbText(lang,"Raw minimum")}
+            <input id="db-stat-min" type="number" step="any" placeholder={itemDbText(lang,"No minimum")} disabled/>
           </label>
-          <label>{pt?"Máximo bruto":"Raw maximum"}
-            <input id="db-stat-max" type="number" step="any" placeholder={pt?"Sem máximo":"No maximum"} disabled/>
+          <label>{itemDbText(lang,"Raw maximum")}
+            <input id="db-stat-max" type="number" step="any" placeholder={itemDbText(lang,"No maximum")} disabled/>
           </label>
-          <button type="button" id="db-export" disabled>{pt?"Exportar resultados CSV":"Export filtered CSV"}</button>
+          <button type="button" id="db-export" disabled>{itemDbText(lang,"Export filtered CSV")}</button>
         </div>
-        <p class="subtle" id="db-stat-status" role="status">{pt?"Dados numéricos ainda não carregados.":"Numeric shards have not been loaded."}</p>
+        <p class="subtle" id="db-stat-status" role="status">{itemDbText(lang,"Numeric shards have not been loaded.")}</p>
       </section>
-      <p class="load-status" id="db-status" role="status">{pt?"Carregando índice do cliente…":"Loading client index…"}</p>
+      {fallback && <p class="subtle">{itemDbText(lang,"CSV export uses the original English or Portuguese column format.")}</p>}
+      <p class="load-status" id="db-status" role="status">{itemDbText(lang,"Loading client index…")}</p>
       <div class="table-wrap">
-        <table aria-label={pt?"Todos os itens do cliente":"All client item IDs"}>
-          <thead><tr><th>ID</th><th>{pt?"Nome oficial em inglês / estado":"Official English name / status"}</th>
-            <th>{pt?"Categoria do arquivo":"Source category"}</th><th>{pt?"Nível bruto":"Raw level"}</th>
-            <th>{pt?"Grade bruta":"Raw grade"}</th><th>{pt?"Fontes":"Sources"}</th><th>{pt?"Comparar":"Compare"}</th></tr></thead>
+        <table aria-label={itemDbText(lang,"All client item IDs")}>
+          <thead><tr><th>ID</th><th>{itemDbText(lang,"Official English name / status")}</th>
+            <th>{itemDbText(lang,"Source category")}</th><th>{itemDbText(lang,"Raw level")}</th>
+            <th>{itemDbText(lang,"Raw grade")}</th><th>{itemDbText(lang,"Sources")}</th><th>{itemDbText(lang,"Compare")}</th></tr></thead>
           <tbody id="db-results"></tbody>
         </table>
       </div>
       <div class="pagination">
-        <button type="button" id="db-prev" disabled>{pt?"Anterior":"Previous"}</button>
+        <button type="button" id="db-prev" disabled>{itemDbText(lang,"Previous")}</button>
         <span id="db-page">—</span>
-        <button type="button" id="db-next" disabled>{pt?"Próximo":"Next"}</button>
+        <button type="button" id="db-next" disabled>{itemDbText(lang,"Next")}</button>
       </div>
-      <section class="compare-workbench" aria-label={pt?"Comparar itens":"Compare items"}>
-        <h2>{pt?"Comparar atributos de equipamentos":"Compare equipment source attributes"}</h2>
-        <p class="subtle">{pt
-          ?"Selecione de 2 a 3 IDs de categorias semelhantes a equipamentos. A comparação mostra apenas números originais, preservando ausência, divergência e cobertura parcial por registro; diferença numérica não indica qual item é melhor."
-          :"Select 2–3 equipment-like source IDs. Comparison shows original numeric fields only, preserving missing, conflicting and partial source observations; a numeric difference is not a gameplay ranking."}</p>
+      <section class="compare-workbench" aria-label={itemDbText(lang,"Compare items")}>
+        <h2>{itemDbText(lang,"Compare equipment source attributes")}</h2>
+        <p class="subtle">{itemDbText(lang,"Select 2–3 equipment-like source IDs. Comparison shows original numeric fields only, preserving missing, conflicting and partial source observations; a numeric difference is not a gameplay ranking.")}</p>
         <div class="compare-controls">
           <div id="db-compare-selected" aria-live="polite"></div>
-          <button type="button" id="db-compare-run" disabled>{pt?"Comparar selecionados":"Compare selected"}</button>
-          <button type="button" id="db-compare-clear" disabled>{pt?"Limpar seleção":"Clear selection"}</button>
+          <button type="button" id="db-compare-run" disabled>{itemDbText(lang,"Compare selected")}</button>
+          <button type="button" id="db-compare-clear" disabled>{itemDbText(lang,"Clear selection")}</button>
         </div>
         <div id="db-compare-result" aria-live="polite"></div>
       </section>
-      <noscript>{pt?"Ative JavaScript para pesquisar o índice do cliente. As 551 fichas originais continuam acessíveis no catálogo de equipamentos.":"Enable JavaScript to search the client index. The original 551 item pages remain available from the equipment catalog."}</noscript>
+      <noscript>{itemDbText(lang,"Enable JavaScript to search the client index. The original 551 item pages remain available from the equipment catalog.")}</noscript>
     </section>
 
     <section class="detail" id="db-detail" hidden aria-live="polite">
       <div class="detail-header"><div>
-        <p class="eyebrow">{pt?"FICHA DO ITEM":"ITEM INFORMATION"}</p>
+        <p class="eyebrow">{itemDbText(lang,"ITEM INFORMATION")}</p>
         <h2 id="db-detail-name"></h2>
         <p id="db-detail-meta"></p>
-      </div><button type="button" id="db-detail-close">{pt?"Fechar":"Close"}</button></div>
+      </div><button type="button" id="db-detail-close">{itemDbText(lang,"Close")}</button></div>
       <p id="db-detail-notice" class="detail-note"></p>
       <div id="db-detail-content"></div>
     </section>
   </main>
 </BaseLayout>
 <script>
+  import {itemDbText} from "../i18n/item-db-ui.mjs";
+  import {localePrefix,legacyLocale,localeTag} from "../i18n/locales.mjs";
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
   import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
   import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
@@ -143,7 +139,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
   type Manifest={snapshotId:number;totalIds:number;namedIds:number;collisionIds:number;unresolvedIds:number;indexShards:string[];detailBucketWidth:number};
   const root=document.querySelector<HTMLElement>("#full-client-db");
   if(root){
-    const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const lang=root.dataset.lang??"en";
+    const pt=lang==="pt-br",prefix=localePrefix(legacyLocale(lang));
     const $=<T extends HTMLElement>(id:string)=>root.querySelector<T>("#"+id)!;
     const query=$<HTMLInputElement>("db-query"),category=$<HTMLSelectElement>("db-category");
     const identity=$<HTMLSelectElement>("db-identity"),sort=$<HTMLSelectElement>("db-sort");
@@ -180,15 +177,15 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       "Boots","Helmet","Glove","Ring","Accessories","Neck","EARRING","BRACELET"
     ]);
     let allRows:IndexRow[]=[],visible:IndexRow[]=[],currentPage=0,manifest:Manifest|null=null;
-    const perPage=100,number=new Intl.NumberFormat(pt?"pt-BR":"en-US");
-    const statLabels={ActivePower:pt?"Poder ativo":"Active Power",
-      BuffUpPercentage:pt?"Bônus de buff (%)":"Buff bonus (%)"} as Record<string,string>;
-    const fieldTitle=(key:string)=>statLabels[key]??labelForClientField(key,pt);
-    const groupNames={attack:pt?"Ataque":"Attack",defense:pt?"Defesa":"Defense",
-      attributes:pt?"Atributos básicos":"Base attributes",other:pt?"Outros":"Other"} as Record<string,string>;
-    const label=(key:string)=>({named:pt?"Nome conciliado":"Source name reconciled",
-      collision:pt?"Nome divergente entre arquivos":"Identity collision",
-      unresolved:pt?"Nome ainda não resolvido":"Name unresolved"} as Record<string,string>)[key]??key;
+    const perPage=100,number=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
+    const statLabels={ActivePower:itemDbText(lang,"Active Power"),
+      BuffUpPercentage:itemDbText(lang,"Buff bonus (%)")} as Record<string,string>;
+    const fieldTitle=(key:string)=>statLabels[key]??itemDbText(lang,labelForClientField(key,false));
+    const groupNames={attack:itemDbText(lang,"Attack"),defense:itemDbText(lang,"Defense"),
+      attributes:itemDbText(lang,"Base attributes"),other:itemDbText(lang,"Other")} as Record<string,string>;
+    const label=(key:string)=>({named:itemDbText(lang,"Source name reconciled"),
+      collision:itemDbText(lang,"Identity collision"),
+      unresolved:itemDbText(lang,"Name unresolved")} as Record<string,string>)[key]??key;
     const node=(tag:string,text?:string,className?:string)=>{
       const el=document.createElement(tag);
       if(text!==undefined)el.textContent=text;
@@ -251,25 +248,21 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     async function addUsedInTable(parent:HTMLElement,id:string){
       const section=node("section",undefined,"used-in-crafting");
       section.id="wiki-item-used-by";
-      section.append(node("h3",pt?"Usado em fabricação":"Used in crafting"));
-      section.append(node("p",pt
-        ?"Relações invertidas das receitas decodificadas de ItemType*.ndt. Fontes do cliente não confirmam disponibilidade da receita no jogo atual."
-        :"Reverse references from parsed ItemType*.ndt recipes. Client source records do not confirm availability in the current live game.","detail-note"));
-      const state=node("p",pt?"Consultando receitas…":"Checking recipes…","subtle");
+      section.append(node("h3",itemDbText(lang,"Used in crafting")));
+      section.append(node("p",itemDbText(lang,"Reverse references from parsed ItemType*.ndt recipes. Client source records do not confirm availability in the current live game."),"detail-note"));
+      const state=node("p",itemDbText(lang,"Checking recipes…"),"subtle");
       section.append(state);parent.append(section);
       try{
         const rows=await originalUsedIn(id);
         if(rows.length===0){
-          state.textContent=pt
-            ?"Nenhum uso identificado em materiais estruturados neste snapshot; isso não prova que o item nunca seja utilizado."
-            :"No usage found in structured client materials in this snapshot. This does not prove the item is never required.";
+          state.textContent=itemDbText(lang,"No usage found in structured client materials in this snapshot. This does not prove the item is never required.");
           return;
         }
-        state.textContent=(pt?"Registros de receita: ":"Recipe references: ")+number.format(rows.length);
+        state.textContent=(itemDbText(lang,"Recipe references: "))+number.format(rows.length);
         const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
-        for(const name of [pt?"Item produzido":"Produced item",
-          pt?"Quantidade do material":"Material quantity",
-          pt?"Definições de origem":"Source definition IDs"])tr.append(node("th",name));
+        for(const name of [itemDbText(lang,"Produced item"),
+          itemDbText(lang,"Material quantity"),
+          itemDbText(lang,"Source definition IDs")])tr.append(node("th",name));
         head.append(tr);table.append(head);const body=node("tbody");
         for(const [productId,name,quantity,recordIds] of rows){
           const tr=node("tr"),cell=node("td");
@@ -282,21 +275,18 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         table.append(body);const scroller=node("div",undefined,"stat-table-scroll");
         scroller.append(table);section.append(scroller);
       }catch{
-        state.textContent=pt?"Não foi possível carregar as referências de fabricação."
-          :"Could not load the original source craft references.";
+        state.textContent=itemDbText(lang,"Could not load the original source craft references.");
       }
     }
     async function addMonsterSources(parent:HTMLElement,id:string){
       const section=node("section",undefined,"monster-source-links");
       section.id="wiki-item-monsters";
-      section.append(node("h3",pt?"Quais monstros podem dropar este item?":"Which monsters may drop this item?"));
-      const codex=node("a",pt?"Explorar no códice de drops":"Explore in the monster loot codex") as HTMLAnchorElement;
+      section.append(node("h3",itemDbText(lang,"Which monsters may drop this item?")));
+      const codex=node("a",itemDbText(lang,"Explore in the monster loot codex")) as HTMLAnchorElement;
       codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
       const codexLine=node("p");codexLine.append(codex);section.append(codexLine);
-      section.append(node("p",pt
-        ?"Exibimos somente faixas compatíveis com o nível registrado da criatura. Os percentuais combinados são estimativas inferidas, NÃO chances verificadas no servidor."
-        :"Only level-matched source brackets are shown. Combined percentages are inferred estimates, NOT verified live-server drop odds.","detail-note"));
-      const state=node("p",pt?"Consultando monstros…":"Checking monster drops…","subtle");
+      section.append(node("p",itemDbText(lang,"Only level-matched source brackets are shown. Combined percentages are inferred estimates, NOT verified live-server drop odds."),"detail-note"));
+      const state=node("p",itemDbText(lang,"Checking monster drops…"),"subtle");
       section.append(state);parent.append(section);
       try{
         if(!lootSourceManifestPromise){
@@ -313,8 +303,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         const bucket=Math.floor(Number(id)/1000);
         const filename="item-sources/"+String(bucket).padStart(2,"0")+".json";
         if(!meta.files.itemSources.includes(filename)){
-          state.textContent=pt?"Nenhuma fonte de drop encontrada nesta versão dos arquivos."
-            :"No drop source found in this client snapshot.";
+          state.textContent=itemDbText(lang,"No drop source found in this client snapshot.");
           return;
         }
         if(!itemMonsterSourcesCache.has(bucket)){
@@ -328,9 +317,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         }
         const entry=(await itemMonsterSourcesCache.get(bucket)!)?.[id];
         if(!entry){
-          state.textContent=pt
-            ?"Nenhuma criatura corresponde à faixa de nível deste item nos arquivos do cliente."
-            :"No creature level bracket matches this item in the client data.";
+          state.textContent=itemDbText(lang,"No creature level bracket matches this item in the client data.");
           return;
         }
         const sources=[
@@ -339,18 +326,18 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           ...(entry.group??[]).map((r:any[])=>({row:r,kind:"group" as const,
             pct:estimatedTwoStagePercent(r[5],r[6]),min:r[9],max:r[10]})),
         ].sort((a,b)=>(b.pct??-1)-(a.pct??-1));
-        state.textContent=(pt?"Possíveis fontes compatíveis com o nível: ":"Level-matched possible drop sources: ")+
+        state.textContent=(itemDbText(lang,"Level-matched possible drop sources: "))+
           number.format(sources.length);
         const body=node("tbody"),head=node("thead"),h=node("tr");
         for(const label of [
-          pt?"Criatura":"Creature",pt?"Chance estimada":"Estimated rate",
-          pt?"Quantidade":"Amount",pt?"Origem":"Source"
+          itemDbText(lang,"Creature"),itemDbText(lang,"Estimated rate"),
+          itemDbText(lang,"Amount"),itemDbText(lang,"Source")
         ])h.append(node("th",label));
         head.append(h);
         const table=node("table");table.append(head,body);
         const wrapper=node("div",undefined,"stat-table-scroll");wrapper.append(table);
         section.append(wrapper);
-        const more=node("button",pt?"Mostrar mais 100":"Show 100 more") as HTMLButtonElement;
+        const more=node("button",itemDbText(lang,"Show 100 more")) as HTMLButtonElement;
         more.type="button";more.className="monster-more";
         let cursor=0;
         const nextChunk=()=>{
@@ -361,17 +348,17 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             const link=node("a",name??("CharID #"+charId)) as HTMLAnchorElement;
             link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
             first.append(link);tr.append(first);
-            tr.append(node("td",formatLevelResolvedPercent(source.pct,pt?"pt-br":"en")));
+            tr.append(node("td",formatLevelResolvedPercent(source.pct,lang)));
             tr.append(node("td",String(source.min)+"–"+String(source.max)));
             const cell=node("td"),audit=node("details");
-            audit.append(node("summary",pt?"Ver origem":"View source"));
+            audit.append(node("summary",itemDbText(lang,"View source")));
             const fields=source.kind==="direct"
-              ?[["RawRate",source.row[3]],[pt?"Linha":"Row",source.row[2]],
+              ?[["RawRate",source.row[3]],[itemDbText(lang,"Row"),source.row[2]],
                 ["Slot",source.row[4]]]
               :[["GroupID",source.row[2]],["Band",source.row[8]],
                 ["RawRate ref",source.row[5]],["RawRate item",source.row[6]],
-                [pt?"Linha referência":"Ref row",source.row[3]],
-                [pt?"Linha item":"Item row",source.row[4]],["Slot",source.row[7]]];
+                [itemDbText(lang,"Ref row"),source.row[3]],
+                [itemDbText(lang,"Item row"),source.row[4]],["Slot",source.row[7]]];
             const dl=node("dl");
             for(const [label,value] of fields){
               const div=node("div");div.append(node("dt",String(label)),node("dd",String(value??"—")));
@@ -380,15 +367,14 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             audit.append(dl);cell.append(audit);tr.append(cell);body.append(tr);
           }
           cursor=Math.min(sources.length,cursor+100);
-          more.textContent=(pt?"Mostrar mais 100 · ":"Show 100 more · ")+
+          more.textContent=(itemDbText(lang,"Show 100 more · "))+
             number.format(cursor)+" / "+number.format(sources.length);
           if(cursor===sources.length)more.remove();
         };
         if(sources.length>100){more.addEventListener("click",nextChunk);section.append(more);}
         nextChunk();
       }catch{
-        state.textContent=pt?"Não foi possível validar os drops por nível."
-          :"Level-matched monster drops could not be validated.";
+        state.textContent=itemDbText(lang,"Level-matched monster drops could not be validated.");
       }
     }
         async function numericManifest(){
@@ -458,15 +444,11 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             throw Error("Partial or duplicate numeric client data");
           indexedStats=built;
           allStatsReady=true;
-          statStatus.textContent=pt
-            ?number.format(built.size)+" IDs com atributos carregados. Valores brutos; conflitos preservados."
-            :number.format(built.size)+" numeric source IDs loaded. Raw values; conflicts preserved.";
+          statStatus.textContent=itemDbText(lang,"{count} numeric source IDs loaded. Raw values; conflicts preserved.",{count:number.format(built.size)});
           return built;
         })().catch(err=>{
           allStatsPromise=null;
-          statStatus.textContent=pt
-            ?"Não foi possível validar os arquivos numéricos. Tente novamente."
-            :"Could not validate numeric client shards. Please retry.";
+          statStatus.textContent=itemDbText(lang,"Could not validate numeric client shards. Please retry.");
           throw err;
         });
       }
@@ -477,10 +459,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       // never replaced with an assumed missing field, and conflicts are not
       // silently averaged or resolved.
       const summary=summarizeRawNumericRows(rawRows);
-      parent.append(node("h3",pt?"Atributos numéricos originais — Items.csv":"Original numeric client attributes — Items.csv"));
-      parent.append(node("p",pt
-        ?"Dados extraídos do cliente, não conferidos no servidor. Zero, ausência, cobertura parcial e divergência entre registros são situações diferentes. Campos com divergência não são usados como um valor único."
-        :"Client-extracted values, not measured on the server. Zero, missing, partial coverage and conflicting source rows are different states. Conflicting fields are never treated as one canonical value.","detail-note"));
+      parent.append(node("h3",itemDbText(lang,"Original numeric client attributes — Items.csv")));
+      parent.append(node("p",itemDbText(lang,"Client-extracted values, not measured on the server. Zero, missing, partial coverage and conflicting source rows are different states. Conflicting fields are never treated as one canonical value."),"detail-note"));
       for(const group of ["attack","defense","attributes","other"]){
         const fields=RAW_STATS_FIELDS.filter(f=>f.group===group&&summary.fields.has(f.key));
         if(!fields.length)continue;
@@ -488,8 +468,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         section.append(node("h4",groupNames[group]));
         const table=node("table") as HTMLTableElement;
         const head=node("thead"),heading=node("tr");
-        for(const label of [pt?"Campo original":"Original field",pt?"Valor(es) bruto(s)":"Raw value(s)",
-          pt?"Cobertura e situação":"Coverage and status"])heading.append(node("th",label));
+        for(const label of [itemDbText(lang,"Original field"),itemDbText(lang,"Raw value(s)"),
+          itemDbText(lang,"Coverage and status")])heading.append(node("th",label));
         head.append(heading);table.append(head);
         const body=node("tbody");
         for(const f of fields){
@@ -498,8 +478,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           if(stat.status==="conflict")row.className="numeric-conflict";
           row.append(node("td",fieldTitle(f.key)+" ("+f.key+")"));
           row.append(node("td",stat.values.join(" / ")));
-          const situation=stat.status==="conflict"?(pt?"Divergente":"Conflicting"):
-            stat.status==="partial"?(pt?"Parcial":"Partial"):(pt?"Consistente":"Consistent");
+          const situation=stat.status==="conflict"?(itemDbText(lang,"Conflicting")):
+            stat.status==="partial"?(itemDbText(lang,"Partial")):(itemDbText(lang,"Consistent"));
           row.append(node("td",stat.observedIn+"/"+stat.sourceCount+" · "+situation));
           body.append(row);
         }
@@ -508,11 +488,9 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         section.append(wrap);parent.append(section);
       }
       const sourceRows=node("details",undefined,"numeric-original-rows");
-      sourceRows.append(node("summary",pt
-        ?"Ver cada registro original e os números exatos"
-        :"Inspect each original source row and its exact numbers"));
+      sourceRows.append(node("summary",itemDbText(lang,"Inspect each original source row and its exact numbers")));
       const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
-      for(const name of [pt?"Registro de origem":"Source row",pt?"Campo":"Raw field",pt?"Valor":"Raw value"])
+      for(const name of [itemDbText(lang,"Source row"),itemDbText(lang,"Raw field"),itemDbText(lang,"Raw value")])
         tr.append(node("th",name));
       head.append(tr);table.append(head);
       const body=node("tbody");
@@ -537,32 +515,28 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       const fixed=model.fixedFields.map((field:{key:string})=>field.key);
       const cols=[...scalable,...baselineOnly,...fixed];
       if(!cols.length)return;
-      const heading=node("h3",pt?"Progressão +0 a +10 — modelo histórico":"Enhancement +0 to +10 — historical model");
+      const heading=node("h3",itemDbText(lang,"Enhancement +0 to +10 — historical model"));
       parent.append(heading);
-      parent.append(node("p",pt
-        ?"SIMULAÇÃO. +0 = valores brutos de Items.csv; +1 a +10 = multiplicadores históricos somente em ataque, AC e atributos básicos. Defesa mágica, evasão e velocidade de movimento permanecem FIXAS. Isso não comprova que o equipamento possa ser aprimorado. Nenhum grau L é inferido."
-        :"MODEL ONLY. +0 = raw Items.csv client data; +1..+10 = historical factors for attack, physical AC and base stats only. Magic Defense, EV and MoveSpeed remain FIXED. Upgrade eligibility is not proven. No Legendary grade is inferred.","detail-note"));
+      parent.append(node("p",itemDbText(lang,"MODEL ONLY. +0 = raw Items.csv client data; +1..+10 = historical factors for attack, physical AC and base stats only. Magic Defense, EV and MoveSpeed remain FIXED. Upgrade eligibility is not proven. No Legendary grade is inferred."),"detail-note"));
       const table=node("table") as HTMLTableElement;
       const head=node("thead"),headRow=node("tr");
-      headRow.append(node("th",pt?"Grau":"Grade"));
+      headRow.append(node("th",itemDbText(lang,"Grade")));
       for(const key of cols){
-        const label=labelForClientField(key,pt) +
+        const label=fieldTitle(key) +
           (fixed.includes(key)?" =":baselineOnly.includes(key)?" (+0)":" ×");
         headRow.append(node("th",label));
       }
-      headRow.append(node("th",pt?"Origem":"Basis"));head.append(headRow);table.append(head);
+      headRow.append(node("th",itemDbText(lang,"Basis")));head.append(headRow);table.append(head);
       const body=node("tbody");
       for(const row of model.rows){
         const tr=node("tr");tr.append(node("td","+"+row.grade));
         for(const key of cols)tr.append(node("td",String(row.values[key]??"—")));
-        tr.append(node("td",row.grade===0?(pt?"Extraído":"Client raw"):(pt?"Estimativa":"Estimated")));
+        tr.append(node("td",row.grade===0?(itemDbText(lang,"Client raw")):(itemDbText(lang,"Estimated"))));
         body.append(tr);
       }
       table.append(body);
       const scroller=node("div",undefined,"stat-table-scroll");scroller.append(table);parent.append(scroller);
-      if(model.fixedConflicts?.length)parent.append(node("p",pt
-        ?"Campos fixos divergentes não foram projetados: "+model.fixedConflicts.join(", ")
-        :"Conflicting fixed fields omitted: "+model.fixedConflicts.join(", "),"subtle"));
+      if(model.fixedConflicts?.length)parent.append(node("p",itemDbText(lang,"Conflicting fixed fields omitted: {fields}",{fields:model.fixedConflicts.join(", ")}),"subtle"));
     }
     function linkItem(id:string,title:string){
       const a=node("a",title) as HTMLAnchorElement;
@@ -576,13 +550,13 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     function updateComparisonSelection(){
       compareEpoch++;
       compareSelected.replaceChildren();
-      compareSelected.append(node("span",(pt?"Selecionados: ":"Selected: ")+
+      compareSelected.append(node("span",(itemDbText(lang,"Selected: "))+
         comparedIds.length+"/3","subtle"));
       for(const id of comparedIds){
         const chip=node("span",undefined,"compare-chip");
         chip.append(linkItem(id,nameFor(id)??("ID "+id)));
-        const remove=node("button",pt?"Remover":"Remove") as HTMLButtonElement;
-        remove.type="button";remove.setAttribute("aria-label",(pt?"Remover ID ":"Remove ID ")+id);
+        const remove=node("button",itemDbText(lang,"Remove")) as HTMLButtonElement;
+        remove.type="button";remove.setAttribute("aria-label",(itemDbText(lang,"Remove ID "))+id);
         remove.addEventListener("click",()=>toggleComparison(id));
         chip.append(remove);compareSelected.append(chip);
       }
@@ -604,9 +578,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       if(comparedIds.length<2)return;
       const selected=[...comparedIds],token=++compareEpoch;
       compareRun.disabled=true;
-      compareResult.replaceChildren(node("p",pt
-        ?"Carregando registros originais para comparação…"
-        :"Loading original source records for comparison…","subtle"));
+      compareResult.replaceChildren(node("p",itemDbText(lang,"Loading original source records for comparison…"),"subtle"));
       try{
         // Only selected item buckets are requested, never the full 28-shard
         // numeric index. Comparison is available without running filters.
@@ -616,19 +588,17 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         const observed=RAW_STATS_FIELDS.filter(f=>
           summaries.some(summary=>summary?.fields.has(f.key)));
         if(!observed.length){
-          compareResult.replaceChildren(node("p",pt
-            ?"Nenhum desses IDs possui valores numéricos publicados."
-            :"None of these IDs has published numeric source fields.","subtle"));
+          compareResult.replaceChildren(node("p",itemDbText(lang,"None of these IDs has published numeric source fields."),"subtle"));
           return;
         }
         const scroller=node("div",undefined,"stat-table-scroll"),table=node("table") as HTMLTableElement;
         table.className="compare-table";
         const head=node("thead"),headers=node("tr");
-        headers.append(node("th",pt?"Atributo original":"Original field"));
+        headers.append(node("th",itemDbText(lang,"Original field")));
         for(const id of selected){
           headers.append(node("th",(nameFor(id)??("ID "+id))+" · #"+id));
         }
-        headers.append(node("th",pt?"Amplitude bruta":"Raw spread"));
+        headers.append(node("th",itemDbText(lang,"Raw spread")));
         head.append(headers);table.append(head);
         const body=node("tbody");
         for(const {key} of observed){
@@ -644,8 +614,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
               cell.textContent=value.values.join(" / ");
               if(value.status!=="consistent"){
                 cell.append(node("small",value.status==="conflict"
-                  ?(pt?" · divergente":" · conflict")
-                  :(" · "+(pt?"parcial ":"partial ")+value.observedIn+"/"+value.sourceCount)));
+                  ?(itemDbText(lang," · conflict"))
+                  :(" · "+(itemDbText(lang,"partial "))+value.observedIn+"/"+value.sourceCount)));
               }
             }
             row.append(cell);
@@ -655,13 +625,9 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           body.append(row);
         }
         table.append(body);scroller.append(table);
-        compareResult.replaceChildren(node("p",pt
-          ?"Amplitude = maior valor bruto − menor valor bruto, apenas quando todos os registros concordam. Não é uma classificação de eficiência."
-          :"Spread = maximum minus minimum raw value, only when all source records agree. This is not a gameplay efficiency ranking.","subtle"),scroller);
+        compareResult.replaceChildren(node("p",itemDbText(lang,"Spread = maximum minus minimum raw value, only when all source records agree. This is not a gameplay efficiency ranking."),"subtle"),scroller);
       }catch{
-        if(token===compareEpoch)compareResult.replaceChildren(node("p",pt
-          ?"Não foi possível carregar os registros originais para comparação."
-          :"Original numeric rows could not be loaded for comparison.","subtle"));
+        if(token===compareEpoch)compareResult.replaceChildren(node("p",itemDbText(lang,"Original numeric rows could not be loaded for comparison."),"subtle"));
       }finally{
         if(token===compareEpoch)compareRun.disabled=comparedIds.length<2;
       }
@@ -676,20 +642,20 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         const nameCell=td(tr,"");
         if(row[6]==="named"){
           nameCell.append(linkItem(id,row[1]??id));
-          if(row[8]===1)nameCell.append(node("small",pt?" · Ficha revisada":" · Reviewed item page"));
+          if(row[8]===1)nameCell.append(node("small",itemDbText(lang," · Reviewed item page")));
         }else{
           nameCell.append(node("span",label(row[6]),"unresolved"));
-          nameCell.append(" ",linkItem(id,pt?"Ver estado do ID":"Inspect ID status"));
+          nameCell.append(" ",linkItem(id,itemDbText(lang,"Inspect ID status")));
         }
         td(tr,row[2]??"—");td(tr,fmtRaw(row[3]));td(tr,fmtRaw(row[4]));td(tr,String(row[5]));
         const choose=td(tr,"");
         if(row[6]==="named"&&equipmentCandidateCategories.has(row[2]??"")){
           const selected=comparedIds.includes(id);
-          const button=node("button",selected?(pt?"✓ Selecionado":"✓ Selected"):(pt?"Adicionar":"Add")) as HTMLButtonElement;
+          const button=node("button",selected?(itemDbText(lang,"✓ Selected")):(itemDbText(lang,"Add"))) as HTMLButtonElement;
           button.type="button";button.className="compare-row-button";
           button.setAttribute("aria-pressed",String(selected));
-          button.setAttribute("aria-label",(selected?(pt?"Remover comparação: ":"Remove from comparison: "):
-            (pt?"Adicionar à comparação: ":"Add to comparison: "))+(row[1]??id));
+          button.setAttribute("aria-label",(selected?(itemDbText(lang,"Remove from comparison: ")):
+            (itemDbText(lang,"Add to comparison: ")))+(row[1]??id));
           button.disabled=!selected&&comparedIds.length>=3;
           button.addEventListener("click",()=>toggleComparison(id));
           choose.append(button);
@@ -714,23 +680,17 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         (max!==null&&!Number.isFinite(max))||
         (min!==null&&max!==null&&min>max))){
         visible=[];currentPage=0;renderPage();exportButton.disabled=true;
-        status.textContent=pt
-          ?"Limites inválidos: o mínimo deve ser menor ou igual ao máximo."
-          :"Invalid bounds: minimum must not exceed maximum.";
+        status.textContent=itemDbText(lang,"Invalid bounds: minimum must not exceed maximum.");
         return;
       }
       if(field&&!allStatsReady){
         visible=[];currentPage=0;renderPage();exportButton.disabled=true;
-        status.textContent=pt
-          ?"Carregando os 28 arquivos de atributos numéricos…"
-          :"Loading 28 original numeric shards…";
+        status.textContent=itemDbText(lang,"Loading 28 original numeric shards…");
         void loadAllRawStats().then(()=>{
           if(epoch===filterEpoch)applyFilters();
         }).catch(()=>{
           if(epoch===filterEpoch){
-            status.textContent=pt
-              ?"Falha ao carregar atributos: a consulta não foi aplicada."
-              :"Failed to load attributes: numeric filtering was not applied.";
+            status.textContent=itemDbText(lang,"Failed to load attributes: numeric filtering was not applied.");
           }
         });
         return;
@@ -749,9 +709,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       });
       currentPage=0;renderPage();
       exportButton.disabled=visible.length===0;
-      status.textContent=pt
-        ?number.format(visible.length)+" dos "+number.format(allRows.length)+" IDs encontrados. "+number.format(manifest?.namedIds??0)+" nomes conciliados."
-        :number.format(visible.length)+" of "+number.format(allRows.length)+" IDs found. "+number.format(manifest?.namedIds??0)+" reconciled names.";
+      status.textContent=itemDbText(lang,"{found} of {total} IDs found. {named} reconciled names.",{found:number.format(visible.length),total:number.format(allRows.length),named:number.format(manifest?.namedIds??0)});
     }
     function addCraftBatchInformation(parent:HTMLElement,data:Detail,item:IndexRow){
       const equipment=equipmentCandidateCategories.has(item[2]??"");
@@ -762,35 +720,27 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       if(equipment&&!hasMaterials)return;
       if(!ready&&!hasMaterials&&batch.status==="not-provided")return;
       const section=node("section",undefined,"craft-batch-summary");
-      section.append(node("h3",pt?"Quantidade produzida por fabricação":"Crafting batch size"));
+      section.append(node("h3",itemDbText(lang,"Crafting batch size")));
       if(ready){
         const facts=node("dl",undefined,"wiki-facts");
         for(const [heading,value] of [
-          [pt?"Produção por lote":"Items per batch",number.format(batch.batchSize)],
-          [pt?"Múltiplos permitidos":"Batch step",number.format(batch.increment)],
-          [pt?"Limite por operação":"Operation limit",number.format(batch.maxPerOperation)],
-          [pt?"Lotes por operação":"Max batches per operation",number.format(batch.maxBatchesPerOperation)],
+          [itemDbText(lang,"Items per batch"),number.format(batch.batchSize)],
+          [itemDbText(lang,"Batch step"),number.format(batch.increment)],
+          [itemDbText(lang,"Operation limit"),number.format(batch.maxPerOperation)],
+          [itemDbText(lang,"Max batches per operation"),number.format(batch.maxBatchesPerOperation)],
         ]){
           const card=node("div");card.append(node("dt",heading),node("dd",value));facts.append(card);
         }
         section.append(facts);
       }else{
         section.append(node("p",batch.status==="conflict"
-          ?(pt?"Os arquivos apresentam quantidades por lote diferentes. Não é seguro escolher uma delas."
-            :"The client files disagree on the output batch quantity, so none is selected.")
-          :(pt?"A quantidade produzida por lote não está informada com segurança nos arquivos."
-            :"The output per batch is not reliably recorded in the client files."),"wiki-help"));
+          ?(itemDbText(lang,"The client files disagree on the output batch quantity, so none is selected."))
+          :(itemDbText(lang,"The output per batch is not reliably recorded in the client files.")),"wiki-help"));
       }
-      if(batch.originalUnitStatus==="partial")section.append(node("p",pt
-        ?"A quantidade por lote consta apenas em parte das definições."
-        :"Only some source definitions contain the batch quantity.","wiki-source-warning"));
+      if(batch.originalUnitStatus==="partial")section.append(node("p",itemDbText(lang,"Only some source definitions contain the batch quantity."),"wiki-source-warning"));
       section.append(node("p",equipment
-        ?(pt
-          ?"Equipamentos: 1 por batch e até 20 por operação, conforme regra confirmada pelo jogador. O campo Unit original continua disponível nos registros técnicos."
-          :"Equipment: 1 per batch and up to 20 per operation, according to a player-confirmed rule. The original Unit remains available in technical records.")
-        :(pt
-          ?"Batch baseado no campo Unit original do cliente; limite de 10.000 por operação informado pelo jogador. A disponibilidade no servidor não é comprovada."
-          :"Batch comes from the original client Unit; the 10,000 limit is player-reported. Live-server availability is not proven."),"wiki-help"));
+        ?(itemDbText(lang,"Equipment: 1 per batch and up to 20 per operation, according to a player-confirmed rule. The original Unit remains available in technical records."))
+        :(itemDbText(lang,"Batch comes from the original client Unit; the 10,000 limit is player-reported. Live-server availability is not proven.")),"wiki-help"));
       parent.append(section);
     }
     // Community-facing quick facts are deliberately separated from the
@@ -798,18 +748,16 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     function addItemOverview(parent:HTMLElement,item:IndexRow,data:Detail){
       const section=node("section",undefined,"wiki-item-overview");
       section.id="wiki-item-about";
-      section.append(node("h3",pt?"Informações do item":"About this item"));
-      const note=node("p",pt
-        ?"Informações encontradas nos arquivos do jogo. Nível, categoria e grade são valores cadastrados no cliente, não requisitos ou disponibilidade comprovados no servidor."
-        :"Information found in the game files. Level, category and grade are client records, not verified requirements or current-server availability.","wiki-help");
+      section.append(node("h3",itemDbText(lang,"About this item")));
+      const note=node("p",itemDbText(lang,"Information found in the game files. Level, category and grade are client records, not verified requirements or current-server availability."),"wiki-help");
       section.append(note);
       const facts=node("dl",undefined,"wiki-facts");
       const rows=[
-        [pt?"Item ID":"Item ID",item[0]],
-        [pt?"Categoria":"Category",item[2]??"—"],
-        [pt?"Nível registrado":"Recorded level",fmtRaw(item[3])],
-        [pt?"Grade registrada":"Recorded grade",fmtRaw(item[4])],
-        [pt?"Registros encontrados":"Source records",number.format(data.s.length)],
+        [itemDbText(lang,"Item ID"),item[0]],
+        [itemDbText(lang,"Category"),item[2]??"—"],
+        [itemDbText(lang,"Recorded level"),fmtRaw(item[3])],
+        [itemDbText(lang,"Recorded grade"),fmtRaw(item[4])],
+        [itemDbText(lang,"Source records"),number.format(data.s.length)],
       ];
       for(const [heading,value] of rows){
         const box=node("div");box.append(node("dt",heading),node("dd",value));facts.append(box);
@@ -819,37 +767,31 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
     function addCraftRecipeTables(parent:HTMLElement,data:Detail){
       const section=node("section",undefined,"wiki-crafting");
       section.id="wiki-item-crafting";
-      section.append(node("h3",pt?"Como fabricar":"Crafting materials"));
-      section.append(node("p",pt
-        ?"Receitas extraídas dos arquivos do jogo. As quantidades abaixo são para o lote indicado no registro, quando disponível. A receita pode não estar habilitada no servidor atual."
-        :"Recipes extracted from the game files. Quantities below are for the recorded batch, where available. A recipe may not be enabled on the current server.","wiki-help"));
+      section.append(node("h3",itemDbText(lang,"Crafting materials")));
+      section.append(node("p",itemDbText(lang,"Recipes extracted from the game files. Quantities below are for the recorded batch, where available. A recipe may not be enabled on the current server."),"wiki-help"));
       // Exact identical material lists are grouped even when a general
       // source row omitted Unit. Conflicting known Unit values stay visible.
       const entries=buildClientRecipeViews(data.s);
-      if(entries.length>1)section.append(node("p",pt
-        ?"Os arquivos apresentam listas de materiais diferentes. Elas estão separadas para consulta; não são opções de fabricação confirmadas."
-        :"The original files contain different material lists. They remain separate for reference, not as confirmed crafting options.","wiki-source-warning"));
+      if(entries.length>1)section.append(node("p",itemDbText(lang,"The original files contain different material lists. They remain separate for reference, not as confirmed crafting options."),"wiki-source-warning"));
       entries.forEach((recipe,i)=>{
         const block=node("div",undefined,"wiki-recipe");
         const heading=node("div",undefined,"wiki-recipe-heading");
         heading.append(node("h4",entries.length>1
-          ?(pt?"Receita registrada ":"Recorded recipe ")+(i+1)
-          :(pt?"Materiais necessários":"Required materials")));
+          ?(itemDbText(lang,"Recorded recipe "))+(i+1)
+          :(itemDbText(lang,"Required materials"))));
         const batch=recipe.batchSize!==null
-          ?(pt?"Produz "+number.format(recipe.batchSize)+" por lote":"Produces "+number.format(recipe.batchSize)+" per batch")
+          ?itemDbText(lang,"Produces {count} per batch",{count:number.format(recipe.batchSize)})
           :recipe.batchStatus==="conflict"
-            ?(pt?"Quantidade divergente entre arquivos":"Conflicting source batch quantities")
-            :(pt?"Quantidade por lote não informada":"Batch quantity not recorded");
+            ?(itemDbText(lang,"Conflicting source batch quantities"))
+            :(itemDbText(lang,"Batch quantity not recorded"));
         heading.append(node("span",batch,"wiki-batch-label"));block.append(heading);
-        if(recipe.batchStatus==="partial")block.append(node("p",pt
-          ?"Quantidade informada em apenas um dos arquivos de origem."
-          :"Batch quantity is present in only some original source records.","wiki-source-warning"));
+        if(recipe.batchStatus==="partial")block.append(node("p",itemDbText(lang,"Batch quantity is present in only some original source records."),"wiki-source-warning"));
         if(recipe.batchStatus==="conflict")block.append(node("p",
-          (pt?"Valores de produção registrados: ":"Recorded batch quantities: ")+
+          (itemDbText(lang,"Recorded batch quantities: "))+
           recipe.reportedBatches.map(x=>number.format(x)).join(" / "),"wiki-source-warning"));
         const tbl=node("table") as HTMLTableElement,head=node("thead"),headingRow=node("tr");
-        for(const name of [pt?"Material":"Material",
-          pt?"Quantidade":"Amount",pt?"Onde obter":"Where to find"])
+        for(const name of [itemDbText(lang,"Material"),
+          itemDbText(lang,"Amount"),itemDbText(lang,"Where to find")])
           headingRow.append(node("th",name));
         head.append(headingRow);tbl.append(head);const body=node("tbody");
         for(const [materialId,quantity] of recipe.materials){
@@ -857,22 +799,18 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           itemCell.append(linkItem(materialId,nameFor(materialId)??("ID "+materialId)));
           itemCell.append(node("small","ID "+materialId,"wiki-raw-id"));
           tr.append(itemCell,node("td",number.format(quantity),"wiki-quantity"));
-          const findCell=node("td"),find=node("a",pt?"Consultar drops":"Find monster drops") as HTMLAnchorElement;
+          const findCell=node("td"),find=node("a",itemDbText(lang,"Find monster drops")) as HTMLAnchorElement;
           find.href=prefix+"/monsters/?item="+encodeURIComponent(materialId);
           findCell.append(find);tr.append(findCell);body.append(tr);
         }
         tbl.append(body);const scroll=node("div",undefined,"wiki-table-scroll");scroll.append(tbl);
         block.append(scroll);
-        const sourceInfo=node("p",(pt?"Definições de origem: ":"Original source rows: ")+
+        const sourceInfo=node("p",(itemDbText(lang,"Original source rows: "))+
           recipe.sourceRows.map(n=>"#"+n).join(", "),"wiki-source-refs");
         block.append(sourceInfo);section.append(block);
       });
-      if(entries.length===0)section.append(node("p",pt
-        ?"Não encontramos materiais de fabricação estruturados nos arquivos deste item. Isso não significa que ele não possa ser fabricado."
-        :"No structured crafting materials were found in this item's files. This does not mean it cannot be crafted.","wiki-empty"));
-      if(data.s.some(row=>row[8]==="unsupported"))section.append(node("p",pt
-        ?"Existem materiais que o extrator ainda não conseguiu interpretar."
-        :"Some original material expressions could not be decoded yet.","wiki-source-warning"));
+      if(entries.length===0)section.append(node("p",itemDbText(lang,"No structured crafting materials were found in this item's files. This does not mean it cannot be crafted."),"wiki-empty"));
+      if(data.s.some(row=>row[8]==="unsupported"))section.append(node("p",itemDbText(lang,"Some original material expressions could not be decoded yet."),"wiki-source-warning"));
       parent.append(section);
     }
     // Preserve ALL original metadata, but make it an optional audit section
@@ -882,23 +820,21 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       section.id="wiki-item-technical";
       section.dataset.wikiNavNative="true";
       const summary=node("summary");
-      summary.append(node("span",pt?"Dados originais dos arquivos":"Original client records"),
-        node("span",number.format(data.s.length)+(pt?" registros":" records"),"wiki-tech-count"));
+      summary.append(node("span",itemDbText(lang,"Original client records")),
+        node("span",number.format(data.s.length)+(itemDbText(lang," records")),"wiki-tech-count"));
       section.append(summary);
-      section.append(node("p",pt
-        ?"Para conferir a origem dos dados: cada linha corresponde a uma definição ItemType. Os campos Work e Unit são preservados como extraídos; não confirmam requisitos do jogo."
-        :"For source verification: each row is an ItemType definition. Work and Unit are unchanged client values, not confirmed gameplay requirements.","wiki-help"));
+      section.append(node("p",itemDbText(lang,"For source verification: each row is an ItemType definition. Work and Unit are unchanged client values, not confirmed gameplay requirements."),"wiki-help"));
       const tbl=node("table"),head=node("thead"),headingRow=node("tr");
-      for(const label of [pt?"Registro":"Record",pt?"Arquivo":"Source file",
-        pt?"Tipo":"Type",pt?"Categoria":"Category",
-        pt?"Nível":"Level",pt?"Grade":"Grade","Work","Unit",
-        pt?"Materiais":"Material state"])headingRow.append(node("th",label));
+      for(const label of [itemDbText(lang,"Record"),itemDbText(lang,"Source file"),
+        itemDbText(lang,"Type"),itemDbText(lang,"Category"),
+        itemDbText(lang,"Level"),itemDbText(lang,"Grade"),"Work","Unit",
+        itemDbText(lang,"Material state")])headingRow.append(node("th",label));
       head.append(headingRow);tbl.append(head);
       const body=node("tbody");
       const stateLabel=(v:string)=>v.startsWith("parsed-")
-        ?(pt?"Identificados":"Parsed")
-        :v==="unsupported"?(pt?"Não decodificados":"Not decoded")
-        :(pt?"Não registrados":"Not recorded");
+        ?(itemDbText(lang,"Parsed"))
+        :v==="unsupported"?(itemDbText(lang,"Not decoded"))
+        :(itemDbText(lang,"Not recorded"));
       for(const [recordId,file,role,cat,level,grade,work,unit,state] of data.s){
         const tr=node("tr");
         for(const value of ["#"+recordId,file,role,cat,fmtRaw(level),
@@ -910,12 +846,10 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       scroll.append(tbl);section.append(scroll);
       if(data.v.length>1){
         const group=node("details",undefined,"wiki-source-groupings");
-        group.append(node("summary",pt?"Agrupamentos de registros":"Record groupings"));
-        group.append(node("p",pt
-          ?"Grupos de arquivos de origem, não variantes jogáveis comprovadas."
-          :"Original source groupings, not confirmed playable variants.","wiki-help"));
+        group.append(node("summary",itemDbText(lang,"Record groupings")));
+        group.append(node("p",itemDbText(lang,"Original source groupings, not confirmed playable variants."),"wiki-help"));
         const groupingTable=node("table"),gHead=node("thead"),gtr=node("tr");
-        for(const heading of [pt?"Grupo":"Group",pt?"Registros incluídos":"Included source rows"])
+        for(const heading of [itemDbText(lang,"Group"),itemDbText(lang,"Included source rows")])
           gtr.append(node("th",heading));
         gHead.append(gtr);groupingTable.append(gHead);
         const gBody=node("tbody");
@@ -935,28 +869,28 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
       const row=namedRows.get(id);
       if(!row){
         detail.hidden=false;details.replaceChildren();
-        detailName.textContent=pt?`ID ${id} não encontrado`:`ID ${id} not found`;
+        detailName.textContent=itemDbText(lang,"ID {id} not found",{id});
         detailNotice.textContent="";detailMeta.textContent="";
         if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
         return;
       }
       detail.hidden=false;details.replaceChildren();
       detailName.textContent=row[1]??`Item ID ${id}`;
-      detailMeta.textContent=`ID ${id} · ${row[2]??"—"} · ${pt?"fontes":"sources"}: ${row[5]}`;
+      detailMeta.textContent=`ID ${id} · ${row[2]??"—"} · ${itemDbText(lang,"sources")}: ${row[5]}`;
       detailNotice.textContent=row[6]==="named"
-        ?(pt?"Esta ficha reúne receitas, atributos e possíveis fontes de obtenção identificadas nos arquivos do jogo. Confira as ressalvas de cada seção.":"This page brings together crafting, stats and possible acquisition sources from the game files. See the notes in each section.")
-        :(pt?"Nome retido: identidade divergente ou tradução não resolvida. Nenhuma definição foi atribuída a um nome inventado.":"Name withheld: conflicting identity or unresolved translation. No source record was assigned a guessed name.");
+        ?(itemDbText(lang,"This page brings together crafting, stats and possible acquisition sources from the game files. See the notes in each section."))
+        :(itemDbText(lang,"Name withheld: conflicting identity or unresolved translation. No source record was assigned a guessed name."));
       if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
       if(equipmentCandidateCategories.has(row[2]??"")&&row[6]==="named"){
         const p=node("p");
         const a=node("a",row[8]===1
-          ?(pt?"Abrir ficha revisada do equipamento":"Open reviewed equipment profile")
-          :(pt?"Abrir ficha do equipamento extraída do cliente":"Open client-source equipment profile")) as HTMLAnchorElement;
+          ?(itemDbText(lang,"Open reviewed equipment profile"))
+          :(itemDbText(lang,"Open client-source equipment profile"))) as HTMLAnchorElement;
         a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
       if(row[6]!=="named"){
         details.append(node("p",label(row[6]),"subtle"));detail.scrollIntoView({behavior:"smooth",block:"start"});return;
       }
-      details.append(node("p",pt?"Carregando os registros de origem…":"Loading original source records…","subtle"));
+      details.append(node("p",itemDbText(lang,"Loading original source records…"),"subtle"));
       try{
         const data=await sourceDetails(id);
         // Do not let an earlier slow request overwrite a more recent selection.
@@ -965,8 +899,8 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         if(equipmentCandidateCategories.has(row[2]??"")&&row[6]==="named"){
           const p=node("p");
           const a=node("a",row[8]===1
-            ?(pt?"Abrir ficha revisada do equipamento":"Open reviewed equipment profile")
-            :(pt?"Abrir ficha do equipamento extraída do cliente":"Open client-source equipment profile")) as HTMLAnchorElement;
+            ?(itemDbText(lang,"Open reviewed equipment profile"))
+            :(itemDbText(lang,"Open client-source equipment profile"))) as HTMLAnchorElement;
           a.href=prefix+"/items/"+id+"/";p.append(a);details.append(p);}
         addItemOverview(details,row,data);
         addCraftBatchInformation(details,data,row);
@@ -985,21 +919,19 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
           if(equipmentCandidateCategories.has(row[2]??""))
             addHistoricalGradeTable(details,rawStats);
         }else if(equipmentCandidateCategories.has(row[2]??"")&&row[8]!==1){
-          details.append(node("p",pt
-            ?"Atributos de combate ainda não foram importados para este ID. Não é possível calcular +0 a +10 com segurança sem os valores originais de Items.csv."
-            :"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values.","subtle"));
+          details.append(node("p",itemDbText(lang,"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values."),"subtle"));
         }
         addDefinitionTable(details,data,id);
         // A consistent player-first navigation between the main kinds of
         // information, without showing raw source fields up front.
         const jump=node("nav",undefined,"wiki-profile-jumps");
-        jump.setAttribute("aria-label",pt?"Navegação do perfil":"Profile navigation");
+        jump.setAttribute("aria-label",itemDbText(lang,"Profile navigation"));
         const targets=[
-          ["wiki-item-about",pt?"Visão geral":"Overview"],
-          ["wiki-item-crafting",pt?"Como fabricar":"Crafting"],
-          ["wiki-item-used-by",pt?"Usado em receitas":"Used in recipes"],
-          ["wiki-item-monsters",pt?"Monstros":"Monsters"],
-          ["wiki-item-technical",pt?"Dados originais":"Raw sources"],
+          ["wiki-item-about",itemDbText(lang,"Overview")],
+          ["wiki-item-crafting",itemDbText(lang,"Crafting")],
+          ["wiki-item-used-by",itemDbText(lang,"Used in recipes")],
+          ["wiki-item-monsters",itemDbText(lang,"Monsters")],
+          ["wiki-item-technical",itemDbText(lang,"Raw sources")],
         ];
         for(const [target,title] of targets){
           const link=node("a",title) as HTMLAnchorElement;
@@ -1008,15 +940,15 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
             link.addEventListener("click",()=>{const d=document.getElementById(target) as HTMLDetailsElement|null;if(d)d.open=true;});
           jump.append(link);
         }
-        const codex=node("a",pt?"Abrir no códice de drops":"Open in loot codex") as HTMLAnchorElement;
+        const codex=node("a",itemDbText(lang,"Open in loot codex")) as HTMLAnchorElement;
         codex.href=prefix+"/monsters/?item="+encodeURIComponent(id);
         jump.append(codex);
-        const planner=node("a",pt?"Calcular materiais":"Calculate materials") as HTMLAnchorElement;
+        const planner=node("a",itemDbText(lang,"Calculate materials")) as HTMLAnchorElement;
         planner.href=prefix+"/tools/crafting/?id="+encodeURIComponent(id);
         jump.append(planner);
         details.prepend(jump);
       }catch{
-        details.replaceChildren(node("p",pt?"Não foi possível carregar o arquivo deste ID.":"Could not load the client source shard for this ID.","subtle"));
+        details.replaceChildren(node("p",itemDbText(lang,"Could not load the client source shard for this ID."),"subtle"));
       }
       detail.scrollIntoView({behavior:"smooth",block:"start"});
     }
@@ -1084,7 +1016,7 @@ const title=pt?"Banco completo de itens do cliente":"Full client item database";
         const deepLink=new URL(location.href).searchParams.get("id");
         if(deepLink)void openItem(deepLink,false);
       }catch{
-        status.textContent=pt?"Falha ao carregar ou validar o índice completo. Confira os dados publicados.":"Could not load or verify the full client index. Check the published source data.";
+        status.textContent=itemDbText(lang,"Could not load or verify the full client index. Check the published source data.");
       }
     })();
   }
