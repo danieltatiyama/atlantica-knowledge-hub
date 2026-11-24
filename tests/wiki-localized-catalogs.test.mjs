@@ -44,7 +44,7 @@ test("localized listing routes preserve locale and unsupported detail paths do n
 test("equipment raw values and English identity remain unchanged and editorial fallback is gated",()=>{
  const catalog=read("src/components/ItemCatalogPage.astro");
  assert.ok(catalog.includes('const prefix=localePrefix(legacyLocale(lang))'));
- assert.ok(catalog.includes('href={prefix + "/items/" + item.id + "/"}'));
+ assert.ok(catalog.includes('href={equipmentProfilePath(lang,item.id,item.reviewed)}'));
  assert.ok(catalog.includes('{item.nameEn}'));
  assert.ok(catalog.includes('data-category={item.sourceIndex.category}'));
  assert.ok(catalog.includes('data-level={item.sourceIndex.rawLevel??""}'));
