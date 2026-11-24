@@ -450,7 +450,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - A substituta mantém as dimensões **129×399**, é um PNG indexado otimizado a partir da imagem fornecida e possui Git blob SHA `c0341bdaa2f9a4748ec8d26e7b7118f58363c96d`. As outras 15 capturas permanecem idênticas e inalteradas; testes foram ajustados para exatamente 16 referências compartilhadas.
 - A `dev/i18n` usada pelo Pages CMS também precisa trocar a referência do guia para a nova imagem, disponibilizar o mesmo blob e excluir o antigo `public/images/guides/image-1.png` (referência genérica sem outros artigos dependentes), evitando uma republicação involuntária da captura antiga.
 - A exclusão da árvore atual **não reescreve histórico Git**, versões já publicadas ou caches externos antigos; não afirmar eliminação retroativa de todos os vestígios. Para remoção retroativa desses locais seria necessário um procedimento separado de privacidade e purga do histórico/cache.
-- Confirmar CI, integração dos dois PRs, atualização do deploy Cloudflare e que a imagem segura aparece em EN/PT-BR no site; verificar se o URL antigo da imagem retorna 404 após a publicação.
+- Confirmar CI e integração do [PR #103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) na main e do [PR #104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104) em dev/i18n, atualização do deploy Cloudflare e que a imagem segura aparece em EN/PT-BR no site; verificar se o URL antigo da imagem retorna 404 após a publicação.
 
 ## 7. Histórico das etapas recentes
 
@@ -483,7 +483,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 | 20.70 | [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93), [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94), [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) | Guia VIP aprovado/publicado no código; Pages CMS com ação de envio por PR para main e imagens específicas por guia |
 | 20.71 | [#99](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99) | Tradução integral VIP System em PT-BR, sem duplicação das 16 imagens e com navegação EN/PT-BR |
 | 20.72 | [#101](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/101) | Lightbox global para imagens de artigos, zoom, controles de teclado, navegação e temas |
-| 20.73 | PR em preparação | Substituição da primeira captura VIP por versão sem dados do jogador; atualização dos dois idiomas e do CMS |
+| 20.73 | [#103](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/103) + [#104](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/104) | Substituição da primeira captura VIP por versão sem dados do jogador; atualização dos dois idiomas e da fonte do CMS |
 
 Verificar no GitHub quais dos PRs listados já foram integrados à `main`; o último pode ainda estar em revisão.
 
