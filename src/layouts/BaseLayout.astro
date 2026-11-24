@@ -1,5 +1,7 @@
 
 ---
+import {sharedText} from "../i18n/shared-ui.mjs";
+import {isLocale} from "../i18n/locales.mjs";
 import "@fontsource/marcellus/400.css";
 
 import "@fontsource/source-sans-3/400.css";
@@ -26,11 +28,12 @@ interface Props {
 
 const {
   title,
-  description = "A community knowledge hub for Atlantica Online.",
+  description,
   lang = "en",
   alternatePaths,
 } = Astro.props;
 
+const uiLang = (isLocale(lang) ? lang : "en") as Lang;
 const siteUrl = Astro.site;
 
 if (!siteUrl) {
@@ -59,7 +62,7 @@ const alternateLinks = Object.entries(alternatePaths ?? {})
       name="viewport"
       content="width=device-width, initial-scale=1"
     />
-    <meta name="description" content={description} />
+    <meta name="description" content={description ?? sharedText(uiLang,"A community knowledge hub for Atlantica Online.")} />
     <!-- Apply saved appearance before first paint to avoid a theme flash.
          Atlantica remains the default, even when the OS prefers light. -->
     <script is:inline>
@@ -118,8 +121,8 @@ const alternateLinks = Object.entries(alternatePaths ?? {})
 
     <slot />
 
-    <FloatingWikiNavigator lang={lang === "pt-br" ? "pt-br" : "en"} />
-    <ArticleImageLightbox lang={lang === "pt-br" ? "pt-br" : "en"} />
+    <FloatingWikiNavigator lang={uiLang} />
+    <ArticleImageLightbox lang={uiLang} />
 
     <Footer />
   </body>
