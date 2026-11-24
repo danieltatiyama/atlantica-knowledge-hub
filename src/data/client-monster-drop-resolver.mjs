@@ -55,10 +55,12 @@ export function estimatedTwoStagePercent(referenceRate,itemRate){
   return (ref*drop)/1000000;
 }
 
+import {isLocale,localeTag} from "../i18n/locales.mjs";
+
 export function formatLevelResolvedPercent(value,lang="en"){
   if(value===null||!Number.isFinite(value)||value<0||value>100)return "—";
   const decimals=value>=1?2:value>=0.01?4:6;
-  return new Intl.NumberFormat(lang==="pt-br"?"pt-BR":"en-US",{
+  return new Intl.NumberFormat(lang==="en"||!isLocale(lang)?"en-US":localeTag(lang),{
     maximumFractionDigits:decimals,
   }).format(value)+"%";
 }
