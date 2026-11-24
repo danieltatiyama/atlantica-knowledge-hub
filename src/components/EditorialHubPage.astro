@@ -1,30 +1,30 @@
 ---
+import {catalogText} from "../i18n/catalog-ui.mjs";
+import {localePrefix,legacyLocale,localizedPaths,localeTag} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 
-interface Props { lang: "en" | "pt-br"; domain: "events" | "mercenaries"; }
+interface Props { lang: Lang; domain: "events" | "mercenaries"; }
 const { lang, domain } = Astro.props;
-const isPt = lang === "pt-br";
+const contentLang=legacyLocale(lang);
+const fallback=contentLang!==lang;
 const isEvents = domain === "events";
-const heading = isEvents ? (isPt ? "Eventos e Atualizações" : "Events & Updates")
-  : (isPt ? "Mercenários" : "Mercenaries");
+const heading = isEvents ? (catalogText(lang,"Events & Updates"))
+  : (catalogText(lang,"Mercenaries"));
 const intro = isEvents
-  ? (isPt ? "Calendário editorial de eventos, passes, desafios e atualizações verificados."
-    : "Editorial catalog of verified events, passes, challenges, and updates.")
-  : (isPt ? "Informações revisadas sobre os mercenários e suas mecânicas."
-    : "Reviewed information about mercenaries and their mechanics.");
-const caution = isPt
-  ? "Somente conteúdos revisados aparecem aqui. Datas e itens encontrados apenas nos arquivos do cliente não comprovam disponibilidade no servidor."
-  : "Only reviewed content appears here. Dates and items found only in client files do not establish server availability.";
+  ? (catalogText(lang,"Editorial catalog of verified events, passes, challenges, and updates."))
+  : (catalogText(lang,"Reviewed information about mercenaries and their mechanics."));
+const caution = catalogText(lang,"Only reviewed content appears here. Dates and items found only in client files do not establish server availability.");
 const events = (await getCollection("events", ({ data }) =>
-  !data.draft && data.reviewStatus === "approved" && data.evidenceStatus !== "client-config" && data.lang === lang
+  !data.draft && data.reviewStatus === "approved" && data.evidenceStatus !== "client-config" && data.lang === contentLang
 )).map(({ id, data }) => ({
   title: data.title, description: data.description, slug: id.replace(/^[^/]+\//, ""),
   kind: data.kind, updatedAt: data.updatedAt, extra: "",
   dateRange: [data.startsAt, data.endsAt].filter(Boolean).join(" — "),
 }));
 const mercenaries = (await getCollection("mercenaries", ({ data }) =>
-  !data.draft && data.reviewStatus === "approved" && data.evidenceStatus !== "client-config" && data.lang === lang
+  !data.draft && data.reviewStatus === "approved" && data.evidenceStatus !== "client-config" && data.lang === contentLang
 )).map(({ id, data }) => ({
   title: data.title, description: data.description, slug: id.replace(/^[^/]+\//, ""),
   kind: "mercenary", updatedAt: data.updatedAt, extra: data.weaponType ?? "",
@@ -32,24 +32,25 @@ const mercenaries = (await getCollection("mercenaries", ({ data }) =>
 }));
 const records = (isEvents ? events : mercenaries)
   .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-const root = (isPt ? "/pt-br" : "") + "/" + domain + "/";
-const alternatePaths = { en: "/" + domain + "/", "pt-br": "/pt-br/" + domain + "/" };
+const root=localePrefix(contentLang)+"/"+domain+"/";
+const alternatePaths=localizedPaths("/"+domain+"/");
 const types = ["event", "pass", "challenge", "promotion", "update"];
-const searchLabel = isPt ? "Pesquisar pelo nome" : "Search by name";
-const emptyLabel = isPt ? "Ainda não há artigos publicados nesta seção." : "No articles have been published in this section yet.";
-const noneLabel = isPt ? "Nenhum resultado corresponde ao filtro." : "No results match the filter.";
+const searchLabel = catalogText(lang,"Search by name");
+const emptyLabel = catalogText(lang,"No articles have been published in this section yet.");
+const noneLabel = catalogText(lang,"No results match the filter.");
 ---
 <BaseLayout title={heading + " | Atlantica Knowledge Hub"} description={intro} lang={lang} alternatePaths={alternatePaths}>
   <main class="container">
-    <nav class="crumb" aria-label="Breadcrumb">
-      <a href={isPt ? "/pt-br/" : "/"}>{isPt ? "Início" : "Home"}</a>
+    <nav class="crumb" aria-label={catalogText(lang,"Breadcrumb")}>
+      <a href={localePrefix(lang)+"/"}>{catalogText(lang,"Home")}</a>
       <span>/</span> {heading}
     </nav>
     <header class="intro">
-      <p class="eyebrow">{isPt ? "BASE DE CONHECIMENTO" : "KNOWLEDGE BASE"}</p>
+      <p class="eyebrow">{catalogText(lang,"KNOWLEDGE BASE")}</p>
       <h1>{heading}</h1>
       <p>{intro}</p>
       <p class="caution">{caution}</p>
+      {fallback && records.length>0 && <p class="caution">{catalogText(lang,"English articles are shown until reviewed translations are available.")}</p>}
     </header>
     <section aria-label={heading} class="catalog">
       <div class="filters">
@@ -59,25 +60,25 @@ const noneLabel = isPt ? "Nenhum resultado corresponde ao filtro." : "No results
         </label>
         {isEvents && (
           <label class="field">
-            <span>{isPt ? "Categoria" : "Type"}</span>
+            <span>{catalogText(lang,"Type")}</span>
             <select data-editorial-filter>
-              <option value="">{isPt ? "Todos os tipos" : "All types"}</option>
-              {types.map((type) => <option value={type}>{type}</option>)}
+              <option value="">{catalogText(lang,"All types")}</option>
+              {types.map((type) => <option value={type}>{catalogText(lang,type)}</option>)}
             </select>
           </label>
         )}
       </div>
       <p class="count" aria-live="polite">
         <span data-editorial-count>{records.length}</span>
-        {isPt ? " artigos" : " articles"}
+        {catalogText(lang," articles")}
       </p>
       <div class="grid">
         {records.map((entry) => (
           <article class="entry" data-editorial-entry data-kind={entry.kind}
             data-query={(entry.title + " " + entry.description).toLowerCase()}>
-            <span class="kind">{entry.extra || entry.kind}</span>
-            <h2><a href={root + entry.slug + "/"}>{entry.title}</a></h2>
-            <p>{entry.description}</p>
+            <span class="kind">{entry.extra || catalogText(lang,entry.kind)}</span>
+            <h2 lang={localeTag(contentLang)}><a href={root + entry.slug + "/"} hreflang={localeTag(contentLang)}>{entry.title}</a></h2>
+            <p lang={localeTag(contentLang)}>{entry.description}</p>
             {entry.dateRange && <small>{entry.dateRange}</small>}
           </article>
         ))}

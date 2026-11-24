@@ -482,6 +482,12 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - O relatório distingue cobertura publicada, sincronização por hash, tradução manual e candidatos de revisão. Rascunhos ingleses e mudanças não integradas do CMS ficam fora. Nenhuma tradução existente foi modificada.
 - Testes: `tests/guide-editorial-status.test.mjs`, export real no CI. Conferir PRs, CI e a ação real no Pages CMS antes de declarar o fluxo validado visualmente.
 
+### Stage 20.80a — Primeiras listagens de catálogos multilíngues
+
+- Catálogo de equipamentos, eventos e mercenários possuem listagens para oito idiomas, com 58 mensagens em `src/i18n/catalog-ui.mjs`. Home, cabeçalho e seletor usam as rotas localizadas declaradas em `LOCALIZED_CATALOG_PATHS`.
+- Preservados os 2.462 IDs, nomes em inglês, categorias brutas, valores, filtros e ordenação. Fichas de equipamentos, boxes, pesquisa lendária, banco completo de itens e monstros permanecem EN/PT-BR. As listagens avisam sobre páginas e nomes em inglês; eventos e mercenários exibem somente artigos aprovados e verificados, em inglês para idiomas adicionais.
+- Testes de cobertura, rotas, fonte e HTML gerado em `tests/wiki-localized-catalogs.test.mjs` e `scripts/check-built-guide-locales.mjs`. Não declarar a Stage 20.80 integralmente concluída: próximos incrementos são banco completo de itens, monstros/drops, fichas e boxes. Nomes oficiais por idioma dependem de fonte de localização verificada.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |

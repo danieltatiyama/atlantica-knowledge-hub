@@ -2,7 +2,7 @@
 import {sharedText} from "../i18n/shared-ui.mjs";
 
 import { getCollection } from "astro:content";
-import { LOCALE_IDS, LOCALE_NAMES, languageDestination, legacyLocale, localePrefix } from "../i18n/locales.mjs";
+import { LOCALE_IDS, LOCALE_NAMES, languageDestination, legacyLocale, localePrefix, catalogPath } from "../i18n/locales.mjs";
 import type { Lang } from "../i18n/ui";
 import { chromeText } from "../i18n/chrome";
 import GlobalSearch from "./GlobalSearch.astro";
@@ -14,9 +14,9 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const homeHref = lang === "en" ? "/" : `/${lang}/`;
 const guidesHref = lang === "en" ? "/guides/" : `/${lang}/guides/`;
-const eventsHref = localePrefix(legacyLocale(lang))+"/events/";
-const mercenariesHref = localePrefix(legacyLocale(lang))+"/mercenaries/";
-const itemsHref = localePrefix(legacyLocale(lang))+"/items/";
+const eventsHref = catalogPath(lang,"/events/");
+const mercenariesHref = catalogPath(lang,"/mercenaries/");
+const itemsHref = catalogPath(lang,"/items/");
 const allItemsHref = localePrefix(legacyLocale(lang))+"/items/database/";
 const monstersHref = localePrefix(legacyLocale(lang))+"/monsters/";
 
