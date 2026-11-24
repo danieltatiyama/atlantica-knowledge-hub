@@ -1,0 +1,12 @@
+export type Locale = "en"|"pt-br"|"fr"|"de"|"es"|"ko"|"zh-hans"|"ja";
+export const LOCALE_IDS: readonly ["en","pt-br","fr","de","es","ko","zh-hans","ja"];
+export const NEW_GUIDE_LOCALES: readonly Locale[];
+export const LOCALE_NAMES: Readonly<Record<Locale,string>>;
+export function localeTag(lang: string): string;
+export function localePrefix(lang: Locale): string;
+export function isLocale(lang: unknown): lang is Locale;
+export function legacyLocale(lang: Locale): "en"|"pt-br";
+export function guidePath(lang: Locale,slug?:string):string;
+export function localizedPaths(path:string): Record<Locale,string>;
+export function browserLocale(value:unknown): Locale|null;
+export function languageDestination(input:{lang:Locale,path:string,guideAlternates?:Partial<Record<Locale,string>>}):string|null;
