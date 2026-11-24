@@ -31,11 +31,11 @@ test("Portuguese routes, accent folding and missing monster names are handled",(
   assert.equal(foldSearch("  CríaTÚra  "),"criatura");
   assert.equal(searchWikiRecords(records,"CharID 999")[0].id,"999");
 });
-test("item search uses localized routes while monster routes fall back safely",()=>{
+test("item and monster search use localized routes",()=>{
   for(const lang of ["fr","de","es","ko","zh-hans","ja"]){
     const records=buildWikiSearchRecords([items],[monsters],guides,lang);
     assert.equal(searchWikiRecords(records,"7080")[0].href,"/"+lang+"/items/database/?id=7080");
-    assert.equal(searchWikiRecords(records,"289")[0].href,"/monsters/?id=289");
+    assert.equal(searchWikiRecords(records,"289")[0].href,"/"+lang+"/monsters/?id=289");
   }
 });
 test("source indexes reject duplicates and unexpected data",()=>{
