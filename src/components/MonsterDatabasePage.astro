@@ -1,113 +1,111 @@
 ---
+import {monsterText} from "../i18n/monster-ui.mjs";
+import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import MonsterDropItemSearch from "./MonsterDropItemSearch.astro";
-interface Props{lang:"en"|"pt-br";}
+interface Props{lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
-const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and drop sources";
+const prefix=localePrefix(lang);
+const nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
+const title=monsterText(lang,"db","Client creatures and drop sources");
 ---
 <BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
-  description={pt?"Navegação por registros originais de criaturas, drops diretos e drops por grupos no cliente.":"Source-based creature catalog with original direct and grouped item drop references."}
-  alternatePaths={{en:"/monsters/", "pt-br":"/pt-br/monsters/"}}>
+  description={monsterText(lang,"db","Source-based creature catalog with original direct and grouped item drop references.")}
+  alternatePaths={localizedPaths("/monsters/")}>
   <main class="creature-db" id="creature-db" data-lang={lang} data-wiki-nav-root="true">
-    <nav class="breadcrumb"><a href={prefix+"/"}>{pt?"← Início":"← Home"}</a></nav>
+    <nav class="breadcrumb"><a href={prefix+"/"}>{monsterText(lang,"db","← Home")}</a></nav>
     <header class="bestiary-header">
       <div class="bestiary-heading">
         <div class="bestiary-crest" aria-hidden="true"><span>✥</span></div>
         <div>
-          <p class="eyebrow">ATLANTICA GLOBAL / NA · {pt?"BESTIÁRIO DO CLIENTE":"CLIENT BESTIARY"}</p>
+          <p class="eyebrow">ATLANTICA GLOBAL / NA · {monsterText(lang,"db","CLIENT BESTIARY")}</p>
           <h1>{title}</h1>
-          <p class="bestiary-description">{pt
-            ?"Explore criaturas, itens e relações de drops identificados na extração original do cliente."
-            :"Discover creatures, items and original game-client loot relationships."}</p>
+          <p class="bestiary-description">{monsterText(lang,"db","Discover creatures, items and original game-client loot relationships.")}</p>
         </div>
       </div>
-      <div class="bestiary-stats" aria-label={pt?"Cobertura da base":"Source database coverage"}>
-        <div><strong>4.351</strong><span>{pt?"IDs de criaturas/personagens":"Character IDs"}</span></div>
-        <div><strong>9.959</strong><span>{pt?"Drops diretos":"Direct source drops"}</span></div>
-        <div><strong>822</strong><span>{pt?"Itens com drops por nível":"Items with level-matched drops"}</span></div>
+      <div class="bestiary-stats" aria-label={monsterText(lang,"db","Source database coverage")}>
+        <div><strong>{nf.format(4351)}</strong><span>{monsterText(lang,"db","Character IDs")}</span></div>
+        <div><strong>{nf.format(9959)}</strong><span>{monsterText(lang,"db","Direct source drops")}</span></div>
+        <div><strong>822</strong><span>{monsterText(lang,"db","Items with level-matched drops")}</span></div>
       </div>
-      <p class="bestiary-description">{pt
-        ?"Nem todo registro representa um monstro enfrentável. As informações foram extraídas dos arquivos do cliente e não comprovam disponibilidade no servidor atual."
-        :"Not every client record represents a fightable monster. Client files do not establish current live-server availability."}</p>
-      <p class="warning">{pt
-        ?"Drops filtrados pela faixa de nível registrada no cliente. Percentuais estimados para drops de grupo combinam as duas taxas brutas, mas NÃO são chances comprovadas no servidor atual."
-        :"Possible drops are filtered by the original client level bracket. Estimated grouped rates combine two raw fields, but are NOT verified live-server probabilities."}</p>
+      <p class="bestiary-description">{monsterText(lang,"db","Not every client record represents a fightable monster. Client files do not establish current live-server availability.")}</p>
+      <p class="warning">{monsterText(lang,"db","Possible drops are filtered by the original client level bracket. Estimated grouped rates combine two raw fields, but are NOT verified live-server probabilities.")}</p>
     </header>
     <MonsterDropItemSearch lang={lang}/>
-    <section class="browse" aria-label={pt?"Pesquisar criaturas":"Search creatures"}>
+    <section class="browse" aria-label={monsterText(lang,"db","Search creatures")}>
       <div class="bestiary-section-head">
         <span class="section-ornament" aria-hidden="true">✦</span>
         <div>
-          <p class="eyebrow">{pt?"ARQUIVO DE CRIATURAS":"CREATURE ARCHIVE"}</p>
-          <h2>{pt?"Consultar pelo monstro":"Browse by creature"}</h2>
+          <p class="eyebrow">{monsterText(lang,"db","CREATURE ARCHIVE")}</p>
+          <h2>{monsterText(lang,"db","Browse by creature")}</h2>
         </div>
       </div>
       <div class="filters">
-        <label>{pt?"Nome original ou CharID":"Original name or CharID"}
+        <label>{monsterText(lang,"db","Original name or CharID")}
           <input id="creature-query" type="search" autocomplete="off"
-            placeholder={pt?"Pesquise por nome ou ID":"Search by name or ID"} disabled/>
+            placeholder={monsterText(lang,"db","Search by name or ID")} disabled/>
         </label>
-        <label>{pt?"Tipo original":"Raw entity category"}
+        <label>{monsterText(lang,"db","Raw entity category")}
           <select id="creature-kind" disabled>
-            <option value="">{pt?"Todas as categorias":"All source categories"}</option>
+            <option value="">{monsterText(lang,"db","All source categories")}</option>
           </select>
         </label>
-        <label>{pt?"Nível mínimo do cliente":"Minimum source level"}
+        <label>{monsterText(lang,"db","Minimum source level")}
           <input id="creature-level" type="number" min="0" step="1"
-            placeholder={pt?"Qualquer":"Any"} disabled/>
+            placeholder={monsterText(lang,"db","Any")} disabled/>
         </label>
-        <label>{pt?"Tipo de referência":"Loot references"}
+        <label>{monsterText(lang,"db","Loot references")}
           <select id="creature-loot-mode" disabled>
-            <option value="">{pt?"Todas as criaturas":"All creatures"}</option>
-            <option value="with">{pt?"Com possíveis drops":"With possible drops"}</option>
-            <option value="none">{pt?"Sem drops identificados":"No matched drops"}</option>
-            <option value="unresolved">{pt?"Com registros inconclusivos":"With unresolved records"}</option>
+            <option value="">{monsterText(lang,"db","All creatures")}</option>
+            <option value="with">{monsterText(lang,"db","With possible drops")}</option>
+            <option value="none">{monsterText(lang,"db","No matched drops")}</option>
+            <option value="unresolved">{monsterText(lang,"db","With unresolved records")}</option>
           </select>
         </label>
       </div>
-      <p class="subtle" id="creature-status" role="status">{pt
-        ?"Verificando se os registros originais de monstros já foram publicados…"
-        :"Checking whether the original creature and loot records have been published…"}</p>
+      <p class="subtle" id="creature-status" role="status">{monsterText(lang,"db","Checking whether the original creature and loot records have been published…")}</p>
       <div class="creature-table-scroll" id="creature-list" hidden>
         <table>
           <thead><tr>
-            <th>{pt?"Nome original em inglês":"Original English name"}</th>
+            <th>{monsterText(lang,"db","Original English name")}</th>
             <th>CharID</th>
-            <th>{pt?"Tipo do cliente":"Client category"}</th>
-            <th>{pt?"Nível bruto":"Raw level"}</th>
-            <th>{pt?"Itens possíveis":"Possible item rows"}</th>
+            <th>{monsterText(lang,"db","Client category")}</th>
+            <th>{monsterText(lang,"db","Raw level")}</th>
+            <th>{monsterText(lang,"db","Possible item rows")}</th>
           </tr></thead>
           <tbody id="creature-rows"></tbody>
         </table>
       </div>
       <div class="paging" id="creature-paging" hidden>
-        <button id="creature-prev" type="button" disabled>{pt?"Anterior":"Previous"}</button>
+        <button id="creature-prev" type="button" disabled>{monsterText(lang,"db","Previous")}</button>
         <span id="creature-pages"></span>
-        <button id="creature-next" type="button" disabled>{pt?"Próxima":"Next"}</button>
+        <button id="creature-next" type="button" disabled>{monsterText(lang,"db","Next")}</button>
       </div>
     </section>
     <section id="creature-detail" class="creature-detail" hidden>
       <div class="detail-header">
         <h2 id="creature-detail-name"></h2>
-        <button type="button" id="creature-close">{pt?"Fechar":"Close"}</button>
+        <button type="button" id="creature-close">{monsterText(lang,"db","Close")}</button>
       </div>
       <p id="creature-detail-meta" class="subtle"></p>
-      <div class="creature-facts" aria-label={pt?"Valores originais registrados":"Original recorded source values"}>
+      <div class="creature-facts" aria-label={monsterText(lang,"db","Original recorded source values")}>
         <div><span>CharID</span><strong id="creature-fact-id">—</strong></div>
-        <div><span>{pt?"Nível bruto":"Raw level"}</span><strong id="creature-fact-level">—</strong></div>
-        <div><span>{pt?"Itens possíveis":"Possible items"}</span><strong id="creature-fact-direct">—</strong></div>
-        <div><span>{pt?"Fontes inconclusivas":"Unresolved sources"}</span><strong id="creature-fact-groups">—</strong></div>
+        <div><span>{monsterText(lang,"db","Raw level")}</span><strong id="creature-fact-level">—</strong></div>
+        <div><span>{monsterText(lang,"db","Possible items")}</span><strong id="creature-fact-direct">—</strong></div>
+        <div><span>{monsterText(lang,"db","Unresolved sources")}</span><strong id="creature-fact-groups">—</strong></div>
       </div>
       <div id="creature-details"></div>
     </section>
   </main>
 </BaseLayout>
 <script>
+  import {monsterText} from "../i18n/monster-ui.mjs";
+  import {localePrefix,localeTag} from "../i18n/locales.mjs";
   import {formatLevelResolvedPercent,resolveClientCreatureDrops} from "../data/client-monster-drop-resolver.mjs";
   const root=document.querySelector<HTMLElement>("#creature-db");
   if(root){
-    const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+    const lang=root.dataset.lang??"en",prefix=localePrefix(lang);
     const $=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
     const query=$<HTMLInputElement>("creature-query");
     const kind=$<HTMLSelectElement>("creature-kind");
@@ -129,7 +127,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
     const factGroups=$<HTMLElement>("creature-fact-groups");
     const detailBody=$<HTMLElement>("creature-details");
     const close=$<HTMLButtonElement>("creature-close");
-    const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+    const nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
     const raw=(v:unknown)=>v===null||v===undefined?"—":String(v);
     const node=(tag:string,value?:string,cls?:string)=>{
       const n=document.createElement(tag);
@@ -184,9 +182,9 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       }
       const total=Math.ceil(visible.length/perPage);
       prev.disabled=page<1;next.disabled=page>=total-1;
-      pages.textContent=(pt?"Página ":"Page ")+(total?page+1:0)+"/"+total;
+      pages.textContent=(monsterText(lang,"db","Page "))+(total?page+1:0)+"/"+total;
       status.textContent=nf.format(visible.length)+" / "+nf.format(all.length)+
-        (pt?" registros de criaturas do cliente":" original client creature IDs");
+        (monsterText(lang,"db"," original client creature IDs"));
     }
     function applyFilters(){
       const q=query.value.toLocaleLowerCase().trim(),k=kind.value,rawMin=level.value;
@@ -217,10 +215,10 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       // Show the player what the selected-level source records indicate.
       // Raw GroupID, Band, Slot and original row IDs stay in View source.
       const tableNode=node("table"),head=node("thead"),h=node("tr"),body=node("tbody");
-      const headers=[pt?"Item possível":"Possible item",
-        pt?"Taxa estimada":"Estimated rate",
-        pt?"Quantidade":"Amount",
-        pt?"Origem dos dados":"Source evidence"];
+      const headers=[monsterText(lang,"db","Possible item"),
+        monsterText(lang,"db","Estimated rate"),
+        monsterText(lang,"db","Amount"),
+        monsterText(lang,"db","Source evidence")];
       for(const label of headers)h.append(node("th",label));
       head.append(h);tableNode.append(head);
       for(const source of entries){
@@ -229,25 +227,25 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         first.append(node("small","Item ID "+source.itemId,"client-source-id"));
         tr.append(first);
         const percent=node("td",undefined,"client-rate");
-        percent.append(node("strong",formatLevelResolvedPercent(source.estimatedPercent,pt?"pt-br":"en")));
+        percent.append(node("strong",formatLevelResolvedPercent(source.estimatedPercent,lang)));
         tr.append(percent);
         tr.append(node("td",raw(source.min)+"–"+raw(source.max),"client-amount"));
         const technical=node("td"),audit=node("details",undefined,"client-record-row");
-        audit.append(node("summary",pt?"Ver origem":"View source"));
+        audit.append(node("summary",monsterText(lang,"db","View source")));
         const dl=node("dl");
         const fields=source.kind==="direct"
           ?[["RawRate",raw(source.direct[3])],
-            [pt?"Registro original":"Source row","#"+raw(source.direct[0])],
+            [monsterText(lang,"db","Source row"),"#"+raw(source.direct[0])],
             ["Slot",raw(source.direct[4])]]
           :[["GroupID",raw(source.groupId)],
             ["Band",raw(source.selectedBand.band)],
             ["BandKey",raw(source.selectedBand.minimumLevel)],
-            ["RawRate "+(pt?"referência":"reference"),raw(source.groupRef[2])],
-            ["RawRate "+(pt?"item":"item"),raw(source.groupDrop[4])],
-            [pt?"Linha de referência":"Reference row","#"+raw(source.groupRef[0])],
-            [pt?"Linha do item":"Item source row","#"+raw(source.groupDrop[0])],
-            [pt?"Slot referência":"Reference slot",raw(source.groupRef[3])],
-            [pt?"Slot do item":"Item slot",raw(source.groupDrop[5])]];
+            ["RawRate "+(monsterText(lang,"db","reference")),raw(source.groupRef[2])],
+            ["RawRate "+(monsterText(lang,"db","item")),raw(source.groupDrop[4])],
+            [monsterText(lang,"db","Reference row"),"#"+raw(source.groupRef[0])],
+            [monsterText(lang,"db","Item source row"),"#"+raw(source.groupDrop[0])],
+            [monsterText(lang,"db","Reference slot"),raw(source.groupRef[3])],
+            [monsterText(lang,"db","Item slot"),raw(source.groupDrop[5])]];
         for(const [label,value] of fields){
           const box=node("div");box.append(node("dt",label),node("dd",value));
           dl.append(box);
@@ -267,15 +265,13 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       shownId=id;
       detail.hidden=false;
       detailName.textContent=entity[1]??("CharID "+id);
-      detailMeta.textContent=(pt?"Tipo registrado":"Recorded source kind")+": "+raw(entity[3])+
-        " · "+(pt?"Identidade":"Identity")+": "+entity[4];
+      detailMeta.textContent=(monsterText(lang,"db","Recorded source kind"))+": "+raw(entity[3])+
+        " · "+(monsterText(lang,"db","Identity"))+": "+entity[4];
       factId.textContent=id;
       factLevel.textContent=raw(entity[2]);
       factDirect.textContent="—";
       factGroups.textContent="—";
-      detailBody.replaceChildren(node("p",pt
-        ?"Carregando os registros de origem…"
-        :"Loading original source records…","subtle"));
+      detailBody.replaceChildren(node("p",monsterText(lang,"db","Loading original source records…"),"subtle"));
       if(navigate)history.pushState({},"","?id="+encodeURIComponent(id));
       try{
         const charFile=findFile("characters",id),lootFile=findFile("loot",id);
@@ -285,9 +281,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         ]);
         if(shownId!==id)return;
         const body=document.createDocumentFragment();
-        const intro=node("p",pt
-          ?"Definições extraídas do cliente; nem identidade de monstro ativo, nem chance de drop foram verificadas no servidor."
-          :"Extracted client source evidence. Active monster identity and item drop chances have not been verified on the server.","subtle");
+        const intro=node("p",monsterText(lang,"db","Extracted client source evidence. Active monster identity and item drop chances have not been verified on the server."),"subtle");
         body.append(intro);
         const original=character?.items?.[id]?.original??[];
         const miner=character?.items?.[id]?.miner??[];
@@ -300,11 +294,11 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         factDirect.textContent=nf.format(selected.rows.length);
         factGroups.textContent=nf.format(selected.unresolved.length);
         const quickActions=node("nav",undefined,"creature-profile-actions");
-        quickActions.setAttribute("aria-label",pt?"Navegação do monstro":"Creature navigation");
-        const dropsLink=node("a",pt?"Ver drops":"See possible drops") as HTMLAnchorElement;
+        quickActions.setAttribute("aria-label",monsterText(lang,"db","Creature navigation"));
+        const dropsLink=node("a",monsterText(lang,"db","See possible drops")) as HTMLAnchorElement;
         dropsLink.href="#creature-drop-"+id;
         quickActions.append(dropsLink);
-        const evidenceBtn=node("button",pt?"Mostrar fontes originais":"View original sources") as HTMLButtonElement;
+        const evidenceBtn=node("button",monsterText(lang,"db","View original sources")) as HTMLButtonElement;
         evidenceBtn.type="button";
         evidenceBtn.addEventListener("click",()=>{
           const originalSources=detailBody.querySelector<HTMLDetailsElement>(".community-creature-audit");
@@ -315,47 +309,34 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         const directSection=node("section",undefined,"community-drop-section");
         directSection.id="creature-drop-"+id;
         directSection.append(node("h3",
-          (pt?"Itens que podem aparecer":"Possible monster drops")+
+          (monsterText(lang,"db","Possible monster drops"))+
           " ("+nf.format(selected.rows.length)+")"));
-        directSection.append(node("p",pt
-          ?"Esta lista usa a faixa aplicável ao nível registrado da criatura. A combinação das taxas é uma estimativa identificada a partir do cliente, não uma chance confirmada no servidor."
-          :"This list uses the source bracket matching this creature's recorded level. Combined rates are game-client estimates, not verified live-server drop odds.","subtle"));
+        directSection.append(node("p",monsterText(lang,"db","This list uses the source bracket matching this creature's recorded level. Combined rates are game-client estimates, not verified live-server drop odds."),"subtle"));
         if(selected.rows.length)appendItemTable(directSection,selected.rows);
-        else directSection.append(node("p",pt
-          ?"Nenhum item pôde ser resolvido com os níveis e faixas deste snapshot. Isso não comprova ausência de drops no jogo."
-          :"No item was resolved from this snapshot's levels and brackets. That does not establish the creature has no in-game drops.","subtle"));
+        else directSection.append(node("p",monsterText(lang,"db","No item was resolved from this snapshot's levels and brackets. That does not establish the creature has no in-game drops."),"subtle"));
         body.append(directSection);
         if(selected.unresolved.length){
-          const uncertain=node("p",pt
-            ?"Algumas referências não possuem faixa compatível com o nível registrado e foram omitidas da lista principal. Consulte Dados originais para investigá-las."
-            :"Some source references have no matching level bracket and were excluded from the main item list. Review Original client records for details.","wiki-source-warning");
+          const uncertain=node("p",monsterText(lang,"db","Some source references have no matching level bracket and were excluded from the main item list. Review Original client records for details."),"wiki-source-warning");
           body.append(uncertain);
         }
         // Original Miner rows remain fully auditable but no longer interrupt
         // the player-first path from creature name to possible loot.
         const audit=node("details",undefined,"community-creature-audit");
         audit.dataset.wikiNavNative="true";
-        audit.append(node("summary",(pt?"Registros originais do cliente":"Original client records")+
+        audit.append(node("summary",(monsterText(lang,"db","Original client records"))+
           " ("+nf.format(original.length+miner.length)+")"));
-        audit.append(node("p",pt
-          ?"Estes registros servem para conferir as fontes. Campos internos e números de linha não são requisitos do jogador."
-          :"These rows are for checking the source. Internal values and row numbers are not player requirements.","subtle"));
+        audit.append(node("p",monsterText(lang,"db","These rows are for checking the source. Internal values and row numbers are not player requirements."),"subtle"));
         if(original.length){
-          audit.append(node("h4",pt?"Definições da criatura":"Creature source definitions"));
+          audit.append(node("h4",monsterText(lang,"db","Creature source definitions")));
           audit.append(table([
-            pt?"Registro":"Source row",pt?"Nome em inglês":"English name",
-            pt?"Nível registrado":"Recorded level",pt?"Tipo":"Source type"
+            monsterText(lang,"db","Source row"),monsterText(lang,"db","English name"),
+            monsterText(lang,"db","Recorded level"),monsterText(lang,"db","Source type")
           ],original));
-        }else audit.append(node("p",pt
-          ?"Não há registros Characters.csv para este ID."
-          :"No Characters.csv rows were published for this ID.","subtle"));
+        }else audit.append(node("p",monsterText(lang,"db","No Characters.csv rows were published for this ID."),"subtle"));
         if(rawLoot.groups?.length){
           const groupAudit=node("details",undefined,"source-band-details");
-          groupAudit.append(node("summary",pt
-            ?"Referências técnicas de grupos e faixas":"Technical source groups and level brackets"));
-          groupAudit.append(node("p",pt
-            ?"A wiki usa o maior BandKey menor ou igual ao nível registrado. Essa regra reproduz os seis drops do Huge Crocodile em capturas do jogo, mas pode não cobrir todas as regras do servidor."
-            :"The wiki selects the greatest BandKey not above the recorded creature level. This matches the six Huge Crocodile drops in game screenshots, but might not cover every server rule.","subtle"));
+          groupAudit.append(node("summary",monsterText(lang,"db","Technical source groups and level brackets")));
+          groupAudit.append(node("p",monsterText(lang,"db","The wiki selects the greatest BandKey not above the recorded creature level. This matches the six Huge Crocodile drops in game screenshots, but might not cover every server rule."),"subtle"));
           const technicalRows=rawLoot.groups.map(ref=>{
             const group=groupData[ref[1]];
             const selectedBand=group?.bands?.filter(b=>Number(b[2])<=Number(entity[2]))
@@ -367,17 +348,17 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
               selectedBand?selectedBand[4]:"—"];
           });
           groupAudit.append(table([
-            pt?"Linha":"Row","GroupID","RawRate",
+            monsterText(lang,"db","Row"),"GroupID","RawRate",
             "Band","BandKey","EntryCount","RawSum"
           ],technicalRows));
           audit.append(groupAudit);
         }
         if(miner.length){
           const extra=node("details",undefined,"source-band-details");
-          extra.append(node("summary",pt?"Outros metadados do Miner":"Additional Miner fields"));
+          extra.append(node("summary",monsterText(lang,"db","Additional Miner fields")));
           extra.append(table([
-            pt?"Linha":"Row",pt?"Código":"Code",pt?"Nome":"Name",
-            pt?"Arquivo":"File",pt?"Nível":"Level",pt?"Grade":"Grade"
+            monsterText(lang,"db","Row"),monsterText(lang,"db","Code"),monsterText(lang,"db","Name"),
+            monsterText(lang,"db","File"),monsterText(lang,"db","Level"),monsterText(lang,"db","Grade")
           ],miner));
           audit.append(extra);
         }
@@ -386,9 +367,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         detailBody.replaceChildren(body);
         detail.scrollIntoView({behavior:"smooth",block:"start"});
       }catch{
-        if(shownId===id)detailBody.replaceChildren(node("p",pt
-          ?"Não foi possível validar os registros de origem para esta criatura."
-          :"Original creature records could not be loaded or validated.","subtle"));
+        if(shownId===id)detailBody.replaceChildren(node("p",monsterText(lang,"db","Original creature records could not be loaded or validated."),"subtle"));
       }
     }
     close.addEventListener("click",()=>{
@@ -409,9 +388,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
       try{
         const response=await fetch("/data/client-monsters/manifest.json");
         if(!response.ok){
-          status.textContent=pt
-            ?"Importação original pendente. As páginas e os links estão preparados; aguardamos o pacote revisado de Characters.csv e drops."
-            :"Original data import pending. Catalog pages and item links are ready for the reviewed character/drop package.";
+          status.textContent=monsterText(lang,"db","Original data import pending. Catalog pages and item links are ready for the reviewed character/drop package.");
           return;
         }
         manifest=await response.json();
@@ -448,9 +425,7 @@ const title=pt?"Criaturas e fontes de drops do cliente":"Client creatures and dr
         const selected=new URL(location.href).searchParams.get("id");
         if(selected)void openCreature(selected,false);
       }catch{
-        status.textContent=pt
-          ?"Os arquivos de criaturas não passaram pela verificação de estrutura."
-          :"Original creature sources were missing or failed structural validation.";
+        status.textContent=monsterText(lang,"db","Original creature sources were missing or failed structural validation.");
       }
     })();
   }
