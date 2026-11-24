@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {sharedText} from "../src/i18n/shared-ui.mjs";
+import {LOCALE_IDS} from "../src/i18n/locales.mjs";
 import {
  MIN_LIGHTBOX_ZOOM,MAX_LIGHTBOX_ZOOM,clampLightboxZoom,
  cycleLightboxIndex,fitLightboxImage,
@@ -57,7 +59,7 @@ test("lightbox mounts exactly once globally and is scoped to article content",()
  assert.ok(!viewer.includes("document.querySelectorAll<HTMLImageElement>(\"img\")"));
 });
 
-test("accessible bilingual dialog provides zoom, keyboard and pointer navigation",()=>{
+test("accessible multilingual dialog provides zoom, keyboard and pointer navigation",()=>{
  const viewer=read("src/components/ArticleImageLightbox.astro");
  for(const marker of [
   'role="dialog"','aria-modal="true"','aria-labelledby="wiki-lightbox-title"',
@@ -69,14 +71,18 @@ test("accessible bilingual dialog provides zoom, keyboard and pointer navigation
   'dialog.hidden=false','dialog.hidden=true','closeButton.focus(',
   'window.addEventListener("resize"','event.preventDefault()',
   '{passive:false}','aria-live="polite"',
-  'Ampliar imagem','Expand image','Aumentar zoom','Zoom in',
-  'Fechar visualizador de imagens','Close image viewer',
+  'sharedText(lang,"Expand image")','sharedText(lang,"Zoom in")',
+  'sharedText(lang,"Close image viewer")',
   'Math.max(stage.clientWidth,size.width+16)',
   'Math.max(stage.clientHeight,size.height+16)',
   'overscroll-behavior:contain',
   '@media(max-width:660px)',
  ]){
   assert.ok(viewer.includes(marker),"Missing lightbox control: "+marker);
+ }
+ for(const [key,pt] of [["Expand image","Ampliar imagem"],["Zoom in","Aumentar zoom"],["Close image viewer","Fechar visualizador de imagens"]]){
+  assert.equal(sharedText("pt-br",key),pt);
+  for(const lang of LOCALE_IDS)assert.ok(sharedText(lang,key).trim(),lang+" "+key);
  }
  assert.ok(viewer.includes('if(dialog)'),"No-page compatibility");
  assert.ok(viewer.includes('dialog.querySelectorAll<HTMLButtonElement>("button:not([disabled])")'),

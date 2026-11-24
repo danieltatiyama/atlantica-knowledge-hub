@@ -1,4 +1,5 @@
 ---
+import {sharedText} from "../i18n/shared-ui.mjs";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
@@ -133,7 +134,7 @@ const relatedGuides = categoryGuides
   alternatePaths={alternatePaths}
 >
   <main class="container" data-wiki-nav-root="true">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <nav class="breadcrumbs" aria-label={sharedText(lang,"Breadcrumb")}>
       <a href={homeHref}>{t("nav.home")}</a>
       <span>/</span>
       <a href={guidesHref}>{t("nav.guides")}</a>

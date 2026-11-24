@@ -1,52 +1,52 @@
 ---
-interface Props {lang:"en"|"pt-br";}
+import {sharedText,sectionAction} from "../i18n/shared-ui.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br";
 ---
 <aside id="wiki-float-nav" class="wiki-float-nav" data-side="right" data-lang={lang} hidden>
   <div class="wiki-nav-title">
-    <strong>{pt?"Nesta página":"On this page"}</strong>
+    <strong>{sharedText(lang,"On this page")}</strong>
     <button id="wiki-nav-hide" type="button"
-      title={pt?"Esconder navegação":"Hide navigation"}
-      aria-label={pt?"Esconder navegação":"Hide navigation"}>×</button>
+      title={sharedText(lang,"Hide navigation")}
+      aria-label={sharedText(lang,"Hide navigation")}>×</button>
   </div>
   <div class="wiki-nav-controls" role="group"
-    aria-label={pt?"Posição da navegação":"Navigation position"}>
+    aria-label={sharedText(lang,"Navigation position")}>
     <button id="wiki-nav-left" type="button" aria-pressed="false">
-      <span aria-hidden="true">←</span> {pt?"Esquerda":"Left"}
+      <span aria-hidden="true">←</span> {sharedText(lang,"Left")}
     </button>
     <button id="wiki-nav-right" type="button" aria-pressed="true">
-      {pt?"Direita":"Right"} <span aria-hidden="true">→</span>
+      {sharedText(lang,"Right")} <span aria-hidden="true">→</span>
     </button>
   </div>
-  <nav aria-label={pt?"Índice das seções":"Section table of contents"}>
+  <nav aria-label={sharedText(lang,"Section table of contents")}>
     <div class="wiki-nav-group" id="wiki-nav-overview-group">
-      <p>{pt?"Explorar":"Explore"}</p>
+      <p>{sharedText(lang,"Explore")}</p>
       <ol id="wiki-nav-overview"></ol>
     </div>
     <div class="wiki-nav-group" id="wiki-nav-detail-group" hidden>
-      <p>{pt?"Ficha aberta":"Open profile"}</p>
+      <p>{sharedText(lang,"Open profile")}</p>
       <ol id="wiki-nav-detail"></ol>
     </div>
   </nav>
-  <p class="wiki-nav-hint">{pt
-    ?"Use +/− nos títulos para recolher ou expandir seções."
-    :"Use +/− beside headings to collapse or expand sections."}</p>
+  <p class="wiki-nav-hint">{sharedText(lang,"Use +/− beside headings to collapse or expand sections.")}</p>
 </aside>
 <button id="wiki-nav-reopen" class="wiki-nav-reopen" type="button" hidden
   aria-controls="wiki-float-nav"
-  aria-label={pt?"Mostrar navegação de seções":"Show section navigation"}
-  title={pt?"Mostrar navegação de seções":"Show section navigation"}>
+  aria-label={sharedText(lang,"Show section navigation")}
+  title={sharedText(lang,"Show section navigation")}>
   <span aria-hidden="true">☰</span>
-  <span>{pt?"Índice":"Contents"}</span>
+  <span>{sharedText(lang,"Contents")}</span>
 </button>
 
 <script>
+  import {sharedText,sectionAction} from "../i18n/shared-ui.mjs";
   const panel=document.getElementById("wiki-float-nav") as HTMLElement|null;
   const reopen=document.getElementById("wiki-nav-reopen") as HTMLButtonElement|null;
   const root=document.querySelector<HTMLElement>("main[data-wiki-nav-root]");
   if(panel&&reopen&&root){
-    const pt=panel.dataset.lang==="pt-br";
+    const lang=panel.dataset.lang??"en";
     const left=document.getElementById("wiki-nav-left") as HTMLButtonElement;
     const right=document.getElementById("wiki-nav-right") as HTMLButtonElement;
     const hide=document.getElementById("wiki-nav-hide") as HTMLButtonElement;
@@ -153,11 +153,9 @@ const pt=lang==="pt-br";
         const header=section.querySelector<HTMLElement>("h2,h3,h4");
         button.textContent=collapsed?"+":"−";
         button.setAttribute("aria-expanded",String(!collapsed));
-        button.setAttribute("aria-label",(collapsed
-          ?(pt?"Expandir ":"Expand "):(pt?"Recolher ":"Collapse "))+
-          (header?labelFor(header):(pt?"seção":"section")));
-        button.title=collapsed?(pt?"Expandir seção":"Expand section")
-          :(pt?"Recolher seção":"Collapse section");
+        button.setAttribute("aria-label",sectionAction(lang,collapsed,header?labelFor(header):sharedText(lang,"section")));
+        button.title=collapsed?(sharedText(lang,"Expand section"))
+          :(sharedText(lang,"Collapse section"));
       }
       schedule();
     };
@@ -243,20 +241,19 @@ const pt=lang==="pt-br";
           if(!content.childNodes.length){content.remove();continue;}
           const btn=document.createElement("button");
           btn.type="button";btn.className="wiki-section-toggle";
-          btn.textContent="−";btn.title=pt?"Recolher seção":"Collapse section";
+          btn.textContent="−";btn.title=sharedText(lang,"Collapse section");
           btn.setAttribute("aria-expanded","true");
           btn.setAttribute("aria-controls",content.id);
-          btn.setAttribute("aria-label",(pt?"Recolher ":"Collapse ")+labelFor(heading));
+          btn.setAttribute("aria-label",sectionAction(lang,false,labelFor(heading)));
           heading.append(btn);
           btn.addEventListener("click",()=>{
             content.hidden=!content.hidden;
             const collapsed=content.hidden;
             btn.textContent=collapsed?"+":"−";
-            btn.title=collapsed?(pt?"Expandir seção":"Expand section")
-              :(pt?"Recolher seção":"Collapse section");
+            btn.title=collapsed?(sharedText(lang,"Expand section"))
+              :(sharedText(lang,"Collapse section"));
             btn.setAttribute("aria-expanded",String(!collapsed));
-            btn.setAttribute("aria-label",(collapsed
-              ?(pt?"Expandir ":"Expand "):(pt?"Recolher ":"Collapse "))+labelFor(heading));
+            btn.setAttribute("aria-label",sectionAction(lang,collapsed,labelFor(heading)));
             schedule();
           });
           if(tag==="H2")groupHeadings(content,"H3");

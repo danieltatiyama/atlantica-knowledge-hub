@@ -1,10 +1,10 @@
 ---
+import {sharedText} from "../i18n/shared-ui.mjs";
 import {getCollection} from "astro:content";
 import type { Lang } from "../i18n/ui";
 import { guidePath } from "../i18n/locales.mjs";
 interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br";
 const guides=(await getCollection("guides",({data})=>!data.draft&&data.lang===lang))
   .map(guide=>({
     title:guide.data.title,
@@ -14,43 +14,43 @@ const guides=(await getCollection("guides",({data})=>!data.draft&&data.lang===la
 const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
 ---
 <dialog id="wiki-global-search" class="wiki-global-search" data-lang={lang}
-  aria-label={pt?"Busca global da Wiki":"Wiki global search"}>
+  aria-label={sharedText(lang,"Wiki global search")}>
   <div class="wiki-search-top">
-    <h2>{pt?"Pesquisar na Wiki":"Search the Wiki"}</h2>
+    <h2>{sharedText(lang,"Search the Wiki")}</h2>
     <form method="dialog">
-      <button type="submit" class="wiki-search-close" aria-label={pt?"Fechar busca":"Close search"}>×</button>
+      <button type="submit" class="wiki-search-close" aria-label={sharedText(lang,"Close search")}>×</button>
     </form>
   </div>
-  <label for="wiki-search-query">{pt?"Nome ou ID do item, monstro ou guia":"Item, monster or guide name or ID"}</label>
+  <label for="wiki-search-query">{sharedText(lang,"Item, monster or guide name or ID")}</label>
   <input type="search" id="wiki-search-query" autocomplete="off"
-    placeholder={pt?"Ex.: Silver Thread, Huge Crocodile, 7080":"e.g. Silver Thread, Huge Crocodile, 7080"}
+    placeholder={sharedText(lang,"e.g. Silver Thread, Huge Crocodile, 7080")}
     aria-controls="wiki-search-results" />
   <div class="wiki-search-options">
-    <label for="wiki-search-kind">{pt?"Categoria":"Category"}</label>
+    <label for="wiki-search-kind">{sharedText(lang,"Category")}</label>
     <select id="wiki-search-kind">
-      <option value="all">{pt?"Todas":"All"}</option>
-      <option value="item">{pt?"Itens":"Items"}</option>
-      <option value="monster">{pt?"Monstros":"Monsters"}</option>
-      <option value="guide">{pt?"Guias":"Guides"}</option>
+      <option value="all">{sharedText(lang,"All")}</option>
+      <option value="item">{sharedText(lang,"Items")}</option>
+      <option value="monster">{sharedText(lang,"Monsters")}</option>
+      <option value="guide">{sharedText(lang,"Guides")}</option>
     </select>
   </div>
   <p id="wiki-search-status" role="status" aria-live="polite">
-    {pt?"Digite pelo menos 2 caracteres.":"Enter at least 2 characters."}
+    {sharedText(lang,"Enter at least 2 characters.")}
   </p>
   <ul id="wiki-search-results"></ul>
-  <p class="wiki-search-footnote">{pt
-    ?"Os nomes e IDs são extraídos do cliente; isso não confirma disponibilidade no servidor."
-    :"Names and IDs come from the game client; they do not confirm server availability."}</p>
+  <p class="wiki-search-footnote">{sharedText(lang,"Names and IDs come from the game client; they do not confirm server availability.")}</p>
 </dialog>
 <script type="application/json" id="wiki-search-guides" set:html={guidesJson}/>
 <script>
+  import {sharedText} from "../i18n/shared-ui.mjs";
   import {buildWikiSearchRecords,searchWikiRecords} from "../data/wiki-unified-search.mjs";
   const dialog=document.getElementById("wiki-global-search") as HTMLDialogElement|null;
   const query=document.getElementById("wiki-search-query") as HTMLInputElement|null;
   const kind=document.getElementById("wiki-search-kind") as HTMLSelectElement|null;
   const status=document.getElementById("wiki-search-status") as HTMLElement|null;
   const results=document.getElementById("wiki-search-results") as HTMLUListElement|null;
-  const pt=dialog?.dataset.lang==="pt-br";
+  const lang=dialog?.dataset.lang??"en";
+  const pt=lang==="pt-br";
   type RecordRow={kind:string;id:string;title:string;detail:string;href:string};
   let records:RecordRow[]|null=null;
   let loading:Promise<RecordRow[]>|null=null;
@@ -92,8 +92,8 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
     })();
     try{return await loading;}finally{loading=null;}
   }
-  const label=(item:RecordRow)=>item.kind==="item"?(pt?"Item":"Item"):
-    item.kind==="monster"?(pt?"Monstro":"Monster"):(pt?"Guia":"Guide");
+  const label=(item:RecordRow)=>item.kind==="item"?(sharedText(lang,"Item")):
+    item.kind==="monster"?(sharedText(lang,"Monster")):(sharedText(lang,"Guide"));
   function draw(rows:RecordRow[]){
     if(!results)return;
     results.replaceChildren();
@@ -110,21 +110,19 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
   async function refresh(){
     if(!query||!kind||!status)return;
     const text=query.value.trim(),ticket=++currentSearch;
-    if(text.length<2){draw([]);status.textContent=pt?"Digite pelo menos 2 caracteres.":"Enter at least 2 characters.";return;}
-    status.textContent=pt?"Pesquisando índices do cliente…":"Searching client indexes…";
+    if(text.length<2){draw([]);status.textContent=sharedText(lang,"Enter at least 2 characters.");return;}
+    status.textContent=sharedText(lang,"Searching client indexes…");
     try{
       const source=await loadSearch();
       if(ticket!==currentSearch)return;
       const found=searchWikiRecords(source,text,{kind:kind.value,limit:30});
       draw(found);
       status.textContent=found.length?
-        (pt?"Resultados exibidos: ":"Results shown: ")+found.length:
-        (pt?"Nenhum resultado encontrado.":"No results found.");
+        (sharedText(lang,"Results shown: "))+found.length:
+        (sharedText(lang,"No results found."));
     }catch{
       if(ticket!==currentSearch)return;
-      draw([]);status.textContent=pt
-        ?"Não foi possível carregar os índices de busca."
-        :"Could not load search indexes.";
+      draw([]);status.textContent=sharedText(lang,"Could not load search indexes.");
     }
   }
   function openSearch(){
