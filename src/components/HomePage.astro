@@ -1,4 +1,5 @@
 ---
+import {sharedText} from "../i18n/shared-ui.mjs";
 import { useTranslations } from "../i18n/utils";
 import type { Lang } from "../i18n/ui";
 import { localizedPaths, legacyLocale, NEW_GUIDE_LOCALES } from "../i18n/locales.mjs";
@@ -17,46 +18,36 @@ const siteName = "Atlantica Knowledge Hub";
 
 const sections = [
   {
-    title: lang === "pt-br" ? "Equipamentos e Boxes" : "Equipment & Boxes",
-    description: lang === "pt-br"
-      ? "Catálogo de 2.462 IDs semelhantes a equipamentos, boxes e fichas com dados extraídos do cliente."
-      : "Equipment catalog with 2,462 equipment-like IDs, boxes, and source-backed item profiles.",
+    title: sharedText(lang,"Equipment & Boxes"),
+    description: sharedText(lang,"Equipment catalog with 2,462 equipment-like IDs, boxes, and source-backed item profiles."),
     symbol: "◈",
     theme: "items",
     href: legacyLocale(lang) === "en" ? "/items/" : "/pt-br/items/",
   },
   {
-    title: lang === "pt-br" ? "Todos os itens" : "All Items",
-    description: lang === "pt-br"
-      ? "Pesquise 23.586 IDs do cliente, incluindo materiais, consumíveis e equipamentos. Consulte fabricação, usos e possíveis drops."
-      : "Search 23,586 client item IDs, including materials, consumables and equipment. Explore crafting, uses and possible drops.",
+    title: sharedText(lang,"All Items"),
+    description: sharedText(lang,"Search 23,586 client item IDs, including materials, consumables and equipment. Explore crafting, uses and possible drops."),
     symbol: "✦",
     theme: "items",
     href: legacyLocale(lang) === "en" ? "/items/database/" : "/pt-br/items/database/",
   },
   {
-    title: lang === "pt-br" ? "Eventos e Atualizações" : "Events & Updates",
-    description: lang === "pt-br"
-      ? "Calendário de eventos e histórico de novidades revisados."
-      : "Curated event calendar and recent updates.",
+    title: sharedText(lang,"Events & Updates"),
+    description: sharedText(lang,"Curated event calendar and recent updates."),
     symbol: "✧",
     theme: "events",
     href: legacyLocale(lang) === "en" ? "/events/" : "/pt-br/events/",
   },
   {
-    title: lang === "pt-br" ? "Monstros e Drops" : "Monsters & Drops",
-    description: lang === "pt-br"
-      ? "Explore o catálogo de criaturas e as relações de loot extraídas do cliente, após revisão dos arquivos originais. Taxas brutas não são porcentagens comprovadas."
-      : "Explore original client creature and loot-source records as they pass source review. Raw rates are not confirmed drop percentages.",
+    title: sharedText(lang,"Monsters & Drops"),
+    description: sharedText(lang,"Explore original client creature and loot-source records as they pass source review. Raw rates are not confirmed drop percentages."),
     symbol: "◈",
     theme: "monsters",
     href: legacyLocale(lang) === "en" ? "/monsters/" : "/pt-br/monsters/",
   },
   {
-    title: lang === "pt-br" ? "Mercenários" : "Mercenaries",
-    description: lang === "pt-br"
-      ? "Informações e habilidades dos mercenários, com evidências verificadas."
-      : "Mercenary profiles and skills with verified evidence.",
+    title: sharedText(lang,"Mercenaries"),
+    description: sharedText(lang,"Mercenary profiles and skills with verified evidence."),
     symbol: "⚔",
     theme: "mercenaries",
     href: legacyLocale(lang) === "en" ? "/mercenaries/" : "/pt-br/mercenaries/",
@@ -98,7 +89,7 @@ const sections = [
       </p>
 
       <button class="button home-search-launch" type="button" data-global-search-open>
-        {lang === "pt-br" ? "Pesquisar itens, monstros e guias" : "Search items, monsters and guides"}
+        {sharedText(lang,"Search items, monsters and guides")}
       </button>
       <a class="button" href="#topics">
         {t("home.explore")}
@@ -131,7 +122,7 @@ const sections = [
               <p>{section.description}</p>
 
               <span class="card-status">
-                {section.href && NEW_GUIDE_LOCALES.includes(lang) && !section.href.startsWith("/"+lang+"/") ? "English ↗" : section.href
+                {section.href && NEW_GUIDE_LOCALES.includes(lang) && !section.href.startsWith("/"+lang+"/") ? sharedText(lang,"English ↗") : section.href
                   ? t("home.openGuides")
                   : t("shared.comingSoon")}
               </span>
