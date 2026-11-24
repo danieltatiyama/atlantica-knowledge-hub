@@ -1,4 +1,7 @@
 ---
+import {catalogText} from "../i18n/catalog-ui.mjs";
+import {localePrefix,legacyLocale,localizedPaths,localeTag} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import {EQUIPMENT_ITEM_CATALOG_BY_ID} from "../data/equipment-item-catalog";
 import {FULL_CLIENT_EQUIPMENT_CATALOG,getClientEquipmentSourceProfile}
@@ -10,10 +13,11 @@ import {getClientItemAttributes} from "../data/client-item-attributes";
 import {getClientItemSourceOverview}
   from "../data/equipment-catalog-source-index.mjs";
 
-interface Props { lang: "en" | "pt-br"; }
+interface Props { lang: Lang; }
 const { lang } = Astro.props;
-const pt = lang === "pt-br";
-const prefix = pt ? "/pt-br" : "";
+const prefix=localePrefix(legacyLocale(lang));
+const homePrefix=localePrefix(lang);
+const fallback=legacyLocale(lang)!==lang;
 // All 2,462 named original equipment-like source IDs are indexed. The
 // original 551 reviewed articles/box associations are not changed.
 const items=FULL_CLIENT_EQUIPMENT_CATALOG.map(source=>{
@@ -41,93 +45,89 @@ const indexedItems=items.map(item=>{
 });
 const sourceCategories=[...new Set(indexedItems.map(x=>x.sourceIndex.category))]
   .sort((a,b)=>a.localeCompare(b,"en"));
-const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+const nf=new Intl.NumberFormat(localeTag(lang));
 const fmt=value=>value===null||value===undefined||value==="0"||value===""
   ?"—":/^-?\d+(?:\.\d+)?$/.test(value)?nf.format(Number(value)):value;
 const attackRange=stats=>(stats.minDamage===null||stats.maxDamage===null||
   (stats.minDamage==="0"&&stats.maxDamage==="0"))
   ?"—":fmt(stats.minDamage)+"–"+fmt(stats.maxDamage);
-const title = pt ? "Catálogo de Equipamentos" : "Equipment Item Catalog";
-const description = pt
-  ? "Explore 2.462 IDs em categorias de equipamento do cliente, com 551 fichas revisadas e 1.911 fichas adicionais com dados originais."
-  : "Explore 2,462 equipment-like source IDs: 551 reviewed profiles plus 1,911 additional client-source profiles.";
+const title = catalogText(lang,"Equipment Item Catalog");
+const description = catalogText(lang,"Explore 2,462 equipment-like source IDs: 551 reviewed profiles plus 1,911 additional client-source profiles.");
 ---
 <BaseLayout lang={lang} title={title + " | Atlantica Knowledge Hub"} description={description}
-  alternatePaths={{en:"/items/", "pt-br":"/pt-br/items/"}}>
+  alternatePaths={localizedPaths("/items/")}>
   <main class="container" id="equipment-catalog">
     <nav class="breadcrumb">
-      <a href={prefix + "/"}>{pt ? "Início" : "Home"}</a><span>/</span><span>{title}</span>
+      <a href={homePrefix + "/"}>{catalogText(lang,"Home")}</a><span>/</span><span>{title}</span>
     </nav>
     <header class="intro">
-      <p class="eyebrow">{pt ? "BANCO DE DADOS" : "ITEM DATABASE"} · GLOBAL / NA CLIENT</p>
+      <p class="eyebrow">{catalogText(lang,"ITEM DATABASE")} · GLOBAL / NA CLIENT</p>
       <h1>{title}</h1>
       <p>{description}</p>
-      <p class="notice">{pt
-        ? "O catálogo agora inclui todos os 2.462 IDs identificados nas categorias semelhantes a equipamentos. Os 551 perfis anteriores continuam revisados; os outros 1.911 são perfis gerados a partir das definições do cliente, sem confirmação de uso ou obtenção no servidor atual. Para os demais materiais e itens, use o banco completo de 23.586 IDs."
-        : "This catalog now includes all 2,462 identified equipment-like source IDs. The original 551 profiles retain their reviewed evidence; the other 1,911 are client-source profiles, not live-server availability or equippability claims. Browse all 23,586 original IDs in the complete item database."}</p>
+      <p class="notice">{catalogText(lang,"This catalog now includes all 2,462 identified equipment-like source IDs. The original 551 profiles retain their reviewed evidence; the other 1,911 are client-source profiles, not live-server availability or equippability claims. Browse all 23,586 original IDs in the complete item database.")}</p>
+      {fallback && <p class="notice">{catalogText(lang,"Some linked pages and game names are still in English.")}</p>}
       <p class="related-links">
         <a class="related database-link" href={prefix+"/items/database/"}>
-          {pt?"Explorar TODOS os 23.586 IDs do cliente":"Browse ALL 23,586 client item IDs"}
+          {catalogText(lang,"Browse ALL 23,586 client item IDs")}
         </a>
-        <a class="related" href={prefix + "/items/boxes/"}>{pt ? "Explorar Equipment Boxes" : "Explore Equipment Boxes"}</a>
-        <a class="related legendary-link" href={prefix + "/items/legendary/"}>{pt
-          ? "Pesquisa: encantamento lendário (L)" : "Research: Legendary enhancement (L)"}</a>
+        <a class="related" href={prefix + "/items/boxes/"}>{catalogText(lang,"Explore Equipment Boxes")}</a>
+        <a class="related legendary-link" href={prefix + "/items/legendary/"}>{catalogText(lang,"Research: Legendary enhancement (L)")}</a>
         <a class="related data-download" href="/data/client-equipment-grades.csv" download>
-          {pt ? "Baixar tabela CSV: 551 equipamentos × 11 graus" : "Download CSV: 551 items × 11 grades"}
+          {catalogText(lang,"Download CSV: 551 items × 11 grades")}
         </a>
       </p>
     </header>
     <section class="catalog" aria-label={title}>
       <div class="filters">
         <div>
-          <label for="item-search">{pt ? "Pesquisar nome ou ID" : "Search name or ID"}</label>
+          <label for="item-search">{catalogText(lang,"Search name or ID")}</label>
           <input id="item-search" type="search" autocomplete="off"
-            placeholder={pt ? "Ex.: Judgment Sword ou 47" : "e.g. Judgment Sword or 47"}/>
+            placeholder={catalogText(lang,"e.g. Judgment Sword or 47")}/>
         </div>
         <div>
-          <label for="item-category">{pt ? "Categoria do arquivo" : "Client source category"}</label>
+          <label for="item-category">{catalogText(lang,"Client source category")}</label>
           <select id="item-category">
-            <option value="">{pt?"Todas as categorias":"All categories"}</option>
+            <option value="">{catalogText(lang,"All categories")}</option>
             {sourceCategories.map(category=><option value={category}>{category}</option>)}
           </select>
         </div>
         <div>
-          <label for="item-min-level">{pt?"Nível bruto mínimo":"Min. raw level"}</label>
+          <label for="item-min-level">{catalogText(lang,"Min. raw level")}</label>
           <input id="item-min-level" type="number" min="0" max="999" step="1"
-            placeholder={pt?"Qualquer nível":"Any level"}/>
+            placeholder={catalogText(lang,"Any level")}/>
         </div>
         <div>
-          <label for="item-evidence">{pt?"Tipo de ficha":"Profile evidence"}</label>
+          <label for="item-evidence">{catalogText(lang,"Profile evidence")}</label>
           <select id="item-evidence">
-            <option value="">{pt?"Todos os 2.462 IDs":"All 2,462 source IDs"}</option>
-            <option value="reviewed">{pt?"551 perfis revisados":"551 reviewed profiles"}</option>
-            <option value="source">{pt?"1.911 perfis do cliente":"1,911 client-source profiles"}</option>
+            <option value="">{catalogText(lang,"All 2,462 source IDs")}</option>
+            <option value="reviewed">{catalogText(lang,"551 reviewed profiles")}</option>
+            <option value="source">{catalogText(lang,"1,911 client-source profiles")}</option>
           </select>
         </div>
         <div>
-          <label for="item-sort">{pt?"Ordenar por":"Sort by"}</label>
+          <label for="item-sort">{catalogText(lang,"Sort by")}</label>
           <select id="item-sort">
-            <option value="name">{pt?"Nome A–Z":"Name A–Z"}</option>
-            <option value="level">{pt?"Nível bruto ↑":"Raw level ↑"}</option>
-            <option value="attack">{pt?"Ataque base ↓":"Base attack ↓"}</option>
-            <option value="ac">{pt?"Defesa física base ↓":"Base AC ↓"}</option>
+            <option value="name">{catalogText(lang,"Name A–Z")}</option>
+            <option value="level">{catalogText(lang,"Raw level ↑")}</option>
+            <option value="attack">{catalogText(lang,"Base attack ↓")}</option>
+            <option value="ac">{catalogText(lang,"Base AC ↓")}</option>
           </select>
         </div>
       </div>
       <p class="count" aria-live="polite"><strong id="item-count">{items.length}</strong>
-        {pt ? " equipamentos encontrados" : " equipment items found"}</p>
+        {catalogText(lang," equipment items found")}</p>
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th>{pt ? "Nome (inglês oficial)" : "Official English name"}</th>
-            <th>{pt ? "ID do item" : "Item ID"}</th>
-            <th>{pt ? "Categoria do cliente" : "Client category"}</th>
-            <th>{pt ? "Nível bruto" : "Raw level"}</th>
-            <th>{pt ? "Ataque base" : "Base attack"}</th>
-            <th>{pt ? "AC base" : "Base AC"}</th>
-            <th>{pt ? "Boxes associadas" : "Associated boxes"}</th>
+            <th>{catalogText(lang,"Official English name")}</th>
+            <th>{catalogText(lang,"Item ID")}</th>
+            <th>{catalogText(lang,"Client category")}</th>
+            <th>{catalogText(lang,"Raw level")}</th>
+            <th>{catalogText(lang,"Base attack")}</th>
+            <th>{catalogText(lang,"Base AC")}</th>
+            <th>{catalogText(lang,"Associated boxes")}</th>
             {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
-              <th>{pt ? "Metadados do cliente" : "Client metadata"}</th>}
+              <th>{catalogText(lang,"Client metadata")}</th>}
           </tr></thead>
           <tbody id="item-table-body">
             {indexedItems.map((item) => (
@@ -139,10 +139,10 @@ const description = pt
                 data-level={item.sourceIndex.rawLevel??""}
                 data-attack={item.sourceIndex.maxDamage??""}
                 data-ac={item.sourceIndex.physicalAC??""}>
-                <td><a href={prefix + "/items/" + item.id + "/"}>{item.nameEn}</a>
+                <td><a href={prefix + "/items/" + item.id + "/"} lang="en" hreflang={localeTag(legacyLocale(lang))}>{item.nameEn}</a>
                   {item.reviewed
-                    ? <span class="profile-mark">{pt?"Ficha revisada":"Reviewed profile"}</span>
-                    : <span class="profile-mark source-only">{pt?"Dados do cliente":"Client source"}</span>}</td>
+                    ? <span class="profile-mark">{catalogText(lang,"Reviewed profile")}</span>
+                    : <span class="profile-mark source-only">{catalogText(lang,"Client source")}</span>}</td>
                 <td><code>{item.id}</code></td>
                 <td>{item.sourceIndex.category}</td>
                 <td>{item.sourceIndex.rawLevel??"—"}</td>
@@ -151,17 +151,15 @@ const description = pt
                 <td>{item.boxReferences.length}</td>
                 {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
                   <td>{getCuratedEquipmentMetadata(item.id)
-                    ? (pt ? "Extraído · Revisado" : "Extracted · Reviewed")
-                    : (pt ? "Fonte do cliente" : "Client source only")}</td>}
+                    ? (catalogText(lang,"Extracted · Reviewed"))
+                    : (catalogText(lang,"Client source only"))}</td>}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p id="item-empty" hidden>{pt ? "Nenhum equipamento corresponde à busca." : "No equipment items match your search."}</p>
-      <p class="footnote">{pt
-        ?"Categoria, nível, ataque e AC nesta tabela são campos BRUTOS extraídos dos arquivos do cliente, não requisitos de equipamento nem valores confirmados em combate. Zero ou campo sem ataque/defesa é abreviado como —. As boxes mostram prévias capturadas, não probabilidades ou garantia de obtenção."
-        :"Category, level, attack and AC here are RAW client-file values, not verified equipment requirements or measured combat stats. Zero or unavailable attack/armor is abbreviated as —. Box associations reflect captured previews, not drop odds or guaranteed rewards."}</p>
+      <p id="item-empty" hidden>{catalogText(lang,"No equipment items match your search.")}</p>
+      <p class="footnote">{catalogText(lang,"Category, level, attack and AC here are RAW client-file values, not verified equipment requirements or measured combat stats. Zero or unavailable attack/armor is abbreviated as —. Box associations reflect captured previews, not drop odds or guaranteed rewards.")}</p>
     </section>
   </main>
 </BaseLayout>
