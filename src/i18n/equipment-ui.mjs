@@ -7,6 +7,8 @@ import {equipmentRowsA} from "./equipment-ui-a.mjs";
 import {equipmentRowsB} from "./equipment-ui-b.mjs";
 import {equipmentRowsC} from "./equipment-ui-c.mjs";
 const additionalRows=[
+  ["batches","lots","Batches","lotes","배치","批","バッチ"],
+  ["Extracted","Extrait","Extrahiert","Extraído","추출됨","已提取","抽出済み"],
   [
     "Client level (raw)",
     "Niveau client (brut)",
