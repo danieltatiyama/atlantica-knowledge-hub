@@ -1,81 +1,77 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { complementaryText } from "../i18n/complementary-ui.mjs";
+import { localePrefix, localeTag, localizedPaths, legacyLocale, equipmentProfilePath } from "../i18n/locales.mjs";
 import { render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import { getCapturedEquipmentPool, decodedEnhancementCandidate } from "../data/equipment-box-captured-pools";
 import { getEquipmentItemEnglishName } from "../data/equipment-item-names-en";
-interface Props { lang: "en"|"pt-br"; box: CollectionEntry<"boxes">; }
+interface Props { lang: string; box: CollectionEntry<"boxes">; }
 const {lang,box}=Astro.props;
-const pt=lang==="pt-br";
-const base=(pt?"/pt-br":"")+"/items/boxes/";
+const base=localePrefix(lang)+"/items/boxes/";
 const {Content}=await render(box);
 const d=box.data;
 const captured=d.itemUniqueId ? getCapturedEquipmentPool(d.itemUniqueId) : undefined;
 const previewGrades=captured?.gradeCodes.map(code=>decodedEnhancementCandidate(code));
 const hasRates=d.oddsStatus==="regional-published";
-const rate=(n:number|undefined)=>n===undefined?"—":n.toLocaleString(pt?"pt-BR":"en-US",{maximumFractionDigits:4})+"%";
+const rate=(n:number|undefined)=>n===undefined?"—":n.toLocaleString(localeTag(lang),{maximumFractionDigits:4})+"%";
 const source=d.probabilitySourceUrl||d.verificationUrl;
 const hasCapturedEvidence=d.contentsEvidence==="server-preview-captured";
 const contentsLabel=hasCapturedEvidence
-  ? (pt?"Lista recebida do jogo durante a abertura":"Item list received from the game during box opening")
+  ? (complementaryText(lang,"Item list received from the game during box opening","Lista recebida do jogo durante a abertura"))
   : (d.contentsEvidence==="family-candidates"
-    ? (pt?"Candidatos por família — drops não confirmados":"Family-matched candidates — drops unverified")
-    : (pt?"Recompensas em revisão":"Rewards under review"));
+    ? (complementaryText(lang,"Family-matched candidates — drops unverified","Candidatos por família — drops não confirmados"))
+    : (complementaryText(lang,"Rewards under review","Recompensas em revisão")));
 ---
-<BaseLayout lang={lang} title={d.title+" | Atlantica Knowledge Hub"} description={d.description} alternatePaths={{en:"/items/boxes/"+box.id.split("/").slice(1).join("/")+"/", "pt-br":"/pt-br/items/boxes/"+box.id.split("/").slice(1).join("/")+"/"}}>
+<BaseLayout lang={lang} title={d.title+" | Atlantica Knowledge Hub"} description={d.description} alternatePaths={localizedPaths("/items/boxes/"+box.id.split("/").slice(1).join("/")+"/")}>
   <main class="container">
-    <nav class="crumb"><a href={base}>{pt?"← Voltar às boxes":"← Back to boxes"}</a></nav>
+    <nav class="crumb"><a href={base}>{complementaryText(lang,"← Back to boxes","← Voltar às boxes")}</a></nav>
     <article class="body">
       <header>
-        <p class="eyebrow">{pt?"CATÁLOGO DE BOXES":"BOX DATABASE"} · {d.region.toUpperCase()}</p>
+        <p class="eyebrow">{complementaryText(lang,"BOX DATABASE","CATÁLOGO DE BOXES")} · {d.region.toUpperCase()}</p>
         <h1>{d.title}</h1><p>{d.description}</p>
         <div class="meta">
-          <span>{pt?"Tipo":"Type"}: {d.boxType}</span>
-          <span>{pt?"Região":"Region"}: {d.region.toUpperCase()}</span>
-          <span>{pt?"Modelo de sorteio":"Roll model"}: {d.rollModel}</span>
+          <span>{complementaryText(lang,"Type","Tipo")}: {d.boxType}</span>
+          <span>{complementaryText(lang,"Region","Região")}: {d.region.toUpperCase()}</span>
+          <span>{complementaryText(lang,"Roll model","Modelo de sorteio")}: {d.rollModel}</span>
         </div>
         {captured && <p class="evidence">
-          <strong>{pt?"Graus prováveis na prévia":"Likely preview enhancement grades"}:</strong>
+          <strong>{complementaryText(lang,"Likely preview enhancement grades","Graus prováveis na prévia")}:</strong>
           {" "}{previewGrades?.map(grade=>grade===undefined?"?":"+"+grade).join(", ")}
-          {" "}({pt?"códigos":"codes"} {captured.gradeCodes.join(", ")}).
-          {" "}{pt?"Derivado de captura; não representa chances de drop.":"Derived from captured messages; not drop-rate information."}
+          {" "}({complementaryText(lang,"codes","códigos")} {captured.gradeCodes.join(", ")}).
+          {" "}{complementaryText(lang,"Derived from captured messages; not drop-rate information.","Derivado de captura; não representa chances de drop.")}
         </p>}
         <p class="caution">
           {hasRates
-            ? (pt
-              ? "As porcentagens são taxas publicadas para a região indicada; não representam necessariamente as chances do Atlantica Global."
-              : "These published percentages apply to the indicated region; they do not necessarily represent Atlantica Global rates.")
-            : (pt
-              ? "Nenhuma chance de obtenção foi confirmada para esta box. Pesos internos do cliente não são probabilidades verificadas."
-              : "No outcome percentages are confirmed for this box. Raw client weights are not verified drop rates.")}
+            ? (complementaryText(lang,"These published percentages apply to the indicated region; they do not necessarily represent Atlantica Global rates.","As porcentagens são taxas publicadas para a região indicada; não representam necessariamente as chances do Atlantica Global."))
+            : (complementaryText(lang,"No outcome percentages are confirmed for this box. Raw client weights are not verified drop rates.","Nenhuma chance de obtenção foi confirmada para esta box. Pesos internos do cliente não são probabilidades verificadas."))}
         </p>
       </header>
-      <h2>{pt?"Itens associados à box":"Items associated with the box"}</h2>
+      <h2>{complementaryText(lang,"Items associated with the box","Itens associados à box")}</h2>
       <p class="evidence"><strong>{contentsLabel}</strong>{d.contentsNote && <span> — {d.contentsNote}</span>}</p>
-      <p class="note">{pt
-        ? "A lista exibida pelo jogo não demonstra chances iguais ou garante que cada item seja obtido em qualquer condição."
-        : "A game-transmitted item list does not establish equal drop rates or prove every item is obtainable under all conditions."}</p>
+      <p class="note">{complementaryText(lang,"A game-transmitted item list does not establish equal drop rates or prove every item is obtainable under all conditions.","A lista exibida pelo jogo não demonstra chances iguais ou garante que cada item seja obtido em qualquer condição.")}</p>
       <div class="table-scroll">
         <table><thead><tr>
-          <th>{pt?"Item":"Item"}</th><th>ID</th><th>{pt?"Quantidade":"Quantity"}</th>
-          <th>{pt?"Observações":"Observed returns"}</th><th>{pt?"Chance":"Chance"}</th>
+          <th>{complementaryText(lang,"Item","Item")}</th><th>ID</th><th>{complementaryText(lang,"Quantity","Quantidade")}</th>
+          <th>{complementaryText(lang,"Observed returns","Observações")}</th><th>{complementaryText(lang,"Chance","Chance")}</th>
         </tr></thead>
           <tbody>
             {d.outcomes.map(row=><tr>
               <td>{(row.itemUniqueId && getEquipmentItemEnglishName(row.itemUniqueId)) || row.itemName}</td>
               <td>{row.itemUniqueId ?? "—"}</td>
-              <td>{row.quantityVerified ? row.quantity.toLocaleString(pt?"pt-BR":"en-US") : "—"}</td>
+              <td>{row.quantityVerified ? row.quantity.toLocaleString(localeTag(lang)) : "—"}</td>
               <td>{row.observedCount ? row.observedCount : "—"}</td>
               <td>{hasRates?rate(row.chancePercent):"—"}</td>
             </tr>)}
           </tbody>
         </table>
       </div>
-      {d.outcomes.length===0 && <p>{pt?"Lista de recompensas ainda não confirmada.":"Reward list not confirmed yet."}</p>}
+      {d.outcomes.length===0 && <p>{complementaryText(lang,"Reward list not confirmed yet.","Lista de recompensas ainda não confirmada.")}</p>}
       {d.probabilityNotes && <p class="note">{d.probabilityNotes}</p>}
       {source && <p class="source"><a href={source} rel="noopener noreferrer" target="_blank">
-        {pt?"Fonte para verificação":"Verification source"}</a></p>}
-      <div class="content"><Content /></div>
+        {complementaryText(lang,"Verification source","Fonte para verificação")}</a></p>}
+      {lang!==box.data.lang&&<p class="note">{complementaryText(lang,"This article body is shown in English until a reviewed translation is available.")}</p>}
+      <div class="content" lang={localeTag(box.data.lang)}><Content /></div>
     </article>
   </main>
 </BaseLayout>
