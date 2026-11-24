@@ -462,6 +462,12 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - Testes: `tests/wiki-eight-locales.test.mjs` e `scripts/check-built-guide-locales.mjs`, integrado à CI para conferir 16 páginas geradas (Home e listagem de guias), hreflang e rotas VIP existentes.
 - **Limite de escopo:** nesta etapa não são gerados artigos traduzidos nem alterado o Pages CMS. Próxima etapa 20.75: pipeline de tradução a partir do inglês, proteção de Markdown e termos, glossário, geração de rascunhos e validação. Stage 20.76: versionamento, PRs e sincronização. Não configurar serviços pagos ou segredos sem decisão do usuário.
 
+### Subcategoria Introduction / Introdução em Mercenaries
+
+- A taxonomia de guias inclui `introduction` exclusivamente sob `mercenaries`, antes de Skills e Builds & Formations, com rótulos nos oito idiomas.
+- O gerador de rascunhos e os quatro seletores do Pages CMS aceitam a nova opção; a branch editorial `dev/i18n` recebe atualização equivalente da taxonomia bilíngue, gerador e CMS.
+- Teste de regressão: `tests/mercenaries-introduction-subcategory.test.mjs`. Nenhum artigo foi criado, publicado ou reclassificado automaticamente. Verificar PRs, CI e deploy antes de considerar a mudança disponível em produção.
+
 ## 7. Histórico das etapas recentes
 
 | Etapa | PR | Entrega |

@@ -5,6 +5,7 @@ export const SUBCATEGORY_IDS = [
   "yggdrasil",
   "alcatraz",
   "pirate",
+  "introduction",
   "skills",
   "builds-formations",
   "crafting",
@@ -52,6 +53,10 @@ export const GUIDE_SUBCATEGORIES: Record<
     category: "nation-dungeons",
     labels: { en: "Pirate", "pt-br": "Pirate" },
   },
+  introduction: {
+    category: "mercenaries",
+    labels: { en: "Introduction", "pt-br": "Introdução" },
+  },
   skills: {
     category: "mercenaries",
     labels: { en: "Skills", "pt-br": "Habilidades" },
@@ -82,9 +87,10 @@ export const GUIDE_SUBCATEGORIES: Record<
 
 // Preserve existing bilingual taxonomy data; extra labels are presentation-only.
 import type { Locale } from "../i18n/locales.mjs";
-const localizedSubcategoryIds = ["skills","builds-formations","crafting","equipment-enhancement","others"] as const;
+const localizedSubcategoryIds = ["introduction","skills","builds-formations","crafting","equipment-enhancement","others"] as const;
 const extraSubcategoryLabels = {
   "fr": [
+    "Introduction",
     "Compétences",
     "Configurations et formations",
     "Fabrication",
@@ -92,6 +98,7 @@ const extraSubcategoryLabels = {
     "Autres"
   ],
   "de": [
+    "Einführung",
     "Fähigkeiten",
     "Builds und Formationen",
     "Herstellung",
@@ -99,6 +106,7 @@ const extraSubcategoryLabels = {
     "Sonstiges"
   ],
   "es": [
+    "Introducción",
     "Habilidades",
     "Configuraciones y formaciones",
     "Fabricación",
@@ -106,6 +114,7 @@ const extraSubcategoryLabels = {
     "Otros"
   ],
   "ko": [
+    "소개",
     "스킬",
     "빌드 및 진형",
     "제작",
@@ -113,6 +122,7 @@ const extraSubcategoryLabels = {
     "기타"
   ],
   "zh-hans": [
+    "入门",
     "技能",
     "配装与阵型",
     "制作",
@@ -120,6 +130,7 @@ const extraSubcategoryLabels = {
     "其他"
   ],
   "ja": [
+    "入門",
     "スキル",
     "ビルドと陣形",
     "製造",
