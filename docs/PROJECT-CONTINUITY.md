@@ -5,7 +5,7 @@
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
 **Última etapa implementada:** Stage 20.71 (tradução integral do guia VIP System para PT-BR, reaproveitando as mesmas 16 imagens e metadados editoriais aprovados)  
-**Últimos PRs integrados:** [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93) (guia VIP System, 16 imagens), [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) (fluxo CMS aprovado na `main`) e [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95) (suporte em `dev/i18n`). CI aprovado; conferir deploy Cloudflare.
+**Último PR de funcionalidade integrado:** [#99](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99) — guia Sistema VIP em PT-BR, 16 imagens compartilhadas, CI aprovado. O guia inglês continua no [#93](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/93); o fluxo CMS é o dos PRs [#94](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/94) e [#95](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/95). Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -431,7 +431,7 @@ A Stage 20.55 corrige a distinção entre informação original do cliente e reg
 - As 16 referências usam exatamente os mesmos caminhos `/images/guides/vip-system/image-N.png` do artigo inglês; nenhuma imagem foi regenerada ou copiada, apenas reaproveitada. As imagens são capturas do jogo e podem conter textos em inglês.
 - A rota prevista `/pt-br/guides/vip-system/` é gerada automaticamente pela estrutura atual `src/pages/pt-br/guides/[slug].astro`. O seletor EN/PT-BR do artigo reconhece o mesmo `translationKey` nas duas versões.
 - Teste `tests/vip-system-pt-br-translation.test.mjs` valida metadados, 16 referências em ordem, imagens existentes, rotas e navegação bilíngue. Novo passo no workflow de validação de PR.
-- <https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99>: validar CI e integrar à `main`. Depois, verificar o deploy do Cloudflare; a integração ao GitHub por si só não confirma publicação em produção.
+- O [PR #99](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/99) passou GitHub Actions e foi **integrado à `main` em 24/11/2026**, gerando `/pt-br/guides/vip-system/`. Resta confirmar a implantação e a aparência em produção pelo Cloudflare.
 
 ## 7. Histórico das etapas recentes
 
@@ -539,4 +539,4 @@ A Wiki, porém, deve continuar priorizando aquilo que o jogador deseja saber: o 
 
 Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas demais partes da Wiki, especialmente nos links de receitas, drops e páginas relacionadas.
 
-**Estado documentado: Stage 20.71 — tradução PT-BR do VIP System preparada em PR #99, baseada na versão inglesa já publicada na `main`, com 16 imagens reutilizadas e testes de correspondência. A navegação bilíngue já tem suporte nativo pelo `translationKey`. Conferir CI, integração e publicação efetiva no Cloudflare. O fluxo CMS de publicação de guias aprovados (PRs #94 e #95) continua integrado.**
+**Estado documentado: Stage 20.71 integrada à `main` pelo PR #99, com GitHub Actions concluído com sucesso. O artigo /pt-br/guides/vip-system/ é a tradução em PT-BR do artigo inglês, preserva os dados e a estrutura do original e compartilha as 16 imagens, sem duplicar arquivos. A navegação bilíngue é automática pelo translationKey. Verificar deployment e renderização no Cloudflare; acesso externo ainda não confirmado. O fluxo CMS de publicação de guias aprovados (PRs #94 e #95) continua integrado.**
