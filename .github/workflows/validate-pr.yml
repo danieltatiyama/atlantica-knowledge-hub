@@ -141,6 +141,9 @@ jobs:
       - name: Validate Game Systems Others guide subcategory and Pages CMS
         run: node --test tests/game-systems-others-subcategory.test.mjs
 
+      - name: Validate published VIP System metadata and 16 archived images
+        run: node --test tests/vip-system-guide-publication.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 
