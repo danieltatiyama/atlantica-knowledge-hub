@@ -1,6 +1,7 @@
 
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
+import { LOCALE_IDS } from "./src/i18n/locales.mjs";
 
 import { satteri } from "@astrojs/markdown-satteri";
 import articleImages from "./src/plugins/article-images.mjs";
@@ -16,7 +17,7 @@ export default defineConfig({
 
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "pt-br"],
+    locales: [...LOCALE_IDS],
 
     routing: {
       prefixDefaultLocale: false,
