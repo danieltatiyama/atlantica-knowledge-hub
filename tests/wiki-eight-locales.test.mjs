@@ -23,7 +23,7 @@ test("switching languages links only to real guide translations, listings, or su
  assert.equal(languageDestination({lang:"ja",path:"/guides/vip-system/",guideAlternates:translations}),translations.ja);
  assert.equal(languageDestination({lang:"de",path:"/guides/vip-system/",guideAlternates:translations}),"/de/guides/");
  assert.equal(languageDestination({lang:"ko",path:"/fr/guides/"}),"/ko/guides/");
- assert.equal(languageDestination({lang:"fr",path:"/pt-br/items/database/"}),"/fr/");
+ assert.equal(languageDestination({lang:"fr",path:"/pt-br/items/database/"}),"/fr/items/database/");
  assert.equal(languageDestination({lang:"pt-br",path:"/items/database/"}),"/pt-br/items/database/");
  assert.equal(languageDestination({lang:"en",path:"/pt-br/mercenaries/some-slug/"}),"/mercenaries/");
  assert.equal(languageDestination({lang:"xx",path:"/"}),null);

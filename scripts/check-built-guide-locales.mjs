@@ -3,6 +3,7 @@ import {readFileSync,existsSync} from "node:fs";
 import {LOCALE_IDS,localePrefix,localeTag} from "../src/i18n/locales.mjs";
 import {sharedText} from "../src/i18n/shared-ui.mjs";
 import {catalogText} from "../src/i18n/catalog-ui.mjs";
+import {itemDbText} from "../src/i18n/item-db-ui.mjs";
 import {legacyLocale} from "../src/i18n/locales.mjs";
 for(const lang of LOCALE_IDS){
  for(const path of ["/","/guides/"]){
@@ -47,3 +48,17 @@ for(const lang of LOCALE_IDS){
  }
 }
 console.log("[IC] Verified 24 localized equipment, event and mercenary listings.");
+
+for(const lang of LOCALE_IDS){
+ const prefix=localePrefix(lang);
+ const file="dist"+prefix+"/items/database/index.html";
+ assert.ok(existsSync(file),file);
+ const html=readFileSync(file,"utf8");
+ assert.ok(html.includes('lang="'+localeTag(lang)+'"'),file);
+ for(const key of ["Full client item database","Search items","Identity status","Original client numeric attributes","Compare equipment source attributes","ITEM INFORMATION"])
+  assert.ok(html.includes(itemDbText(lang,key)),file+" missing translated key "+key);
+ assert.ok(html.includes('href="'+prefix+'/items/"'),file+" localized catalog breadcrumb");
+ assert.ok(html.includes('data-lang="'+lang+'"'),file+" client locale");
+ for(const alternate of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(alternate)+'"'),file+" missing alternate "+alternate);
+}
+console.log("[IC] Verified eight localized full item database pages.");

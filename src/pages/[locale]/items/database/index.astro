@@ -1,0 +1,7 @@
+---
+import FullClientItemDatabasePage from "../../../../components/FullClientItemDatabasePage.astro";
+import {NEW_GUIDE_LOCALES} from "../../../../i18n/locales.mjs";
+export function getStaticPaths(){return NEW_GUIDE_LOCALES.map(lang=>({params:{locale:lang},props:{lang}}));}
+const {lang}=Astro.props;
+---
+<FullClientItemDatabasePage lang={lang} />

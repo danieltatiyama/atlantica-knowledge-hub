@@ -10,7 +10,7 @@ test("header differentiates equipment from all 23,586 client items in both local
   const header=read("src/components/Header.astro");
   assert.ok(header.includes('chromeText(lang,"Equipment",lang === "pt-br" ? "Equipamentos" : "Equipment")'));
   assert.ok(header.includes('chromeText(lang,"All Items",lang === "pt-br" ? "Todos os itens" : "All Items")'));
-  assert.ok(header.includes('const allItemsHref = localePrefix(legacyLocale(lang))+"/items/database/"'));
+  assert.ok(header.includes('const allItemsHref = catalogPath(lang,"/items/database/")'));
   assert.ok(header.includes('active: pathname.startsWith(itemsHref) && !pathname.startsWith(allItemsHref)'));
   assert.ok(header.includes('active: pathname.startsWith(allItemsHref)'));
   assert.ok(!header.includes('label: lang === "pt-br" ? "Itens" : "Items"'));
@@ -80,7 +80,7 @@ test("async item/monster detail transitions refresh the index without interferin
   const monster=read("src/components/MonsterDatabasePage.astro");
   assert.ok(item.includes('section.dataset.wikiNavNative="true"'));
   assert.ok(monster.includes('audit.dataset.wikiNavNative="true"'));
-  assert.ok(item.includes('pt?"Pesquisar itens":"Search items"'));
+  assert.ok(item.includes('itemDbText(lang,"Search items")'));
 });
 
 test("collapsible sections preserve children, forms and tables without changing original data",()=>{

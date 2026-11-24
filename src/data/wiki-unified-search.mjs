@@ -2,13 +2,14 @@
  * A read-only search index built from the existing client source indexes.
  * It never changes source data and does not claim in-game availability.
  */
+import {catalogPath,legacyLocale,localePrefix} from "../i18n/locales.mjs";
 export function foldSearch(value) {
   return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .toLocaleLowerCase("en").replace(/\s+/g," ").trim();
 }
 const validId=value=>/^[1-9]\d{0,12}$/.test(String(value));
 export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="en"){
-  const prefix=lang==="pt-br"?"/pt-br":"";
+  const prefix=localePrefix(legacyLocale(lang));
   const records=[];
   const seenItems=new Set(),seenMonsters=new Set();
   for(const shard of itemShards){
@@ -19,7 +20,7 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
       seenItems.add(row[0]);
       if(row[6]!=="named"||!row[1])continue;
       records.push({kind:"item",id:row[0],title:row[1],
-        detail:String(row[2]??""),href:prefix+"/items/database/?id="+encodeURIComponent(row[0])});
+        detail:String(row[2]??""),href:catalogPath(lang,"/items/database/")+"?id="+encodeURIComponent(row[0])});
     }
   }
   for(const shard of monsterShards){
