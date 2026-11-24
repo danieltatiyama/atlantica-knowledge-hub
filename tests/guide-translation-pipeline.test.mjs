@@ -106,3 +106,31 @@ test("provider is disabled unless configured, bounded, and uses a mock rather th
  await assert.rejects(()=>translateViaProvider(req,config,async()=>({ok:true,text:async()=>JSON.stringify({choices:[{message:{content:'{"s0":"Hello"}'}}]})})));
  await assert.rejects(()=>translateViaProvider(req,config,async()=>({ok:false,status:429})),/429/);
 });
+
+test("chat-assisted initial release retains source hashes, approved status and guide structure",()=>{
+ for(const guideSlug of ["vip-system","nation-dungeon-planning"]){
+  const en=read(guideSlug),original=parseGuide(en);
+  for(const lang of ["fr","de","es","ko","zh-hans","ja"]){
+   const raw=readFileSync("src/content/guides/"+lang+"/"+guideSlug+".md","utf8");
+   const {meta,body}=parseGuide(raw);
+   assert.equal(meta.translationKey,guideSlug);
+   assert.equal(meta.lang,lang);
+   assert.equal(meta.category,original.meta.category);
+   assert.equal(meta.subcategory,original.meta.subcategory);
+   assert.equal(meta.draft,false);
+   assert.equal(meta.reviewStatus,"approved");
+   assert.match(meta.translationSourceHash,/^[a-f0-9]{64}$/);
+   const originalRevision=guideSlug==="vip-system"?"41c197718027a02a290828bdb974ca35ade0a903d69d8a54d0d42c95a7ce4ebe":"31e442c755913bb47bd64260bfd1eff5d1b1d12ff66b4b4f2009df728204a51a";
+   if(sha256(en)===originalRevision){
+    assert.equal(meta.translationSourceHash,sha256(en));
+    assert.deepEqual(images(body),images(original.body));
+    assert.equal((body.match(/^## /gm)??[]).length,(original.body.match(/^## /gm)??[]).length);
+    assert.equal((body.match(/^- /gm)??[]).length,(original.body.match(/^- /gm)??[]).length);
+    if(guideSlug==="vip-system"){
+     assert.deepEqual(body.match(/\b\d+\b/g),original.body.match(/\b\d+\b/g));
+     for(const term of ["Aca VIP Shop","Olympus Tower","HOT","ALVL","Buff Item Auto-Consume Slots","Atlantica VIP Material Bag","F2P","GC"])assert.ok(body.includes(term),lang+" "+term);
+    }
+   }
+  }
+ }
+});
