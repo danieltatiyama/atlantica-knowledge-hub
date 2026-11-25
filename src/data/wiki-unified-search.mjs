@@ -3,6 +3,8 @@
  * It never changes source data and does not claim in-game availability.
  */
 import {catalogPath} from "../i18n/locales.mjs";
+import {wikiNameAlias} from "./wiki-name-aliases.mjs";
+export function isWikiSearchQuery(value){const q=String(value??"").trim().normalize("NFC");return q.length>=2||/^[\p{Script=Han}\p{Script=Hangul}\p{Script=Hiragana}\p{Script=Katakana}]$/u.test(q);}
 export function foldSearch(value) {
   return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .toLocaleLowerCase("en").replace(/\s+/g," ").trim();
@@ -20,7 +22,7 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
       seenItems.add(row[0]);
       if(row[6]!=="named"||!row[1])continue;
       records.push({kind:"item",id:row[0],title:row[1],
-        detail:String(row[2]??""),href:catalogPath(lang,"/items/database/")+"?id="+encodeURIComponent(row[0])});
+        nameAlias:wikiNameAlias("item",row[0],row[1],lang),detail:String(row[2]??""),href:catalogPath(lang,"/items/database/")+"?id="+encodeURIComponent(row[0])});
     }
   }
   for(const shard of monsterShards){
@@ -30,7 +32,7 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
       if(!validId(row?.[0])||seenMonsters.has(row[0]))throw Error("Duplicate/invalid CharID");
       seenMonsters.add(row[0]);
       records.push({kind:"monster",id:row[0],title:row[1]||("CharID "+row[0]),
-        detail:"Level "+String(row[2]??"—"),href:catalogPath(lang,"/monsters/")+"?id="+encodeURIComponent(row[0])});
+        nameAlias:wikiNameAlias("monster",row[0],row[1],lang),detail:"Level "+String(row[2]??"—"),href:catalogPath(lang,"/monsters/")+"?id="+encodeURIComponent(row[0])});
     }
   }
   for(const row of guides){
@@ -43,20 +45,26 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
 }
 export function searchWikiRecords(records,query,{kind="all",limit=30}={}){
   const needle=foldSearch(query);
-  if(needle.length<2)return [];
+  if(!isWikiSearchQuery(query))return [];
+  const single=[...String(query).trim().normalize("NFC")].length===1;
   const words=needle.split(" ").filter(Boolean);
   const matches=[];
   for(const record of records){
     if(kind!=="all"&&record.kind!==kind)continue;
     const title=foldSearch(record.title),id=String(record.id??"");
-    const detail=foldSearch(record.detail);
+    const detail=foldSearch(record.detail),alias=foldSearch(record.nameAlias);
     let score=-1;
-    if(id===needle)score=110;
+    if(single){if(alias===needle)score=95;else if(title===needle)score=100;}
+    else if(id===needle)score=110;
     else if(title===needle)score=100;
     else if(title.startsWith(needle))score=82;
     else if(title.includes(needle))score=68;
     else if(words.every(word=>title.includes(word)))score=55;
     else if(words.every(word=>(title+" "+detail).includes(word)))score=30;
+    if(!single&&alias){
+      const aliasScore=alias===needle?95:alias.startsWith(needle)?78:alias.includes(needle)?64:words.every(word=>alias.includes(word))?51:-1;
+      score=Math.max(score,aliasScore);
+    }
     if(score<0)continue;
     // Stable ties and exact names make the result ordering predictable.
     matches.push({record,score});

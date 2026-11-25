@@ -84,7 +84,7 @@ jobs:
         run: node --test tests/wiki-themes.test.mjs
 
       - name: Validate unified Wiki search
-        run: node --test tests/wiki-unified-search.test.mjs
+        run: node --test tests/wiki-unified-search.test.mjs tests/wiki-name-aliases.test.mjs
 
       - name: Validate player profile navigation
         run: node --test tests/wiki-profile-navigation.test.mjs
