@@ -1,4 +1,6 @@
 ---
+import {wikiNameAlias,foldNameAlias} from "../data/wiki-name-aliases.mjs";
+import {aliasText} from "../i18n/name-alias-ui.mjs";
 import {equipmentText} from "../i18n/equipment-ui.mjs";
 import {localePrefix,localeTag,legacyLocale,localizedPaths} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
@@ -44,6 +46,7 @@ const clientFields = curatedFields ? [
       <header>
         <p class="eyebrow">{equipmentText(lang,"EQUIPMENT ITEM CATALOG","CATÁLOGO DE EQUIPAMENTOS")}</p>
         <h1>{title}</h1>
+      {wikiNameAlias("item",item.id,item.nameEn,lang)&&<p>{aliasText(lang,"Wiki translation (unofficial)")}: {wikiNameAlias("item",item.id,item.nameEn,lang)}</p>
         <div class="meta">
           <span>{equipmentText(lang,"Item ID (Unique)","ID do item (Unique)")}: <code>{item.id}</code></span>
           <span>{equipmentText(lang,"NA client English name","Nome em inglês do cliente NA")}</span>
