@@ -638,3 +638,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Preservados motor do calendário, reset 06:00 America/Los_Angeles, DST, cooldowns editáveis, orientação, horizontes 7/14/30, storage keys, formato JSON e links. O seletor de idioma mantém a query `?plan=`. Erros técnicos do motor podem permanecer em inglês.
 - Ferramentas ainda não localizadas continuam acessíveis em EN/PT-BR; hub explicita fallback inglês nos seis idiomas adicionais. Próximos incrementos: crafting (incluindo mensagens dinâmicas e XLSX), preços de mercado/pesquisa e auditoria de dados. Não declarar a Stage 20.81 completa antes de validá-los.
 - Traduções sem revisão nativa; deploy Cloudflare precisa de confirmação.
+
+
+### Stage 20.81b — Crafting Planner multilíngue
+
+- Interface estática/dinâmica em oito idiomas, 139 mensagens dedicadas mais dicionário de ferramentas. Rotas localizadas e links a partir das fichas; seletor preserva `?id=`.
+- Exportação XLSX: quatro abas, cabeçalhos, estados e proveniência traduzidos nos seis idiomas adicionais; fórmula OOXML, números, nomes, estrutura e versões EN/PT existentes preservados. CSV mantém cabeçalhos estáveis em inglês. Alguns erros internos do motor podem continuar em inglês.
+- Sem alteração no motor de crafting, limites, hierarquia, arredondamento, estado de preços e chaves de armazenamento. Trocar idioma preserva ID e preços persistidos, não necessariamente o plano de trabalho em memória. Traduções sem revisão nativa. Verificar deploy.
+- Restam 20.81c preços de mercado/pesquisa e 20.81d auditoria.
