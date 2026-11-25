@@ -57,13 +57,13 @@ export function intelligenceBonusLevels(intelligence){
  if(!Number.isSafeInteger(intelligence)||intelligence<0||intelligence>1000000)throw Error('Invalid intelligence');
  return Math.floor(intelligence/75);
 }
-export function buildPlayerRows(matrix,columns,level,intelligence=0){
+export function buildPlayerRows(matrix,columns,level,intelligence=0,{retainZero=false,compareInt=false}={}){
  const bonus=intelligenceBonusLevels(intelligence);
  if(!Number.isSafeInteger(level)||level<1||level>1000)throw Error('Invalid level');
  const get=(r,f)=>r[columns.indexOf(f)],result=[],used=new Set(HIDDEN_FIELDS);
  function row(group,key,field,kind,unit,compute){
   const values=matrix.columns.map(c=>c.rows.map(r=>({value:compute(r,c.source),line:r[2],aboveCap:(kind==='total'||kind==='int-total')&&num(get(r,'MaxTotalSkillLevel'))>0&&level>num(get(r,'MaxTotalSkillLevel'))})));
-  if(values.flat().some(v=>present(v.value)))result.push({group,key,field,kind,unit,values});
+  if(values.flat().some(v=>present(v.value)||(retainZero&&(num(v.value)===0||v.value==='FALSE'))))result.push({group,key,field,kind,unit,values});
  }
  for(const s of STAT_GROUPS){
   used.add(s.base);used.add(s.inc);
@@ -72,13 +72,13 @@ export function buildPlayerRows(matrix,columns,level,intelligence=0){
   row(s.group,s.key,s.base,'base',s.unit,base);
   row(s.group,s.key,s.inc,'increment',s.unit,inc);
   const hasIncrement=matrix.columns.some(c=>c.rows.some(r=>present(get(r,s.inc))));
-  if(hasIncrement)row(s.group,s.key,s.base,'total',s.unit,(r,mode)=>{
+  if(hasIncrement||retainZero)row(s.group,s.key,s.base,'total',s.unit,(r,mode)=>{
    const b=base(r),i=inc(r,mode);
    if(b===null||i===null||(s.key==='modifier'&&mode==='Magic'&&i!==0))return null;
    return precision(b+i*(level-1));
   });
   // Only Normal/PvE tooltips were observed. Keep other modes unprojected.
-  if(s.key==='hp'&&bonus>0&&matrix.columns.some(c=>c.source==='Magic'&&c.rows.some(r=>present(get(r,s.inc))))){
+  if(s.key==='hp'&&((bonus>0&&matrix.columns.some(c=>c.source==='Magic'&&c.rows.some(r=>present(get(r,s.inc)))))||(retainZero&&compareInt))){
    row(s.group,s.key,s.base,'int-total','',(r,mode)=>{
     const b=base(r),i=inc(r,mode);
     return mode==='Magic'&&b!==null&&i!==null?precision(b+i*(level-1+bonus)):null;

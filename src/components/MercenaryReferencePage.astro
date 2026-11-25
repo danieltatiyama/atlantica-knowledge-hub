@@ -125,6 +125,24 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 .reference :global(.ref-view-actions button){padding:6px 10px}
 .reference :global(.ref-group-toggle){width:100%;display:block;text-align:left;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;padding:2px 0}
 .reference :global(.ref-group-toggle:focus-visible){outline:2px solid var(--color-accent);outline-offset:3px}
+.reference :global(.ref-skill-compare){margin:18px 0;border:1px solid var(--color-border);border-radius:6px;padding:12px 16px;background:var(--color-surface)}
+.reference :global(.ref-skill-compare summary){cursor:pointer;color:var(--color-accent);font-weight:600}
+.reference :global(.ref-compare-options){display:flex;align-items:end;flex-wrap:wrap;gap:14px;margin:12px 0}
+.reference :global(.ref-compare-options > label:first-child){min-width:min(100%,220px)}
+.reference :global(.ref-compare-cards){display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin:12px 0}
+.reference :global(.ref-compare-side){min-width:0;display:grid;gap:10px;border:1px solid var(--color-border);border-radius:5px;padding:12px}
+.reference :global(.ref-compare-side legend){color:var(--color-accent);font-weight:600;padding:0 4px}
+.reference :global(.ref-compare-numbers){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.reference :global(.ref-compare-side .ref-source){margin:0}
+.reference :global(.ref-skill-compare [aria-invalid="true"]){outline:2px solid var(--color-bronze)}
+.reference :global(.ref-compare-table){overflow:auto;max-height:min(72vh,800px)}
+.reference :global(.ref-compare-table table){min-width:560px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+.reference :global(.ref-compare-table thead th){position:sticky;top:0;z-index:2;background:var(--color-header)}
+.reference :global(.ref-compare-table th:first-child){width:34%;position:sticky;left:0;background:var(--color-surface);z-index:1}
+.reference :global(.ref-compare-table thead th:first-child){z-index:3;background:var(--color-header)}
+.reference :global(.ref-compare-table td){text-align:right}
+.reference :global(.ref-compare-table tbody + tbody .ref-stat-group th){border-top:8px solid var(--color-background)}
+@media(max-width:450px){.reference :global(.ref-compare-numbers){grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <script>
 import { mountReference } from "../scripts/mercenary-reference.mjs";
