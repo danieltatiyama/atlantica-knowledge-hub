@@ -687,3 +687,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Total atual: 794 itens, 1 criatura; 5.565 aliases (incluindo famílias de equipamento). Busca aceita palavras em qualquer ordem no alias; nenhuma alteração de identidade, stats, preços, receitas ou exportações.
 - Integração também em tabelas de boxes com IDs resolvidos, receitas e backlinks de fabricação. Nome bruto continua visível. Sem inferência de identidade a partir de texto de artigo.
 - Cobertura ainda parcial do catálogo completo; nomes de famílias e nomes próprios permanecem em inglês nos aliases descritivos. Restam demais itens, monstros e a extração de índices de mercenários/habilidades. Sem revisão nativa; conferir deploy.
+
+
+### Stage 20.82e1 — Monstros, primeiro lote
+
+- 110 traduções adicionais de criaturas de níveis iniciais (CharID e nome inglês exato), selecionadas no índice original, sem inferir presença atual no servidor. Total: 111 criaturas de 4.350 nomes reconciliados, 794 itens de 22.702 nomes conciliados, 6.335 aliases nos sete idiomas adicionais; 272/421 referências NPC cobertas.
+- Os módulos já integrados (bestiário, pesquisa global, drops, fontes) consomem o novo registro. Dados de combate, drops e IDs inalterados. Testes cobrem pesquisa por CharID/idioma e correspondência da identidade.
+- A expansão de nomes ainda é parcial. Stage 20.82f não deve associar habilidades ou mercenários a IDs sem uma fonte atual: faltam índices explícitos desses tipos no repo. Para prosseguir com os perfis, obter exportação Miner do Global com identificadores/nomes ingleses de mercenários, Magic_Kind/MagicIDentyCode/nomes ingleses de skills e associação mercenário → habilidades quando disponível. Não é necessário cliente regional. Arquivos antigos podem auxiliar, mas versão e correspondência devem ser verificadas.
+- Sem revisão nativa e sem confirmação de deploy.
