@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {validateReference} from '../src/scripts/mercenary-reference.mjs';
+import {validateReference,classRelatedProfiles,hasBookReference} from '../src/scripts/mercenary-reference.mjs';
 import {referenceText} from '../src/i18n/mercenary-reference-ui.mjs';
 import {LOCALE_IDS,languageDestination} from '../src/i18n/locales.mjs';
 const read=name=>readFileSync('public/data/client-mercenaries/'+name+'.json');
@@ -21,6 +21,12 @@ test('source-safe reference schema and pinned pilot',()=>{
   assert.equal(skillList.reduce((n,s)=>n+s.books.length,0),1783);
   assert.equal(Object.values(v.modes).reduce((n,rows)=>n+new Set(rows.filter(r=>r[3]===1).map(r=>r[0]+'|'+r[1])).size,0),48);
   assert.equal(profiles.filter(p=>p.awakening).length,90);
+  assert.equal(new Set(profiles.map(p=>p.baseGrade).filter(Boolean)).size,122);
+  assert.equal(new Set(profiles.map(p=>p.classToken)).size,95);
+  assert.equal(skillList.filter(p=>p.books.length).length,320);
+  assert.equal(new Set(skillList.flatMap(p=>p.books.map(b=>b[0]))).size,1783);
+  const normalKeys=new Set(v.modes.Magic.map(r=>r[0]));
+  assert.equal(skillList.filter(p=>!normalKeys.has(p.magicKind)).length,26);
   assert.equal(validateReference(m,s,null).profiles.length,947);
  }
  const dark=skillList.find(r=>r.skillIndex===995);
@@ -50,4 +56,17 @@ test('derived names and search index match exact source identities',()=>{
  for(const [id,name,status] of lookup.rows){assert.ok(ids.delete(id));assert.equal(status,'named');assert.equal(name,idx.get(id)[1]);assert.equal(idx.get(id)[6],'named');}
  assert.equal(ids.size,0);
  assert.deepEqual(search.rows,[...m.rows.map(r=>['mercenary',r[0],r[1],r[2]+' · G'+r[3]]),...s.rows.map(r=>['skill',String(r[0]),r[3],r[2]])]);
+});
+
+test('reverse book links preserve exact class restrictions, not name proximity',()=>{
+ const {profiles,skillList}=validateReference(m,s,v);
+ const dark=skillList.find(r=>r.skillIndex===995);
+ const related=classRelatedProfiles(profiles,dark);
+ assert.equal(related.length,5);
+ assert.ok(related.every(p=>p.classToken==='CLS1_BLACKARTHUR'));
+ assert.equal(hasBookReference(dark,'yes'),true);
+ assert.equal(hasBookReference(dark,'no'),false);
+ assert.equal(hasBookReference({books:[]},'no'),true);
+ assert.equal(hasBookReference({books:[]},'yes'),false);
+ assert.equal(hasBookReference({},undefined),true);
 });
