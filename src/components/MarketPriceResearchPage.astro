@@ -1,51 +1,48 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:"en"|"pt-br";}
+import {marketAuditText} from "../i18n/market-audit-ui.mjs";
+import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 ---
 <BaseLayout lang={lang}
- title={(pt?"Pesquisa de preços do Market":"Market price research")+" | Atlantica Knowledge Hub"}
- alternatePaths={{en:"/tools/market-prices/research/","pt-br":"/pt-br/tools/market-prices/research/"}}>
+ title={(marketAuditText(lang,"Market price research","Pesquisa de preços do Market"))+" | Atlantica Knowledge Hub"}
+ alternatePaths={localizedPaths("/tools/market-prices/research/")}>
  <main class="mpr-page" id="mpr-root" data-lang={lang}>
-  <nav><a href={prefix+"/tools/market-prices/"}>{pt?"← Catálogo de preços":"← Price catalog"}</a></nav>
+  <nav><a href={prefix+"/tools/market-prices/"}>{marketAuditText(lang,"← Price catalog","← Catálogo de preços")}</a></nav>
   <p class="mpr-eyebrow">ATLANTICA GLOBAL / NA · CLIENT EVIDENCE</p>
-  <h1>{pt?"Pesquisa de preços do Market":"Market price research"}</h1>
-  <p class="mpr-intro">{pt
-   ?"Revise os 128 itens do catálogo geral NPC que não estavam entre os 293 ItemIDs conciliados com a referência histórica de 2025. Os preços exibidos vêm do cliente e NÃO comprovam ofertas fixas no Market atual."
-   :"Review the 128 NPC general-catalog items outside the 293 ItemIDs matched against the 2025 historical reference. Shown prices come from the client and do NOT prove current fixed-price Market listings."}</p>
-  <p class="mpr-disclaimer">{pt
-   ?"As observações são relatos inseridos por você e ficam somente neste navegador. Não viram preços oficiais da Wiki nem são enviadas automaticamente."
-   :"Observations are your own reports stored only in this browser. They never become official Wiki prices or get uploaded automatically."}</p>
+  <h1>{marketAuditText(lang,"Market price research","Pesquisa de preços do Market")}</h1>
+  <p class="mpr-intro">{marketAuditText(lang,"Review the 128 NPC general-catalog items outside the 293 ItemIDs matched against the 2025 historical reference. Shown prices come from the client and do NOT prove current fixed-price Market listings.","Revise os 128 itens do catálogo geral NPC que não estavam entre os 293 ItemIDs conciliados com a referência histórica de 2025. Os preços exibidos vêm do cliente e NÃO comprovam ofertas fixas no Market atual.")}</p>
+  <p class="mpr-disclaimer">{marketAuditText(lang,"Observations are your own reports stored only in this browser. They never become official Wiki prices or get uploaded automatically.","As observações são relatos inseridos por você e ficam somente neste navegador. Não viram preços oficiais da Wiki nem são enviadas automaticamente.")}</p>
   <section class="mpr-panel">
-   <h2>{pt?"Confirmação relatada por jogador":"Player-reported confirmation"}</h2>
-   <p class="mpr-description" id="mpr-player-report-status" role="status">{pt?"Carregando registro da confirmação…":"Loading confirmation record…"}</p>
-   <p class="mpr-description">{pt
-    ?"Em 23/11/2026, o jogador responsável pela conferência informou que todos os 128 preços pendentes correspondiam aos exibidos no Market. É um relato consolidado, não 128 capturas individuais nem uma auditoria independente. Os valores originais do cliente permanecem inalterados."
-    :"On November 23, 2026, the reviewing player reported that all 128 pending prices matched the in-game Market. This is a single aggregate report, not 128 individual screenshots or an independent audit. Original client prices remain unchanged."}</p>
+   <h2>{marketAuditText(lang,"Player-reported confirmation","Confirmação relatada por jogador")}</h2>
+   <p class="mpr-description" id="mpr-player-report-status" role="status">{marketAuditText(lang,"Loading confirmation record…","Carregando registro da confirmação…")}</p>
+   <p class="mpr-description">{marketAuditText(lang,"On November 23, 2026, the reviewing player reported that all 128 pending prices matched the in-game Market. This is a single aggregate report, not 128 individual screenshots or an independent audit. Original client prices remain unchanged.","Em 23/11/2026, o jogador responsável pela conferência informou que todos os 128 preços pendentes correspondiam aos exibidos no Market. É um relato consolidado, não 128 capturas individuais nem uma auditoria independente. Os valores originais do cliente permanecem inalterados.")}</p>
   </section>
   <section class="mpr-panel">
-   <h2>{pt?"Candidatos para verificação":"Candidates to check"}</h2>
-   <p class="mpr-description" id="mpr-stats" role="status">{pt?"Carregando candidatos…":"Loading candidates…"}</p>
+   <h2>{marketAuditText(lang,"Candidates to check","Candidatos para verificação")}</h2>
+   <p class="mpr-description" id="mpr-stats" role="status">{marketAuditText(lang,"Loading candidates…","Carregando candidatos…")}</p>
    <div class="mpr-toolbar">
-    <label>{pt?"Pesquisar nome ou ItemID":"Search name or ItemID"}
-     <input id="mpr-search" type="search" autocomplete="off" placeholder={pt?"Ex.: Holly ou 2002":"e.g. Holly or 2002"}/>
+    <label>{marketAuditText(lang,"Search name or ItemID","Pesquisar nome ou ItemID")}
+     <input id="mpr-search" type="search" autocomplete="off" placeholder={marketAuditText(lang,"e.g. Holly or 2002","Ex.: Holly ou 2002")}/>
     </label>
-    <label>{pt?"Filtrar observações":"Filter observations"}
+    <label>{marketAuditText(lang,"Filter observations","Filtrar observações")}
      <select id="mpr-filter">
-      <option value="all">{pt?"Todos":"All"}</option>
-      <option value="pending">{pt?"Sem observação local":"No local observation"}</option>
-      <option value="reviewed">{pt?"Com observação local":"With local observation"}</option>
+      <option value="all">{marketAuditText(lang,"All","Todos")}</option>
+      <option value="pending">{marketAuditText(lang,"No local observation","Sem observação local")}</option>
+      <option value="reviewed">{marketAuditText(lang,"With local observation","Com observação local")}</option>
      </select>
     </label>
    </div>
-   <div class="mpr-table-wrap" role="region" tabindex="0" aria-label={pt?"Lista de candidatos":"Candidate list"}>
+   <div class="mpr-table-wrap" role="region" tabindex="0" aria-label={marketAuditText(lang,"Candidate list","Lista de candidatos")}>
     <table>
      <thead><tr>
-      <th>ItemID</th><th>{pt?"Nome no cliente":"Client name"}</th>
-      <th>{pt?"Categoria":"Category"}</th><th>{pt?"Preço NPC (gold)":"NPC price (gold)"}</th>
-      <th>{pt?"Relato do jogador":"Player report"}</th>
-      <th>{pt?"Minha observação":"My observation"}</th><th>{pt?"Ação":"Action"}</th>
+      <th>ItemID</th><th>{marketAuditText(lang,"Client name","Nome no cliente")}</th>
+      <th>{marketAuditText(lang,"Category","Categoria")}</th><th>{marketAuditText(lang,"NPC price (gold)","Preço NPC (gold)")}</th>
+      <th>{marketAuditText(lang,"Player report","Relato do jogador")}</th>
+      <th>{marketAuditText(lang,"My observation","Minha observação")}</th><th>{marketAuditText(lang,"Action","Ação")}</th>
      </tr></thead>
      <tbody id="mpr-candidates"></tbody>
     </table>
@@ -53,65 +50,61 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    <p id="mpr-visible" class="mpr-description"></p>
   </section>
   <section class="mpr-panel" id="mpr-editor" hidden>
-   <h2 id="mpr-selected-title">{pt?"Registrar observação":"Record observation"}</h2>
+   <h2 id="mpr-selected-title">{marketAuditText(lang,"Record observation","Registrar observação")}</h2>
    <p class="mpr-description" id="mpr-selected-reference"></p>
    <form id="mpr-form">
     <div class="mpr-toolbar">
-     <label>{pt?"Resultado observado no jogo":"What you observed in game"}
+     <label>{marketAuditText(lang,"What you observed in game","Resultado observado no jogo")}
       <select id="mpr-state" required>
-       <option value="inconclusive">{pt?"Inconclusivo":"Inconclusive"}</option>
-       <option value="fixed-match">{pt?"Oferta fixa com mesmo preço":"Fixed listing at client price"}</option>
-       <option value="fixed-different">{pt?"Oferta fixa com preço diferente":"Fixed listing at different price"}</option>
-       <option value="not-listed">{pt?"Não encontrei oferta fixa":"No fixed listing found"}</option>
+       <option value="inconclusive">{marketAuditText(lang,"Inconclusive","Inconclusivo")}</option>
+       <option value="fixed-match">{marketAuditText(lang,"Fixed listing at client price","Oferta fixa com mesmo preço")}</option>
+       <option value="fixed-different">{marketAuditText(lang,"Fixed listing at different price","Oferta fixa com preço diferente")}</option>
+       <option value="not-listed">{marketAuditText(lang,"No fixed listing found","Não encontrei oferta fixa")}</option>
       </select>
      </label>
-     <label>{pt?"Preço observado (gold)":"Observed price (gold)"}
-      <input id="mpr-observed-price" type="text" inputmode="numeric" pattern="[0-9]+" placeholder={pt?"Somente para ofertas observadas":"Only for observed listings"}/>
+     <label>{marketAuditText(lang,"Observed price (gold)","Preço observado (gold)")}
+      <input id="mpr-observed-price" type="text" inputmode="numeric" pattern="[0-9]+" placeholder={marketAuditText(lang,"Only for observed listings","Somente para ofertas observadas")}/>
      </label>
-     <label>{pt?"Data da observação":"Observation date"}
+     <label>{marketAuditText(lang,"Observation date","Data da observação")}
       <input id="mpr-observed-date" type="date" required/>
      </label>
     </div>
-    <label class="mpr-notes-label">{pt?"Evidência / contexto (10–1000 caracteres)":"Evidence / context (10–1000 characters)"}
+    <label class="mpr-notes-label">{marketAuditText(lang,"Evidence / context (10–1000 characters)","Evidência / contexto (10–1000 caracteres)")}
      <textarea id="mpr-notes" rows="3" minlength="10" maxlength="1000" required
-      placeholder={pt?"Ex.: Verifiquei na janela Market, quantidade fixa e preço, servidor Global…":"e.g. Checked the in-game Market fixed listing and quantity on Global…"}></textarea>
+      placeholder={marketAuditText(lang,"e.g. Checked the in-game Market fixed listing and quantity on Global…","Ex.: Verifiquei na janela Market, quantidade fixa e preço, servidor Global…")}></textarea>
     </label>
-    <p class="mpr-description">{pt
-     ?"Registre exatamente o que você viu. Uma observação local não comprova sozinha a disponibilidade permanente do item."
-     :"Record exactly what you saw. A local observation alone does not prove permanent item availability."}</p>
+    <p class="mpr-description">{marketAuditText(lang,"Record exactly what you saw. A local observation alone does not prove permanent item availability.","Registre exatamente o que você viu. Uma observação local não comprova sozinha a disponibilidade permanente do item.")}</p>
     <div class="mpr-actions">
-     <button type="submit">{pt?"Salvar observação local":"Save local observation"}</button>
-     <button type="button" id="mpr-delete">{pt?"Apagar observação":"Delete observation"}</button>
-     <button type="button" id="mpr-cancel">{pt?"Fechar":"Close"}</button>
+     <button type="submit">{marketAuditText(lang,"Save local observation","Salvar observação local")}</button>
+     <button type="button" id="mpr-delete">{marketAuditText(lang,"Delete observation","Apagar observação")}</button>
+     <button type="button" id="mpr-cancel">{marketAuditText(lang,"Close","Fechar")}</button>
     </div>
    </form>
   </section>
   <section class="mpr-panel">
-   <h2>{pt?"Exportar e importar observações":"Export and import observations"}</h2>
-   <p class="mpr-description">{pt
-    ?"Exporte um JSON para compartilhar as evidências manualmente ou restaurar em outro navegador. Importar substitui as observações locais atuais, após confirmação."
-    :"Export a JSON file to share evidence manually or restore it in another browser. Import replaces your current local observations after confirmation."}</p>
+   <h2>{marketAuditText(lang,"Export and import observations","Exportar e importar observações")}</h2>
+   <p class="mpr-description">{marketAuditText(lang,"Export a JSON file to share evidence manually or restore it in another browser. Import replaces your current local observations after confirmation.","Exporte um JSON para compartilhar as evidências manualmente ou restaurar em outro navegador. Importar substitui as observações locais atuais, após confirmação.")}</p>
    <div class="mpr-actions">
-    <button type="button" id="mpr-export">{pt?"Exportar observações JSON":"Export observations JSON"}</button>
-    <label class="mpr-upload">{pt?"Importar JSON":"Import JSON"}
+    <button type="button" id="mpr-export">{marketAuditText(lang,"Export observations JSON","Exportar observações JSON")}</button>
+    <label class="mpr-upload">{marketAuditText(lang,"Import JSON","Importar JSON")}
      <input type="file" id="mpr-import" accept=".json,application/json"/>
     </label>
    </div>
    <p id="mpr-action-status" role="status" aria-live="polite"></p>
   </section>
-  <p class="mpr-description">{pt
-   ?"Origem: NPCTradeItem_ENG.ndt do cliente instalado, extraído em 23/11/2026; comparação histórica Jana4U de 14/11/2025. O arquivo de servidor citado por pesquisas antigas tem o mesmo nome, mas não foi obtido do servidor Global."
-   :"Sources: installed client NPCTradeItem_ENG.ndt, extracted November 23, 2026; Jana4U historical comparison dated November 14, 2025. Older technical references mention a similarly named server file, but the live Global server file was not obtained."}</p>
+  <p class="mpr-description">{marketAuditText(lang,"Sources: installed client NPCTradeItem_ENG.ndt, extracted November 23, 2026; Jana4U historical comparison dated November 14, 2025. Older technical references mention a similarly named server file, but the live Global server file was not obtained.","Origem: NPCTradeItem_ENG.ndt do cliente instalado, extraído em 23/11/2026; comparação histórica Jana4U de 14/11/2025. O arquivo de servidor citado por pesquisas antigas tem o mesmo nome, mas não foi obtido do servidor Global.")}</p>
  </main>
 </BaseLayout>
 <script>
+ import {marketAuditText} from "../i18n/market-audit-ui.mjs";
+ import {localeTag} from "../i18n/locales.mjs";
  import {REVIEW_STORAGE_KEY,parseMarketPriceReviewQueue,normalizeMarketObservation,
    validateMarketReviewBundle,buildMarketReviewBundle,parsePlayerMarketAttestation} from "../data/market-price-review.mjs";
  type Candidate={itemId:string;name:string;category:string;referenceGold:string;sourceLine:number};
  type Observation={itemId:string;state:string;observedGold:string|null;observedOn:string;notes:string};
  const root=document.getElementById("mpr-root");
  if(root){
-  const pt=root.dataset.lang==="pt-br";
+  const lang=root.dataset.lang??"en";
   const $=(id:string)=>document.getElementById(id)!;
   const results=$("mpr-candidates"),stats=$("mpr-stats"),visible=$("mpr-visible");
   const actionStatus=$("mpr-action-status");
@@ -128,26 +121,20 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   let reportedIds=new Set<string>();
   let observations=new Map<string,Observation>();
   let selectedId:string|null=null;
-  const gold=(v:string)=>Number(v).toLocaleString(pt?"pt-BR":"en-US");
+  const gold=(v:string)=>Number(v).toLocaleString(lang==="en"?"en-US":localeTag(lang));
   const node=(tag:string,value?:string)=>{
    const el=document.createElement(tag);
    if(value!==undefined)el.textContent=value;
    return el;
   };
-  const statuses:Record<string,string>=pt?{
-   "fixed-match":"Oferta fixa: mesmo preço","fixed-different":"Oferta fixa: preço diferente",
-   "not-listed":"Não encontrada","inconclusive":"Inconclusivo",
-  }:{
-   "fixed-match":"Fixed: same price","fixed-different":"Fixed: different price",
-   "not-listed":"Not found","inconclusive":"Inconclusive",
+  const statuses:Record<string,string>={
+ "fixed-match":marketAuditText(lang,"Fixed: same price","Oferta fixa: mesmo preço"),"fixed-different":marketAuditText(lang,"Fixed: different price","Oferta fixa: preço diferente"),"not-listed":marketAuditText(lang,"Not found","Não encontrada"),"inconclusive":marketAuditText(lang,"Inconclusive","Inconclusivo"),
   };
   function store(){
    const payload=buildMarketReviewBundle(observations,byId);
    try{localStorage.setItem(REVIEW_STORAGE_KEY,JSON.stringify(payload));return true;}
    catch{
-    actionStatus.textContent=pt
-     ?"Não foi possível salvar no navegador. Exporte o JSON para preservar os registros."
-     :"Browser storage unavailable. Export JSON to preserve your records.";
+    actionStatus.textContent=marketAuditText(lang,"Browser storage unavailable. Export JSON to preserve your records.","Não foi possível salvar no navegador. Exporte o JSON para preservar os registros.");
     return false;
    }
   }
@@ -161,25 +148,23 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    for(const c of shown){
     const tr=node("tr"),record=observations.get(c.itemId);
     for(const v of [c.itemId,c.name,c.category,gold(c.referenceGold),
-     reportedIds.has(c.itemId)?(pt?"Coincidente (relato)":"Match (player report)"):(pt?"Sem relato":"No report"),
-     record?statuses[record.state]:(pt?"Sem observação local":"No local observation")]){
+     reportedIds.has(c.itemId)?(marketAuditText(lang,"Match (player report)","Coincidente (relato)")):(marketAuditText(lang,"No report","Sem relato")),
+     record?statuses[record.state]:(marketAuditText(lang,"No local observation","Sem observação local"))]){
      const td=node("td",v);tr.append(td);
     }
-    const td=node("td"),button=node("button",pt?"Revisar":"Review") as HTMLButtonElement;
+    const td=node("td"),button=node("button",marketAuditText(lang,"Review","Revisar")) as HTMLButtonElement;
     button.type="button";button.addEventListener("click",()=>select(c.itemId));
     td.append(button);tr.append(td);results.append(tr);
    }
-   visible.textContent=(pt?"Exibindo ":"Showing ")+shown.length+
-    (pt?" de 128 candidatos.":" of 128 candidates.");
-   stats.textContent=observations.size+
-    (pt?" / 128 com observação local · "+reportedIds.size+" relatos de coincidência (jogador)"
-      :" / 128 with local observations · "+reportedIds.size+" player-reported matches");
+   visible.textContent=(marketAuditText(lang,"Showing ","Exibindo "))+shown.length+
+    (marketAuditText(lang," of 128 candidates."," de 128 candidatos."));
+   stats.textContent=marketAuditText(lang,"{local} / 128 with local observations · {reported} player-reported matches","{local} / 128 com observação local · {reported} relatos de coincidência (jogador)",{local:observations.size,reported:reportedIds.size});
   }
   function select(id:string){
    const c=byId.get(id);if(!c)return;
    selectedId=id;const previous=observations.get(id);
    $("mpr-selected-title").textContent=c.name+" (#"+id+")";
-   $("mpr-selected-reference").textContent=(pt?"Referência NPC do cliente: ":"Client NPC reference: ")+
+   $("mpr-selected-reference").textContent=(marketAuditText(lang,"Client NPC reference: ","Referência NPC do cliente: "))+
     gold(c.referenceGold)+" gold · "+c.category;
    state.value=previous?.state||"inconclusive";
    price.value=previous?.observedGold||"";
@@ -200,7 +185,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     },byId) as Observation;
     observations.set(record.itemId,record);
     const saved=store();render();close();
-    if(saved)actionStatus.textContent=pt?"Observação salva localmente.":"Observation saved locally.";
+    if(saved)actionStatus.textContent=marketAuditText(lang,"Observation saved locally.","Observação salva localmente.");
    }catch(e){
     actionStatus.textContent=e instanceof Error?e.message:String(e);
    }
@@ -209,7 +194,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   $("mpr-delete").addEventListener("click",()=>{
    if(!selectedId)return;
    observations.delete(selectedId);store();render();close();
-   actionStatus.textContent=pt?"Observação apagada.":"Observation deleted.";
+   actionStatus.textContent=marketAuditText(lang,"Observation deleted.","Observação apagada.");
   });
   state.addEventListener("change",()=>{
    const hasPrice=state.value.startsWith("fixed-");
@@ -225,7 +210,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     a.href=url;a.download="atlantica-market-observations.json";
     document.body.append(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
-    actionStatus.textContent=pt?"JSON exportado.":"JSON exported.";
+    actionStatus.textContent=marketAuditText(lang,"JSON exported.","JSON exportado.");
    }catch(e){actionStatus.textContent=String(e);}
   });
   importField.addEventListener("change",async()=>{
@@ -234,14 +219,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(file.size>150000)throw Error("Import exceeds 150 KB");
     const bundle=JSON.parse(await file.text());
     const incoming=validateMarketReviewBundle(bundle,byId) as Map<string,Observation>;
-    const ok=window.confirm(pt
-     ?"Substituir suas observações locais pelas do arquivo?"
-     :"Replace your local observations with the imported file?");
+    const ok=window.confirm(marketAuditText(lang,"Replace your local observations with the imported file?","Substituir suas observações locais pelas do arquivo?"));
     if(!ok)return;
     observations=incoming;store();render();close();
-    actionStatus.textContent=pt?"Observações importadas.":"Observations imported.";
+    actionStatus.textContent=marketAuditText(lang,"Observations imported.","Observações importadas.");
    }catch(e){
-    actionStatus.textContent=(pt?"Importação recusada: ":"Import rejected: ")+
+    actionStatus.textContent=(marketAuditText(lang,"Import rejected: ","Importação recusada: "))+
      (e instanceof Error?e.message:String(e));
    }finally{importField.value="";}
   });
@@ -257,25 +240,19 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     try{
      if(!attestationResponse.ok)throw Error("Player report unavailable");
      reportedIds=parsePlayerMarketAttestation(await attestationResponse.json(),byId);
-     $("mpr-player-report-status").textContent=pt
-      ?"128/128 preços informados como coincidentes com o Market · fonte: relato do jogador, 23/11/2026"
-      :"128/128 prices reported as matching the Market · source: player statement, Nov 23, 2026";
+     $("mpr-player-report-status").textContent=marketAuditText(lang,"128/128 prices reported as matching the Market · source: player statement, Nov 23, 2026","128/128 preços informados como coincidentes com o Market · fonte: relato do jogador, 23/11/2026");
     }catch{
-     $("mpr-player-report-status").textContent=pt
-      ?"Não foi possível validar o registro do relato; os preços do cliente continuam disponíveis."
-      :"Could not validate the player report; client reference prices remain available.";
+     $("mpr-player-report-status").textContent=marketAuditText(lang,"Could not validate the player report; client reference prices remain available.","Não foi possível validar o registro do relato; os preços do cliente continuam disponíveis.");
     }
     try{
      const saved=localStorage.getItem(REVIEW_STORAGE_KEY);
      if(saved)observations=validateMarketReviewBundle(JSON.parse(saved),byId) as Map<string,Observation>;
     }catch{
-     actionStatus.textContent=pt
-      ?"Registro local inválido ou indisponível; nenhuma observação foi carregada."
-      :"Local records invalid or unavailable; no observations were loaded.";
+     actionStatus.textContent=marketAuditText(lang,"Local records invalid or unavailable; no observations were loaded.","Registro local inválido ou indisponível; nenhuma observação foi carregada.");
     }
     render();
    }catch(e){
-    stats.textContent=pt?"Falha ao carregar a fila de revisão.":"Failed to load review queue.";
+    stats.textContent=marketAuditText(lang,"Failed to load review queue.","Falha ao carregar a fila de revisão.");
     actionStatus.textContent=String(e);
    }
   }
