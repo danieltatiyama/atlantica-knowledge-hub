@@ -1,39 +1,40 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:"en"|"pt-br";}
+import {craftingText} from "../i18n/crafting-ui.mjs";
+import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 ---
-<BaseLayout lang={lang} title={(pt?"Calculadora de fabricação":"Crafting calculator")+" | Atlantica Knowledge Hub"}
- alternatePaths={{en:"/tools/crafting/","pt-br":"/pt-br/tools/crafting/"}}>
+<BaseLayout lang={lang} title={(craftingText(lang,"Crafting calculator","Calculadora de fabricação"))+" | Atlantica Knowledge Hub"}
+ alternatePaths={localizedPaths("/tools/crafting/")}>
  <main id="wiki-craft-planner" class="craft-planner" data-lang={lang}>
-  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <nav><a href={prefix+"/tools/"}>{craftingText(lang,"← Tools","← Ferramentas")}</a></nav>
   <p class="eyebrow">ATLANTICA GLOBAL / NA · ITEMTYPE SOURCE</p>
-  <h1>{pt?"Calculadora de fabricação":"Crafting calculator"}</h1>
-  <p>{pt
-    ?"Calcule materiais de fabricação e dependências em múltiplos níveis usando receitas extraídas do cliente. Para equipamentos, usamos a regra confirmada: batch de 1, máximo de 20 por operação. Para outros itens, utilizamos o campo Unit do cliente ou um valor informado manualmente."
-    :"Plan ingredient requirements across multiple recipe levels using extracted client recipes. Equipment uses the confirmed gameplay rule: batch size 1, maximum 20 per operation. Other items use original client Unit values or explicit manual inputs."}</p>
+  <h1>{craftingText(lang,"Crafting calculator","Calculadora de fabricação")}</h1>
+  <p>{craftingText(lang,"Plan ingredient requirements across multiple recipe levels using extracted client recipes. Equipment uses the confirmed gameplay rule: batch size 1, maximum 20 per operation. Other items use original client Unit values or explicit manual inputs.","Calcule materiais de fabricação e dependências em múltiplos níveis usando receitas extraídas do cliente. Para equipamentos, usamos a regra confirmada: batch de 1, máximo de 20 por operação. Para outros itens, utilizamos o campo Unit do cliente ou um valor informado manualmente.")}</p>
   <form id="craft-plan-form" class="craft-form">
-   <div class="field"><label for="craft-search">{pt?"Nome do item ou ItemID":"Item name or ItemID"}</label>
-    <input id="craft-search" type="search" autocomplete="off" required placeholder={pt?"Buscar itens com receita no cliente":"Search items with client recipes"} aria-controls="craft-suggestions" aria-autocomplete="list"/>
-    <ul id="craft-suggestions" aria-label={pt?"Sugestões de itens":"Item suggestions"}></ul>
+   <div class="field"><label for="craft-search">{craftingText(lang,"Item name or ItemID","Nome do item ou ItemID")}</label>
+    <input id="craft-search" type="search" autocomplete="off" required placeholder={craftingText(lang,"Search items with client recipes","Buscar itens com receita no cliente")} aria-controls="craft-suggestions" aria-autocomplete="list"/>
+    <ul id="craft-suggestions" aria-label={craftingText(lang,"Item suggestions","Sugestões de itens")}></ul>
    </div>
-   <div class="field"><label for="craft-quantity">{pt?"Quantidade desejada":"Desired output"}</label>
+   <div class="field"><label for="craft-quantity">{craftingText(lang,"Desired output","Quantidade desejada")}</label>
     <input id="craft-quantity" type="number" min="1" max="10000" value="1" step="1" required disabled/>
    </div>
-   <button id="craft-submit" type="submit" disabled>{pt?"Calcular materiais":"Calculate materials"}</button>
+   <button id="craft-submit" type="submit" disabled>{craftingText(lang,"Calculate materials","Calcular materiais")}</button>
    <div id="craft-quantity-controls" class="craft-quantity-controls" hidden>
     <div id="craft-root-variant-group" class="craft-root-setting" hidden>
-     <label for="craft-root-variant">{pt?"Versão da receita":"Recipe variant"}</label>
-     <select id="craft-root-variant"><option value="">{pt?"Escolha uma receita":"Choose a recipe"}</option></select>
+     <label for="craft-root-variant">{craftingText(lang,"Recipe variant","Versão da receita")}</label>
+     <select id="craft-root-variant"><option value="">{craftingText(lang,"Choose a recipe","Escolha uma receita")}</option></select>
     </div>
     <div id="craft-root-batch-group" class="craft-root-setting" hidden>
-     <label for="craft-root-batch">{pt?"Unidades por batch não identificadas: informe o mínimo":"Batch size not in source: enter the minimum"}</label>
+     <label for="craft-root-batch">{craftingText(lang,"Batch size not in source: enter the minimum","Unidades por batch não identificadas: informe o mínimo")}</label>
      <input id="craft-root-batch" type="number" min="1" max="10000" step="1" placeholder="1–10000"/>
     </div>
     <div id="craft-slider-group" hidden>
      <div class="craft-range-heading">
-      <label for="craft-quantity-slider">{pt?"Quantidade de fabricação":"Craft quantity"}</label>
+      <label for="craft-quantity-slider">{craftingText(lang,"Craft quantity","Quantidade de fabricação")}</label>
       <output id="craft-quantity-output" for="craft-quantity-slider craft-quantity">—</output>
      </div>
      <input id="craft-quantity-slider" type="range" min="1" max="10000" value="1" step="1" disabled/>
@@ -43,42 +44,40 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    </div>
   </form>
   <p id="craft-status" role="status" aria-live="polite">
-   {pt?"Somente itens com receitas presentes no cliente aparecem na busca. Isso não comprova disponibilidade no servidor.":"Search shows items with recipes in the client files. This does not verify live-server availability."}
+   {craftingText(lang,"Search shows items with recipes in the client files. This does not verify live-server availability.","Somente itens com receitas presentes no cliente aparecem na busca. Isso não comprova disponibilidade no servidor.")}
   </p>
   <section id="craft-result" hidden>
-   <h2>{pt?"Plano de produção":"Production plan"}</h2>
+   <h2>{craftingText(lang,"Production plan","Plano de produção")}</h2>
    <p id="craft-result-note"></p>
    <div id="craft-overview" class="craft-overview" aria-live="polite">
-    <div><span>{pt?"Quantidade planejada":"Planned output"}</span><strong id="craft-summary-output">—</strong></div>
-    <div><span>{pt?"Batches totais":"Total batches"}</span><strong id="craft-summary-batches">—</strong></div>
-    <div><span>{pt?"Operações totais":"Total operations"}</span><strong id="craft-summary-operations">—</strong></div>
-    <div><span>{pt?"Materiais para comprar":"Shopping list items"}</span><strong id="craft-summary-materials">—</strong></div>
+    <div><span>{craftingText(lang,"Planned output","Quantidade planejada")}</span><strong id="craft-summary-output">—</strong></div>
+    <div><span>{craftingText(lang,"Total batches","Batches totais")}</span><strong id="craft-summary-batches">—</strong></div>
+    <div><span>{craftingText(lang,"Total operations","Operações totais")}</span><strong id="craft-summary-operations">—</strong></div>
+    <div><span>{craftingText(lang,"Shopping list items","Materiais para comprar")}</span><strong id="craft-summary-materials">—</strong></div>
    </div>
    <section class="craft-tree-panel">
     <div class="craft-section-heading">
-     <h3>{pt?"Árvore de receitas":"Crafting tree"}</h3>
+     <h3>{craftingText(lang,"Crafting tree","Árvore de receitas")}</h3>
      <div class="craft-tree-tools">
-      <button type="button" id="craft-export-tree" class="craft-export-button">{pt?"Exportar planilha (.xlsx)":"Export spreadsheet (.xlsx)"}</button>
-      <button type="button" id="craft-tree-expand">{pt?"Expandir tudo":"Expand all"}</button>
-      <button type="button" id="craft-tree-collapse">{pt?"Recolher tudo":"Collapse all"}</button>
+      <button type="button" id="craft-export-tree" class="craft-export-button">{craftingText(lang,"Export spreadsheet (.xlsx)","Exportar planilha (.xlsx)")}</button>
+      <button type="button" id="craft-tree-expand">{craftingText(lang,"Expand all","Expandir tudo")}</button>
+      <button type="button" id="craft-tree-collapse">{craftingText(lang,"Collapse all","Recolher tudo")}</button>
      </div>
     </div>
-    <p class="craft-muted">{pt
-     ?"Cores diferenciam os níveis. A divisão de operações mostra a produção por operação; a divisão de consumo mostra quanto cada operação da receita pai gasta. Totais compartilhados não são duplicados."
-     :"Colors distinguish levels. Operation breakdown shows output per operation; consumption breakdown shows ingredients used by each parent operation. Shared totals are counted once."}</p>
-    <div id="craft-tree" class="craft-tree" role="region" tabindex="0" aria-label={pt?"Tabela de fabricação, com rolagem horizontal e encaixe por coluna":"Crafting table with horizontal scrolling and column snapping"}>
+    <p class="craft-muted">{craftingText(lang,"Colors distinguish levels. Operation breakdown shows output per operation; consumption breakdown shows ingredients used by each parent operation. Shared totals are counted once.","Cores diferenciam os níveis. A divisão de operações mostra a produção por operação; a divisão de consumo mostra quanto cada operação da receita pai gasta. Totais compartilhados não são duplicados.")}</p>
+    <div id="craft-tree" class="craft-tree" role="region" tabindex="0" aria-label={craftingText(lang,"Crafting table with horizontal scrolling and column snapping","Tabela de fabricação, com rolagem horizontal e encaixe por coluna")}>
      <table class="craft-tree-table">
       <thead><tr>
-       <th scope="col">{pt?"Item / Receita":"Item / Recipe"}</th>
-       <th scope="col">{pt?"Neste ramo":"Branch need"}</th>
-       <th scope="col">{pt?"Total necessário":"Total needed"}</th>
-       <th scope="col">{pt?"A fabricar":"To produce"}</th>
-       <th scope="col">{pt?"Por batch":"Per batch"}</th>
-       <th scope="col">{pt?"Batches":"Batches"}</th>
-       <th scope="col">{pt?"Operações":"Operations"}</th>
-       <th scope="col">{pt?"Divisão das operações":"Operation breakdown"}</th>
-       <th scope="col">{pt?"Divisão do consumo":"Consumption breakdown"}</th>
-       <th scope="col">{pt?"Ação":"Action"}</th>
+       <th scope="col">{craftingText(lang,"Item / Recipe","Item / Receita")}</th>
+       <th scope="col">{craftingText(lang,"Branch need","Neste ramo")}</th>
+       <th scope="col">{craftingText(lang,"Total needed","Total necessário")}</th>
+       <th scope="col">{craftingText(lang,"To produce","A fabricar")}</th>
+       <th scope="col">{craftingText(lang,"Per batch","Por batch")}</th>
+       <th scope="col">{craftingText(lang,"Batches","Batches")}</th>
+       <th scope="col">{craftingText(lang,"Operations","Operações")}</th>
+       <th scope="col">{craftingText(lang,"Operation breakdown","Divisão das operações")}</th>
+       <th scope="col">{craftingText(lang,"Consumption breakdown","Divisão do consumo")}</th>
+       <th scope="col">{craftingText(lang,"Action","Ação")}</th>
       </tr></thead>
       <tbody id="craft-tree-rows"></tbody>
      </table>
@@ -88,58 +87,56 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     <section class="craft-table-panel craft-schedule-panel" aria-labelledby="craft-schedule-heading">
      <div class="craft-panel-heading">
       <div class="craft-panel-title">
-       <p class="craft-panel-kicker">{pt?"PLANO DE PRODUÇÃO":"PRODUCTION PLAN"}</p>
-       <h3 id="craft-schedule-heading">{pt?"Agenda de fabricação":"Craft schedule"}</h3>
-       <p>{pt?"Batches completos e quantidade por operação, incluindo produtos intermediários.":"Whole batches and units per operation, including crafted intermediate products."}</p>
+       <p class="craft-panel-kicker">{craftingText(lang,"PRODUCTION PLAN","PLANO DE PRODUÇÃO")}</p>
+       <h3 id="craft-schedule-heading">{craftingText(lang,"Craft schedule","Agenda de fabricação")}</h3>
+       <p>{craftingText(lang,"Whole batches and units per operation, including crafted intermediate products.","Batches completos e quantidade por operação, incluindo produtos intermediários.")}</p>
       </div>
       <div class="craft-panel-stat">
-       <span>{pt?"Operações":"Operations"}</span>
+       <span>{craftingText(lang,"Operations","Operações")}</span>
        <strong id="craft-schedule-count">—</strong>
       </div>
      </div>
      <div class="table-scroll craft-data-scroll">
       <table class="craft-data-table craft-schedule-table">
        <thead><tr>
-        <th scope="col">{pt?"Produto":"Product"}</th>
-        <th scope="col">{pt?"Necessário":"Required"}</th>
-        <th scope="col">{pt?"A fabricar":"To craft"}</th>
-        <th scope="col">{pt?"Por batch":"Per batch"}</th>
-        <th scope="col">{pt?"Batches":"Batches"}</th>
-        <th scope="col">{pt?"Operações":"Operations"}</th>
-        <th scope="col">{pt?"Limite/op.":"Limit/op."}</th>
-        <th scope="col">{pt?"Divisão por operação":"Operation breakdown"}</th>
-        <th scope="col">{pt?"Sobra":"Excess"}</th>
+        <th scope="col">{craftingText(lang,"Product","Produto")}</th>
+        <th scope="col">{craftingText(lang,"Required","Necessário")}</th>
+        <th scope="col">{craftingText(lang,"To craft","A fabricar")}</th>
+        <th scope="col">{craftingText(lang,"Per batch","Por batch")}</th>
+        <th scope="col">{craftingText(lang,"Batches","Batches")}</th>
+        <th scope="col">{craftingText(lang,"Operations","Operações")}</th>
+        <th scope="col">{craftingText(lang,"Limit/op.","Limite/op.")}</th>
+        <th scope="col">{craftingText(lang,"Operation breakdown","Divisão por operação")}</th>
+        <th scope="col">{craftingText(lang,"Excess","Sobra")}</th>
        </tr></thead><tbody id="craft-steps"></tbody>
       </table>
      </div>
-     <p class="craft-panel-footnote">{pt?"Os limites de produção são aplicados individualmente em cada receita da árvore.":"Each recipe in the tree respects its own per-operation production limit."}</p>
+     <p class="craft-panel-footnote">{craftingText(lang,"Each recipe in the tree respects its own per-operation production limit.","Os limites de produção são aplicados individualmente em cada receita da árvore.")}</p>
     </section>
     <section class="craft-table-panel craft-shopping-panel" aria-labelledby="craft-shopping-heading">
      <div class="craft-panel-heading">
       <div class="craft-panel-title">
-       <p class="craft-panel-kicker">{pt?"MATERIAIS CONSOLIDADOS":"CONSOLIDATED MATERIALS"}</p>
-       <h3 id="craft-shopping-heading">{pt?"Lista de compras":"Shopping list"}</h3>
-       <p>{pt?"Ingredientes finais somados entre todos os ramos, sem duplicações.":"Final ingredients combined across all branches without double-counting."}</p>
+       <p class="craft-panel-kicker">{craftingText(lang,"CONSOLIDATED MATERIALS","MATERIAIS CONSOLIDADOS")}</p>
+       <h3 id="craft-shopping-heading">{craftingText(lang,"Shopping list","Lista de compras")}</h3>
+       <p>{craftingText(lang,"Final ingredients combined across all branches without double-counting.","Ingredientes finais somados entre todos os ramos, sem duplicações.")}</p>
       </div>
       <div class="craft-tree-tools craft-shopping-actions">
-       <button type="button" id="craft-copy-shopping">{pt?"Copiar lista":"Copy list"}</button>
-       <button type="button" id="craft-export-shopping">{pt?"Exportar CSV":"Export CSV"}</button>
-       <button type="button" id="craft-load-npc-prices">{pt?"Ver referências do cliente":"Show client references"}</button>
-       <button type="button" id="craft-apply-npc-prices" hidden>{pt?"Preencher somente preços vazios":"Fill only empty prices"}</button>
+       <button type="button" id="craft-copy-shopping">{craftingText(lang,"Copy list","Copiar lista")}</button>
+       <button type="button" id="craft-export-shopping">{craftingText(lang,"Export CSV","Exportar CSV")}</button>
+       <button type="button" id="craft-load-npc-prices">{craftingText(lang,"Show client references","Ver referências do cliente")}</button>
+       <button type="button" id="craft-apply-npc-prices" hidden>{craftingText(lang,"Fill only empty prices","Preencher somente preços vazios")}</button>
       </div>
      </div>
      <p id="craft-npc-price-caption" class="craft-npc-price-caption">
-      {pt
-       ?"Preços da tabela NPC do cliente: referências opcionais. Não comprovam oferta fixa no Market atual. Os valores manuais têm prioridade."
-       :"Client NPC trade table prices: optional references, not verified fixed offers in the live Market. Manual prices take priority."}
+      {craftingText(lang,"Client NPC trade table prices: optional references, not verified fixed offers in the live Market. Manual prices take priority.","Preços da tabela NPC do cliente: referências opcionais. Não comprovam oferta fixa no Market atual. Os valores manuais têm prioridade.")}
      </p>
      <div class="table-scroll craft-data-scroll">
       <table class="craft-data-table craft-shopping-table">
        <thead><tr>
-        <th scope="col">{pt?"Material":"Material"}</th>
-        <th scope="col">{pt?"Quantidade":"Quantity"}</th>
-        <th scope="col">{pt?"Preço unitário":"Unit price"}</th>
-        <th scope="col">{pt?"Custo":"Cost"}</th>
+        <th scope="col">{craftingText(lang,"Material","Material")}</th>
+        <th scope="col">{craftingText(lang,"Quantity","Quantidade")}</th>
+        <th scope="col">{craftingText(lang,"Unit price","Preço unitário")}</th>
+        <th scope="col">{craftingText(lang,"Cost","Custo")}</th>
        </tr></thead><tbody id="craft-leaves"></tbody>
       </table>
      </div>
@@ -152,24 +149,22 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    <section id="craft-completed-section" class="craft-completed-section" hidden aria-labelledby="craft-completed-heading">
     <div class="craft-completed-heading">
      <div>
-      <h3 id="craft-completed-heading">{pt?"Concluídos":"Completed"}</h3>
-      <p>{pt
-       ?"Itens marcados como feitos, com suas dependências removidas do trabalho pendente. Materiais compartilhados continuam onde outras receitas precisam deles."
-       :"Items marked done, with their dependencies removed from pending work. Shared materials remain wherever other unfinished recipes need them."}</p>
+      <h3 id="craft-completed-heading">{craftingText(lang,"Completed","Concluídos")}</h3>
+      <p>{craftingText(lang,"Items marked done, with their dependencies removed from pending work. Shared materials remain wherever other unfinished recipes need them.","Itens marcados como feitos, com suas dependências removidas do trabalho pendente. Materiais compartilhados continuam onde outras receitas precisam deles.")}</p>
      </div>
-     <button type="button" id="craft-undo-all">{pt?"Desfazer todos":"Undo all"}</button>
+     <button type="button" id="craft-undo-all">{craftingText(lang,"Undo all","Desfazer todos")}</button>
     </div>
     <ul id="craft-completed-list"></ul>
    </section>
-   <section id="craft-surplus-section" class="craft-surplus-section" hidden><h3>{pt?"Excedentes por batch":"Batch leftovers"}</h3><ul id="craft-surplus"></ul></section>
+   <section id="craft-surplus-section" class="craft-surplus-section" hidden><h3>{craftingText(lang,"Batch leftovers","Excedentes por batch")}</h3><ul id="craft-surplus"></ul></section>
    <div id="craft-issues" aria-live="polite"></div>
   </section>
-  <p class="craft-disclaimer">{pt
-   ?"Os arquivos ItemType*.ndt podem conter receitas desativadas ou variantes históricas. Não inventamos receitas, batches nem preços. Equipamentos: até 20 unidades por operação. Demais itens: até 10.000 unidades produzidas e no máximo 10.000 de cada ingrediente por operação. Os limites são regras informadas pelo jogador."
-   :"ItemType*.ndt may contain historical or disabled recipes. No missing recipes, batches or prices are invented. Equipment: up to 20 output units per operation. Other items: up to 10,000 output units and no more than 10,000 of each ingredient per operation. These are player-reported limits."}</p>
+  <p class="craft-disclaimer">{craftingText(lang,"ItemType*.ndt may contain historical or disabled recipes. No missing recipes, batches or prices are invented. Equipment: up to 20 output units per operation. Other items: up to 10,000 output units and no more than 10,000 of each ingredient per operation. These are player-reported limits.","Os arquivos ItemType*.ndt podem conter receitas desativadas ou variantes históricas. Não inventamos receitas, batches nem preços. Equipamentos: até 20 unidades por operação. Demais itens: até 10.000 unidades produzidas e no máximo 10.000 de cada ingrediente por operação. Os limites são regras informadas pelo jogador.")}</p>
  </main>
 </BaseLayout>
 <script>
+ import {craftingText} from "../i18n/crafting-ui.mjs";
+ import {localePrefix,localeTag} from "../i18n/locales.mjs";
  import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
  import {CRAFT_PLAN_MAX_OUTPUT,isSourceRecipeCandidate,resolveRootCraftBatch,isAllowedCraftQuantity}
    from "../data/client-crafting-quantity.mjs";
@@ -178,7 +173,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
  import {planClientCrafting,priceCraftLeaves} from "../data/client-crafting-planner.mjs";
  const root=document.getElementById("wiki-craft-planner");
  if(root){
-  const pt=root.dataset.lang==="pt-br",prefix=pt?"/pt-br":"";
+  const lang=root.dataset.lang??"en",prefix=localePrefix(lang);
   const $=(id:string)=>document.getElementById(id)!;
   const query=$("craft-search") as HTMLInputElement;
   const amount=$("craft-quantity") as HTMLInputElement;
@@ -216,7 +211,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   }
   const itemCategories:Record<string,string>=Object.create(null),buyIds=new Set<string>();
   const doneIds=new Set<string>();
-  const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+  const nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
   const fmt=(n:string|number)=>nf.format(BigInt(n));
   const choices:Record<string,number>={},batchOverrides:Record<string,string>={};
   const prices:Record<string,string>={};
@@ -334,21 +329,21 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     $("craft-range-max").textContent=fmt(max);
     $("craft-quantity-output").textContent=fmt(previous);
     const label=source==="confirmed-equipment-rule"
-     ?(pt?"Regra de equipamento confirmada":"Confirmed equipment rule")
-     :source==="original-client-unit"?(pt?"Batch extraído do cliente":"Client source batch")
-     :(pt?"Batch informado manualmente":"Manually specified batch");
+     ?(craftingText(lang,"Confirmed equipment rule","Regra de equipamento confirmada"))
+     :source==="original-client-unit"?(craftingText(lang,"Client source batch","Batch extraído do cliente"))
+     :(craftingText(lang,"Manually specified batch","Batch informado manualmente"));
     batchHint.textContent=label+": "+fmt(batch)+
-     (pt?" unidades por batch · selecione apenas múltiplos até ":" units/batch · select multiples up to ")+
-     fmt(max)+(pt?" (limite do planejamento: 10.000).":" (planning limit: 10,000).");
-    status.textContent=pt?"Seleção pronta para calcular.":"Selection ready to calculate.";
+     (craftingText(lang," units/batch · select multiples up to "," unidades por batch · selecione apenas múltiplos até "))+
+     fmt(max)+(craftingText(lang," (planning limit: 10,000)."," (limite do planejamento: 10.000)."));
+    status.textContent=craftingText(lang,"Selection ready to calculate.","Seleção pronta para calcular.");
    }else{
     $("craft-quantity-output").textContent="—";
     if(rootConfig.reason==="choose-variant"){
-     batchHint.textContent=pt?"Selecione a versão da receita antes de informar a quantidade.":"Choose a recipe variant before setting the quantity.";
+     batchHint.textContent=craftingText(lang,"Choose a recipe variant before setting the quantity.","Selecione a versão da receita antes de informar a quantidade.");
     }else if(rootConfig.reason==="missing-batch"||rootConfig.reason==="invalid-manual-batch"){
-     batchHint.textContent=pt?"O cliente não informa um batch seguro. Informe o mínimo de fabricação para habilitar o slider.":"Client source has no reliable batch size. Enter the minimum crafting quantity to enable the slider.";
+     batchHint.textContent=craftingText(lang,"Client source has no reliable batch size. Enter the minimum crafting quantity to enable the slider.","O cliente não informa um batch seguro. Informe o mínimo de fabricação para habilitar o slider.");
     }else{
-     batchHint.textContent=pt?"Não existe quantidade válida até 10.000 para esta receita.":"No legal crafting quantity up to 10,000 for this source recipe.";
+     batchHint.textContent=craftingText(lang,"No legal crafting quantity up to 10,000 for this source recipe.","Não existe quantidade válida até 10.000 para esta receita.");
     }
    }
   }
@@ -374,26 +369,22 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    ++suggestTicket;
    suggestions.replaceChildren();
    query.value=name+" (#"+id+")";
-   status.textContent=pt?"Conferindo receita original…":"Checking the original client recipe…";
+   status.textContent=craftingText(lang,"Checking the original client recipe…","Conferindo receita original…");
    try{
     await getIndex();
     if(epoch!==selectionEpoch)return;
-    if(!craftableCandidates.has(id))throw Error(pt
-     ?"Este item não possui receita identificada no cliente."
-     :"This item has no parsed recipe in the client files.");
+    if(!craftableCandidates.has(id))throw Error(craftingText(lang,"This item has no parsed recipe in the client files.","Este item não possui receita identificada no cliente."));
     const details=await getDetails(id);
     if(epoch!==selectionEpoch)return;
     const variants=details?buildClientRecipeViews(details.s):[];
-    if(variants.length===0)throw Error(pt
-     ?"Nenhuma receita válida identificada para este ItemID."
-     :"No valid parsed source recipe for this ItemID.");
+    if(variants.length===0)throw Error(craftingText(lang,"No valid parsed source recipe for this ItemID.","Nenhuma receita válida identificada para este ItemID."));
     selectedId=id;
     rootRecipes=variants;
     rootVariant.replaceChildren();
-    const empty=el("option",pt?"Selecione a receita":"Select recipe") as HTMLOptionElement;
+    const empty=el("option",craftingText(lang,"Select recipe","Selecione a receita")) as HTMLOptionElement;
     empty.value="";rootVariant.append(empty);
     for(const [i,recipe] of variants.entries()){
-     const option=el("option",(pt?"Receita ":"Recipe ")+(i+1)+
+     const option=el("option",(craftingText(lang,"Recipe ","Receita "))+(i+1)+
       " · #"+recipe.sourceRows.join(", #")) as HTMLOptionElement;
      option.value=String(i);rootVariant.append(option);
     }
@@ -404,7 +395,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    }catch(error){
     if(epoch!==selectionEpoch)return;
     resetTarget();
-    status.textContent=(pt?"Seleção não disponível: ":"Selection unavailable: ")+
+    status.textContent=(craftingText(lang,"Selection unavailable: ","Seleção não disponível: "))+
      (error instanceof Error?error.message:String(error));
    }
   }
@@ -425,11 +416,11 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      li.append(button);suggestions.append(li);
     }
     if(!matches.length){
-     const message=el("li",pt?"Nenhum item com receita encontrado.":"No items with parsed recipes found.");
+     const message=el("li",craftingText(lang,"No items with parsed recipes found.","Nenhum item com receita encontrado."));
      message.className="craft-empty-suggestion";suggestions.append(message);
     }
    }catch{
-    status.textContent=pt?"Falha ao consultar índice de itens.":"Could not load the item index.";
+    status.textContent=craftingText(lang,"Could not load the item index.","Falha ao consultar índice de itens.");
    }
   }
   let debounce:ReturnType<typeof setTimeout>|null=null;
@@ -466,9 +457,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    if(!rootConfig?.ready)return;
    if(!isAllowedCraftQuantity(amount.value,rootConfig.batch)){
     amount.value=String(lastValidQuantity);
-    status.textContent=pt
-     ?"Quantidade inválida: use apenas múltiplos completos do batch, dentro do limite permitido."
-     :"Invalid quantity: use exact full-batch multiples within the allowed range.";
+    status.textContent=craftingText(lang,"Invalid quantity: use exact full-batch multiples within the allowed range.","Quantidade inválida: use apenas múltiplos completos do batch, dentro do limite permitido.");
    }
   });
   async function loadGraph(id:string){
@@ -493,24 +482,20 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    const value=clientNPCPriceMap?.get(itemId);
    if(!value){
     if(priceOrigins[itemId]==="client-npc-catalog"){
-     const note=el("small",pt
-      ?"Preço aplicado anteriormente da referência NPC; Market não verificado."
-      :"Previously applied NPC reference; not Market verified.");
+     const note=el("small",craftingText(lang,"Previously applied NPC reference; not Market verified.","Preço aplicado anteriormente da referência NPC; Market não verificado."));
      note.className="craft-npc-applied-label";
      priceCell.append(note);
     }
     return;
    }
    const hint=el("div");hint.className="craft-client-price-reference";
-   const caption=el("small",(pt?"Referência NPC: ":"NPC reference: ")+fmt(value)+" gold");
-   caption.title=pt
-    ?"Preço unitário extraído do catálogo de negociação NPC do cliente. Não é preço fixo do Market confirmado."
-    :"Unit price from client NPC trade catalog. Not a verified live fixed Market price.";
+   const caption=el("small",(craftingText(lang,"NPC reference: ","Referência NPC: "))+fmt(value)+" gold");
+   caption.title=craftingText(lang,"Unit price from client NPC trade catalog. Not a verified live fixed Market price.","Preço unitário extraído do catálogo de negociação NPC do cliente. Não é preço fixo do Market confirmado.");
    hint.append(caption);
-   const use=el("button",pt?"Usar":"Use") as HTMLButtonElement;
+   const use=el("button",craftingText(lang,"Use","Usar")) as HTMLButtonElement;
    use.type="button";use.className="craft-use-client-price";
    use.disabled=input.value.trim()!=="";
-   use.setAttribute("aria-label",(pt?"Usar preço NPC não verificado para ":"Use unverified NPC price for ")+itemId);
+   use.setAttribute("aria-label",(craftingText(lang,"Use unverified NPC price for ","Usar preço NPC não verificado para "))+itemId);
    use.addEventListener("click",()=>{
     if(input.value.trim())return;
     prices[itemId]=value;
@@ -530,12 +515,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(cell)cell.textContent=row.total===null?"—":fmt(row.total);
    }
    cost.textContent=(priced.complete
-    ?(pt?"Custo total estimado":"Total estimated cost")
-    :(pt?"Custo conhecido (parcial)":"Known cost (partial)"))+": "+fmt(priced.knownTotal);
+    ?(craftingText(lang,"Total estimated cost","Custo total estimado"))
+    :(craftingText(lang,"Known cost (partial)","Custo conhecido (parcial)")))+": "+fmt(priced.knownTotal);
    const coverage=$("craft-price-coverage");
    coverage.textContent=priced.complete
-    ?(pt?"Todos os materiais precificados":"All materials priced")
-    :fmt(priced.unpricedItems)+(pt?" sem preço":" unpriced");
+    ?(craftingText(lang,"All materials priced","Todos os materiais precificados"))
+    :fmt(priced.unpricedItems)+(craftingText(lang," unpriced"," sem preço"));
    coverage.dataset.complete=String(priced.complete);
   }
   function updateCraftTreeVisibility(){
@@ -573,7 +558,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(hasChildren){
      const toggle=el("button","▾") as HTMLButtonElement;
      toggle.type="button";toggle.className="craft-tree-toggle";
-     toggle.setAttribute("aria-label",(pt?"Expandir/recolher ":"Expand/collapse ")+title(row.itemId));
+     toggle.setAttribute("aria-label",(craftingText(lang,"Expand/collapse ","Expandir/recolher "))+title(row.itemId));
      toggle.addEventListener("click",()=>{
       if(collapsedTreePaths.has(row.path))collapsedTreePaths.delete(row.path);
       else collapsedTreePaths.add(row.path);
@@ -585,19 +570,17 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     }
     label.append(itemLink(row.itemId,title(row.itemId)));
     if(row.sharedReference){
-     const shared=el("small",pt?"Compartilhado":"Shared");
+     const shared=el("small",craftingText(lang,"Shared","Compartilhado"));
      shared.className="craft-tree-shared";
-     shared.title=pt
-      ?"Referência adicional ao mesmo ItemID; os totais são calculados apenas uma vez."
-      :"Another reference to the same ItemID; total demand is calculated only once.";
+     shared.title=craftingText(lang,"Another reference to the same ItemID; total demand is calculated only once.","Referência adicional ao mesmo ItemID; os totais são calculados apenas uma vez.");
      label.append(shared);
     }
     name.append(label);
     tr.append(name,el("td",fmt(row.branchQuantity)),el("td",fmt(row.totalRequired)));
     const produced=el("td",row.output===null?"—":fmt(row.output));
     if(row.excess!==null&&row.excess!=="0"){
-     produced.append(el("small",(pt?" +":" +")+fmt(row.excess)+
-      (pt?" sobra":" excess")));
+     produced.append(el("small",(craftingText(lang," +"," +"))+fmt(row.excess)+
+      (craftingText(lang," excess"," sobra"))));
     }
     tr.append(produced);
     tr.append(el("td",row.batchSize===null?"—":fmt(row.batchSize)));
@@ -607,9 +590,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(row.operationGroups?.length){
      breakdown.textContent=row.operationGroups.map((group:any)=>
       fmt(group.operations)+" × "+fmt(group.outputEach)).join(" + ");
-     breakdown.title=(pt?"Unidades produzidas por operação; máximo permitido: ":"Output units per operation; effective maximum: ")+
+     breakdown.title=(craftingText(lang,"Output units per operation; effective maximum: ","Unidades produzidas por operação; máximo permitido: "))+
       fmt(row.maxOutputPerOperation)+(row.limitingIngredients?.length?
-       " · "+(pt?"limite de ingrediente: ":"ingredient limit: ")+
+       " · "+(craftingText(lang,"ingredient limit: ","limite de ingrediente: "))+
        row.limitingIngredients.map((x:any)=>title(x.itemId)).join(", "):"");
     }else breakdown.textContent="—";
     tr.append(breakdown);
@@ -618,21 +601,21 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     if(row.parentItemId!==null){
      consumption.textContent=(row.consumptionGroups??[]).map((group:any)=>
       fmt(group.operations)+" × "+fmt(group.consumedEach)).join(" + ")||"—";
-     consumption.title=(pt?"Consumo por operação de ":"Consumption per operation of ")+
+     consumption.title=(craftingText(lang,"Consumption per operation of ","Consumo por operação de "))+
       title(row.parentItemId)+": "+
-      fmt(row.unitsPerParentBatch)+(pt?" por batch da receita pai × ":" per parent batch × ")+
-      fmt(row.parentBatches)+(pt?" batches = ":" batches = ")+fmt(row.branchQuantity)+
-      (pt?" unidades no total.":" units total.");
+      fmt(row.unitsPerParentBatch)+(craftingText(lang," per parent batch × "," por batch da receita pai × "))+
+      fmt(row.parentBatches)+(craftingText(lang," batches = "," batches = "))+fmt(row.branchQuantity)+
+      (craftingText(lang," units total."," unidades no total."));
     }else consumption.textContent="—";
     tr.append(consumption);
     const actions=el("td");actions.className="craft-tree-actions";
     if(row.itemId!==selectedId&&activeGraph?.[row.itemId]?.length){
      const purchased=buyIds.has(row.itemId);
      const toggle=el("button",purchased
-      ?(pt?"Fabricar":"Craft"):(pt?"Comprar":"Buy")) as HTMLButtonElement;
+      ?(craftingText(lang,"Craft","Fabricar")):(craftingText(lang,"Buy","Comprar"))) as HTMLButtonElement;
      toggle.type="button";
      toggle.setAttribute("aria-label",(purchased
-      ?(pt?"Fabricar ":"Craft "):(pt?"Comprar ":"Buy "))+title(row.itemId));
+      ?(craftingText(lang,"Craft ","Fabricar ")):(craftingText(lang,"Buy ","Comprar ")))+title(row.itemId));
      toggle.addEventListener("click",()=>{
       if(purchased)buyIds.delete(row.itemId);else buyIds.add(row.itemId);
       redraw();
@@ -640,14 +623,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      actions.append(toggle);
     }
     if(row.mode==="unresolved"){
-     const note=el("small",pt?"Pendente":"Pending");actions.append(note);
+     const note=el("small",craftingText(lang,"Pending","Pendente"));actions.append(note);
     }
-    const doneButton=el("button",pt?"Feito":"Done") as HTMLButtonElement;
+    const doneButton=el("button",craftingText(lang,"Done","Feito")) as HTMLButtonElement;
     doneButton.type="button";doneButton.className="craft-done-button";
-    doneButton.setAttribute("aria-label",(pt?"Marcar como feito: ":"Mark done: ")+title(row.itemId));
-    doneButton.title=pt
-     ?"Marcar este ItemID como concluído, incluindo suas dependências."
-     :"Mark this ItemID fulfilled, including its dependencies.";
+    doneButton.setAttribute("aria-label",(craftingText(lang,"Mark done: ","Marcar como feito: "))+title(row.itemId));
+    doneButton.title=craftingText(lang,"Mark this ItemID fulfilled, including its dependencies.","Marcar este ItemID como concluído, incluindo suas dependências.");
     doneButton.addEventListener("click",()=>{
      doneIds.add(row.itemId);
      redraw();
@@ -668,10 +649,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const li=el("li");
     const label=el("span");label.className="craft-completed-label";
     label.append(itemLink(row.itemId,title(row.itemId)));
-    label.append(el("small",fmt(row.quantity)+(pt?" unidades atendidas":" units fulfilled")));
-    const undo=el("button",pt?"Desfazer":"Undo") as HTMLButtonElement;
+    label.append(el("small",fmt(row.quantity)+(craftingText(lang," units fulfilled"," unidades atendidas"))));
+    const undo=el("button",craftingText(lang,"Undo","Desfazer")) as HTMLButtonElement;
     undo.type="button";undo.className="craft-completed-undo";
-    undo.setAttribute("aria-label",(pt?"Desfazer conclusão: ":"Undo completion: ")+title(row.itemId));
+    undo.setAttribute("aria-label",(craftingText(lang,"Undo completion: ","Desfazer conclusão: "))+title(row.itemId));
     undo.addEventListener("click",()=>{doneIds.delete(row.itemId);redraw();});
     li.append(label,undo);completedList.append(li);
    }
@@ -687,7 +668,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    for(const row of rows){
     const li=el("li");
     li.append(itemLink(row.itemId,title(row.itemId)),
-      el("span",fmt(row.quantity)+" "+(pt?"unidades":"units")));
+      el("span",fmt(row.quantity)+" "+(craftingText(lang,"units","unidades"))));
     surplus.append(li);
    }
   }
@@ -712,12 +693,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    if(!plan||!selectedId)return;
    const button=$("craft-export-tree") as HTMLButtonElement;
    button.disabled=true;
-   status.textContent=pt?"Preparando planilha Excel…":"Preparing Excel workbook…";
+   status.textContent=craftingText(lang,"Preparing Excel workbook…","Preparando planilha Excel…");
    void (async()=>{
     try{
      const {buildCraftingWorkbook}=await import("../data/client-crafting-xlsx.mjs");
      const names=Object.fromEntries(nameCache?.entries()??[]);
-     const bytes=buildCraftingWorkbook({plan,names,prices,priceOrigins,locale:pt?"pt":"en"});
+     const bytes=buildCraftingWorkbook({plan,names,prices,priceOrigins,locale:lang});
      const blob=new Blob([bytes],{
       type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
      });
@@ -727,9 +708,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      link.download="atlantica-crafting-tree-"+selectedId+"-"+plan.requested+".xlsx";
      link.click();
      setTimeout(()=>URL.revokeObjectURL(href),2500);
-     status.textContent=pt?"Planilha Excel pronta.":"Excel workbook exported.";
+     status.textContent=craftingText(lang,"Excel workbook exported.","Planilha Excel pronta.");
     }catch(error){
-     status.textContent=(pt?"Falha ao exportar planilha: ":"Workbook export failed: ")+
+     status.textContent=(craftingText(lang,"Workbook export failed: ","Falha ao exportar planilha: "))+
       (error instanceof Error?error.message:String(error));
     }finally{button.disabled=false;}
    })();
@@ -737,7 +718,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   $("craft-load-npc-prices").addEventListener("click",()=>{
    const button=$("craft-load-npc-prices") as HTMLButtonElement;
    button.disabled=true;
-   status.textContent=pt?"Consultando referências NPC do cliente…":"Loading client NPC reference prices…";
+   status.textContent=craftingText(lang,"Loading client NPC reference prices…","Consultando referências NPC do cliente…");
    void (async()=>{
     try{
      const [manifest,data]=await Promise.all([
@@ -748,12 +729,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      clientNPCPriceMap=map;
      ($("craft-apply-npc-prices") as HTMLButtonElement).hidden=false;
      if(plan)redraw();
-     status.textContent=pt
-      ?"421 preços de referência NPC disponíveis. Nenhum preço foi aplicado automaticamente."
-      :"421 NPC reference prices available. No prices applied automatically.";
+     status.textContent=craftingText(lang,"421 NPC reference prices available. No prices applied automatically.","421 preços de referência NPC disponíveis. Nenhum preço foi aplicado automaticamente.");
     }catch(error){
      button.disabled=false;
-     status.textContent=(pt?"Referências indisponíveis: ":"References unavailable: ")+
+     status.textContent=(craftingText(lang,"References unavailable: ","Referências indisponíveis: "))+
       (error instanceof Error?error.message:String(error));
     }
    })();
@@ -765,19 +744,17 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
    });
    if(filled)savePriceState();
    redraw();
-   status.textContent=pt
-    ?filled+" preços vazios preenchidos com referência NPC (não verificada no Market)."
-    :filled+" empty prices filled with NPC reference (not Market-verified).";
+   status.textContent=craftingText(lang,"{count} empty prices filled with NPC reference (not Market-verified).","{count} preços vazios preenchidos com referência NPC (não verificada no Market).",{count:fmt(filled)});
   });
   $("craft-copy-shopping").addEventListener("click",()=>{
    const lines=shoppingRows().map(row=>
     row.name+" (#"+row.id+") · "+row.quantity+
-    (row.cost?" · "+(pt?"custo ":"cost ")+row.cost:""));
+    (row.cost?" · "+(craftingText(lang,"cost ","custo "))+row.cost:""));
    if(!lines.length)return;
    void navigator.clipboard.writeText(lines.join("\n")).then(()=>{
-    status.textContent=pt?"Lista de compras copiada.":"Shopping list copied.";
+    status.textContent=craftingText(lang,"Shopping list copied.","Lista de compras copiada.");
    }).catch(()=>{
-    status.textContent=pt?"Não foi possível copiar.":"Copy unavailable.";
+    status.textContent=craftingText(lang,"Copy unavailable.","Não foi possível copiar.");
    });
   });
   $("craft-export-shopping").addEventListener("click",()=>{
@@ -807,10 +784,10 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      name.scope="row";name.className="craft-data-product";
      name.append(itemLink(step.itemId,title(step.itemId)));
      if(step.itemId===selectedId){
-      const tag=el("small",pt?"Produto final":"Target item");
+      const tag=el("small",craftingText(lang,"Target item","Produto final"));
       tag.className="craft-product-tag";name.append(tag);
      }else if(step.manualBatch){
-      const tag=el("small",pt?"Batch manual":"Manual batch");
+      const tag=el("small",craftingText(lang,"Manual batch","Batch manual"));
       tag.className="craft-product-tag";name.append(tag);
      }
      tr.append(name);
@@ -828,8 +805,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      const excess=el("td",fmt(step.excess));
      excess.className="craft-data-number"+(step.excess!=="0"?" craft-has-excess":"");
      if(step.limitingIngredients?.length){
-      const limitText=(pt?"Limitado por 10.000 unidades de ingrediente por operação: "
-       :"Limited by 10,000 of each ingredient per operation: ")+
+      const limitText=(craftingText(lang,"Limited by 10,000 of each ingredient per operation: ","Limitado por 10.000 unidades de ingrediente por operação: "))+
        step.limitingIngredients.map((x:any)=>title(x.itemId)).join(", ");
       breakdown.title=limitText;
      }
@@ -847,16 +823,16 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      const priceCell=el("td");priceCell.className="craft-price-cell";
      const input=el("input") as HTMLInputElement;
      input.type="number";input.min="0";input.step="1";
-     input.inputMode="numeric";input.placeholder=pt?"Informar preço":"Enter price";
+     input.inputMode="numeric";input.placeholder=craftingText(lang,"Enter price","Informar preço");
      input.className="craft-price-input";input.value=prices[leaf.itemId]??"";
-     input.setAttribute("aria-label",(pt?"Preço unitário ":"Unit price ")+title(leaf.itemId));
+     input.setAttribute("aria-label",(craftingText(lang,"Unit price ","Preço unitário "))+title(leaf.itemId));
      input.addEventListener("change",()=>{
       prices[leaf.itemId]=input.value;
       delete priceOrigins[leaf.itemId];
       savePriceState();
       const useButton=priceCell.querySelector<HTMLButtonElement>(".craft-use-client-price");
       if(useButton)useButton.disabled=input.value.trim()!=="";
-      try{refreshCosts();}catch{status.textContent=pt?"Preço inválido.":"Invalid price.";}
+      try{refreshCosts();}catch{status.textContent=craftingText(lang,"Invalid price.","Preço inválido.");}
      });
      priceCell.append(input);
      attachNPCPriceHint(priceCell,leaf.itemId,input);
@@ -875,18 +851,18 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     $("craft-schedule-count").textContent=fmt(plan.totalOperations);
     $("craft-summary-materials").textContent=fmt(plan.leaves.length);
     note.textContent=plan.complete
-      ?(pt?"Plano calculado a partir das receitas escolhidas.":"Plan calculated using the selected source recipes.")
-      :(pt?"Plano parcial: verifique receitas e batches abaixo.":"Partial plan: review recipe and batch questions below.");
+      ?(craftingText(lang,"Plan calculated using the selected source recipes.","Plano calculado a partir das receitas escolhidas."))
+      :(craftingText(lang,"Partial plan: review recipe and batch questions below.","Plano parcial: verifique receitas e batches abaixo."));
     for(const issue of plan.issues){
      const wrap=el("div"),heading=el("strong",title(issue.itemId)+" (#"+issue.itemId+")");
      wrap.className="craft-issue";wrap.append(heading);
      if(issue.kind==="choose-variant"){
-      wrap.append(el("p",pt?"Selecione qual versão da receita utilizar:":"Choose the original recipe variant:"));
+      wrap.append(el("p",craftingText(lang,"Choose the original recipe variant:","Selecione qual versão da receita utilizar:")));
       const select=el("select") as HTMLSelectElement;
-      const placeholder=el("option",pt?"Selecione uma receita":"Select a recipe") as HTMLOptionElement;
+      const placeholder=el("option",craftingText(lang,"Select a recipe","Selecione uma receita")) as HTMLOptionElement;
       placeholder.value="";select.append(placeholder);
       for(const [i,v] of activeGraph[issue.itemId].entries()){
-       const option=el("option",(pt?"Receita ":"Recipe ")+(i+1)+" · #"+v.sourceRows.join(", #")) as HTMLOptionElement;
+       const option=el("option",(craftingText(lang,"Recipe ","Receita "))+(i+1)+" · #"+v.sourceRows.join(", #")) as HTMLOptionElement;
        option.value=String(i);select.append(option);
       }
       select.addEventListener("change",()=>{
@@ -894,13 +870,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
       });
       wrap.append(select);
      }else if(issue.kind==="ingredient-over-limit"){
-      wrap.append(el("p",pt
-       ?"Esta receita exige mais de 10.000 unidades de um ingrediente em um único batch. Não existe operação válida com as quantidades originais do cliente."
-       :"This recipe requires over 10,000 of an ingredient in a single batch. No valid operation exists with the original client amounts."));
+      wrap.append(el("p",craftingText(lang,"This recipe requires over 10,000 of an ingredient in a single batch. No valid operation exists with the original client amounts.","Esta receita exige mais de 10.000 unidades de um ingrediente em um único batch. Não existe operação válida com as quantidades originais do cliente.")));
      }else if(issue.kind==="missing-batch"||issue.kind==="batch-over-limit"){
-      wrap.append(el("p",pt
-       ?"Tamanho de lote não confirmado ou maior que 10.000. Informe manualmente as unidades por batch (1 a 10.000)."
-       :"Batch size missing or above 10,000. Supply units per batch manually (1–10,000)."));
+      wrap.append(el("p",craftingText(lang,"Batch size missing or above 10,000. Supply units per batch manually (1–10,000).","Tamanho de lote não confirmado ou maior que 10.000. Informe manualmente as unidades por batch (1 a 10.000).")));
       const input=el("input") as HTMLInputElement;
       input.type="number";input.min="1";input.max="10000";input.step="1";input.placeholder="Batch size";
       input.addEventListener("change",()=>{
@@ -914,7 +886,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     }
     result.hidden=false;
    }catch(error){
-    status.textContent=(pt?"Não foi possível calcular: ":"Could not calculate: ")+
+    status.textContent=(craftingText(lang,"Could not calculate: ","Não foi possível calcular: "))+
       (error instanceof Error?error.message:String(error));
     result.hidden=true;
    }
@@ -923,32 +895,28 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   form.addEventListener("submit",event=>{
    event.preventDefault();
    if(!selectedId||!rootConfig?.ready){
-    status.textContent=pt?"Selecione uma receita e um batch válido.":"Select a valid source recipe and batch size.";
+    status.textContent=craftingText(lang,"Select a valid source recipe and batch size.","Selecione uma receita e um batch válido.");
     return;
    }
    if(!isAllowedCraftQuantity(amount.value,rootConfig.batch)){
     amount.value=String(lastValidQuantity);
-    status.textContent=pt
-     ?"Quantidade inválida: informe um múltiplo exato do batch até 10.000."
-     :"Invalid quantity: enter an exact batch multiple up to 10,000.";
+    status.textContent=craftingText(lang,"Invalid quantity: enter an exact batch multiple up to 10,000.","Quantidade inválida: informe um múltiplo exato do batch até 10.000.");
     return;
    }
    const id=selectedId,epoch=selectionEpoch;
-   status.textContent=pt?"Carregando receitas e dependências…":"Loading recipe dependencies…";
+   status.textContent=craftingText(lang,"Loading recipe dependencies…","Carregando receitas e dependências…");
    void (async()=>{
     try{
      nameCache=await getIndex();
      if(epoch!==selectionEpoch)return;
      if(!activeGraph)activeGraph=await loadGraph(id);
      if(epoch!==selectionEpoch)return;
-     if(!activeGraph?.[id]?.length)throw Error(pt
-      ?"Receita original indisponível."
-      :"Original recipe unavailable.");
-     status.textContent=pt?"Dados carregados.":"Source data loaded.";
+     if(!activeGraph?.[id]?.length)throw Error(craftingText(lang,"Original recipe unavailable.","Receita original indisponível."));
+     status.textContent=craftingText(lang,"Source data loaded.","Dados carregados.");
      redraw();
     }catch(error){
      if(epoch!==selectionEpoch)return;
-     status.textContent=(pt?"Falha: ":"Error: ")+
+     status.textContent=(craftingText(lang,"Error: ","Falha: "))+
       (error instanceof Error?error.message:String(error));
      result.hidden=true;
     }
@@ -962,11 +930,9 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      const names=await getIndex();
      if(craftableCandidates.has(requested))
       await selectCraftTarget(requested,names.get(requested)??("Item #"+requested));
-     else status.textContent=pt
-      ?"Este ItemID não possui receita extraída do cliente."
-      :"This ItemID has no parsed source recipe.";
+     else status.textContent=craftingText(lang,"This ItemID has no parsed source recipe.","Este ItemID não possui receita extraída do cliente.");
     }catch{
-     status.textContent=pt?"Falha ao carregar a receita.":"Could not load source recipe.";
+     status.textContent=craftingText(lang,"Could not load source recipe.","Falha ao carregar a receita.");
     }
    })();
   }
