@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.82f5 — atributos e identidade dos personagens (PR #136)  
-**Último PR integrado:** [#136](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/136), Stage 20.82f5; workflow Validate Pull Request aprovado. Conferir deploy Cloudflare.
+**Última etapa integrada:** Stage 20.82f6 — reconciliação VNA (PR #137)  
+**Último PR integrado:** [#137](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/137), Stage 20.82f6; workflow Validate Pull Request aprovado. Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -805,3 +805,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - AWKLevelSolInfo_ENG.vna: 90 Char únicos, todos presentes nas evoluções e terminais nas arestas explícitas; todos NeedLevel=200, NeedItemUnique=15046 (The Awakener Pendant, catálogo snapshot 1), NeedNum=200. Não inferir que demais 30 terminais são elegíveis ou inelegíveis no servidor. Distinguir requisito de ativação e distribuição de pontos.
 - Exportador scripts/export-client-vna-mercenary-candidate.py testado localmente com oito entradas UTF-8 (.txt após extensão original), destino inexistente; gera profiles.json (947, colunas brutas e proveniência), differences.json e audit.json. Preservar valores sem aplicar fórmulas. Não publicar candidatos automaticamente.
 - Próxima etapa: preparar piloto de publicação com atributos brutos, evoluções e links existentes de livros/itens, distinguir dados de classe, slots configurados e habilidades aprendíveis. Já há evidência suficiente para começar sem novos uploads. Conferir auditoria Miner VNA 9.2.11 antes de solicitar arquivos de magia adicionais: versões LANG/ENG/Magic/*.vna auditadas têm apenas cabeçalhos e poucas linhas; não presumir que substituem tabelas raiz. Verificar fórmulas e disponibilidade real posteriormente; não publicar como confirmado o que depende do servidor.
+
+
+### Stage 20.83a — Piloto público de referência de mercenários e habilidades
+
+- PR #137 integrado após CI aprovado. A partir dos candidatos locais realmente inspecionados, preparação de projeção allowlist (sem descrições longas ou assets originais): 947 perfis, 1.336 habilidades, 1.783 livros Nation ALL, 816 transições e 42.602 registros de magia em seis tabelas; 48 chaves conflitantes preservadas. Exportação ampliada fica em pacote local para revisão/importação; não está publicada neste PR.
+- Piloto Arthur: 17 perfis, 5 SkillIndexes, 31 registros de livros ALL (a contagem de 28 anterior era somente heurística de nome), 14 arestas explícitas, 32 registros de grade 9 em seis tabelas. Não incluir aresta fictícia ARTHUR7 → ramos. Preservar os três registros conflitantes Dark Legacy na MagicPVPBattleGround. Valores originais selecionados por nome de campo, sem cálculos ou fallback. Dados em public/data/client-mercenaries/{mercenaries,skills,modes}.json; os três blobs coincidem byte a byte com a geração local (SHA-256 fixados em teste).
+- Novas rotas /mercenaries/database/ e /mercenaries/skills/ nos oito idiomas, separadas de artigos editoriais aprovados; pesquisa, seleção de evolução, comparação de atributos, requisitos, família de evolução, slots configurados, livros por classe, links para catálogo de itens, seleção de grade armazenada, seis tabelas brutas com alerta de conflitos. Layout existente, seis temas, nomes ingleses e chaves de campos preservados. Não implica disponibilidade no servidor ou lista completa de habilidades. Não há calculadoras de atributos finais nesta etapa.
+- Próximo: revisar o piloto, promover os três arquivos da projeção ampliada após validação dos hashes e da cobertura. Ambiente de geração local não alcança GitHub por rede e a API de conteúdo não recebe caminho de arquivo local: pacote de importação está preparado; transferência dos arquivos grandes exige uso do checkout local ou outro meio autorizado. Não reenviar arquivos brutos do jogo. Não declarar deploy até verificação.
