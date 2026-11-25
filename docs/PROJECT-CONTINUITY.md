@@ -1,11 +1,11 @@
 # Atlantica Online Knowledge Hub — Contexto para Continuidade
 
-**Última atualização:** 24/11/2026  
+**Última atualização:** 25/11/2026  
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stages 20.74–20.76 (PRs #107–109); Stage 20.77, traduções assistidas pelo ChatGPT, no PR #110  
-**Último PR de funcionalidade integrado:** [#108](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/108), Stages 20.75–20.76, pipeline de tradução e revisão; CI e build editorial aprovados. Stage 20.74 no PR #107. Conferir deploy Cloudflare.
+**Última etapa integrada:** Stage 20.82e1 — expansão inicial de aliases de criaturas (PR #128)  
+**Último PR de funcionalidade integrado:** [#128](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/128), Stage 20.82e1; workflow Validate Pull Request aprovado. Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -588,6 +588,23 @@ Não afirmar que um deploy terminou sem verificar o resultado.
 - Considerar desempenho, especialmente nos catálogos com milhares de registros.
 - Não alterar cálculos, relacionamentos de dados ou registros originais durante refatorações puramente visuais.
 - Validar alterações de interface com testes e, quando possível, inspeção visual.
+
+### 8.1. Referências comunitárias permanentes e validação cruzada
+
+Por orientação do usuário em 25/11/2026, utilizar regularmente Wikidot e Fandom como fontes complementares de pesquisa, comparação e interpretação dos arquivos do cliente Global, em todas as frentes da Wiki, não apenas mercenários e habilidades.
+
+Referências:
+- Atlantica Online Wiki (Wikidot): https://atlantica-online.wikidot.com/
+- Wikidot histórico: https://atlanticaonline.wikidot.com/
+- Atlantica Wiki (Fandom): https://atlantica.fandom.com/wiki/Atlantica_Wiki:Main
+
+Diretrizes:
+- Consultar páginas pertinentes ao investigar itens, equipamentos, receitas, monstros, drops, mercenários, habilidades, atributos, fórmulas e mecânicas. Usar as referências para reconhecer nomenclatura, relacionamentos, campos desconhecidos e casos de teste.
+- Comparar com o snapshot identificado do cliente Global (NA), notas oficiais de atualização e evidências obtidas no jogo, quando disponíveis. Distinguir dados do cliente, comportamento observado no servidor, fontes comunitárias e hipóteses; dados locais não provam sozinhos o comportamento do servidor.
+- Considerar data da página, versão, servidor e modo de combate (por exemplo PvE/PvP/TBS). Registrar divergências e lacunas; não sobrescrever dados brutos nem inferir IDs, valores ou relações ausentes como fatos.
+- Informações comunitárias podem complementar conteúdo não presente no cliente, desde que atribuídas e qualificadas. Usar redação própria, citar a página específica e, quando possível, data/revisão; respeitar licenças e direitos de textos, imagens e outros materiais. Não copiar indiscriminadamente conteúdo ou assets.
+- Não interpretar uma tradução comunitária como nome oficial de cliente regional sem evidência correspondente. Preservar o nome inglês original e a política de aliases não oficiais.
+- Aplicar esta política também à investigação e revisão de dados futuros, registrando evidências e limitações relevantes na documentação de cada etapa.
 
 ## 9. Direcionamento para a evolução do projeto
 
