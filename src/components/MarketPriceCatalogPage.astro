@@ -75,6 +75,8 @@ const prefix=localePrefix(lang);
  </main>
 </BaseLayout>
 <script>
+  import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
  import {marketAuditText} from "../i18n/market-audit-ui.mjs";
  import {localeTag} from "../i18n/locales.mjs";
  import {parseClientMarketPriceCatalog,filterClientMarketCatalog,clientItemDetailUrl}
@@ -106,7 +108,7 @@ const prefix=localePrefix(lang);
   function draw(){
    if(!catalog.length)return;
    const filter={
-    query:search.value,category:category.value,evidence:evidence.value,
+    lang,query:search.value,category:category.value,evidence:evidence.value,
     sort:sort.value,offset:page*pageSize,limit:pageSize,
    };
    let found=filterClientMarketCatalog(catalog,filter);
@@ -121,6 +123,8 @@ const prefix=localePrefix(lang);
     const itemLink=node("a",item.name) as HTMLAnchorElement;
     itemLink.href=href;
     itemCell.append(itemLink,node("small","#"+item.itemId));
+    const alias=wikiNameAlias("item",item.itemId,item.name,lang);
+    if(alias)itemCell.append(node("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
     const source=playerReport.has(item.itemId)?
      (marketAuditText(lang,"Match (player report)","Coincide (relato do jogador)")):
      item.comparisonClass==="historical-crosscheck"?
