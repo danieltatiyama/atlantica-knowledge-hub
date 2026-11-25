@@ -10,5 +10,15 @@ const copy={
  "zh-hans":["佣兵数据库","技能数据库","客户端参考目录","亚瑟试点：17 条进阶记录，5 项技能，9 阶模式样本。","扩展参考：包含特殊记录，尚未确认可用性。","按名称或 ID 搜索","选择记录","比较对象","原始属性","明确的进阶关系","职业允许的技能书","已配置的魔法槽","觉醒条件","存储阶级","来源表","来源记录冲突 — 不选择其中一条","参考数据中不存在","正在加载…","无法加载参考数据。","上一个","下一个","来源","物品","技能书许可不代表特定阶级可学习。","客户端原始数值，并非最终计算属性。服务器模式未验证。","进阶系列","原始要求","无","客户端配置；服务器可用性未经验证。"],
  ja:["傭兵データベース","スキルデータベース","クライアント参照カタログ","アーサー試験版：進化17件、スキル5件、グレード9のモードサンプル。","拡張参照：特殊レコードを含み、利用可能性は未確認。","名前またはIDで検索","レコードを選択","比較対象","生の能力値","明示された進化関係","クラスで許可されたスキル書","設定済み魔法スロット","覚醒条件","保存グレード","元テーブル","競合するレコード — 任意選択なし","参照データにありません","読み込み中…","参照データを読み込めませんでした。","前","次","出典","アイテム","スキル書の許可は特定グレードでの習得を証明しません。","計算前のクライアント値です。サーバーのモードは未検証です。","進化系統","条件（生データ）","なし","クライアント設定。サーバーでの利用可能性は未確認です。"]
 };
-const all={en:"All","pt-br":"Todos",fr:"Tous",de:"Alle",es:"Todos",ko:"전체","zh-hans":"全部",ja:"すべて"};
-export function referenceText(lang){return {...Object.fromEntries(fields.map((k,i)=>[k,(copy[lang]??copy.en)[i]])),all:all[lang]??all.en};}
+const browseFields=["rank","all","hasBooks","withoutBooks","bookFilter","relatedProfiles","results","familyFilter","field","profileNotice"];
+const browseCopy={
+ en:["Rank","All","With book references","Without book references","Book references","Profiles matching book classes","Matching records","Evolution family","Field","A profile is a client record, not necessarily a distinct recruitable mercenary."],
+ "pt-br":["Rank","Todos","Com referências de livros","Sem referências de livros","Referências de livros","Perfis das classes permitidas pelos livros","Registros encontrados","Família de evolução","Campo","Um perfil é um registro do cliente, não necessariamente um mercenário recrutável distinto."],
+ fr:["Rang","Tous","Avec références de livres","Sans références de livres","Références de livres","Profils des classes autorisées","Résultats","Famille d’évolution","Champ","Un profil est un enregistrement client, pas nécessairement un mercenaire recrutable distinct."],
+ de:["Rang","Alle","Mit Buchreferenzen","Ohne Buchreferenzen","Buchreferenzen","Profile erlaubter Klassen","Treffer","Entwicklungsfamilie","Feld","Ein Profil ist ein Client-Datensatz, nicht unbedingt ein eigener rekrutierbarer Söldner."],
+ es:["Rango","Todos","Con referencias de libros","Sin referencias de libros","Referencias de libros","Perfiles de clases permitidas","Resultados","Familia de evolución","Campo","Un perfil es un registro del cliente, no necesariamente un mercenario reclutable distinto."],
+ ko:["랭크","전체","스킬북 참조 있음","스킬북 참조 없음","스킬북 참조","스킬북 허용 직업의 프로필","검색 결과","진화 계열","필드","프로필은 클라이언트 기록이며 별도의 영입 가능 용병을 의미하지 않을 수 있습니다."],
+ "zh-hans":["品级","全部","有技能书引用","无技能书引用","技能书引用","技能书允许职业的档案","匹配记录","进阶系列","字段","档案是客户端记录，不一定代表独立可招募佣兵。"],
+ ja:["ランク","すべて","スキル書参照あり","スキル書参照なし","スキル書参照","スキル書が許可するクラスのプロフィール","一致する記録","進化系統","項目","プロフィールはクライアントの記録であり、個別に雇用できる傭兵とは限りません。"]
+};
+export function referenceText(lang){return {...Object.fromEntries(fields.map((k,i)=>[k,(copy[lang]??copy.en)[i]])),...Object.fromEntries(browseFields.map((k,i)=>[k,(browseCopy[lang]??browseCopy.en)[i]]))};}
