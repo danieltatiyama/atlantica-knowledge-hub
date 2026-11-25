@@ -100,8 +100,8 @@ test("calculator renders Jana4U-style independent tree and shopping tools across
  ];
  for(const key of ui)assert.ok(page.includes(key),key);
  assert.ok(page.includes("atlantica.crafting.prices.v1"));
- assert.ok(page.includes('pt?"Comprar":"Buy"'));
- assert.ok(page.includes('pt?"Fabricar":"Craft"'));
+ assert.ok(page.includes('craftingText(lang,"Buy","Comprar")'));
+ assert.ok(page.includes('craftingText(lang,"Craft","Fabricar")'));
  const legacy=readFileSync("tests/client-crafting-planner.test.mjs","utf8");
  assert.ok(legacy.includes("shared intermediate demand"));
 });
