@@ -162,6 +162,9 @@ jobs:
       - name: Validate skill book review candidates
         run: node --test tests/client-skill-books.test.mjs
 
+      - name: Validate mercenary reference catalog
+        run: node --test tests/mercenary-reference.test.mjs
+
       - name: Smoke test offline translation request export
         run: |
           node scripts/guide-translations.mjs export "$RUNNER_TEMP/translation-requests-smoke"

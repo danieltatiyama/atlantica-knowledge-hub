@@ -1,6 +1,7 @@
 ---
+import {referenceText} from "../i18n/mercenary-reference-ui.mjs";
 import {catalogText} from "../i18n/catalog-ui.mjs";
-import {localePrefix,legacyLocale,localizedPaths,localeTag} from "../i18n/locales.mjs";
+import {localePrefix,legacyLocale,localizedPaths,localeTag,catalogPath} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
@@ -52,6 +53,11 @@ const noneLabel = catalogText(lang,"No results match the filter.");
       <p class="caution">{caution}</p>
       {fallback && records.length>0 && <p class="caution">{catalogText(lang,"English articles are shown until reviewed translations are available.")}</p>}
     </header>
+    {!isEvents && <nav class="reference-links" aria-label={referenceText(lang).intro}>
+      <a href={catalogPath(lang,"/mercenaries/database/")}>{referenceText(lang).database}</a>
+      <a href={catalogPath(lang,"/mercenaries/skills/")}>{referenceText(lang).skills}</a>
+      <p class="caution">{referenceText(lang).notVerified}</p>
+    </nav>}
     <section aria-label={heading} class="catalog">
       <div class="filters">
         <label class="field">
@@ -98,6 +104,9 @@ const noneLabel = catalogText(lang,"No results match the filter.");
   h1{font-size:clamp(2rem,4vw,3.4rem);margin:8px 0}
   .intro>p{max-width:950px;color:var(--color-text-muted)}
   .caution{font-size:.9rem;border-left:3px solid var(--color-bronze);padding-left:16px}
+  .reference-links{padding:20px 0;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .reference-links a{color:var(--color-accent);border:1px solid var(--color-border);padding:10px 14px;border-radius:5px}
+  .reference-links p{flex-basis:100%}
   .catalog{padding-top:32px}
   .filters{display:flex;flex-wrap:wrap;gap:16px;align-items:end}
   .field{display:grid;gap:6px;min-width:200px;flex:1}
