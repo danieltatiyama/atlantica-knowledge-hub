@@ -679,3 +679,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Famílias de poções, pergaminhos e pedras mantêm marcadores romanos; Enchant Stone e Enhance Stone permanecem distintos. Nenhum ID é inferido por sequência numérica. Arquivos brutos e exportações permanecem inalterados.
 - Módulos separados de materiais e consumíveis. `node scripts/report-wiki-name-alias-coverage.mjs` mede cobertura por categoria. Testes de identidade usam índices em Map para suportar futuras expansões.
 - Cobertura parcial, não revisão nativa e não nomes oficiais. Ainda faltam equipamentos e outras famílias de itens, monstros e índices estáveis de mercenários/habilidades. Deploy não verificado.
+
+
+### Stage 20.82d2 — Equipamentos revisados e integração complementar
+
+- 554 aliases descritivos de equipamento: 551 fichas revisadas + três referências adicionais do catálogo NPC (1300, 3762, 3763). Cada tipo de equipamento foi localizado nos sete idiomas; a família original inglesa é preservada (ex.: Espada — Twilight). Não é tradução integral de nome oficial.
+- Total atual: 794 itens, 1 criatura; 5.565 aliases (incluindo famílias de equipamento). Busca aceita palavras em qualquer ordem no alias; nenhuma alteração de identidade, stats, preços, receitas ou exportações.
+- Integração também em tabelas de boxes com IDs resolvidos, receitas e backlinks de fabricação. Nome bruto continua visível. Sem inferência de identidade a partir de texto de artigo.
+- Cobertura ainda parcial do catálogo completo; nomes de famílias e nomes próprios permanecem em inglês nos aliases descritivos. Restam demais itens, monstros e a extração de índices de mercenários/habilidades. Sem revisão nativa; conferir deploy.
