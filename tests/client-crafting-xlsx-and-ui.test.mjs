@@ -147,3 +147,15 @@ test("calculator exposes Excel export and consumption table inside both locale v
   'class="craft-cost-summary"',
  ])assert.ok(c.includes(fragment),fragment);
 });
+
+test("six additional localized workbooks retain numeric data, formulas and four sheets",()=>{
+ const expected={fr:"Arbre de fabrication",de:"Herstellungsbaum",es:"Árbol de fabricación",ko:"제작 트리","zh-hans":"制作树",ja:"製造ツリー"};
+ for(const [locale,title] of Object.entries(expected)){
+  const zip=unzipStored(buildCraftingWorkbook({plan:planBait(),names,prices:{"3200":"123"},locale}));
+  assert.equal(zip.size,9);
+  assert.ok(zip.get("xl/workbook.xml").includes('name="'+title+'"'),locale);
+  assert.ok(zip.get("xl/worksheets/sheet1.xml").includes("42000"),locale);
+  assert.ok(zip.get("xl/worksheets/sheet3.xml").includes('<f>IF(D6=&quot;&quot;,&quot;&quot;,C6*D6)</f>'),locale);
+  assert.ok(zip.get("xl/worksheets/sheet3.xml").includes("<v>123</v>"),locale);
+ }
+});
