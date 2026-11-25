@@ -33,6 +33,8 @@ const {lang,itemId}=Astro.props;
   </p>
 </section>
 <script>
+  import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {monsterText} from "../i18n/monster-ui.mjs";
   import {localePrefix,localeTag} from "../i18n/locales.mjs";
   import {formatLevelResolvedPercent,estimatedTwoStagePercent} from
@@ -97,6 +99,8 @@ const {lang,itemId}=Astro.props;
             link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
             creatureCell.append(link);
             creatureCell.append(node("small"," #"+charId));
+            const alias=wikiNameAlias("monster",charId,name,lang);
+            if(alias)creatureCell.append(node("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
             tr.append(creatureCell);
             tr.append(node("td",formatLevelResolvedPercent(source.pct,lang)));
             tr.append(node("td",raw(source.min)+"–"+raw(source.max)));
