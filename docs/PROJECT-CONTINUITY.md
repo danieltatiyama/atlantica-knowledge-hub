@@ -663,3 +663,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Busca global e banco de itens permitem procurar traduções, mantendo nome inglês e indicação visível de tradução não oficial. CJK de um caractere é aceito na busca global para correspondência exata, sem reduzir o mínimo de dois caracteres em alfabetos latinos.
 - Sem alteração dos dados extraídos, IDs, fórmulas, contagens ou rotas. Não confundir esta cobertura piloto com tradução integral de nomes. Não há revisão nativa. A expansão pode priorizar materiais, itens relevantes, monstros e, posteriormente, mercenários/habilidades com IDs estáveis. Avaliar integração nas demais ferramentas e catálogos antes de ampliar em massa.
 - Testes confrontam o registro com os índices reais; entradas sem fonte correspondente são rejeitadas pelo CI. A obtenção de nomes regionais oficiais fica suspensa.
+
+
+### Stage 20.82b/c — Integração e glossário inicial
+
+- Aliases de nome inglês + tradução auxiliar não oficial integrados em nove componentes adicionais: bestiário, busca de drops por item, fontes de criaturas, crafting, catálogo/pesquisa de preços, catálogo de equipamentos e fichas revisadas/de origem. Busca mantém IDs/nomes ingleses e permite aliases no idioma selecionado.
+- Valores, fórmulas, exportações CSV/XLSX, dados brutos, preços e registros do jogador permanecem iguais. Exportação continua com nomes originais. As páginas de boxes e demais referências específicas ainda não receberam integração individual; mercenários e habilidades dependem de índices de identidade próprios.
+- Glossário editorial inicial de 36 termos em oito idiomas, em `src/i18n/wiki-name-glossary.mjs`. Política em `docs/WIKI-NAME-TRANSLATION-POLICY.md`. Não é tradução oficial, não faz substituição automática e não reescreve os dicionários de interface anteriores.
+- Cobertura de nomes permanece piloto (21 IDs, 147 aliases); expansão de materiais e equipamentos é etapa 20.82d, seguida de monstros e mercenários/habilidades. Sem revisão nativa; confirmar deploy.
