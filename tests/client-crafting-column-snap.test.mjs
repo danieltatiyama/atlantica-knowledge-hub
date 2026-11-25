@@ -31,5 +31,5 @@ test("snap behavior is only applied to the crafting tree, not other tables or co
  assert.ok(ui.includes('id="craft-tree" class="craft-tree"'));
  assert.ok(ui.includes('class="craft-data-table craft-schedule-table"'));
  assert.ok(ui.includes('class="craft-data-table craft-shopping-table"'));
- assert.ok(ui.includes('pt?"Tabela de fabricação, com rolagem horizontal e encaixe por coluna"'));
+ assert.ok(ui.includes('craftingText(lang,"Crafting table with horizontal scrolling and column snapping","Tabela de fabricação, com rolagem horizontal e encaixe por coluna"'));
 });
