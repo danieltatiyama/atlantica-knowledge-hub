@@ -6,6 +6,7 @@ import {catalogText} from "../src/i18n/catalog-ui.mjs";
 import {itemDbText} from "../src/i18n/item-db-ui.mjs";
 import {monsterText} from "../src/i18n/monster-ui.mjs";
 import {legacyLocale,NEW_GUIDE_LOCALES} from "../src/i18n/locales.mjs";
+import {craftingText} from "../src/i18n/crafting-ui.mjs";
 import {toolText} from "../src/i18n/tools-ui.mjs";
 import {equipmentText} from "../src/i18n/equipment-ui.mjs";
 for(const lang of LOCALE_IDS){
@@ -124,3 +125,14 @@ for(const lang of LOCALE_IDS){
  assert.ok(hub.includes('href="'+prefix+'/tools/nation-dungeons/"'),prefix+" missing calendar link");
 }
 console.log("[IC] Verified eight localized tools hubs and nation dungeon calendars.");
+
+for(const lang of LOCALE_IDS){
+ const prefix=localePrefix(lang),file="dist"+prefix+"/tools/crafting/index.html";
+ assert.ok(existsSync(file),file);
+ const html=readFileSync(file,"utf8");
+ for(const [en,pt] of [["Crafting calculator","Calculadora de fabricação"],["Calculate materials","Calcular materiais"],["Crafting tree","Árvore de fabricação"]])
+  assert.ok(html.includes(craftingText(lang,en,pt)),file+" missing "+en);
+ for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),file+" missing alternate "+locale);
+ assert.ok(readFileSync("dist"+prefix+"/tools/index.html","utf8").includes('href="'+prefix+'/tools/crafting/"'),file);
+}
+console.log("[IC] Verified eight localized crafting planner pages.");
