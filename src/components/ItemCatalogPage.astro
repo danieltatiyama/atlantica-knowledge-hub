@@ -168,7 +168,7 @@ const description = catalogText(lang,"Explore 2,462 equipment-like source IDs: 5
   </main>
 </BaseLayout>
 <script>
-  import {foldNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {matchesAliasText} from "../data/wiki-name-aliases.mjs";
   const search=document.querySelector<HTMLInputElement>("#item-search");
   const category=document.querySelector<HTMLSelectElement>("#item-category");
   const minLevel=document.querySelector<HTMLInputElement>("#item-min-level");
@@ -187,7 +187,7 @@ const description = catalogText(lang,"Explore 2,462 equipment-like source IDs: 5
     let visible=0;
     for(const row of rows){
       const rawLevel=row.dataset.level??"";
-      const match=((row.dataset.search??"").includes(query)||(row.dataset.alias??"").includes(foldNameAlias(query))) &&
+      const match=((row.dataset.search??"").includes(query)||matchesAliasText(row.dataset.alias,query)) &&
         (!selectedCategory||row.dataset.category===selectedCategory) &&
         (!selectedEvidence||row.dataset.reviewed===selectedEvidence) &&
         (minimum===null||(rawLevel!==""&&Number(rawLevel)>=minimum));

@@ -20,6 +20,8 @@ const prefix=localePrefix(lang);
   </div>
 </section>
 <script>
+  import {wikiNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {equipmentText} from "../i18n/equipment-ui.mjs";
   import {localeTag} from "../i18n/locales.mjs";
   const wrappers=document.querySelectorAll<HTMLElement>(".craft-backlinks");
@@ -60,6 +62,8 @@ const prefix=localePrefix(lang);
             throw Error("Malformed reverse recipe evidence");
           const tr=document.createElement("tr"),link=document.createElement("a");
           link.textContent=name;link.href=prefix+"/items/database/?id="+encodeURIComponent(productId);
+          const alias=wikiNameAlias("item",productId,name,lang);
+          if(alias){const extra=document.createElement("small");extra.textContent=" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias;link.append(extra);}
           const itemTd=document.createElement("td");itemTd.append(link);
           itemTd.append(document.createTextNode(" (#"+productId+")"));
           const quantityTd=document.createElement("td");
