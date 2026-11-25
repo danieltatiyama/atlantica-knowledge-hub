@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83a — piloto de referência de mercenários e habilidades (PR #138)  
-**Último PR integrado:** [#138](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/138), Stage 20.83a; Validate Pull Request e Editorial content build check aprovados. Conferir deploy Cloudflare.
+**Última etapa integrada:** Stage 20.83b — catálogos ampliados (PR #139)  
+**Último PR integrado:** [#139](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/139), Stage 20.83b; CI aprovado, deploy dos catálogos confirmado pelas capturas do usuário.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -824,3 +824,14 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 
 
 - Continuação da Stage 20.83b: falha inicial do teste de busca global por BLACKARTHUR5 corrigida ao normalizar o ID textual, sem alterar identidade nem href. Incluídos filtro de presença de livros, links reversos de habilidades para os perfis das classes permitidas e aviso de que um perfil não equivale necessariamente a um mercenário recrutável. Testes adicionais: 122 famílias, 95 classes na união, 320 habilidades com livros, 1.783 ItemIDs distintos, 26 habilidades sem linhas na tabela Magic, Dark Legacy somente cinco perfis da classe CLS1_BLACKARTHUR. Validação local independente dos três JSON completos confirmou hashes e contagens. PR #140 redundante, substituído pelo #139, que contém os dados completos. Nenhum novo upload necessário para esta publicação.
+
+
+### Stage 20.83d — Comparação legível de modos e evidência do jogador (25/11/2026)
+
+- Usuário confirmou URL base https://atlantica-knowledge-hub.aocodex.workers.dev e enviou capturas do catálogo ampliado: 947/947 perfis, comparação Ann [Hero Lv.6]/[Hero Lv.5], SkillIndex 222 e Dark Legacy 995 grade 9 com conflito explícito. O deploy do catálogo ampliado está confirmado pelas capturas, não por verificação independente de rede. Awakening ainda não estava disponível na tela enviada.
+- Diretriz explícita: priorizar legibilidade para quem quer aprender o jogo. Habilidades devem apresentar uma única matriz de atributos × modos (PvE/Normal, PvP/FL, PvP/Colosseum, TBS, TBS PvP, TBS League), não seis tabelas verticais. Dados de fonte em detalhes recolhíveis; nomes de modos são convencionais, despacho do servidor não confirmado. A matriz vem antes de livros e perfis relacionados. Traduções UI em oito idiomas. Ausência não é zero; conflitos preservam todos valores e linhas, sem seleção de vencedor.
+- Natasha [VI] (NATASHA10, grade 9) tela Class: STR 1340, DEX 774, VIT 619, INT 505, DEF 1673, M.DEF 210. CharAttackInfo linha 6787 tem os mesmos cinco primeiros atributos, MagicDef bruto 10. Confirma diferença +200 observada em Arthur para uma família independente; ainda não promover regra universal sem amostras adicionais. Tela também mostra AP 80–97 e vacancy 12%, não inferir fórmula. A tela é ficha de classe, não atributos equipados.
+- Awakening quatro abas na mesma tela de formação: unused 1/2/7/3. Níveis investidos: Water-type 53; Min Attack Power 1, Max Attack Power 1, Increased Magic 8; Physical Defense 5, Magic Damage 3, (Physical) Explosion 2; Quick Recovery 6. Usando NewSkillPoint da tabela: consumos 53/34/25/24; orçamentos reconstruídos 54/36/32/27. Limites 100/50/25 confirmados visualmente. Não inferir orçamento por ALv nem bônus efetivo; faltam tooltips. Os campos de Interface são rótulos curtos, nomes Magic são longos.
+- Talentos: usuário confirma Mage Main. Tela mostra níveis requeridos 130/140/150/160/170/180 e três opções por linha; 1 ponto disponível. Fonte HeroSpecialization WPNTYPE_STF tem 18 entradas; 130–170 max 10, 180 max 20. Não inferir exclusividade, distribuição acumulada ou requisito de pontos anteriores pela imagem. As imagens não exibem tooltips nem regras.
+- Blazing Earth SkillIndex 222 / MAGIC_BOILINGEARTH: tela mostra 80/80, Max Skill Level 110 incluindo charms, duração 2, cooldown 2, AP150, MP1790, Attack Power -8064, HP -[5250+78.3%]. Tabela raiz Magic.ndt tem grades 0–9, duração 3, MP100–1000, campos de AttackPowerDamageRate e incrementos não presentes na projeção piloto de oito campos. Não mapear a captura a uma grade/modo exato nem inferir fórmula. Investigar demais campos de efeito antes de publicar cálculos; solicitar segunda amostra do mesmo personagem/grade e modo, com nível efetivo e tooltip.
+- PR #141 Awakening falhou em teste da contagem de rótulos (25, não 24); corrigido e adicionado exemplo acima como regressão no próprio PR. Não confundir o CI pendente com deploy. Sem arquivos originais ou capturas publicados no Git.
