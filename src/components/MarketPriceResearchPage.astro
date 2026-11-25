@@ -96,6 +96,8 @@ const prefix=localePrefix(lang);
  </main>
 </BaseLayout>
 <script>
+  import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
  import {marketAuditText} from "../i18n/market-audit-ui.mjs";
  import {localeTag} from "../i18n/locales.mjs";
  import {REVIEW_STORAGE_KEY,parseMarketPriceReviewQueue,normalizeMarketObservation,
@@ -143,11 +145,13 @@ const prefix=localePrefix(lang);
    results.replaceChildren();
    const shown=candidates.filter(c=>
     (!keyword||c.name.toLocaleLowerCase().includes(keyword)||
+     matchesWikiNameAlias("item",c.itemId,c.name,lang,keyword)||
      c.itemId.includes(keyword)||c.category.toLocaleLowerCase().includes(keyword))&&
     (mode==="all"||(mode==="reviewed")===observations.has(c.itemId)));
    for(const c of shown){
     const tr=node("tr"),record=observations.get(c.itemId);
-    for(const v of [c.itemId,c.name,c.category,gold(c.referenceGold),
+    const alias=wikiNameAlias("item",c.itemId,c.name,lang);
+    for(const v of [c.itemId,c.name+(alias?" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias:""),c.category,gold(c.referenceGold),
      reportedIds.has(c.itemId)?(marketAuditText(lang,"Match (player report)","Coincidente (relato)")):(marketAuditText(lang,"No report","Sem relato")),
      record?statuses[record.state]:(marketAuditText(lang,"No local observation","Sem observação local"))]){
      const td=node("td",v);tr.append(td);
@@ -163,7 +167,8 @@ const prefix=localePrefix(lang);
   function select(id:string){
    const c=byId.get(id);if(!c)return;
    selectedId=id;const previous=observations.get(id);
-   $("mpr-selected-title").textContent=c.name+" (#"+id+")";
+   const alias=wikiNameAlias("item",id,c.name,lang);
+   $("mpr-selected-title").textContent=c.name+" (#"+id+")"+(alias?" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias:"");
    $("mpr-selected-reference").textContent=(marketAuditText(lang,"Client NPC reference: ","Referência NPC do cliente: "))+
     gold(c.referenceGold)+" gold · "+c.category;
    state.value=previous?.state||"inconclusive";
