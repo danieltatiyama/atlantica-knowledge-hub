@@ -3,6 +3,7 @@
 import {LOCALE_IDS} from "../i18n/locales.mjs";
 import {materialAliasRows} from "./wiki-name-aliases-materials.mjs";
 import {consumableAliasRows} from "./wiki-name-aliases-consumables.mjs";
+import {equipmentAliasRows} from "./wiki-name-aliases-equipment.mjs";
 export const nameAliasRows=[
   [
     "item",
@@ -257,7 +258,8 @@ export const nameAliasRows=[
     "巨大ワニ"
   ],
   ...materialAliasRows,
-  ...consumableAliasRows
+  ...consumableAliasRows,
+  ...equipmentAliasRows
 ];
 const aliases=new Map(nameAliasRows.map(row=>[row[0]+":"+row[1],row]));
 export function wikiNameAlias(kind,id,sourceName,lang){
@@ -267,4 +269,8 @@ export function wikiNameAlias(kind,id,sourceName,lang){
  return row[i+2]||null;
 }
 export function foldNameAlias(value){return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("en").replace(/\s+/g," ").trim();}
-export function matchesWikiNameAlias(kind,id,sourceName,lang,query){const alias=wikiNameAlias(kind,id,sourceName,lang);const needle=foldNameAlias(query);return !!alias&&!!needle&&foldNameAlias(alias).includes(needle);}
+export function matchesAliasText(alias,query){
+ const haystack=foldNameAlias(alias),needle=foldNameAlias(query);
+ return !!haystack&&!!needle&&(haystack.includes(needle)||needle.split(" ").every(word=>haystack.includes(word)));
+}
+export function matchesWikiNameAlias(kind,id,sourceName,lang,query){return matchesAliasText(wikiNameAlias(kind,id,sourceName,lang),query);}
