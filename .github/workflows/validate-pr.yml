@@ -159,6 +159,9 @@ jobs:
       - name: Validate guide translation pipeline without external API
         run: node --test tests/guide-translation-pipeline.test.mjs tests/guide-editorial-status.test.mjs
 
+      - name: Validate skill book review candidates
+        run: node --test tests/client-skill-books.test.mjs
+
       - name: Smoke test offline translation request export
         run: |
           node scripts/guide-translations.mjs export "$RUNNER_TEMP/translation-requests-smoke"
