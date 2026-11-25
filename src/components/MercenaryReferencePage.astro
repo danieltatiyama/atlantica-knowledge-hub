@@ -68,6 +68,11 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 .reference :global(.ref-missing){color:var(--color-text-muted)}
 .reference :global(.ref-mode-matrix details){margin:12px 0 22px}
 .reference :global(.ref-mode-matrix summary){cursor:pointer;color:var(--color-accent)}
+.reference :global(.ref-level-control){max-width:240px;margin:12px 0;display:grid;gap:5px}
+.reference :global(.ref-level-control input){width:100%;padding:9px;font:inherit;color:var(--color-text);background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px}
+.reference :global(.ref-stat-total th),.reference :global(.ref-stat-total td){font-weight:700;color:var(--color-accent);border-bottom:2px solid var(--color-border)}
+.reference :global(.ref-stat-group th){width:auto!important;position:static!important;background:var(--color-surface);border-top:2px solid var(--color-border);color:var(--color-text);text-align:left}
+.reference :global(.ref-mode-matrix [aria-invalid="true"]){outline:2px solid var(--color-bronze)}
 </style>
 <script>
 import { mountReference } from "../scripts/mercenary-reference.mjs";

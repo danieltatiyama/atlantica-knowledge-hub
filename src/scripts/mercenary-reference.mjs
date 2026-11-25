@@ -1,3 +1,5 @@
+import {joinBuffStats,buildPlayerRows,defaultSkillLevel,validLevel,skillRowLabel,GROUP_ORDER} from "./skill-level-simulator.mjs";
+import {levelText} from "../i18n/skill-level-ui.mjs";
 import {joinSkillContext,comboReferences,mountComboReference,OVERVIEW_FIELDS} from "./skill-context.mjs";
 import {contextField,contextValue,contextText} from "../i18n/skill-context-ui.mjs";
 import {joinProgression,mountSkillProgression} from "./skill-progression.mjs";
@@ -64,12 +66,13 @@ export async function mountReference(root){
   const paragraph=(value,cls)=>result.append(element("p",value,cls));
   const itemHref=id=>prefix+"/items/database/?id="+encodeURIComponent(id);
   let itemNames=new Map();
+  let previewLevel=null;
   const item=id=>itemNames.has(String(id))?link(itemNames.get(String(id))+" (#"+id+")",itemHref(id)):String(id??"—");
   const profileHref=id=>prefix+"/mercenaries/database/?char="+encodeURIComponent(id);
   const skillHref=id=>prefix+"/mercenaries/skills/?skill="+encodeURIComponent(id);
   try{
-    const [m,s,baseModes,lookup,extra,context]=await Promise.all([load("mercenaries"),load("skills"),section==="skills"?load("modes"):Promise.resolve(null),load("item-names"),section==="skills"?load("mode-progression"):Promise.resolve(null),section==="skills"?load("skill-context"):Promise.resolve(null)]);
-    const v=baseModes?joinSkillContext(joinProgression(baseModes,extra),context):null;
+    const [m,s,baseModes,lookup,extra,context,buff]=await Promise.all([load("mercenaries"),load("skills"),section==="skills"?load("modes"):Promise.resolve(null),load("item-names"),section==="skills"?load("mode-progression"):Promise.resolve(null),section==="skills"?load("skill-context"):Promise.resolve(null),section==="skills"?load("skill-buff-stats"):Promise.resolve(null)]);
+    const v=baseModes?joinBuffStats(joinSkillContext(joinProgression(baseModes,extra),context),buff):null;
     need(lookup.scope===m.scope&&lookup.snapshotId===1&&Array.isArray(lookup.rows),"Invalid item name lookup");
     itemNames=new Map(lookup.rows.filter(r=>r[2]==="named"&&typeof r[1]==="string").map(r=>[r[0],r[1]]));
     const {profiles,skillList}=validateReference(m,s,v);
@@ -142,25 +145,53 @@ export async function mountReference(root){
       const matrix=buildModeMatrix(v,p.magicKind,Number(grade.value));
       const section=element("div",null,"ref-mode-matrix");
       const fmt=field=>contextField(field,root.dataset.lang)??progressionField(field,root.dataset.lang,t);
-      const overviewRank=field=>OVERVIEW_FIELDS.includes(field)?OVERVIEW_FIELDS.indexOf(field):OVERVIEW_FIELDS.length;
-      const rows=matrix.fields.filter(({field,values},i)=>i<8||OVERVIEW_FIELDS.includes(field)||values.flat().some(v=>v!=="0"&&v!==""&&v!=="NULL"&&v!=="FALSE")||field==="SelfMagicGrade"&&matrix.fields.find(f=>f.field==="SelfMagicKind")?.values.flat().some(v=>v!=="NULL"&&v!=="")).sort((a,b)=>overviewRank(a.field)-overviewRank(b.field)).map(({field,values})=>[fmt(field),...values.map((values,i)=>{
-        if(!values.length){const n=element("span","—","ref-missing");n.title=t.missing;return n;}
-        const c=matrix.columns[i];
-        const unique=[...new Set(values.map(value=>contextValue(field,value,root.dataset.lang)))];
-        if(!c.conflict)return unique.join(" / ");
-        const cell=element("span",null,"ref-conflict-cell");
-        values.forEach((value,j)=>{const line=element("span",String(contextValue(field,value,root.dataset.lang))+" · #"+c.lines[j]);cell.append(line);});
-        return cell;
-      })]);
-      table(section,[t.field,...matrix.columns.map(c=>c.label+(c.conflict?" ⚠":""))],rows);
+      const ui=levelText(root.dataset.lang);
+      const nf=new Intl.NumberFormat(root.dataset.lang,{maximumFractionDigits:4});
+      const label=element("label",ui.level,"ref-level-control"),input=element("input");
+      input.type="text";input.inputMode="numeric";input.autocomplete="off";
+      previewLevel=previewLevel??validLevel(url.searchParams.get("level"))??defaultSkillLevel(matrix,v.columns);
+      input.value=String(previewLevel);label.append(input);section.append(label);
+      const warning=element("p",ui.invalid,"ref-warning");warning.hidden=true;section.append(warning);
+      section.append(element("p",ui.notice,"ref-source"));
+      const matrixBody=element("div");section.append(matrixBody);
+      function renderPlayerMatrix(){
+        matrixBody.replaceChildren();
+        const rows=buildPlayerRows(matrix,v.columns,previewLevel);
+        const wrap=element("div",null,"ref-table-wrap"),tb=element("table"),head=element("thead"),hr=element("tr");
+        for(const h of [t.field,...matrix.columns.map(c=>c.label+(c.conflict?" ⚠":""))]){const th=element("th",h);th.scope="col";hr.append(th);}
+        head.append(hr);tb.append(head);
+        for(const group of GROUP_ORDER){
+          const groupRows=rows.filter(r=>r.group===group);if(!groupRows.length)continue;
+          const body=element("tbody"),groupRow=element("tr",null,"ref-stat-group"),gh=element("th",ui[group]);gh.colSpan=7;gh.scope="rowgroup";groupRow.append(gh);body.append(groupRow);
+          for(const r of groupRows){
+            const tr=element("tr",null,r.kind==="total"?"ref-stat-total":"");
+            const title=element("th",skillRowLabel(r,root.dataset.lang,fmt));title.scope="row";tr.append(title);
+            r.values.forEach((values,i)=>{
+              const c=matrix.columns[i],td=element("td");
+              const format=x=>x.value===null||x.value===undefined?"—":(typeof x.value==="number"?nf.format(x.value)+r.unit:String(contextValue(r.field,x.value,root.dataset.lang)))+(x.aboveCap?" *":"");
+              if(!values.length){td.textContent="—";td.className="ref-missing";}
+              else if(c.conflict){td.className="ref-conflict-cell";for(const x of values)td.append(element("span",format(x)+" · #"+x.line));}
+              else td.textContent=[...new Set(values.map(format))].join(" / ");
+              tr.append(td);
+            });
+            body.append(tr);
+          }
+          tb.append(body);
+        }
+        wrap.append(tb);matrixBody.append(wrap);
+      }
+      input.addEventListener("input",()=>{
+        const n=validLevel(input.value);warning.hidden=n!==null;input.setAttribute("aria-invalid",String(n===null));
+        if(n===null)return;previewLevel=n;renderPlayerMatrix();
+        const next=new URL(location.href);next.searchParams.set("level",String(n));history.replaceState(history.state,"",next.pathname+next.search+next.hash);
+      });
+      renderPlayerMatrix();
       if(matrix.columns.some(c=>c.conflict))section.append(element("p",t.conflict,"ref-warning"));
-      section.append(element("p",t.modeLegend,"ref-source"));
       const provenance=element("details");provenance.append(element("summary",t.source));
       table(provenance,[t.mode,t.source,t.field],matrix.columns.map(c=>[c.label,c.source+".ndt",c.lines.length?c.lines.map(n=>"#"+n).join(", "):t.missing]));
-      section.append(element("p",progressionText(root.dataset.lang).parameterNote,"ref-source"));
       section.append(element("p",contextText(root.dataset.lang).targetNote,"ref-source"));
       section.append(provenance);result.append(section);
-      mountSkillProgression(result,v,p,Number(grade.value),root.dataset.lang,t);
+      const gradeDetails=element("details");gradeDetails.append(element("summary",ui.gradeComparison));mountSkillProgression(gradeDetails,v,p,Number(grade.value),root.dataset.lang,t,{gradeOnly:true});result.append(gradeDetails);
 
     }
     function render(){
@@ -170,7 +201,7 @@ export async function mountReference(root){
       if(section==="database")renderMerc(p);else renderSkill(p);
       const next=new URL(location.href);next.searchParams.set(section==="database"?"char":"skill",String(p[key]));
       if(secondary){if(secondary.value)next.searchParams.set("compare",secondary.value);else next.searchParams.delete("compare");}
-      if(grade){if(grade.value)next.searchParams.set("grade",grade.value);else next.searchParams.delete("grade");}
+      if(grade){if(grade.value)next.searchParams.set("grade",grade.value);else next.searchParams.delete("grade");if(previewLevel!==null)next.searchParams.set("level",String(previewLevel));}
       history.replaceState(history.state,"",next.pathname+next.search+next.hash);
     }
     search.addEventListener("input",()=>{fill(search.value);render();});
