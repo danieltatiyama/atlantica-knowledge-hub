@@ -65,3 +65,15 @@ test("all UI disclosure messages are available and raw data stays separate",()=>
   assert.ok(s.includes("these are not official regional names."));
  }
 });
+
+test("aliases are integrated in the player-facing item and creature tools",()=>{
+ for(const name of ["MonsterDatabasePage","MonsterDropItemSearch","MonsterItemSources","CraftingPlannerPage","MarketPriceCatalogPage","MarketPriceResearchPage","ItemCatalogPage","ItemDetailPage","ClientSourceEquipmentPage"]){
+  const source=readFileSync("src/components/"+name+".astro","utf8");
+  assert.ok(source.includes("wikiNameAlias("),name);
+  assert.ok(source.includes('aliasText(lang,"Wiki translation (unofficial)")'),name);
+ }
+ const crafting=readFileSync("src/components/CraftingPlannerPage.astro","utf8");
+ assert.ok(crafting.includes('name:nameCache?.get(row.itemId)'));
+ assert.ok(crafting.includes('["ItemID","Name","Quantity","UnitPrice","TotalCost"]'));
+ assert.ok(crafting.includes("isWikiSearchQuery(text)"));
+});
