@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {LOCALE_IDS} from "../src/i18n/locales.mjs";
 import {aliasUiRows,aliasText} from "../src/i18n/name-alias-ui.mjs";
-import {nameAliasRows,wikiNameAlias,matchesWikiNameAlias} from "../src/data/wiki-name-aliases.mjs";
+import {nameAliasRows,wikiNameAlias,matchesWikiNameAlias,matchesAliasText} from "../src/data/wiki-name-aliases.mjs";
 import {buildWikiSearchRecords,searchWikiRecords,isWikiSearchQuery} from "../src/data/wiki-unified-search.mjs";
 const read=p=>JSON.parse(readFileSync(p,"utf8"));
 const root="public/data/";
@@ -98,4 +98,26 @@ test("expanded aliases preserve grade markers and distinguish enhancement system
  }
  const price=read(root+"client-npc-trade-prices/catalog.json");
  assert.ok(price.rows.filter(row=>wikiNameAlias("item",row[0],row[1],"pt-br")).length>=175);
+});
+
+test("all reviewed equipment has descriptive aliases with exact source identity",()=>{
+ const reviewed=items.flatMap(x=>x.rows).filter(r=>r[6]==="named"&&r[8]===1);
+ assert.equal(reviewed.length,551);
+ for(const row of reviewed)for(const lang of LOCALE_IDS.slice(1)){
+  assert.ok(wikiNameAlias("item",row[0],row[1],lang)?.includes(" — "),lang+" "+row[0]);
+ }
+ assert.equal(wikiNameAlias("item","185","Twilight Sword","pt-br"),"Espada — Twilight");
+ assert.equal(wikiNameAlias("item","185","Twilight Sword","ko"),"검 — Twilight");
+ assert.ok(matchesAliasText("Espada — Twilight","twilight espada"));
+ assert.ok(matchesWikiNameAlias("item","185","Twilight Sword","pt-br","espada twilight"));
+ assert.equal(matchesAliasText("Espada — Twilight","twilight machado"),false);
+ assert.equal(matchesAliasText(null,"espada"),false);
+ assert.equal(matchesAliasText("Espada — Twilight"," "),false);
+ const records=buildWikiSearchRecords(items,monsters,[],"pt-br");
+ assert.equal(searchWikiRecords(records,"twilight espada")[0].id,"185");
+ for(const name of ["EquipmentBoxOverview","BoxArticle","ClientCraftingSummary","ClientCraftingBacklinks"]){
+  const source=readFileSync("src/components/"+name+".astro","utf8");
+  assert.ok(source.includes("wikiNameAlias("),name);
+  assert.ok(source.includes('aliasText(lang,"Wiki translation (unofficial)")'),name);
+ }
 });
