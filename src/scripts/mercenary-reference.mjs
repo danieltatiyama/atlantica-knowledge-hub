@@ -1,4 +1,4 @@
-import {joinBuffStats,buildPlayerRows,defaultSkillLevel,validLevel,skillRowLabel,GROUP_ORDER} from "./skill-level-simulator.mjs";
+import {joinBuffStats,buildPlayerRows,defaultSkillLevel,skillSliderMax,validLevel,skillRowLabel,GROUP_ORDER} from "./skill-level-simulator.mjs";
 import {levelText} from "../i18n/skill-level-ui.mjs";
 import {joinSkillContext,comboReferences,mountComboReference,OVERVIEW_FIELDS} from "./skill-context.mjs";
 import {contextField,contextValue,contextText} from "../i18n/skill-context-ui.mjs";
@@ -150,16 +150,28 @@ export async function mountReference(root){
       const label=element("label",ui.level,"ref-level-control"),input=element("input");
       input.type="text";input.inputMode="numeric";input.autocomplete="off";
       previewLevel=previewLevel??validLevel(url.searchParams.get("level"))??defaultSkillLevel(matrix,v.columns);
-      input.value=String(previewLevel);label.append(input);section.append(label);
+      input.value=String(previewLevel);label.append(input);
+      const levelControls=element("div",null,"ref-level-controls");
+      const rangeControl=element("div",null,"ref-level-range"),slider=element("input");
+      slider.type="range";slider.min="1";slider.step="1";slider.setAttribute("aria-label",ui.level);
+      const limits=element("div",null,"ref-level-limits"),lower=element("span","1"),upper=element("span");
+      limits.append(lower,upper);rangeControl.append(slider,limits);
+      function syncSliderRange(){
+        slider.max=String(skillSliderMax(matrix,v.columns,previewLevel));
+        slider.value=String(previewLevel);slider.disabled=Number(slider.max)===1;
+        upper.textContent=slider.max;
+      }
+      syncSliderRange();levelControls.append(label,rangeControl);section.append(levelControls);
       const warning=element("p",ui.invalid,"ref-warning");warning.hidden=true;section.append(warning);
       section.append(element("p",ui.notice,"ref-source"));
-      const matrixBody=element("div");section.append(matrixBody);
+      const matrixBody=element("div",null,"ref-player-matrix");section.append(matrixBody);
+      const wrap=element("div",null,"ref-table-wrap ref-player-table-wrap"),tb=element("table"),head=element("thead"),hr=element("tr");
+      for(const h of [t.field,...matrix.columns.map(c=>c.label+(c.conflict?" ⚠":""))]){const th=element("th",h);th.scope="col";hr.append(th);}
+      head.append(hr);tb.append(head);wrap.append(tb);matrixBody.append(wrap);
       function renderPlayerMatrix(){
-        matrixBody.replaceChildren();
+        const left=wrap.scrollLeft,top=wrap.scrollTop;
         const rows=buildPlayerRows(matrix,v.columns,previewLevel);
-        const wrap=element("div",null,"ref-table-wrap"),tb=element("table"),head=element("thead"),hr=element("tr");
-        for(const h of [t.field,...matrix.columns.map(c=>c.label+(c.conflict?" ⚠":""))]){const th=element("th",h);th.scope="col";hr.append(th);}
-        head.append(hr);tb.append(head);
+        for(const body of Array.from(tb.tBodies))body.remove();
         for(const group of GROUP_ORDER){
           const groupRows=rows.filter(r=>r.group===group);if(!groupRows.length)continue;
           const body=element("tbody"),groupRow=element("tr",null,"ref-stat-group"),gh=element("th",ui[group]);gh.colSpan=7;gh.scope="rowgroup";groupRow.append(gh);body.append(groupRow);
@@ -178,13 +190,19 @@ export async function mountReference(root){
           }
           tb.append(body);
         }
-        wrap.append(tb);matrixBody.append(wrap);
+        wrap.scrollLeft=left;wrap.scrollTop=top;
+      }
+      function updatePreview(n,fromSlider){
+        previewLevel=n;warning.hidden=true;input.setAttribute("aria-invalid","false");
+        if(fromSlider)input.value=String(n);else syncSliderRange();
+        renderPlayerMatrix();
+        const next=new URL(location.href);next.searchParams.set("level",String(n));history.replaceState(history.state,"",next.pathname+next.search+next.hash);
       }
       input.addEventListener("input",()=>{
         const n=validLevel(input.value);warning.hidden=n!==null;input.setAttribute("aria-invalid",String(n===null));
-        if(n===null)return;previewLevel=n;renderPlayerMatrix();
-        const next=new URL(location.href);next.searchParams.set("level",String(n));history.replaceState(history.state,"",next.pathname+next.search+next.hash);
+        if(n!==null)updatePreview(n,false);
       });
+      slider.addEventListener("input",()=>{const n=validLevel(slider.value);if(n!==null)updatePreview(n,true);});
       renderPlayerMatrix();
       if(matrix.columns.some(c=>c.conflict))section.append(element("p",t.conflict,"ref-warning"));
       const provenance=element("details");provenance.append(element("summary",t.source));

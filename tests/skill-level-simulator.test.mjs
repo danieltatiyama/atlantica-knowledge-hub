@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {joinBuffStats,buildPlayerRows,validLevel,defaultSkillLevel,STAT_GROUPS} from '../src/scripts/skill-level-simulator.mjs';
+import {joinBuffStats,buildPlayerRows,validLevel,defaultSkillLevel,skillSliderMax,STAT_GROUPS} from '../src/scripts/skill-level-simulator.mjs';
 import {joinProgression} from '../src/scripts/skill-progression.mjs';
 import {joinSkillContext} from '../src/scripts/skill-context.mjs';
 import {buildModeMatrix} from '../src/scripts/mercenary-reference.mjs';
@@ -50,4 +50,25 @@ test('validated level text and eight localized control dictionaries',()=>{
  for(const x of ['','-1','0','1.5','1e2','1001','abc'])assert.equal(validLevel(x),null);
  assert.equal(validLevel('80'),80);
  for(const lang of ['en','pt-br','es','fr','de','ko','ja','zh-hans'])assert.ok(Object.values(levelText(lang)).every(v=>v.trim()));
+});
+
+test('slider follows grade cap and permits explicit above-cap text previews',()=>{
+ const m=matrix('MAGIC_ARTHUREX',11);
+ assert.equal(skillSliderMax(m,data.columns,1),80);
+ assert.equal(skillSliderMax(m,data.columns,80),80);
+ assert.equal(skillSliderMax(m,data.columns,110),110);
+ assert.equal(skillSliderMax(m,data.columns,1001),80);
+ const empty={columns:[{rows:[]}]};
+ assert.equal(skillSliderMax(empty,data.columns,1),1);
+ assert.equal(skillSliderMax(empty,data.columns,80),80);
+});
+test('skill table controls stay synchronized and sticky header is scoped to the player matrix',()=>{
+ const script=readFileSync('src/scripts/mercenary-reference.mjs','utf8');
+ const style=readFileSync('src/components/MercenaryReferencePage.astro','utf8');
+ assert.ok(script.includes('slider.addEventListener("input"'));
+ assert.ok(script.includes('if(fromSlider)input.value=String(n);else syncSliderRange()'));
+ assert.ok(script.includes('wrap.scrollLeft=left;wrap.scrollTop=top'));
+ assert.ok(style.includes('@container skill-matrix (min-width:860px)'));
+ assert.ok(style.includes('.ref-player-table-wrap thead th'));
+ assert.ok(style.includes('tbody + tbody .ref-stat-group th'));
 });
