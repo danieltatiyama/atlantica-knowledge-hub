@@ -1,12 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import {awakeningText} from "../i18n/awakening-ui.mjs";
+import {talentText} from "../i18n/main-talent-ui.mjs";
 import {toolText} from "../i18n/tools-ui.mjs";
 import {localizedPaths,catalogPath} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 interface Props {lang:Lang;}
 const {lang}=Astro.props;
 const cards=[
+ {name:talentText(lang).title,description:talentText(lang).intro,href:catalogPath(lang,"/tools/talents/")},
  {name:awakeningText(lang).title,description:awakeningText(lang).intro,href:catalogPath(lang,"/tools/awakening/")},
  {name:toolText(lang,"Data quality","Qualidade dos dados"),description:toolText(lang,"Client source coverage and integrity.","Cobertura e consistência dos índices do cliente."),href:catalogPath(lang,"/tools/data-quality/")},
  {name:toolText(lang,"Crafting calculator","Calculadora de crafting"),description:toolText(lang,"Plan materials and dependencies.","Calcule materiais e dependências."),href:catalogPath(lang,"/tools/crafting/")},

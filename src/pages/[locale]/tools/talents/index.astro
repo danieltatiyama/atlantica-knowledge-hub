@@ -1,0 +1,7 @@
+---
+import MainTalentPlannerPage from '../../../../components/MainTalentPlannerPage.astro';
+import {NEW_GUIDE_LOCALES} from '../../../../i18n/locales.mjs';
+export function getStaticPaths(){return NEW_GUIDE_LOCALES.map(lang=>({params:{locale:lang},props:{lang}}));}
+const {lang}=Astro.props;
+---
+<MainTalentPlannerPage lang={lang}/>

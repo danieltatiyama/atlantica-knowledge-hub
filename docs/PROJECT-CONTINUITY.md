@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83c — Awakening Planner (PR #141)  
-**Último PR integrado:** [#141](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/141), Stage 20.83c; CI aprovado. Deploy Awakening a verificar.
+**Última etapa integrada:** Stage 20.83d — matriz de modos de combate (PR #142)  
+**Último PR integrado:** [#142](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/142), Stage 20.83d; commit 869e800 na main, CI aprovado. Deploy a verificar.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -842,3 +842,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Talentos: usuário confirma Mage Main. Tela mostra níveis requeridos 130/140/150/160/170/180 e três opções por linha; 1 ponto disponível. Fonte HeroSpecialization WPNTYPE_STF tem 18 entradas; 130–170 max 10, 180 max 20. Não inferir exclusividade, distribuição acumulada ou requisito de pontos anteriores pela imagem. As imagens não exibem tooltips nem regras.
 - Blazing Earth SkillIndex 222 / MAGIC_BOILINGEARTH: tela mostra 80/80, Max Skill Level 110 incluindo charms, duração 2, cooldown 2, AP150, MP1790, Attack Power -8064, HP -[5250+78.3%]. Tabela raiz Magic.ndt tem grades 0–9, duração 3, MP100–1000, campos de AttackPowerDamageRate e incrementos não presentes na projeção piloto de oito campos. Não mapear a captura a uma grade/modo exato nem inferir fórmula. Investigar demais campos de efeito antes de publicar cálculos; solicitar segunda amostra do mesmo personagem/grade e modo, com nível efetivo e tooltip.
 - PR #141 Awakening falhou em teste da contagem de rótulos (25, não 24); corrigido e adicionado exemplo acima como regressão no próprio PR. Não confundir o CI pendente com deploy. Sem arquivos originais ou capturas publicados no Git.
+
+
+### Stage 20.83e — Main Character Talent Planner
+
+- HeroSpecialization.ndt e TextMgr_Magic_ENG.ntx: 198 identidades, 11 famílias, três talentos por nível 130–180; custo 1, limites individuais 10/20, capacidade matemática 210 por família. Preservar linha e ID de texto.
+- Bow Main (BOW) e Celestial Hunter (SHBOW) usam WPNTYPE_BOW mas possuem árvores distintas; Celestial Hunter atinge alvo principal e dois atrás, conforme esclarecimento do jogador. Não inferir pelo código da arma.
+- /tools/talents/ em oito idiomas, orçamento manual, níveis, alertas, links versionados, fontes recolhíveis. Não presume exclusividade, pré-requisitos, aquisição de pontos ou cálculo de bônus. Trocar família limpa alocações e conserva orçamento e nível.
+- Cinco testes locais do pacote aprovado; validar CI e deployment antes de declarar publicação. Regra de repositório teve timeout; não desabilitada. Stage 20.83f (39 campos extras, Proc Rate e progressão) permanece em pacote local separado, a integrar somente após esta etapa.
