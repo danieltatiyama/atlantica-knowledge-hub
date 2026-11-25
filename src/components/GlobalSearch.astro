@@ -1,5 +1,6 @@
 ---
 import {sharedText} from "../i18n/shared-ui.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
 import {getCollection} from "astro:content";
 import type { Lang } from "../i18n/ui";
 import { guidePath } from "../i18n/locales.mjs";
@@ -35,22 +36,24 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
     </select>
   </div>
   <p id="wiki-search-status" role="status" aria-live="polite">
-    {sharedText(lang,"Enter at least 2 characters.")}
+    {aliasText(lang,"Enter at least 2 characters (or one CJK character).")}
   </p>
   <ul id="wiki-search-results"></ul>
   <p class="wiki-search-footnote">{sharedText(lang,"Names and IDs come from the game client; they do not confirm server availability.")}</p>
+  <p class="wiki-search-footnote">{aliasText(lang,"English client names are preserved. Some items and monsters have optional AI-assisted Wiki translations for search; these are not official regional names.")}</p>
 </dialog>
 <script type="application/json" id="wiki-search-guides" set:html={guidesJson}/>
 <script>
   import {sharedText} from "../i18n/shared-ui.mjs";
-  import {buildWikiSearchRecords,searchWikiRecords} from "../data/wiki-unified-search.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
+  import {buildWikiSearchRecords,searchWikiRecords,isWikiSearchQuery} from "../data/wiki-unified-search.mjs";
   const dialog=document.getElementById("wiki-global-search") as HTMLDialogElement|null;
   const query=document.getElementById("wiki-search-query") as HTMLInputElement|null;
   const kind=document.getElementById("wiki-search-kind") as HTMLSelectElement|null;
   const status=document.getElementById("wiki-search-status") as HTMLElement|null;
   const results=document.getElementById("wiki-search-results") as HTMLUListElement|null;
   const lang=dialog?.dataset.lang??"en";
-  type RecordRow={kind:string;id:string;title:string;detail:string;href:string};
+  type RecordRow={kind:string;id:string;title:string;detail:string;href:string;nameAlias?:string|null};
   let records:RecordRow[]|null=null;
   let loading:Promise<RecordRow[]>|null=null;
   let currentSearch=0;
@@ -103,13 +106,15 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
       heading.textContent=item.title;
       detail.textContent=label(item)+(item.id?" #"+item.id:"")+
         (item.detail?" · "+item.detail:"");
-      a.append(heading,detail);li.append(a);results.append(li);
+      a.append(heading,detail);
+      if(item.nameAlias){const alias=document.createElement("small");alias.textContent=aliasText(lang,"Wiki translation (unofficial)")+": "+item.nameAlias;a.append(alias);}
+      li.append(a);results.append(li);
     }
   }
   async function refresh(){
     if(!query||!kind||!status)return;
     const text=query.value.trim(),ticket=++currentSearch;
-    if(text.length<2){draw([]);status.textContent=sharedText(lang,"Enter at least 2 characters.");return;}
+    if(!isWikiSearchQuery(text)){draw([]);status.textContent=aliasText(lang,"Enter at least 2 characters (or one CJK character).");return;}
     status.textContent=sharedText(lang,"Searching client indexes…");
     try{
       const source=await loadSearch();
@@ -128,7 +133,7 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
     if(!dialog||!query)return;
     if(!dialog.open)dialog.showModal();
     query.focus();
-    if(query.value.trim().length>=2)void refresh();
+    if(isWikiSearchQuery(query.value))void refresh();
   }
   document.querySelectorAll<HTMLElement>("[data-global-search-open]").forEach(button=>{
     button.addEventListener("click",event=>{event.preventDefault();openSearch();});
