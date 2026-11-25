@@ -1,6 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import {localePrefix,localizedPaths,catalogPath} from "../i18n/locales.mjs";
+import {referenceText} from "../i18n/mercenary-reference-ui.mjs";
+import {toolText} from "../i18n/tools-ui.mjs";
 import {awakeningText} from "../i18n/awakening-ui.mjs";
 import {AWAKENING_ROWS,AWAKENING_TABS,AWAKENING_ITEM_BONUS_CAPS,AWAKENING_RESET,AWAKENING_SOURCE_DATE} from "../data/awakening-source.mjs";
 interface Props { lang:string }
@@ -11,7 +13,7 @@ const prefix=localePrefix(lang);
 ---
 <BaseLayout lang={lang} title={t.title+" | Atlantica Knowledge Hub"} description={t.intro} alternatePaths={localizedPaths("/tools/awakening/")}>
   <main class="awakening" data-awakening data-labels={JSON.stringify(t)} data-lang={lang}>
-    <nav><a href={catalogPath(lang,"/tools/")}>← {t.title}</a> · <a href={catalogPath(lang,"/mercenaries/database/")}>Mercenary database</a></nav>
+    <nav><a href={catalogPath(lang,"/tools/")}>← {toolText(lang,"Tools","Ferramentas")}</a> · <a href={catalogPath(lang,"/mercenaries/database/")}>{referenceText(lang).database}</a></nav>
     <p class="eyebrow">ATLANTICA GLOBAL / NA</p>
     <h1>{t.title}</h1>
     <p>{t.intro}</p><p class="notice">{t.notice}</p>
