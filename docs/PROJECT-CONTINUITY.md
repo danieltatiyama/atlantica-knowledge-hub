@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83g — Skill Context and Magic Combinations\
-**Último PR integrado:** #145, commit fd510187711dd6f90fc4b5d0900347b615364064; CI aprovado. Confirmar deployment.
+**Última etapa integrada:** Stage 20.83h — Skill Level Simulator\
+**Último PR integrado:** #146, commit 59cba2ab8a3cdbac043659f6fa7be940bc21e53c; CI aprovado e nova tabela confirmada em produção pelo jogador.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -871,3 +871,9 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Macro VBA fornecida pelo jogador: Base + Inc × (Level − 1), divisores 1/10/100 conforme campos. Exibir grupos de atributos, ocultar zeros, remover Probability/ProbabilityInc*10 da apresentação (preservar dados). Proc /10 e ATK scaling em % (incremento /100), sem limitar proc a 100%. Nível digitável e grade independente, conflitos por linha e modos ausentes preservados; acima do cap sinalizado.
 - Cinco campos adicionais por linha de origem; 42.602 registros, 70 colunas incluindo quatro de identidade. Magic.ndt tem EndowedAmount_ImmuneInc, outros cinco têm EndowedAmount_ImmuneInc*10: não inferir divisor em PvE, não calcular total quando incremento não zero. MP drain permanece parâmetro bruto. Hash dos runs verificado contra a extração original.
 - Print do Sage Sword Excalibur grade 11 nível 80: MP 432, scaling 50,9% (sinal de dano), HP 8248 e duração 1 no jogo; projeção de fonte HP -3496, scaling -50,92%, MP 432, duração bruta 0. Não inferir HP final, duração mínima ou chance efetiva do servidor. Fonte preservada e previsão claramente rotulada.
+
+### Stage 20.83i — Skill table navigation
+
+- Slider de nível ao lado do campo textual, sincronização em ambos os sentidos e URL preservada. Limite inicial conforme maior MaxTotalSkillLevel do grade selecionado; simulação acima do limite digitada expande o slider, sem eliminar avisos anteriores. Faixa de entrada permanece 1–1000.
+- Espaço visual de 8px entre grupos, cabeçalho sticky no scroll da página quando a largura disponível comporta a matriz de 860px; em telas estreitas, scroll interno horizontal/vertical com cabeçalho fixo. Primeira coluna permanece congelada. Apenas tabela de habilidades alterada.
+- Cabeçalho e contêiner permanecem montados ao recalcular níveis; preservar posição do scroll. Dois testes adicionais de faixa e contrato de interface, sem alteração de dados ou fórmulas.

@@ -80,6 +80,12 @@ export function defaultSkillLevel(matrix,columns){
  const idx=columns.indexOf('MaxTotalSkillLevel');
  return Math.max(1,...matrix.columns.flatMap(c=>c.rows.map(r=>num(r[idx])??0)).filter(n=>Number.isSafeInteger(n)&&n<=1000));
 }
+// Keep the normal slider range tied to the selected grade, but include a
+// deliberately typed above-cap preview without silently clipping it.
+export function skillSliderMax(matrix,columns,level){
+ const cap=defaultSkillLevel(matrix,columns);
+ return Math.max(cap,Number.isSafeInteger(level)&&level>=1&&level<=1000?level:1);
+}
 export function skillRowLabel(row,lang,fallback){
  const pt=lang==='pt-br',s=STAT_GROUPS.find(s=>s.key===row.key);
  if(!s)return ({bTakeMP:pt?'MP Drain (parâmetro bruto)':'MP Drain (raw parameter)',ActivePower:'AP Cost',CoolTime:pt?'Recarga':'Cooldown'})[row.field]??fallback(row.field);

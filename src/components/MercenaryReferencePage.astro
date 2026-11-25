@@ -68,11 +68,30 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 .reference :global(.ref-missing){color:var(--color-text-muted)}
 .reference :global(.ref-mode-matrix details){margin:12px 0 22px}
 .reference :global(.ref-mode-matrix summary){cursor:pointer;color:var(--color-accent)}
-.reference :global(.ref-level-control){max-width:240px;margin:12px 0;display:grid;gap:5px}
+.reference :global(.ref-level-controls){display:grid;grid-template-columns:minmax(90px,150px) minmax(0,360px);align-items:end;gap:16px;margin:12px 0}
+.reference :global(.ref-level-control){display:grid;gap:5px;color:var(--color-text-muted)}
+.reference :global(.ref-level-range){min-width:0;display:grid;gap:2px;padding-bottom:2px}
+.reference :global(.ref-level-range input){width:100%;min-width:0;accent-color:var(--color-accent);cursor:pointer;margin:0;height:25px}
+.reference :global(.ref-level-range input:disabled){cursor:default}
+.reference :global(.ref-level-range input:focus-visible){outline:2px solid var(--color-accent);outline-offset:3px}
+.reference :global(.ref-level-limits){display:flex;justify-content:space-between;font-size:.75rem;line-height:1;color:var(--color-text-muted);font-variant-numeric:tabular-nums}
 .reference :global(.ref-level-control input){width:100%;padding:9px;font:inherit;color:var(--color-text);background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px}
 .reference :global(.ref-stat-total th),.reference :global(.ref-stat-total td){font-weight:700;color:var(--color-accent);border-bottom:2px solid var(--color-border)}
 .reference :global(.ref-stat-group th){width:auto!important;position:static!important;background:var(--color-surface);border-top:2px solid var(--color-border);color:var(--color-text);text-align:left}
 .reference :global(.ref-mode-matrix [aria-invalid="true"]){outline:2px solid var(--color-bronze)}
+.reference :global(.ref-player-matrix){container:skill-matrix / inline-size;min-width:0}
+.reference :global(.ref-player-table-wrap){overflow:auto;max-height:min(72vh,800px);overscroll-behavior-x:contain}
+.reference :global(.ref-player-table-wrap table){border-collapse:separate;border-spacing:0}
+.reference :global(.ref-player-table-wrap thead th){position:sticky;top:0;z-index:3;background:var(--color-header);border-bottom:2px solid var(--color-border)}
+.reference :global(.ref-player-table-wrap thead th:first-child){z-index:4;background:var(--color-header)}
+.reference :global(.ref-player-table-wrap tbody + tbody .ref-stat-group th){border-top:8px solid var(--color-background)}
+.reference :global(.ref-player-table-wrap .ref-stat-group th){background:var(--color-header);padding-top:8px;padding-bottom:8px}
+@container skill-matrix (min-width:860px){
+  .reference :global(.ref-player-table-wrap){overflow:visible;max-height:none}
+}
+@media(max-width:450px){
+  .reference :global(.ref-level-controls){grid-template-columns:100px minmax(0,1fr);gap:10px}
+}
 </style>
 <script>
 import { mountReference } from "../scripts/mercenary-reference.mjs";
