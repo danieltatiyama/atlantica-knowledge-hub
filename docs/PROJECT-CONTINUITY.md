@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.82f6 — reconciliação VNA (PR #137)  
-**Último PR integrado:** [#137](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/137), Stage 20.82f6; workflow Validate Pull Request aprovado. Conferir deploy Cloudflare.
+**Última etapa integrada:** Stage 20.83a — piloto de mercenários e habilidades (PR #138)  
+**Último PR integrado:** [#138](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/138), Stage 20.83a; conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -813,3 +813,15 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Piloto Arthur: 17 perfis, 5 SkillIndexes, 31 registros de livros ALL (a contagem de 28 anterior era somente heurística de nome), 14 arestas explícitas, 32 registros de grade 9 em seis tabelas. Não incluir aresta fictícia ARTHUR7 → ramos. Preservar os três registros conflitantes Dark Legacy na MagicPVPBattleGround. Valores originais selecionados por nome de campo, sem cálculos ou fallback. Dados em public/data/client-mercenaries/{mercenaries,skills,modes}.json; os três blobs coincidem byte a byte com a geração local (SHA-256 fixados em teste).
 - Novas rotas /mercenaries/database/ e /mercenaries/skills/ nos oito idiomas, separadas de artigos editoriais aprovados; pesquisa, seleção de evolução, comparação de atributos, requisitos, família de evolução, slots configurados, livros por classe, links para catálogo de itens, seleção de grade armazenada, seis tabelas brutas com alerta de conflitos. Layout existente, seis temas, nomes ingleses e chaves de campos preservados. Não implica disponibilidade no servidor ou lista completa de habilidades. Não há calculadoras de atributos finais nesta etapa.
 - Próximo: revisar o piloto, promover os três arquivos da projeção ampliada após validação dos hashes e da cobertura. Ambiente de geração local não alcança GitHub por rede e a API de conteúdo não recebe caminho de arquivo local: pacote de importação está preparado; transferência dos arquivos grandes exige uso do checkout local ou outro meio autorizado. Não reenviar arquivos brutos do jogo. Não declarar deploy até verificação.
+
+
+### Stage 20.83a — Piloto publicado de mercenários e habilidades
+
+- PR #138 integrado (main 5a4d6b8b96b9073dd79e71b28564beb1d4ce9e36). Rotas /mercenaries/database/ e /mercenaries/skills/ nos oito idiomas, vinculadas ao hub editorial. Piloto Arthur: 17 registros, cinco SkillIndexes 991–995, 31 livros ALL por chave explícita, 14 arestas, 32 linhas de magia grade 9 (seis modos, três linhas conflitantes Dark Legacy em Colosseum). Permissão de livro não equivale a lista de habilidades aprendidas. Mantém ramificação sem aresta inventada. Atributos brutos, sem fórmula e sem descrições originais. Deploy Cloudflare não verificado nesta etapa.
+
+### Stage 20.83b — Preparação da expansão integral da referência
+
+- Filtros por nome/ID, rank e BaseGrade nos perfis, e existência de referência de livro nas habilidades. Resultados preservam IDs homônimos. Skill → perfis por correspondência explícita de classe de livro; não afirmar elegibilidade por grade. Seleção e comparação compartilháveis via query string; campos técnicos mantidos como chaves originais. Oito idiomas nos novos controles.
+- Candidato expandido gerado localmente pelos scripts da investigação anterior: 947 perfis (95 códigos de classe na união; 94 nas evoluções), 936 evoluções, 122 famílias BaseGrade, 816 arestas, 90 requisitos Awakening, 1.336 SkillIndexes (320 com livros), 1.783 ItemIDs com SkillKind/Nation ALL, 42.602 registros de modo em seis tabelas e 48 chaves conflitantes. 26 SkillIndexes sem linha em Magic.ndt; 1.016 sem livro. Nenhuma dessas ausências é preenchida por hipótese. Não interpretar os 947 registros como 947 mercenários recrutáveis.
+- Os três JSON de expansão foram verificados localmente (hashes, contagens, chaves, conflito, permissões Arthur). Testes CI agora fixam SHA-256 tanto do piloto quanto da expansão. Candidato expandido contém apenas nomes e campos selecionados, não originais, descrições integrais, decoder ou arquivos de auditoria privados. Hashes: mercenaries.json 69ea9e0ca8de22852bdcab29184fa2a619a841f0940e6df0383e6233df7a5421; skills.json 8bc9c76e03afaa7f8d6fc0f85efd3dbc7fd623965b8fc2b243e62a5d95fb3488; modes.json c2eaf8f3f2291986996f245c12aed9116d5d7acd3d8814e37c522a37c472b361. Gerar cópia de publicação apenas desses três, em public/data/client-mercenaries/.
+- Bloqueio de entrega: arquivos locais de expansão (~3,2 MiB sem compressão) não podem ser transferidos diretamente pelo conector GitHub disponível nesta sessão; o piloto está na main e a expansão ainda não. Fornecer ZIP com apenas os três JSON para o usuário copiar ao checkout Git e abrir PR ou adicionar à branch de expansão; conferir hashes e CI antes de integrar. Não confundir geração local com publicação. Próximas etapas: busca global, comparação de modos aprimorada, planners com regras comprovadas; não aplicar fórmulas sem validação.
