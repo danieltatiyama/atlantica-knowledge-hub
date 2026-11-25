@@ -23,7 +23,9 @@ test("catalog dictionaries have a unique label in every locale",()=>{
  }
 });
 test("localized listing routes preserve locale and unsupported detail paths do not pretend to be translated",()=>{
- assert.deepEqual(LOCALIZED_CATALOG_PATHS,["/items/","/events/","/mercenaries/","/items/database/","/monsters/"]);
+ const rootCatalogs=["/items/","/events/","/mercenaries/","/items/database/","/monsters/"];
+ const nestedCatalogs=["/mercenaries/database/","/mercenaries/skills/"];
+ assert.deepEqual(new Set(LOCALIZED_CATALOG_PATHS),new Set([...rootCatalogs,...nestedCatalogs]));
  for(const lang of LOCALE_IDS){
   for(const path of LOCALIZED_CATALOG_PATHS){
    assert.equal(catalogPath(lang,path),localePrefix(lang)+path);
@@ -38,8 +40,10 @@ test("localized listing routes preserve locale and unsupported detail paths do n
  }
  for(const page of ["Header","HomePage"]){
   const source=read("src/components/"+page+".astro");
-  for(const path of LOCALIZED_CATALOG_PATHS)assert.ok(source.includes('catalogPath(lang,"'+path+'")'),page+path);
+  for(const path of rootCatalogs)assert.ok(source.includes('catalogPath(lang,"'+path+'")'),page+path);
  }
+ const hub=read("src/components/EditorialHubPage.astro");
+ for(const path of nestedCatalogs)assert.ok(hub.includes('catalogPath(lang,"'+path+'")'),path);
 });
 test("equipment raw values and English identity remain unchanged and editorial fallback is gated",()=>{
  const catalog=read("src/components/ItemCatalogPage.astro");
