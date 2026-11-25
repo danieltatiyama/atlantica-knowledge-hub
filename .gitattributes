@@ -1,0 +1,6 @@
+# Byte-pinned skill data: preserve canonical LF on every platform
+/public/data/client-mercenaries/modes.json text eol=lf
+/public/data/client-mercenaries/skills.json text eol=lf
+/public/data/client-mercenaries/mode-progression.json text eol=lf
+/public/data/client-mercenaries/skill-context.json text eol=lf
+/public/data/client-mercenaries/mercenaries.json text eol=lf

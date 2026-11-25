@@ -1,3 +1,5 @@
+import {joinProgression,mountSkillProgression} from "./skill-progression.mjs";
+import {progressionField,progressionText} from "../i18n/skill-progression-ui.mjs";
 const directory="/data/client-mercenaries/";
 const modeNames=["Magic","MagicPVP","MagicPVPBattleGround","BF_Magic","BF_MagicPvP","BF_MagicPvPLeague"];
 export const MODE_LABELS=["PvE / Normal","PvP / FL","PvP / Colosseum","TBS","TBS PvP","TBS League"];
@@ -64,7 +66,8 @@ export async function mountReference(root){
   const profileHref=id=>prefix+"/mercenaries/database/?char="+encodeURIComponent(id);
   const skillHref=id=>prefix+"/mercenaries/skills/?skill="+encodeURIComponent(id);
   try{
-    const [m,s,v,lookup]=await Promise.all([load("mercenaries"),load("skills"),section==="skills"?load("modes"):Promise.resolve(null),load("item-names")]);
+    const [m,s,baseModes,lookup,extra]=await Promise.all([load("mercenaries"),load("skills"),section==="skills"?load("modes"):Promise.resolve(null),load("item-names"),section==="skills"?load("mode-progression"):Promise.resolve(null)]);
+    const v=baseModes?joinProgression(baseModes,extra):null;
     need(lookup.scope===m.scope&&lookup.snapshotId===1&&Array.isArray(lookup.rows),"Invalid item name lookup");
     itemNames=new Map(lookup.rows.filter(r=>r[2]==="named"&&typeof r[1]==="string").map(r=>[r[0],r[1]]));
     const {profiles,skillList}=validateReference(m,s,v);
@@ -134,8 +137,8 @@ export async function mountReference(root){
       if(!available.size){paragraph(t.missing);return;}
       const matrix=buildModeMatrix(v,p.magicKind,Number(grade.value));
       const section=element("div",null,"ref-mode-matrix");
-      const fmt=field=>t["field_"+field]??field;
-      const rows=matrix.fields.map(({field,values})=>[fmt(field),...values.map((values,i)=>{
+      const fmt=field=>progressionField(field,root.dataset.lang,t);
+      const rows=matrix.fields.filter(({field,values},i)=>i<8||["MagicType","MaxBookSkillLevel","MaxTotalSkillLevel","MotionProbability","MotionProbabilityInc*10"].includes(field)||values.flat().some(v=>v!=="0"&&v!==""&&v!=="NULL")).map(({field,values})=>[fmt(field),...values.map((values,i)=>{
         if(!values.length){const n=element("span","—","ref-missing");n.title=t.missing;return n;}
         const c=matrix.columns[i];
         const unique=[...new Set(values)];
@@ -149,7 +152,9 @@ export async function mountReference(root){
       section.append(element("p",t.modeLegend,"ref-source"));
       const provenance=element("details");provenance.append(element("summary",t.source));
       table(provenance,[t.mode,t.source,t.field],matrix.columns.map(c=>[c.label,c.source+".ndt",c.lines.length?c.lines.map(n=>"#"+n).join(", "):t.missing]));
+      section.append(element("p",progressionText(root.dataset.lang).parameterNote,"ref-source"));
       section.append(provenance);result.append(section);
+      mountSkillProgression(result,v,p,Number(grade.value),root.dataset.lang,t);
 
     }
     function render(){
