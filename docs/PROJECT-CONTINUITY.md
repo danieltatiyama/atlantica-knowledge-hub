@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83l — Wicked Bill INT evidence\
-**Último PR integrado:** #150, commit 3968fd6d751389e78f2742ae2465242d82960873; CI #314 aprovado, deployment a confirmar.
+**Última etapa integrada:** Stage 20.84a — Monster Information / aggro investigation\
+**Último PR integrado:** #151, commit a2728470b356530901577b3175627a30e4397414; CI #315 aprovado.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -921,3 +921,12 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Hipótese Monster Information = presença no CharMonsterInfo tem 4/4 observações concordantes (2 positivas, 2 negativas). Ausência em arquivo mais antigo não prova indisponibilidade atual. Não generalizar como confirmação individual para todos os monstros.
 - Aggressive tem 1.516 zeros e 2.835 positivos (máximo 30) em MONSTER/ALL. bAgrsiveWhenBattle possui valores 0, 1 **e 2**; não tratar como booleano. Pares (Aggressive zero/positivo, bAgrsiveWhenBattle): zero/0 731, zero/1 783, zero/2 2, positivo/0 448, positivo/1 2356, positivo/2 31. Um positivo de aggro confirmado; zero ainda não testado. Não inferir unidade, distância, entrada em batalhas, efeito de AiPoint ou significado do valor 2.
 - Próximo teste prioritário: um monstro de Aggressive=0 conhecido como não agressivo (ex.: Mad Prisoner), e, separadamente, observar se entra em combate próximo apesar de não iniciar combate. Testar positivo com bAgrsiveWhenBattle=0 e valor 2 posteriormente. Manter observação direta separada de parâmetros do cliente. Sem alteração de UI ou dados públicos nesta etapa.
+
+
+### Stage 20.84b — Encyclopedia and Burning Outpost evidence
+
+- Em 25/11/2026 o jogador relata possuir informação de 2.515 monstros; amarelo na lista significa Origin Info (quarto estágio). Branco continua sendo monstro listado; cor é progresso pessoal, não elegibilidade. Não interpretar 2515/2726 como conclusão comprovada, pois o total de entradas atualmente acessíveis no servidor é desconhecido.
+- Três prints de 15 nomes cada foram reconciliados com os arquivos CharAttackInfo.ndt, CharMonsterInfo.ndt e TextMgr_CharInfo_ENG.ntx decodificados novamente localmente. Cada nome em inglês corresponde a exatamente um registro MONSTER/ALL e um Kind presente em CharMonsterInfo. 45/45 positivas adicionais; acumulado 49/49 observações de elegibilidade concordantes (47 positivas, 2 negativas). A ausência em um snapshot antigo continua não comprovando indisponibilidade no servidor.
+- Identidades dos três prints, na ordem: UNICORNF1, UNICORNF2, HELSOLDIERF1, HELSOLDIERM1, EVILTREEM1, EVILTREEF1, TURTLER2, ELFFAIRYR1, ELFFAIRYM1, ELFFAIRYB1, HORNETF1, HORNETF2, SPIDERR1, SPIDERR2, SPIDERB1; WOLFF1, WOLFF2, BEARF1, BEARF2, DEERF1, DEERF3, FOXF1, FOXF2, FOXF4, BEEBABYF1, BEEBABYM1, GOLEMF1, GOLEMF2, GOLEMM1, ANTSOLF1; CRYSTALGUARDF2, ELIB1, DRACB1, KUFUKINGB1, MCOMB1, WILDBOARF1, CHIMPANZEEF1, PARRAKEETF1, FRILLEDLIZARDF1, SEAHORSER1, SEAHORSER2, SEAGUARDF1, SEAGUARDF2, CRABSOLDIERF1, CRABSOLDIERF2.
+- Burning Outpost: jogador relata que os monstros da região não parecem mais dar aggro. Relato de região, não teste controlado de cada Kind. FIREOUTPOSTMON1–5 (Outpost, Basilisk / Lionman / Blazing Lizard / Gorilla / Brown Horse), nível 200, todos ALL, Aggressive=2 e bAgrsiveWhenBattle=1. Apenas FIREOUTPOSTMON1 presente em CharMonsterInfo. FIREEREMOSMON1–3 (Wasteland, Basilisk / Devil / Rakshasa) também 2/1 e ausentes na tabela. EREMOS1MON1–9 6/1 e presentes; EREMOS1MON10 0/0 e ausente. Não transformar Aggressive>0 em comportamento garantido; possíveis fatores de mapa, servidor ou condições do jogador ainda não confirmados.
+- Próximo: identificar quais condições alteram aggro, testar exemplos 0/1/2/6 com nível do main e mapa registrados, buscar fonte de configuração de spawn/mapa; manter dado bruto e relato separados. Para UI, presença no índice de Monster Information como evidência de cliente, ausência como não encontrado, confirmação in-game separada. Nenhum dado público ou UI alterado.
