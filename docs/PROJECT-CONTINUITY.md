@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83i — Skill table navigation\
-**Último PR integrado:** #147, commit 7a59359ed087c6943d9fa73a8844e1134299555f; CI aprovado, slider e espaçamento confirmados em produção por print.
+**Última etapa integrada:** Stage 20.83j — Intelligence and skill caps\
+**Último PR integrado:** #148, commit 2a093f20142bb59a537b1d685264010ef9f7cc08; CI #312 aprovado, deployment a confirmar.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -882,3 +882,13 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 
 - Três valores de INT (9950/8739/6669) e 13 tooltips do Arthur grade 11 reproduzidos exatamente por HP = base + incremento × (nível − 1 + floor(INT/75)). Terceira amostra: Dark Legacy -6519, Excalibur -6664, Guardian Sheath +1459. King's Command e Blessing of Avalon sem HP visível na terceira amostra. Fórmula experimental, extrapolação para outras skills, apenas PvE Normal; preservar HP sem INT, demais modos/atributos intactos. Campo opcional INT, zero desativa, URL int.
 - Betting (1292): seis modos com MaxBookSkillLevel/MaxTotalSkillLevel 60/90 grades 0–4, 70/100 grades 5–6, 80/110 grades 7–11. Dados existentes corretos; causa do relato de 80 no slider não reproduzida. Exibir ambos os limites, botão Max Level, maior grade disponível como padrão quando não houver seleção; ao trocar skill usar máximo do novo grade, ao trocar grade mantendo nível manual preservar valor salvo se estava no cap anterior. Nenhuma alteração de dados, sem supor máximo igual para todas as skills.
+
+### Stage 20.83k — Merlin INT evidence
+
+- Player tooltip screenshots, 25/11/2026, Merlin [T Lv.2], source grade 11 matched by HP/MP cost and scaling. INT 18854/15507/13725 → floor(INT/75) = 251/206/183. Fourteen observed flat HP values match the unchanged formula, in addition to 13 Arthur samples (27 total, 10 skills, 2 mercenaries). No claim of universal or PvP/TBS applicability.
+- Magic.ndt: Mystic Rune (1120, MAGIC_MERDARK, line 5049), level 61, base -571, inc -47, observed -15188 / not visible / -11992. The missing middle value -13073 is only a prediction.
+- Gwendolen's Touch (1118, MAGIC_MERDESTROY, line 5073), level 2, base 1460, inc 30, observed 9020/7670/6980; distinct skill 1119 MAGIC_MERDESTROY2 has zero HP and is not substituted.
+- Camelot's Grimoire (1117, MAGIC_MERAPPOINT, line 5037), level 60, base 828, inc 15, observed 5478/4803/4458.
+- Omniscient Sanctuary (1121, MAGIC_MERGUARD, line 5097), level 62, base 300, inc 15, observed 4980/4305/3960.
+- Dark Destiny (1131, MAGIC_MERDARKEX, line 5061), level 78, base -128, inc -12, observed -4064/-3524/-3248.
+- Regression test checks exact source line, base, increment, observed values and preservation of all other effects/modes. UI notes updated in eight locales; no formula or source-data changes. Exact threshold and divisor remain empirical.
