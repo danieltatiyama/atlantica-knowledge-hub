@@ -46,13 +46,13 @@ export const projectionEffects=kind=>Object.keys(RULES[kind]??{});
 
 // UI helpers are independent of the existing reference renderer.
 import {progressionText,progressionField} from '../i18n/skill-progression-ui.mjs';
-export function mountSkillProgression(parent,data,skill,selectedGrade,lang,labels){
+export function mountSkillProgression(parent,data,skill,selectedGrade,lang,labels,{gradeOnly=false}={}){
  const t=progressionText(lang),kind=skill.magicKind;
  const el=(tag,text)=>{const n=document.createElement(tag);if(text!=null)n.textContent=String(text);return n;};
  const select=(options,label)=>{const wrapper=el('label',label);const input=el('select');for(const [value,name] of options){const o=el('option',name);o.value=value;input.append(o);}wrapper.append(input);return [wrapper,input];};
  const table=(target,heads,rows)=>{const wrap=el('div');wrap.className='ref-table-wrap';const tb=el('table'),thead=el('thead'),tr=el('tr');for(const h of heads){const th=el('th',h);th.scope='col';tr.append(th);}thead.append(tr);tb.append(thead);const body=el('tbody');for(const row of rows){const tr=el('tr');row.forEach((v,i)=>{const cell=el(i?'td':'th',v);if(!i)cell.scope='row';tr.append(cell);});body.append(tr);}tb.append(body);wrap.append(tb);target.append(wrap);};
  const section=el('section');section.append(el('h2',t.title));section.append(el('p',t.parameterNote));
- const relevant=data.columns.slice(4).filter((f,i)=>MODES.some(m=>data.modes[m].some(r=>r[0]===kind&&r[i+4]!=='0'&&r[i+4]!==''&&r[i+4]!=='NULL')));
+ const relevant=data.columns.slice(4).filter((f,i)=>!['Probability','ProbabilityInc*10'].includes(f)&&MODES.some(m=>data.modes[m].some(r=>r[0]===kind&&r[i+4]!=='0'&&r[i+4]!==''&&r[i+4]!=='NULL')));
  if(!relevant.length){section.append(el('p',t.unavailable));parent.append(section);return;}
  const [fieldLabel,field]=select(relevant.map(f=>[f,progressionField(f,lang,labels)]),t.attribute);
  field.value=relevant.includes('MotionProbability')&&projectionEffects(kind).includes('proc')?'MotionProbability':relevant.includes('EndowedAmount_HP')?'EndowedAmount_HP':relevant[0];
@@ -62,6 +62,7 @@ export function mountSkillProgression(parent,data,skill,selectedGrade,lang,label
   table(gradeBody,[t.grade,...MODE_LABELS],grades.map(g=>[g,...series.map(s=>{const row=s.get(g);return row?row.values.join(' / ')+(row.conflict?' ⚠ (#'+row.lines.join(', #')+')':''):'—';})]));
  }
  field.addEventListener('change',renderGrade);renderGrade();
+ if(gradeOnly){parent.append(section);return;}
  const effects=projectionEffects(kind);if(!effects.length){section.append(el('p',t.unavailable));parent.append(section);return;}
  section.append(el('h3',t.projection),el('p',t.estimate));const [effectLabel,effectSelect]=select(effects.map(e=>[e,t[e]]),t.attribute);section.append(effectLabel);
  const p=historicalProjection(data,kind,selectedGrade,'Magic',1,effects[0]);

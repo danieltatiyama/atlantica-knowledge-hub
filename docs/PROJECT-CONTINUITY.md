@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83f — Skill Progression and Proc Rate\
-**Último PR integrado:** Stage 20.83f presente na origin/main; confirmar deployment. Base verificada: 221053ef71e25e37ec9a06d248f096574066aa86.
+**Última etapa integrada:** Stage 20.83g — Skill Context and Magic Combinations\
+**Último PR integrado:** #145, commit fd510187711dd6f90fc4b5d0900347b615364064; CI aprovado. Confirmar deployment.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -865,3 +865,9 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Contexto inclui Category, EndowedObj, Reach, Grid, SelfMagicKind/Grade, CHANGEMAGIC/CHANGETURN, condições AP/HP, BF_GridMax, BF_MagicRange, Physical_Hit. Valores de alvo e área recebem rótulos transparentes EN/PT-BR; tokens desconhecidos preservados. Não inferir geometria, contagem, alcance ou efeitos reais. Nos seis modos, mover campos de contexto essenciais para início da matriz; preservar demais efeitos não zero, ausências e conflitos.
 - ComboMagicCheck.ndt linhas 6–33: 28 combinações explícitas, 64 MagicKinds distintos, todos resolvem exatamente um SkillIndex. Comentário da fonte descreve A existente + B adicionada → C transformada/ativada. Não incluir linha 39 fora de <End>. Exemplo linha 23: Silence of the Grave (989) + Blood Curse (629) → Sundered Soul (990). A interface mostra links nas três posições; disponibilidade e condições reais não confirmadas.
 - Cinco testes reais aprovados; reexecutados também cinco testes e e cinco f. Aplicação sequencial f/g testada com fixture de âncoras, não checkout Astro completo. Build/CI/deploy e traduções completas dos novos rótulos técnicos ainda pendentes. Sem upload de decoder, originais ou capturas.
+
+### Stage 20.83h — Skill Level Simulator
+
+- Macro VBA fornecida pelo jogador: Base + Inc × (Level − 1), divisores 1/10/100 conforme campos. Exibir grupos de atributos, ocultar zeros, remover Probability/ProbabilityInc*10 da apresentação (preservar dados). Proc /10 e ATK scaling em % (incremento /100), sem limitar proc a 100%. Nível digitável e grade independente, conflitos por linha e modos ausentes preservados; acima do cap sinalizado.
+- Cinco campos adicionais por linha de origem; 42.602 registros, 70 colunas incluindo quatro de identidade. Magic.ndt tem EndowedAmount_ImmuneInc, outros cinco têm EndowedAmount_ImmuneInc*10: não inferir divisor em PvE, não calcular total quando incremento não zero. MP drain permanece parâmetro bruto. Hash dos runs verificado contra a extração original.
+- Print do Sage Sword Excalibur grade 11 nível 80: MP 432, scaling 50,9% (sinal de dano), HP 8248 e duração 1 no jogo; projeção de fonte HP -3496, scaling -50,92%, MP 432, duração bruta 0. Não inferir HP final, duração mínima ou chance efetiva do servidor. Fonte preservada e previsão claramente rotulada.
