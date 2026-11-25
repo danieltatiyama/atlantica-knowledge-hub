@@ -255,8 +255,8 @@ export const nameAliasRows=[
     "거대 악어",
     "巨型鳄鱼",
     "巨大ワニ"
-  ]
-  ,...materialAliasRows,
+  ],
+  ...materialAliasRows,
   ...consumableAliasRows
 ];
 const aliases=new Map(nameAliasRows.map(row=>[row[0]+":"+row[1],row]));
