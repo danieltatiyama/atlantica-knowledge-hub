@@ -259,7 +259,8 @@ test('comparison distinguishes explicit zero from missing and keeps unresolved a
 test('comparison labels cover eight locales and comparison is opt-in within skill page',()=>{
  for(const lang of ['en','pt-br','es','fr','de','ko','ja','zh-hans'])assert.ok(Object.values(comparisonText(lang)).every(v=>v.trim()));
  const script=readFileSync('src/scripts/skill-comparison.mjs','utf8');
- assert.ok(script.includes("detail.open=byId.has(params.get('compareSkillB'))"));
+ assert.ok(script.includes("detail.open=skills.some(x=>String(x.skillIndex)===params.get('compareSkillB'))"));
+ assert.ok(script.includes("detail.addEventListener('toggle',ensure)"));
  assert.ok(script.includes("compareGrade"));
  assert.ok(script.includes("compareInt"));
  assert.ok(script.includes("compareMode"));

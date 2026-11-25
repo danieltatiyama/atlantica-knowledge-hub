@@ -53,14 +53,20 @@ export function comparisonDelta(row,conflicts=[false,false]){
 }
 const el=(tag,value,cls)=>{const e=document.createElement(tag);if(value!==null&&value!==undefined)e.textContent=String(value);if(cls)e.className=cls;return e;};
 const opt=(value,label)=>{const e=el('option',label);e.value=String(value);return e;};
-export function mountSkillComparison(parent,{data,skills,primary,initialGrade,initialLevel,initialInt,modeNames,modeLabels,matrixFor,lang,labels,prefix}){
+export function mountSkillComparison(parent,options){
+ const {skills,lang}=options,ui=comparisonText(lang),params=new URL(location.href).searchParams;
+ const detail=el('details',null,'ref-skill-compare');detail.append(el('summary',ui.title));
+ detail.open=skills.some(x=>String(x.skillIndex)===params.get('compareSkillB'));parent.append(detail);
+ let mounted=false;
+ const ensure=()=>{if(detail.open&&!mounted){mounted=true;populateSkillComparison(detail,options);}};
+ detail.addEventListener('toggle',ensure);ensure();
+}
+function populateSkillComparison(detail,{data,skills,primary,initialGrade,initialLevel,initialInt,modeNames,modeLabels,matrixFor,lang,labels,prefix}){
  const ui=comparisonText(lang),lt=levelText(lang),nf=new Intl.NumberFormat(lang,{maximumFractionDigits:4});
- const url=new URL(location.href),params=url.searchParams;
+ const params=new URL(location.href).searchParams;
  const byId=new Map(skills.map(x=>[String(x.skillIndex),x]));
  const grades=new Map();
  const getGrades=skill=>{if(!grades.has(skill.magicKind))grades.set(skill.magicKind,availableSkillGrades(data,skill.magicKind));return grades.get(skill.magicKind);};
- const detail=el('details',null,'ref-skill-compare');detail.append(el('summary',ui.title));
- detail.open=byId.has(params.get('compareSkillB'));parent.append(detail);
  const content=el('div');detail.append(content);
  content.append(el('p',ui.note,'ref-source'));
  const config=el('div',null,'ref-compare-options'),modeLabel=el('label',lt.modeSelection),mode=el('select');
@@ -101,7 +107,7 @@ export function mountSkillComparison(parent,{data,skills,primary,initialGrade,in
   const numbers=el('div',null,'ref-compare-numbers');numbers.append(gradeLabel,levelLabel,intLabel);
   fieldset.append(searchLabel,selectLabel,numbers,max,caps,warning,open);
   const explicit=byId.get(params.get('compareSkill'+side));
-  const st={side,skill:explicit??(side==='A'?primary:null),grade:null,level:1,intelligence:validIntelligence(params.get('compareInt'+side))??(side==='A'&&!explicit?initialInt:0),select,gradeInput:grade,levelInput:level,intInput:int,max,caps,warning,open};
+  const st={side,skill:explicit??(side==='A'?primary:null),grade:null,level:1,intelligence:validIntelligence(params.get('compareInt'+side))??(side==='A'&&!explicit?(validIntelligence(params.get('int'))??initialInt):0),select,gradeInput:grade,levelInput:level,intInput:int,max,caps,warning,open};
   states.push(st);
   function fill(){
    const q=search.value.trim().toLowerCase(),id=String(st.skill?.skillIndex??'');
@@ -116,7 +122,7 @@ export function mountSkillComparison(parent,{data,skills,primary,initialGrade,in
   }
   const g=params.get('compareGrade'+side),parsedGrade=g!==null&&/^\d+$/.test(g)?Number(g):null;
   fill();fillGrades(parsedGrade??(side==='A'&&!explicit?initialGrade:null));
-  st.level=validLevel(params.get('compareLevel'+side))??(side==='A'&&!explicit&&initialLevel?initialLevel:maximum(st));
+  st.level=validLevel(params.get('compareLevel'+side))??(side==='A'&&!explicit?(validLevel(params.get('level'))??initialLevel??maximum(st)):maximum(st));
   level.value=String(st.level);int.value=String(st.intelligence);
   search.addEventListener('input',fill);
   select.addEventListener('change',()=>{st.skill=byId.get(select.value)??null;fillGrades(null);st.level=maximum(st);level.value=String(st.level);level.removeAttribute('aria-invalid');changed();});
