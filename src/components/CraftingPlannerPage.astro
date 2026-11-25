@@ -163,6 +163,9 @@ const prefix=localePrefix(lang);
  </main>
 </BaseLayout>
 <script>
+  import {isWikiSearchQuery} from "../data/wiki-unified-search.mjs";
+  import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
  import {craftingText} from "../i18n/crafting-ui.mjs";
  import {localePrefix,localeTag} from "../i18n/locales.mjs";
  import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
@@ -252,7 +255,10 @@ const prefix=localePrefix(lang);
   };
   const itemLink=(id:string,title:string)=>{
    const a=el("a",title) as HTMLAnchorElement;
-   a.href=prefix+"/items/database/?id="+encodeURIComponent(id);return a;
+   a.href=prefix+"/items/database/?id="+encodeURIComponent(id);
+   const alias=wikiNameAlias("item",id,title,lang);
+   if(alias)a.append(el("small"," · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
+   return a;
   };
   const fetchJSON=async(path:string)=>{
    const r=await fetch(path,{cache:"force-cache"});
@@ -403,15 +409,17 @@ const prefix=localePrefix(lang);
    const ticket=++suggestTicket;
    suggestions.replaceChildren();
    const text=query.value.trim().toLowerCase();
-   if(text.length<2)return;
+   if(!isWikiSearchQuery(text))return;
    try{
     await getIndex();
     if(ticket!==suggestTicket)return;
     const matches=[...craftableCandidates].filter(([id,name])=>
-     id===text||name.toLowerCase().includes(text)).slice(0,18);
+     id===text||name.toLowerCase().includes(text)||matchesWikiNameAlias("item",id,name,lang,text)).slice(0,18);
     for(const [id,name] of matches){
      const li=el("li"),button=el("button",name+" (#"+id+")") as HTMLButtonElement;
      button.type="button";
+     const alias=wikiNameAlias("item",id,name,lang);
+     if(alias)button.append(el("small"," · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
      button.addEventListener("click",()=>{void selectCraftTarget(id,name);});
      li.append(button);suggestions.append(li);
     }
@@ -429,7 +437,7 @@ const prefix=localePrefix(lang);
    if(debounce!==null)clearTimeout(debounce);
    debounce=setTimeout(()=>{void suggest();},170);
   });
-  query.addEventListener("focus",()=>{if(query.value.trim().length>=2&&!selectedId)void suggest();});
+  query.addEventListener("focus",()=>{if(isWikiSearchQuery(query.value)&&!selectedId)void suggest();});
   let redrawFrame=0;
   function previewQuantity(){
    if(!result.hidden&&activeGraph){
