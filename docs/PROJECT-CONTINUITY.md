@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83d — matriz de modos de combate (PR #142)  
-**Último PR integrado:** [#142](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/142), Stage 20.83d; commit 869e800 na main, CI aprovado. Deploy a verificar.
+**Última etapa integrada:** Stage 20.83e — Main Character Talent Planner (PR #143)\
+**Último PR integrado:** [ #143 ](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/143), Stage 20.83e; CI aprovado. Base verificada: 266a36d282faaecdfb7eb78111c96dffb12e3e47.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -850,3 +850,10 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Bow Main (BOW) e Celestial Hunter (SHBOW) usam WPNTYPE_BOW mas possuem árvores distintas; Celestial Hunter atinge alvo principal e dois atrás, conforme esclarecimento do jogador. Não inferir pelo código da arma.
 - /tools/talents/ em oito idiomas, orçamento manual, níveis, alertas, links versionados, fontes recolhíveis. Não presume exclusividade, pré-requisitos, aquisição de pontos ou cálculo de bônus. Trocar família limpa alocações e conserva orçamento e nível.
 - Cinco testes locais do pacote aprovado; validar CI e deployment antes de declarar publicação. Regra de repositório teve timeout; não desabilitada. Stage 20.83f (39 campos extras, Proc Rate e progressão) permanece em pacote local separado, a integrar somente após esta etapa.
+
+### Stage 20.83f — Proc Rate e progressão de habilidades
+
+- Usuário solicita incluir chance de ativação (ex. Sage Sword Excalibur) e progressão por evolução/nível, referência https://atlantica-online.wikidot.com/magic:silence-of-the-grave. URL exata indisponível no fetch; referência acessível de Sage Sword Excalibur no Wikidot e páginas Fandom utilizadas, sem presumir tabelas do iframe indisponível.
+- 39 campos complementares em 42.602 linhas das seis tabelas. Chave exata modo/Magic_Kind/Grade/linha/conflito; preserva 48 grupos conflitantes. Projeção suplementar `mode-progression.json`, SHA-256 `4c62ecdb8b45d3fd38ded2bcac3728512c79c643c08c0b25c83e73747591e5dc`. Não substitui `modes.json`. Probability e ProbabilityInc*10 separados de MotionProbability e MotionProbabilityInc*10; não converter todos os campos em porcentagem nem assumir chance de acerto. Valores raw de limite por livro e total por grade preservados.
+- `MAGIC_ARTHUREX` MotionProbability=150, MotionProbabilityInc*10=30 em todas as grades; hipótese de taxa exibida 15+3*(L-1) reproduz quatro amostras históricas 15/72/102/192% em níveis 1/20/30/60 do Fandom. Cap bruto total 60 grades 0–6, 80 grades 7–11. Não limitar a 100% nem afirmar procs múltiplos. `MAGIC_REAPERSILENCE` grade 9 PvE: MDEF -120, incremento -30, fórmula candidata -120-3*(L-1) coincide com sete amostras Fandom de 20–80; MotionProbability 400/10, incremento 10/10, chega a 100 no nível 61, conforme relato histórico. Não generalizar para outras habilidades/modos, e não declarar validação atual; duração/MP divergentes. https://atlantica.fandom.com/wiki/Sage_Sword_Excalibur e https://atlantica.fandom.com/wiki/Silence_of_the_Grave.
+- Pacote local Stage 20.83f: exportador, dados, módulo de progressão, rótulos, testes, script de integração após #142. UI: matriz única por modo, progressão por grade com campo selecionável, prévia de nível limitada às hipóteses corroboradas acima. 5/5 testes locais aprovados. Oito idiomas nos controles, rótulos adicionais EN/PT e fallback EN. Build Astro e CI remotos ainda não executados; PR #142 continuava aberto por regra do repositório com timeout. Não publicar originais ou decoder. Continuar a validar fórmulas com tooltips in-game sem gastar recursos.
