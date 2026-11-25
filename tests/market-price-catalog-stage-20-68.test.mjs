@@ -114,3 +114,12 @@ test("player-first catalog is primary EN/PT-BR route; old workbench remains acce
  assert.ok(research.includes("localStorage.setItem(REVIEW_STORAGE_KEY"));
  assert.ok(research.includes('"/tools/market-prices/research/"'));
 });
+
+test("localized search matches an alias without changing prices or source records",()=>{
+ const original=filterClientMarketCatalog(rows,{query:"Gold Thread"}).rows[0];
+ for(const [lang,query] of [["pt-br","linha de ouro"],["ko","금실"],["ja","金糸"]]){
+  const result=filterClientMarketCatalog(rows,{query,lang});
+  assert.deepEqual(result.rows.find(x=>x.itemId==="7070"),original);
+ }
+ assert.equal(filterClientMarketCatalog(rows,{query:"linha de ouro",lang:"en"}).total,0);
+});
