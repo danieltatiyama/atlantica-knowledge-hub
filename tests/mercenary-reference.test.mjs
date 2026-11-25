@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {validateReference,classRelatedProfiles,hasBookReference} from '../src/scripts/mercenary-reference.mjs';
+import {validateReference,classRelatedProfiles,hasBookReference,buildModeMatrix} from '../src/scripts/mercenary-reference.mjs';
 import {referenceText} from '../src/i18n/mercenary-reference-ui.mjs';
 import {LOCALE_IDS,languageDestination} from '../src/i18n/locales.mjs';
 const read=name=>readFileSync('public/data/client-mercenaries/'+name+'.json');
@@ -69,4 +69,18 @@ test('reverse book links preserve exact class restrictions, not name proximity',
  assert.equal(hasBookReference({books:[]},'no'),true);
  assert.equal(hasBookReference({books:[]},'yes'),false);
  assert.equal(hasBookReference({},undefined),true);
+});
+
+test('one mode matrix preserves every conflicting row and source line, and never fills missing modes',()=>{
+ const matrix=buildModeMatrix(v,'MAGIC_ARTHURBLACK',9);
+ assert.equal(matrix.columns.length,6);
+ assert.deepEqual(matrix.columns.map(c=>c.label),['PvE / Normal','PvP / FL','PvP / Colosseum','TBS','TBS PvP','TBS League']);
+ assert.deepEqual(matrix.columns[2].lines,[244,245,246]);
+ assert.equal(matrix.columns[2].conflict,true);
+ assert.deepEqual(matrix.fields.find(r=>r.field==='EndowedAmount_HP').values,[['-525'],['-261'],['-361','-399','-435'],['-500'],['-361'],['-361']]);
+ assert.deepEqual(matrix.fields.find(r=>r.field==='ConsMP').values[2],['240','260','280']);
+ const absent=buildModeMatrix(v,'MAGIC_UNKNOWN',99);
+ assert.ok(absent.columns.every(c=>!c.lines.length&&!c.conflict));
+ assert.ok(absent.fields.every(r=>r.values.every(a=>a.length===0)));
+ for(const lang of LOCALE_IDS)assert.ok(referenceText(lang).field_EndowedAmount_HP&&referenceText(lang).modeLegend);
 });
