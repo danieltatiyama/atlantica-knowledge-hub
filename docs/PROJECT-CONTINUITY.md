@@ -646,3 +646,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Exportação XLSX: quatro abas, cabeçalhos, estados e proveniência traduzidos nos seis idiomas adicionais; fórmula OOXML, números, nomes, estrutura e versões EN/PT existentes preservados. CSV mantém cabeçalhos estáveis em inglês. Alguns erros internos do motor podem continuar em inglês.
 - Sem alteração no motor de crafting, limites, hierarquia, arredondamento, estado de preços e chaves de armazenamento. Trocar idioma preserva ID e preços persistidos, não necessariamente o plano de trabalho em memória. Traduções sem revisão nativa. Verificar deploy.
 - Restam 20.81c preços de mercado/pesquisa e 20.81d auditoria.
+
+
+### Stage 20.81c/d — Preços e auditoria
+
+- Market Price Catalog (421 preços), Market Price Research (128 candidatos) e Data Quality (auditoria gerada) com interface nos oito idiomas; avisos, estados dinâmicos, fontes e contagens traduzidos. Links de ItemID permanecem no idioma escolhido.
+- Sem alteração de preços, evidência Jana4U (293), relato agregado do jogador (128), arquivos brutos, regra de drops ou 197 referências inconclusivas. Observações locais e JSON continuam no formato anterior; não são enviadas ao servidor.
+- As seis rotas de ferramentas agora existem nos oito idiomas; removido aviso temporário do hub. Algumas mensagens de erro técnico internas podem permanecer em inglês. Traduções editoriais, não revisão nativa.
+- CI verifica rotas, mensagens, relatórios e HTML gerado. Stage 20.82: adquirir e reconciliar localizações oficiais dos clientes por ID, sem inventar nomes ou substituir nomes ingleses.

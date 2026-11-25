@@ -6,6 +6,7 @@ import {catalogText} from "../src/i18n/catalog-ui.mjs";
 import {itemDbText} from "../src/i18n/item-db-ui.mjs";
 import {monsterText} from "../src/i18n/monster-ui.mjs";
 import {legacyLocale,NEW_GUIDE_LOCALES} from "../src/i18n/locales.mjs";
+import {marketAuditText} from "../src/i18n/market-audit-ui.mjs";
 import {craftingText} from "../src/i18n/crafting-ui.mjs";
 import {toolText} from "../src/i18n/tools-ui.mjs";
 import {equipmentText} from "../src/i18n/equipment-ui.mjs";
@@ -136,3 +137,18 @@ for(const lang of LOCALE_IDS){
  assert.ok(readFileSync("dist"+prefix+"/tools/index.html","utf8").includes('href="'+prefix+'/tools/crafting/"'),file);
 }
 console.log("[IC] Verified eight localized crafting planner pages.");
+
+for(const lang of LOCALE_IDS){
+ const prefix=localePrefix(lang);
+ for(const [path,labels] of [["/tools/market-prices/",[["Market price catalog","Catálogo de preços do Market"],["Find item prices","Pesquisar itens"]]],["/tools/market-prices/research/",[["Market price research","Pesquisa de preços do Market"],["Candidates to check","Candidatos para verificação"]]],["/tools/data-quality/",[["Client data quality audit","Auditoria dos dados do cliente"],["Limitations","Ressalvas"]]]]){
+ const file="dist"+prefix+path+"index.html";
+ assert.ok(existsSync(file),file);
+ const html=readFileSync(file,"utf8");
+ assert.ok(html.includes('lang="'+localeTag(lang)+'"'),file);
+ for(const [en,pt] of labels)assert.ok(html.includes(marketAuditText(lang,en,pt)),file+" missing "+en);
+ for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),file+" missing alternate "+locale);
+ }
+ const hub=readFileSync("dist"+prefix+"/tools/index.html","utf8");
+ for(const path of ["/tools/market-prices/","/tools/data-quality/"])assert.ok(hub.includes('href="'+prefix+path+'"'),prefix+" missing "+path);
+}
+console.log("[IC] Verified eight localized market catalogs, observation workbenches and source audit pages.");

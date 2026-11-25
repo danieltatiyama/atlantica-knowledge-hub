@@ -1,38 +1,43 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:"en"|"pt-br";}
+import {marketAuditText} from "../i18n/market-audit-ui.mjs";
+import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 ---
-<BaseLayout title={(pt?"Qualidade dos dados":"Data quality")+" | Atlantica Knowledge Hub"}
- lang={lang} alternatePaths={{en:"/tools/data-quality/","pt-br":"/pt-br/tools/data-quality/"}}>
+<BaseLayout title={(marketAuditText(lang,"Data quality","Qualidade dos dados"))+" | Atlantica Knowledge Hub"}
+ lang={lang} alternatePaths={localizedPaths("/tools/data-quality/")}>
  <main class="quality-page" id="client-source-quality" data-lang={lang}>
-  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <nav><a href={prefix+"/tools/"}>{marketAuditText(lang,"← Tools","← Ferramentas")}</a></nav>
   <p class="eyebrow">GLOBAL / NA · SNAPSHOT 1</p>
-  <h1>{pt?"Auditoria dos dados do cliente":"Client data quality audit"}</h1>
-  <p>{pt?"Verificações de integridade entre índices de drops e fabricação. Consistência dos arquivos não comprova mecânicas ou disponibilidade no servidor.":"Integrity checks between loot and crafting source indexes. Internal consistency does not prove current server mechanics or availability."}</p>
-  <p id="source-quality-status" role="status">{pt?"Carregando relatório…":"Loading audit report…"}</p>
+  <h1>{marketAuditText(lang,"Client data quality audit","Auditoria dos dados do cliente")}</h1>
+  <p>{marketAuditText(lang,"Integrity checks between loot and crafting source indexes. Internal consistency does not prove current server mechanics or availability.","Verificações de integridade entre índices de drops e fabricação. Consistência dos arquivos não comprova mecânicas ou disponibilidade no servidor.")}</p>
+  <p id="source-quality-status" role="status">{marketAuditText(lang,"Loading audit report…","Carregando relatório…")}</p>
   <div id="source-quality-results" hidden>
-   <section><h2>{pt?"Catálogo de itens":"Item catalog"}</h2><dl id="quality-items"></dl></section>
-   <section><h2>{pt?"Monstros e drops":"Creatures and loot"}</h2><dl id="quality-monsters"></dl></section>
-   <section><h2>{pt?"Fabricação":"Crafting"}</h2><dl id="quality-crafting"></dl></section>
-   <section><h2>{pt?"Ressalvas":"Limitations"}</h2><ul id="quality-warnings"></ul></section>
+   <section><h2>{marketAuditText(lang,"Item catalog","Catálogo de itens")}</h2><dl id="quality-items"></dl></section>
+   <section><h2>{marketAuditText(lang,"Creatures and loot","Monstros e drops")}</h2><dl id="quality-monsters"></dl></section>
+   <section><h2>{marketAuditText(lang,"Crafting","Fabricação")}</h2><dl id="quality-crafting"></dl></section>
+   <section><h2>{marketAuditText(lang,"Limitations","Ressalvas")}</h2><ul id="quality-warnings"></ul></section>
   </div>
  </main>
 </BaseLayout>
 <script>
+ import {marketAuditText} from "../i18n/market-audit-ui.mjs";
+ import {localeTag} from "../i18n/locales.mjs";
  const root=document.getElementById("client-source-quality");
  if(root){
-  const pt=root.dataset.lang==="pt-br",nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+  const lang=root.dataset.lang??"en",nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
   const status=document.getElementById("source-quality-status")!;
   const sections={
-   itemCatalog:[["ids",pt?"IDs de itens":"Item IDs"],["named",pt?"Itens nomeados":"Named items"],["equipmentReviewed",pt?"Equipamentos revisados":"Reviewed equipment"]],
-   monsters:[["ids",pt?"IDs de criaturas":"Creature IDs"],["withMatchedDrops",pt?"Criaturas com drops":"Creatures with matched loot"],
-    ["withoutMatchedDrops",pt?"Sem drops resolvidos":"Without resolved loot"],["directRows",pt?"Registros diretos":"Direct rows"],
-    ["levelMatchedGroupRows",pt?"Registros compatíveis":"Level-matched group rows"],
-    ["matchedItemIds",pt?"IDs com drops elegíveis":"Matched loot item IDs"],["unresolvedGroupReferences",pt?"Referências inconclusivas":"Unresolved group references"]],
-   crafting:[["recipeProducts",pt?"Produtos com receitas":"Recipe products"],["ingredientObservations",pt?"Ingredientes identificados":"Ingredient observations"],
-    ["linkedMaterialIds",pt?"Materiais vinculados":"Linked material IDs"],["unindexedMaterialIds",pt?"Materiais sem nome no índice":"Unindexed material IDs"]],
+   itemCatalog:[["ids",marketAuditText(lang,"Item IDs","IDs de itens")],["named",marketAuditText(lang,"Named items","Itens nomeados")],["equipmentReviewed",marketAuditText(lang,"Reviewed equipment","Equipamentos revisados")]],
+   monsters:[["ids",marketAuditText(lang,"Creature IDs","IDs de criaturas")],["withMatchedDrops",marketAuditText(lang,"Creatures with matched loot","Criaturas com drops")],
+    ["withoutMatchedDrops",marketAuditText(lang,"Without resolved loot","Sem drops resolvidos")],["directRows",marketAuditText(lang,"Direct rows","Registros diretos")],
+    ["levelMatchedGroupRows",marketAuditText(lang,"Level-matched group rows","Registros compatíveis")],
+    ["matchedItemIds",marketAuditText(lang,"Matched loot item IDs","IDs com drops elegíveis")],["unresolvedGroupReferences",marketAuditText(lang,"Unresolved group references","Referências inconclusivas")]],
+   crafting:[["recipeProducts",marketAuditText(lang,"Recipe products","Produtos com receitas")],["ingredientObservations",marketAuditText(lang,"Ingredient observations","Ingredientes identificados")],
+    ["linkedMaterialIds",marketAuditText(lang,"Linked material IDs","Materiais vinculados")],["unindexedMaterialIds",marketAuditText(lang,"Unindexed material IDs","Materiais sem nome no índice")]],
   };
   const create=(tag:string,value:string)=>{const el=document.createElement(tag);el.textContent=value;return el;};
   void (async()=>{
@@ -52,10 +57,14 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
      }
     }
     const warnings=document.getElementById("quality-warnings")!;
-    for(const note of data.warnings??[])warnings.append(create("li",String(note)));
-    status.textContent=pt?"Índices internos consistentes · Snapshot 1":"Internal source indexes agree · Snapshot 1";
+    for(const note of data.warnings??[])warnings.append(create("li",marketAuditText(lang,String(note),({
+"The 197 unmatched group references remain unresolved and are not inferred.":"As 197 referências de grupo sem correspondência continuam inconclusivas, sem inferência.",
+"Unindexed crafting material IDs retain original numeric references; do not guess their identities.":"IDs de materiais não indexados mantêm as referências numéricas originais; suas identidades não são presumidas.",
+"Source-consistent means internal indexes agree. It does not prove live-server drop rates, active monsters, or recipe availability.":"Consistência das fontes significa concordância entre índices internos. Não comprova taxas de drops, monstros ativos ou disponibilidade de receitas no servidor."
+} as Record<string,string>)[String(note)]??String(note))));
+    status.textContent=marketAuditText(lang,"Internal source indexes agree · Snapshot 1","Índices internos consistentes · Snapshot 1");
     document.getElementById("source-quality-results")!.hidden=false;
-   }catch{status.textContent=pt?"Relatório indisponível ou incompatível.":"Audit report unavailable or incompatible.";}
+   }catch{status.textContent=marketAuditText(lang,"Audit report unavailable or incompatible.","Relatório indisponível ou incompatível.");}
   })();
  }
 </script>
