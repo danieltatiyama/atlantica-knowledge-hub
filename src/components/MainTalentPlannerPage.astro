@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {catalogPath,localizedPaths} from '../i18n/locales.mjs';
+import {talentText} from '../i18n/main-talent-ui.mjs';
+import {TALENT_GROUPS,TALENT_TIERS,talentRows} from '../data/main-talent-source.mjs';
+interface Props {lang:string}
+const {lang}=Astro.props;
+const t=talentText(lang);
+---
+<BaseLayout lang={lang} title={t.title+' | Atlantica Knowledge Hub'} description={t.intro} alternatePaths={localizedPaths('/tools/talents/')}>
+ <main class="talents" data-talent-planner data-lang={lang} data-labels={JSON.stringify(t)}>
+  <nav><a href={catalogPath(lang,'/tools/')}>{t.tools}</a> / {t.title}</nav>
+  <h1>{t.title}</h1><p>{t.intro}</p><p class="notice">{t.notice}</p>
+  <div class="settings">
+   <label>{t.family}<select data-family>{TALENT_GROUPS.map(g=><option value={g.id} selected={g.id==='STF'}>{g.label}</option>)}</select></label>
+   <label>{t.level}<input data-character-level type="number" min="1" max="1000" step="1" value="180"/></label>
+   <label>{t.budget}<input data-budget type="number" min="0" max="100000" step="1" value="0"/></label>
+  </div>
+  <div class="totals" aria-live="polite"><div>{t.spent}<strong data-spent>0</strong></div><div>{t.remaining}<strong data-remaining>0</strong></div></div>
+  <p class="warning" data-over hidden>{t.over}</p><p class="warning" data-locked hidden>{t.locked}</p>
+  <div class="actions"><button type="button" data-clear>{t.clear}</button><button type="button" data-share>{t.share}</button><span role="status" data-message></span></div>
+  <p data-bow-note hidden>{t.bowNote}</p>
+  {TALENT_GROUPS.map(g=><section data-tree={g.id} hidden={g.id!=='STF'}>
+   <h2>{g.label}</h2>
+   {TALENT_TIERS.map(tier=><section class="tier"><h3>{t.tier} {tier}</h3><div class="talent-grid">
+    {talentRows(g.id).filter(r=>r[2]===tier).map(([id,weapon,need,name,max,cost,line,textId])=><div class="talent-card" data-card={id}>
+     <h4 lang="en">{name}</h4><p class="meta">{t.max}: {max} · {t.cost}: {cost}</p>
+     <div class="stepper"><button type="button" data-adjust={id} data-delta="-1" aria-label={'− '+name}>−</button><input type="number" min="0" max={max} step="1" value="0" data-talent={id} aria-label={name}/><button type="button" data-adjust={id} data-delta="1" aria-label={'+ '+name}>+</button></div>
+     <details><summary>{t.source}</summary><small>{id} · {weapon}<br/>HeroSpecialization.ndt #{line}<br/>TextMgr_Magic_ENG.ntx #{textId}</small></details>
+    </div>)}
+   </div></section>)}
+  </section>)}
+ </main>
+</BaseLayout>
+<style>
+.talents{width:min(var(--content-width),94%);margin:auto;padding:24px 0 80px}.talents a{color:var(--color-accent)}
+h1{font-size:clamp(2rem,4vw,3rem)}.notice,.warning{border-left:3px solid var(--color-bronze);padding:12px;background:var(--color-surface)}
+.settings,.totals,.actions{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0;align-items:end}.settings label{display:grid;gap:5px}.totals>div{padding:12px 22px;border:1px solid var(--color-border);border-radius:6px;min-width:140px;background:var(--color-surface)}.totals strong{display:block;font-size:1.6rem;font-variant-numeric:tabular-nums}
+input,select,button{font:inherit;color:var(--color-text);background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px;padding:9px;min-width:0}button{cursor:pointer}button:disabled{opacity:.4;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--color-accent)}
+.tier{margin:20px 0}.tier h3{color:var(--color-text-muted);font-size:1rem}.talent-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.talent-card{border:1px solid var(--color-border);background:var(--color-surface);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px}.talent-card[data-allocated="true"]{border-color:var(--color-accent)}.talent-card[data-locked="true"]{opacity:.62}.talent-card h4{margin:0;color:var(--color-text);font-size:1.05rem;overflow-wrap:anywhere}.meta,details{font-size:.8rem;color:var(--color-text-muted);margin:0}.stepper{display:flex;gap:6px;align-items:center;margin-top:auto}.stepper input{width:64px;text-align:center}.stepper button{min-width:34px}summary{cursor:pointer}small{overflow-wrap:anywhere}
+@media(max-width:650px){.talent-grid{grid-template-columns:1fr}.settings label{width:100%}}
+</style>
+<script>
+import {TALENT_ROWS} from '../data/main-talent-source.mjs';
+import {emptyTalentPlan,validateTalentPlan,summarizeTalentPlan,encodeTalentPlan,decodeTalentPlan} from '../data/main-talent-planner.mjs';
+for(const root of document.querySelectorAll<HTMLElement>('[data-talent-planner]')){
+ const t=JSON.parse(root.dataset.labels??'{}');
+ const $=(s:string)=>root.querySelector<HTMLElement>(s)!;
+ const family=root.querySelector<HTMLSelectElement>('[data-family]')!;
+ const level=root.querySelector<HTMLInputElement>('[data-character-level]')!;
+ const budget=root.querySelector<HTMLInputElement>('[data-budget]')!;
+ const inputs=new Map([...root.querySelectorAll<HTMLInputElement>('[data-talent]')].map(e=>[e.dataset.talent!,e]));
+ const cards=new Map([...root.querySelectorAll<HTMLElement>('[data-card]')].map(e=>[e.dataset.card!,e]));
+ const buttons=[...root.querySelectorAll<HTMLButtonElement>('[data-adjust]')];
+ let plan=emptyTalentPlan();const raw=new URL(location.href).searchParams.get('talents');
+ if(raw){try{plan=decodeTalentPlan(raw);}catch{$('[data-message]').textContent=t.invalid;}}
+ function render(){
+  family.value=plan.group;level.value=String(plan.characterLevel);budget.value=String(plan.budget);
+  for(const tree of root.querySelectorAll<HTMLElement>('[data-tree]'))tree.hidden=tree.dataset.tree!==plan.group;
+  for(const [id,,need,,max] of TALENT_ROWS){const n=plan.levels[id]??0;const input=inputs.get(id)!;input.value=String(n);cards.get(id)!.dataset.allocated=String(n>0);cards.get(id)!.dataset.locked=String(plan.characterLevel<need);}
+  for(const b of buttons){const id=b.dataset.adjust!,n=plan.levels[id]??0,r=TALENT_ROWS.find(r=>r[0]===id)!;b.disabled=Number(b.dataset.delta)<0?n===0:n>=Number(r[4]);}
+  const summary=summarizeTalentPlan(plan);$('[data-spent]').textContent=String(summary.spent);$('[data-remaining]').textContent=String(summary.remaining);$('[data-over]').hidden=summary.withinBudget;$('[data-locked]').hidden=!summary.belowLevel.length;$('[data-bow-note]').hidden=!['BOW','SHBOW'].includes(plan.group);
+  const next=new URL(location.href);next.searchParams.set('talents',encodeTalentPlan(plan));history.replaceState(history.state,'',next.pathname+next.search+next.hash);
+ }
+ function setLevel(id:string,n:number){try{plan=validateTalentPlan({...plan,levels:{...plan.levels,[id]:n}});}catch{}render();}
+ family.addEventListener('change',()=>{plan=validateTalentPlan({...emptyTalentPlan(family.value),characterLevel:plan.characterLevel,budget:plan.budget});render();});
+ for(const e of [level,budget])e.addEventListener('change',()=>{try{plan=validateTalentPlan({...plan,characterLevel:level.valueAsNumber,budget:budget.valueAsNumber});}catch{}render();});
+ for(const [id,input] of inputs)input.addEventListener('change',()=>setLevel(id,input.valueAsNumber));
+ for(const button of buttons)button.addEventListener('click',()=>{const id=button.dataset.adjust!;setLevel(id,(plan.levels[id]??0)+Number(button.dataset.delta));});
+ $('[data-clear]').addEventListener('click',()=>{plan=validateTalentPlan({...plan,levels:{}});render();});
+ $('[data-share]').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);$('[data-message]').textContent=t.copied;}catch{$('[data-message]').textContent=t.copyError;}});
+ render();
+}
+</script>
