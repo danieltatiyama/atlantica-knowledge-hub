@@ -671,3 +671,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Valores, fórmulas, exportações CSV/XLSX, dados brutos, preços e registros do jogador permanecem iguais. Exportação continua com nomes originais. As páginas de boxes e demais referências específicas ainda não receberam integração individual; mercenários e habilidades dependem de índices de identidade próprios.
 - Glossário editorial inicial de 36 termos em oito idiomas, em `src/i18n/wiki-name-glossary.mjs`. Política em `docs/WIKI-NAME-TRANSLATION-POLICY.md`. Não é tradução oficial, não faz substituição automática e não reescreve os dicionários de interface anteriores.
 - Cobertura de nomes permanece piloto (21 IDs, 147 aliases); expansão de materiais e equipamentos é etapa 20.82d, seguida de monstros e mercenários/habilidades. Sem revisão nativa; confirmar deploy.
+
+
+### Stage 20.82d1 — Materiais e consumíveis (primeiro lote ampliado)
+
+- 145 materiais/alimentos e 75 consumíveis/itens de aprimoramento adicionais, conciliados com IDs e nomes ingleses exatos do snapshot 1. Total: 240 itens e 1 monstro, 1.687 aliases auxiliares nos sete idiomas adicionais. 175 dos 421 itens do catálogo de preços têm aliases.
+- Famílias de poções, pergaminhos e pedras mantêm marcadores romanos; Enchant Stone e Enhance Stone permanecem distintos. Nenhum ID é inferido por sequência numérica. Arquivos brutos e exportações permanecem inalterados.
+- Módulos separados de materiais e consumíveis. `node scripts/report-wiki-name-alias-coverage.mjs` mede cobertura por categoria. Testes de identidade usam índices em Map para suportar futuras expansões.
+- Cobertura parcial, não revisão nativa e não nomes oficiais. Ainda faltam equipamentos e outras famílias de itens, monstros e índices estáveis de mercenários/habilidades. Deploy não verificado.
