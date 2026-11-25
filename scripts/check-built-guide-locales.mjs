@@ -130,7 +130,7 @@ for(const lang of LOCALE_IDS){
  const prefix=localePrefix(lang),file="dist"+prefix+"/tools/crafting/index.html";
  assert.ok(existsSync(file),file);
  const html=readFileSync(file,"utf8");
- for(const [en,pt] of [["Crafting calculator","Calculadora de fabricação"],["Calculate materials","Calcular materiais"],["Crafting tree","Árvore de fabricação"]])
+ for(const [en,pt] of [["Crafting calculator","Calculadora de fabricação"],["Calculate materials","Calcular materiais"],["Crafting tree","Árvore de receitas"]])
   assert.ok(html.includes(craftingText(lang,en,pt)),file+" missing "+en);
  for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),file+" missing alternate "+locale);
  assert.ok(readFileSync("dist"+prefix+"/tools/index.html","utf8").includes('href="'+prefix+'/tools/crafting/"'),file);
