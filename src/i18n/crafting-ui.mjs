@@ -1,6 +1,8 @@
 import {LOCALE_IDS} from "./locales.mjs";
 import {toolText,toolRows} from "./tools-ui.mjs";
 export const craftingRows=[
+["{count} empty prices filled with NPC reference (not Market-verified).","{count} prix vides remplis avec la référence NPC (marché non vérifié).","{count} leere Preise mit NPC-Referenz gefüllt (Markt ungeprüft).","{count} precios vacíos rellenados con referencia NPC (mercado no verificado).","빈 가격 {count}개를 NPC 참고값으로 채웠습니다 (시장 미검증).","已用 NPC 参考价填充 {count} 个空白价格（市场未验证）。","空欄の価格{count}件をNPC参考値で入力しました（市場未確認）。"],
+
   [
     "Plan ingredient requirements across multiple recipe levels using extracted client recipes. Equipment uses the confirmed gameplay rule: batch size 1, maximum 20 per operation. Other items use original client Unit values or explicit manual inputs.",
     "Planifiez les ingrédients sur plusieurs niveaux à partir des recettes du client. Équipement : règle confirmée, 1 par lot et 20 par opération. Autres objets : champ Unit original ou valeur manuelle explicite.",
@@ -1245,5 +1247,5 @@ export const craftingRows=[
   ]
 ];
 const map=new Map(craftingRows.map(row=>[row[0],row]));
-export function craftingText(lang,key,pt=key){const i=LOCALE_IDS.indexOf(lang);return i>1&&map.has(key)?map.get(key)[i-1]:toolText(lang,key,pt);}
+export function craftingText(lang,key,pt=key,values={}){const i=LOCALE_IDS.indexOf(lang);const message=i>1&&map.has(key)?map.get(key)[i-1]:toolText(lang,key,pt);return message.replace(/\{([a-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);}
 export const hasCraftingMessage=key=>map.has(key)||toolRows.some(row=>row[0]===key);
