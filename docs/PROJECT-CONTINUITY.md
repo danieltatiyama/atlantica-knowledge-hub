@@ -654,3 +654,12 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Sem alteração de preços, evidência Jana4U (293), relato agregado do jogador (128), arquivos brutos, regra de drops ou 197 referências inconclusivas. Observações locais e JSON continuam no formato anterior; não são enviadas ao servidor.
 - As seis rotas de ferramentas agora existem nos oito idiomas; removido aviso temporário do hub. Algumas mensagens de erro técnico internas podem permanecer em inglês. Traduções editoriais, não revisão nativa.
 - CI verifica rotas, mensagens, relatórios e HTML gerado. Stage 20.82: adquirir e reconciliar localizações oficiais dos clientes por ID, sem inventar nomes ou substituir nomes ingleses.
+
+
+### Stage 20.82a — Nomes não oficiais (novo escopo)
+
+- O usuário informou que não teremos dados dos clientes regionais. Não será possível confirmar nomenclatura oficial nos sete idiomas adicionais; preservar sempre o inglês do cliente Global como referência.
+- Início de um registro de traduções assistidas por IA e não oficiais, separadas dos dados brutos. `src/data/wiki-name-aliases.mjs`: 20 materiais e um monstro de identidade verificada no snapshot 1, sete traduções por identidade. Consulta exige tipo, ID e nome inglês exatamente igual ao original; sem aliases para IDs inconclusivos ou nomes alterados.
+- Busca global e banco de itens permitem procurar traduções, mantendo nome inglês e indicação visível de tradução não oficial. CJK de um caractere é aceito na busca global para correspondência exata, sem reduzir o mínimo de dois caracteres em alfabetos latinos.
+- Sem alteração dos dados extraídos, IDs, fórmulas, contagens ou rotas. Não confundir esta cobertura piloto com tradução integral de nomes. Não há revisão nativa. A expansão pode priorizar materiais, itens relevantes, monstros e, posteriormente, mercenários/habilidades com IDs estáveis. Avaliar integração nas demais ferramentas e catálogos antes de ampliar em massa.
+- Testes confrontam o registro com os índices reais; entradas sem fonte correspondente são rejeitadas pelo CI. A obtenção de nomes regionais oficiais fica suspensa.
