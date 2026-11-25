@@ -1,5 +1,6 @@
 ---
 import {itemDbText} from "../i18n/item-db-ui.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
 import {localePrefix,localizedPaths,localeTag,legacyLocale} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -24,7 +25,7 @@ const title=itemDbText(lang,"Full client item database");
         <p>{itemDbText(lang,"Useful player information comes first. Technical definitions are available under Original client records at the bottom of each item page. Open any ingredient to see its own page or find its possible monster drops.")}</p>
         <p>{itemDbText(lang,"Percentages are client-based estimates, not verified probabilities. Missing recipes or drops do not prove they are unavailable in-game.")}</p>
       </details>
-      {fallback && <p class="caution">{itemDbText(lang,"English names and raw source categories are preserved. Linked equipment profiles, monster pages and tools may still open in English.")}</p>}
+      <p class="caution">{aliasText(lang,"English client names are preserved. Some items and monsters have optional AI-assisted Wiki translations for search; these are not official regional names.")}</p>
       <p class="caution">{itemDbText(lang,"Names, levels, grades and materials are client-extracted fields, not proof of live-server existence, availability, acquisition or craftability. One English name can belong to different item IDs. Identity collisions remain unnamed.")}</p>
     </header>
 
@@ -38,7 +39,7 @@ const title=itemDbText(lang,"Full client item database");
     <section class="search-panel" aria-label={itemDbText(lang,"Search items")}>
       <h2 class="search-title">{itemDbText(lang,"Find items")}</h2>
       <div class="search-grid">
-        <label>{itemDbText(lang,"English name or ID")}
+        <label>{aliasText(lang,"English name, Wiki translation or ID")}
           <input type="search" id="db-query" autocomplete="off" placeholder={itemDbText(lang,"e.g. Spirit Sword, Immortal Bow, 24120")}/>
         </label>
         <label>{itemDbText(lang,"Original source category")}
@@ -124,7 +125,9 @@ const title=itemDbText(lang,"Full client item database");
   </main>
 </BaseLayout>
 <script>
+  import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
   import {itemDbText} from "../i18n/item-db-ui.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {localePrefix,legacyLocale,localeTag,equipmentProfilePath} from "../i18n/locales.mjs";
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
   import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
@@ -642,6 +645,8 @@ const title=itemDbText(lang,"Full client item database");
         const nameCell=td(tr,"");
         if(row[6]==="named"){
           nameCell.append(linkItem(id,row[1]??id));
+          const alias=wikiNameAlias("item",id,row[1],lang);
+          if(alias)nameCell.append(node("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
           if(row[8]===1)nameCell.append(node("small",itemDbText(lang," · Reviewed item page")));
         }else{
           nameCell.append(node("span",label(row[6]),"unresolved"));
@@ -696,7 +701,7 @@ const title=itemDbText(lang,"Full client item database");
         return;
       }
       visible=allRows.filter(row=>
-        (!text||row[0].includes(text)||(row[1]??"").toLocaleLowerCase().includes(text)) &&
+        (!text||row[0].includes(text)||(row[1]??"").toLocaleLowerCase().includes(text)||(row[6]==="named"&&matchesWikiNameAlias("item",row[0],row[1],lang,text))) &&
         (!cat||row[2]===cat)&&(!state||row[6]===state)&&
         (!equipmentOnly.checked||equipmentCandidateCategories.has(row[2]??"")) &&
         (!field||matchesRawStat(indexedStats.get(row[0]),field,min,max)));
@@ -877,6 +882,8 @@ const title=itemDbText(lang,"Full client item database");
       detail.hidden=false;details.replaceChildren();
       detailName.textContent=row[1]??`Item ID ${id}`;
       detailMeta.textContent=`ID ${id} · ${row[2]??"—"} · ${itemDbText(lang,"sources")}: ${row[5]}`;
+      const alias=row[6]==="named"?wikiNameAlias("item",id,row[1],lang):null;
+      if(alias)detailMeta.textContent+=" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias;
       detailNotice.textContent=row[6]==="named"
         ?(itemDbText(lang,"This page brings together crafting, stats and possible acquisition sources from the game files. See the notes in each section."))
         :(itemDbText(lang,"Name withheld: conflicting identity or unresolved translation. No source record was assigned a guessed name."));
