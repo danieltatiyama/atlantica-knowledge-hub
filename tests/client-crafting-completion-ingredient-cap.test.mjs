@@ -153,7 +153,7 @@ test("UI shows Done/Undo, recenters numerical values and uses the effective oper
   'step.operations,step.maxOutputPerOperation',
   'limitingIngredients',
   'ingredient-over-limit',
-  'pt?"Feito":"Done"',
+  'craftingText(lang,"Done","Feito")',
   '.craft-tree-actions .craft-done-button',
   'text-align:center;',
  ])assert.ok(code.includes(s),s);
