@@ -1,85 +1,82 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:"en"|"pt-br";}
+import {marketAuditText} from "../i18n/market-audit-ui.mjs";
+import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
+import type {Lang} from "../i18n/ui";
+interface Props {lang:Lang;}
 const {lang}=Astro.props;
-const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
+const prefix=localePrefix(lang);
 ---
 <BaseLayout lang={lang}
- title={(pt?"Catálogo de preços do Market":"Market price catalog")+" | Atlantica Knowledge Hub"}
- alternatePaths={{en:"/tools/market-prices/","pt-br":"/pt-br/tools/market-prices/"}}>
+ title={(marketAuditText(lang,"Market price catalog","Catálogo de preços do Market"))+" | Atlantica Knowledge Hub"}
+ alternatePaths={localizedPaths("/tools/market-prices/")}>
  <main class="mpc-page" id="market-price-catalog" data-lang={lang}>
-  <nav><a href={prefix+"/tools/"}>{pt?"← Ferramentas":"← Tools"}</a></nav>
+  <nav><a href={prefix+"/tools/"}>{marketAuditText(lang,"← Tools","← Ferramentas")}</a></nav>
   <p class="mpc-eyebrow">ATLANTICA GLOBAL / NA · ITEM PRICES</p>
-  <h1>{pt?"Catálogo de preços do Market":"Market price catalog"}</h1>
-  <p class="mpc-intro">{pt
-   ?"Explore 421 preços de referência extraídos do cliente do jogo. As 128 coincidências relatadas por jogador e os 293 preços conciliados com uma fonte histórica têm evidências diferentes. Estes valores não são um feed ao vivo do Market."
-   :"Explore 421 reference prices extracted from the game client. The 128 player-reported matches and 293 historically crosschecked prices have different evidence sources. These are not a live Market feed."}</p>
-  <div class="mpc-summary" aria-label={pt?"Cobertura do catálogo":"Catalog coverage"}>
-   <div><strong>421</strong><span>{pt?"Preços do cliente":"Client prices"}</span></div>
-   <div><strong>293</strong><span>{pt?"Referências históricas coincidentes":"Historical matches"}</span></div>
-   <div><strong>128</strong><span>{pt?"Coincidências relatadas no jogo":"Player-reported matches"}</span></div>
+  <h1>{marketAuditText(lang,"Market price catalog","Catálogo de preços do Market")}</h1>
+  <p class="mpc-intro">{marketAuditText(lang,"Explore 421 reference prices extracted from the game client. The 128 player-reported matches and 293 historically crosschecked prices have different evidence sources. These are not a live Market feed.","Explore 421 preços de referência extraídos do cliente do jogo. As 128 coincidências relatadas por jogador e os 293 preços conciliados com uma fonte histórica têm evidências diferentes. Estes valores não são um feed ao vivo do Market.")}</p>
+  <div class="mpc-summary" aria-label={marketAuditText(lang,"Catalog coverage","Cobertura do catálogo")}>
+   <div><strong>421</strong><span>{marketAuditText(lang,"Client prices","Preços do cliente")}</span></div>
+   <div><strong>293</strong><span>{marketAuditText(lang,"Historical matches","Referências históricas coincidentes")}</span></div>
+   <div><strong>128</strong><span>{marketAuditText(lang,"Player-reported matches","Coincidências relatadas no jogo")}</span></div>
   </div>
   <section class="mpc-panel">
-   <div class="mpc-heading"><h2>{pt?"Pesquisar itens":"Find item prices"}</h2>
-    <span>{pt?"Valores por unidade · Gold":"Per-unit values · Gold"}</span></div>
+   <div class="mpc-heading"><h2>{marketAuditText(lang,"Find item prices","Pesquisar itens")}</h2>
+    <span>{marketAuditText(lang,"Per-unit values · Gold","Valores por unidade · Gold")}</span></div>
    <div class="mpc-filters">
-    <label>{pt?"Pesquisar nome, categoria ou ItemID":"Search name, category or ItemID"}
-     <input type="search" id="mpc-search" autocomplete="off" placeholder={pt?"Nome ou ItemID…":"Name or ItemID…"} />
+    <label>{marketAuditText(lang,"Search name, category or ItemID","Pesquisar nome, categoria ou ItemID")}
+     <input type="search" id="mpc-search" autocomplete="off" placeholder={marketAuditText(lang,"Name or ItemID…","Nome ou ItemID…")} />
     </label>
-    <label>{pt?"Categoria":"Category"}
-     <select id="mpc-category"><option value="all">{pt?"Todas":"All"}</option></select>
+    <label>{marketAuditText(lang,"Category","Categoria")}
+     <select id="mpc-category"><option value="all">{marketAuditText(lang,"All","Todas")}</option></select>
     </label>
-    <label>{pt?"Tipo de evidência":"Evidence"}
+    <label>{marketAuditText(lang,"Evidence","Tipo de evidência")}
      <select id="mpc-evidence">
-      <option value="all">{pt?"Todas":"All"}</option>
-      <option value="historical-crosscheck">{pt?"Histórico 2025":"Historical 2025"}</option>
-      <option value="additional-candidate">{pt?"Relato do jogador":"Player report"}</option>
+      <option value="all">{marketAuditText(lang,"All","Todas")}</option>
+      <option value="historical-crosscheck">{marketAuditText(lang,"Historical 2025","Histórico 2025")}</option>
+      <option value="additional-candidate">{marketAuditText(lang,"Player report","Relato do jogador")}</option>
      </select>
     </label>
-    <label>{pt?"Ordenar por":"Sort by"}
+    <label>{marketAuditText(lang,"Sort by","Ordenar por")}
      <select id="mpc-sort">
-      <option value="name">{pt?"Nome A–Z":"Name A–Z"}</option>
-      <option value="price-asc">{pt?"Menor preço":"Lowest price"}</option>
-      <option value="price-desc">{pt?"Maior preço":"Highest price"}</option>
+      <option value="name">{marketAuditText(lang,"Name A–Z","Nome A–Z")}</option>
+      <option value="price-asc">{marketAuditText(lang,"Lowest price","Menor preço")}</option>
+      <option value="price-desc">{marketAuditText(lang,"Highest price","Maior preço")}</option>
       <option value="id">ItemID</option>
      </select>
     </label>
    </div>
-   <p id="mpc-status" class="mpc-muted" role="status">{pt?"Carregando preços…":"Loading prices…"}</p>
+   <p id="mpc-status" class="mpc-muted" role="status">{marketAuditText(lang,"Loading prices…","Carregando preços…")}</p>
    <div class="mpc-table-wrap" role="region" tabindex="0"
-    aria-label={pt?"Tabela de preços pesquisável":"Searchable price table"}>
+    aria-label={marketAuditText(lang,"Searchable price table","Tabela de preços pesquisável")}>
     <table class="mpc-table">
      <thead><tr>
-      <th>{pt?"Item":"Item"}</th><th>{pt?"Categoria":"Category"}</th>
-      <th>{pt?"Preço por unidade (Gold)":"Unit price (Gold)"}</th>
-      <th>{pt?"Evidência":"Evidence"}</th><th>{pt?"Detalhes":"Details"}</th>
+      <th>{marketAuditText(lang,"Item","Item")}</th><th>{marketAuditText(lang,"Category","Categoria")}</th>
+      <th>{marketAuditText(lang,"Unit price (Gold)","Preço por unidade (Gold)")}</th>
+      <th>{marketAuditText(lang,"Evidence","Evidência")}</th><th>{marketAuditText(lang,"Details","Detalhes")}</th>
      </tr></thead>
      <tbody id="mpc-rows"></tbody>
     </table>
    </div>
    <div class="mpc-pagination">
-    <button type="button" id="mpc-prev">{pt?"Anterior":"Previous"}</button>
+    <button type="button" id="mpc-prev">{marketAuditText(lang,"Previous","Anterior")}</button>
     <span id="mpc-range" aria-live="polite"></span>
-    <button type="button" id="mpc-next">{pt?"Próxima":"Next"}</button>
+    <button type="button" id="mpc-next">{marketAuditText(lang,"Next","Próxima")}</button>
    </div>
   </section>
   <details class="mpc-methodology">
-   <summary>{pt?"Sobre os preços e como foram confirmados":"About these prices and their evidence"}</summary>
+   <summary>{marketAuditText(lang,"About these prices and their evidence","Sobre os preços e como foram confirmados")}</summary>
    <div class="mpc-methodology-body">
-    <p>{pt
-     ?"A fonte primária é NPCTradeItem_ENG.ndt, extraída de uma instalação do cliente em 23/11/2026. A comparação histórica Jana4U 2025 coincide com 293 ItemIDs e seus preços. Os outros 128 foram informados como coincidentes por um jogador em 23/11/2026, em um único relato, sem capturas individuais."
-     :"The primary source is NPCTradeItem_ENG.ndt, extracted from an installed client on November 23, 2026. A historical Jana4U 2025 comparison matches 293 ItemIDs and their prices. The other 128 were reported as matching in a single player statement on November 23, 2026, without per-item screenshots."}</p>
-    <p>{pt
-     ?"Os dados do cliente NÃO comprovam que todas as ofertas fixas estejam disponíveis agora, nem que estes 421 itens representem todo o catálogo do Market. Os 231 itens de housing foram excluídos desta consulta. Os valores originais e a calculadora de crafting não foram alterados."
-     :"Client data do NOT prove that every fixed listing is available now or that these 421 entries exhaust the Market. The 231 housing entries are excluded. Original prices and the crafting calculator were not modified."}</p>
-    <p><a href={prefix+"/tools/market-prices/research/"}>{pt
-     ?"Abrir pesquisa técnica e minhas observações locais"
-     :"Open source research and my local observations"}</a></p>
+    <p>{marketAuditText(lang,"The primary source is NPCTradeItem_ENG.ndt, extracted from an installed client on November 23, 2026. A historical Jana4U 2025 comparison matches 293 ItemIDs and their prices. The other 128 were reported as matching in a single player statement on November 23, 2026, without per-item screenshots.","A fonte primária é NPCTradeItem_ENG.ndt, extraída de uma instalação do cliente em 23/11/2026. A comparação histórica Jana4U 2025 coincide com 293 ItemIDs e seus preços. Os outros 128 foram informados como coincidentes por um jogador em 23/11/2026, em um único relato, sem capturas individuais.")}</p>
+    <p>{marketAuditText(lang,"Client data do NOT prove that every fixed listing is available now or that these 421 entries exhaust the Market. The 231 housing entries are excluded. Original prices and the crafting calculator were not modified.","Os dados do cliente NÃO comprovam que todas as ofertas fixas estejam disponíveis agora, nem que estes 421 itens representem todo o catálogo do Market. Os 231 itens de housing foram excluídos desta consulta. Os valores originais e a calculadora de crafting não foram alterados.")}</p>
+    <p><a href={prefix+"/tools/market-prices/research/"}>{marketAuditText(lang,"Open source research and my local observations","Abrir pesquisa técnica e minhas observações locais")}</a></p>
    </div>
   </details>
  </main>
 </BaseLayout>
 <script>
+ import {marketAuditText} from "../i18n/market-audit-ui.mjs";
+ import {localeTag} from "../i18n/locales.mjs";
  import {parseClientMarketPriceCatalog,filterClientMarketCatalog,clientItemDetailUrl}
   from "../data/market-price-catalog.mjs";
  import {parseMarketPriceReviewQueue,parsePlayerMarketAttestation}
@@ -88,7 +85,7 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
   sourceLine:number;comparisonClass:string};
  const root=document.getElementById("market-price-catalog");
  if(root){
-  const pt=root.dataset.lang==="pt-br",locale=pt?"pt-BR":"en-US";
+  const lang=root.dataset.lang??"en",locale=lang==="en"?"en-US":localeTag(lang);
   const $=(id:string)=>document.getElementById(id)!;
   const search=$("mpc-search") as HTMLInputElement;
   const category=$("mpc-category") as HTMLSelectElement;
@@ -117,30 +114,28 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     page=0;filter.offset=0;found=filterClientMarketCatalog(catalog,filter);
    }
    tableBody.replaceChildren();
-   const labels=pt?["Item","Categoria","Preço (Gold)","Evidência","Detalhes"]:
-    ["Item","Category","Price (Gold)","Evidence","Details"];
+   const labels=[marketAuditText(lang,"Item","Item"),marketAuditText(lang,"Category","Categoria"),marketAuditText(lang,"Price (Gold)","Preço (Gold)"),marketAuditText(lang,"Evidence","Evidência"),marketAuditText(lang,"Details","Detalhes")];
    for(const item of found.rows){
-    const href=clientItemDetailUrl(item.itemId,pt?"pt-br":"en");
+    const href=clientItemDetailUrl(item.itemId,lang);
     const tr=node("tr"),itemCell=node("td");
     const itemLink=node("a",item.name) as HTMLAnchorElement;
     itemLink.href=href;
     itemCell.append(itemLink,node("small","#"+item.itemId));
     const source=playerReport.has(item.itemId)?
-     (pt?"Coincide (relato do jogador)":"Match (player report)"):
+     (marketAuditText(lang,"Match (player report)","Coincide (relato do jogador)")):
      item.comparisonClass==="historical-crosscheck"?
-      (pt?"Coincide com histórico":"Historical match"):
-      (pt?"Referência do cliente":"Client reference");
-    const detailCell=node("td"),link=node("a",pt?"Ver item":"View item") as HTMLAnchorElement;
+      (marketAuditText(lang,"Historical match","Coincide com histórico")):
+      (marketAuditText(lang,"Client reference","Referência do cliente"));
+    const detailCell=node("td"),link=node("a",marketAuditText(lang,"View item","Ver item")) as HTMLAnchorElement;
     link.href=href;detailCell.append(link);
-    const cells=[itemCell,node("td",item.category||(pt?"Sem categoria":"Uncategorized")),
+    const cells=[itemCell,node("td",item.category||(marketAuditText(lang,"Uncategorized","Sem categoria"))),
      node("td",BigInt(item.referenceGold).toLocaleString(locale)),
      node("td",source),detailCell];
     cells.forEach((cell,i)=>{cell.dataset.label=labels[i];tr.append(cell);});
     tableBody.append(tr);
    }
    const end=Math.min((page+1)*pageSize,found.total),start=found.total?page*pageSize+1:0;
-   status.textContent=pt?"Itens encontrados: "+found.total+" de 421":
-    "Found "+found.total+" of 421 items";
+   status.textContent=marketAuditText(lang,"Found {count} of 421 items","Itens encontrados: {count} de 421",{count:found.total});
    range.textContent=start+"–"+end+" / "+found.total;
    prev.disabled=page===0;next.disabled=end>=found.total;
   }
@@ -171,13 +166,12 @@ const pt=lang==="pt-br",prefix=pt?"/pt-br":"";
     const categories=[...new Set(catalog.map(x=>x.category))]
      .sort((a,b)=>a.localeCompare(b,"en"));
     for(const value of categories){
-     const option=node("option",value||(pt?"Sem categoria":"Uncategorized")) as HTMLOptionElement;
+     const option=node("option",value||(marketAuditText(lang,"Uncategorized","Sem categoria"))) as HTMLOptionElement;
      option.value=value;category.append(option);
     }
     draw();
    }catch{
-    status.textContent=pt?"Não foi possível carregar o catálogo de preços.":
-     "Could not load the price catalog.";
+    status.textContent=marketAuditText(lang,"Could not load the price catalog.","Não foi possível carregar o catálogo de preços.");
    }
   }
   void start();
