@@ -121,3 +121,16 @@ test("all reviewed equipment has descriptive aliases with exact source identity"
   assert.ok(source.includes('aliasText(lang,"Wiki translation (unofficial)")'),name);
  }
 });
+
+test("expanded creature aliases preserve English titles, IDs and locale routes",()=>{
+ assert.equal(nameAliasRows.filter(row=>row[0]==="monster").length,111);
+ for(const [lang,query,id,title] of [["pt-br","formiga-rainha","238","Queen Ant"],["ko","오염된 유니콘","202","Polluted Unicorn"],["zh-hans","无头战士","380","Headless Warrior"],["ja","青い竜","346","Blue Dragon"]]){
+  const records=buildWikiSearchRecords(items,monsters,[],lang);
+  const found=searchWikiRecords(records,query,{kind:"monster"})[0];
+  assert.equal(found.id,id);
+  assert.equal(found.title,title);
+  assert.equal(found.href,"/"+lang+"/monsters/?id="+id);
+ }
+ assert.equal(wikiNameAlias("monster","201","Polluted Unicorn","pt-br"),null);
+ assert.equal(wikiNameAlias("item","201","Tainted Unicorn","pt-br"),null);
+});
