@@ -1,6 +1,8 @@
 // AI-assisted Wiki search aliases, not official regional client strings.
 // Each row binds to an exact source kind, ID and English name (snapshot 1).
 import {LOCALE_IDS} from "../i18n/locales.mjs";
+import {materialAliasRows} from "./wiki-name-aliases-materials.mjs";
+import {consumableAliasRows} from "./wiki-name-aliases-consumables.mjs";
 export const nameAliasRows=[
   [
     "item",
@@ -253,7 +255,9 @@ export const nameAliasRows=[
     "거대 악어",
     "巨型鳄鱼",
     "巨大ワニ"
-  ]
+  ],
+  ...materialAliasRows,
+  ...consumableAliasRows
 ];
 const aliases=new Map(nameAliasRows.map(row=>[row[0]+":"+row[1],row]));
 export function wikiNameAlias(kind,id,sourceName,lang){

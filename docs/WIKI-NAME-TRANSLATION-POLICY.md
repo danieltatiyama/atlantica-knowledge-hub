@@ -12,3 +12,9 @@ The English Global client remains the only authoritative name source available t
 - Keep source and translation separate. Localized search uses the selected locale, preserves ID and English searching, and does not imply an official localization.
 - Add new entries in small verified batches; verify exact source identity, unique kind/ID, nonempty seven translations, and original data regression. Expand common crafting materials first; then equipment, other items and creatures. Mercenary and skill aliases require a separately verified stable identity index.
 - Existing UI dictionaries are not rewritten by this glossary; any harmonization must be reviewed in context.
+
+## Batch expansion and reporting
+
+Material and consumable batches are separate modules imported by `wiki-name-aliases.mjs`. For explicitly selected grade families, reuse the reviewed family wording with the exact Roman grade marker; never derive source IDs by arithmetic or assume that a grade exists. Enchant Stone and Enhance Stone are separate concepts. Do not use automatic substring replacement across unrelated names.
+
+Run `node scripts/report-wiki-name-alias-coverage.mjs` to inspect named-item and creature coverage by original category and market reference coverage. The report is diagnostic, not a gameplay availability claim or official translation inventory. Prioritize verified source identities and do not infer that market presence indicates crafting usage frequency.
