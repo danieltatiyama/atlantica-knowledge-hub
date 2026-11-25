@@ -14,6 +14,7 @@ const title=t[section];
     <nav><a href={root}>{t.database}</a> / {title}</nav>
     <h1>{title}</h1>
     <p>{t.intro}</p>
+    {section==="database" && <p>{t.profileNotice}</p>}
     <p class="notice">{t.noFormula} {t.notVerified}</p>
     <p data-scope aria-live="polite">{t.loading}</p>
     <nav class="tabs">
@@ -22,9 +23,14 @@ const title=t[section];
     </nav>
     <div class="controls" hidden data-controls>
       <label>{t.search}<input type="search" data-search autocomplete="off"/></label>
+      {section==="database" ? <>
+        <label>{t.rank}<select data-rank><option value="">{t.all}</option></select></label>
+        <label>{t.familyFilter}<select data-family><option value="">{t.all}</option></select></label>
+      </> : <label>{t.bookFilter}<select data-book-filter><option value="">{t.all}</option><option value="yes">{t.hasBooks}</option><option value="no">{t.withoutBooks}</option></select></label>}
       <label>{t.select}<select data-primary></select></label>
       {section==="database" ? <label>{t.compare}<select data-secondary></select></label> : <label>{t.grade}<select data-grade></select></label>}
     </div>
+    <p data-count role="status"></p>
     <section data-result aria-live="polite"></section>
     <noscript>{t.error}</noscript>
   </main>
