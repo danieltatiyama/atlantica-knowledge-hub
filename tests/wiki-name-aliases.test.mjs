@@ -11,14 +11,18 @@ const items=read(root+"client-items/manifest.json").indexShards.map(f=>read(root
 const monsters=read(root+"client-monsters/manifest.json").files.index.map(f=>read(root+"client-monsters/"+f));
 test("unofficial aliases bind only to exact named source identities in snapshot 1",()=>{
  const seen=new Set();
+ const indexed={item:new Map(),monster:new Map()};
+ for(const [kind,shards] of [["item",items],["monster",monsters]])for(const row of shards.flatMap(x=>x.rows)){
+  assert.ok(!indexed[kind].has(String(row[0])),"duplicate source "+kind+" "+row[0]);
+  indexed[kind].set(String(row[0]),row);
+ }
  for(const [kind,id,source,...aliases] of nameAliasRows){
   assert.ok(kind==="item"||kind==="monster");
   assert.ok(!seen.has(kind+":"+id));seen.add(kind+":"+id);
-  const rows=(kind==="item"?items:monsters).flatMap(x=>x.rows);
-  const matches=rows.filter(r=>String(r[0])===id);
-  assert.equal(matches.length,1,id);
-  assert.equal(matches[0][1],source,id);
-  assert.equal(matches[0][kind==="item"?6:4],"named",id);
+  const match=indexed[kind].get(id);
+  assert.ok(match,id);
+  assert.equal(match[1],source,id);
+  assert.equal(match[kind==="item"?6:4],"named",id);
   assert.equal(aliases.length,7,id);
   for(const [i,lang] of LOCALE_IDS.entries()){
    const alias=wikiNameAlias(kind,id,source,lang);
@@ -76,4 +80,22 @@ test("aliases are integrated in the player-facing item and creature tools",()=>{
  assert.ok(crafting.includes('name:nameCache?.get(row.itemId)'));
  assert.ok(crafting.includes('["ItemID","Name","Quantity","UnitPrice","TotalCost"]'));
  assert.ok(crafting.includes("isWikiSearchQuery(text)"));
+});
+
+test("expanded aliases preserve grade markers and distinguish enhancement systems",()=>{
+ assert.ok(nameAliasRows.filter(r=>r[0]==="item").length>=240);
+ for(const [kind,id,source,...aliases] of nameAliasRows){
+  const marker=source.match(/\[[IVX]+\]$/)?.[0];
+  if(marker)for(const alias of aliases)assert.ok(alias.endsWith(marker),id+" "+alias);
+ }
+ assert.equal(wikiNameAlias("item","21569","Enchant Stone [I]","pt-br"),"Pedra de encantamento [I]");
+ assert.equal(wikiNameAlias("item","21574","Enhance Stone [I]","pt-br"),"Pedra de aprimoramento [I]");
+ assert.equal(wikiNameAlias("item","20011","Life Potion[II]","pt-br"),"Poção de vida [II]");
+ assert.equal(wikiNameAlias("item","20011","Life Potion [II]","pt-br"),null);
+ for(const [lang,query,id] of [["pt-br","minério de ouro","5040"],["ko","해독제 [VI]","2226"],["ja","解除の巻物 [VI]","26770"],["zh-hans","精金","5342"]]){
+  const records=buildWikiSearchRecords(items,monsters,[],lang);
+  assert.equal(searchWikiRecords(records,query)[0].id,id);
+ }
+ const price=read(root+"client-npc-trade-prices/catalog.json");
+ assert.ok(price.rows.filter(row=>wikiNameAlias("item",row[0],row[1],"pt-br")).length>=175);
 });
