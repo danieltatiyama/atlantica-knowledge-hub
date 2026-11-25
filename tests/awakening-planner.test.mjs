@@ -40,11 +40,19 @@ test("links round-trip and reject malformed, duplicate, out-of-range and unknown
 });
 test("localized routes and labels are available in all eight languages",()=>{
  for(const lang of LOCALE_IDS){
-  const t=awakeningText(lang);assert.equal(Object.keys(t).length,24);assert.ok(Object.values(t).every(v=>typeof v==="string"&&v.trim()));
+  const t=awakeningText(lang);assert.equal(Object.keys(t).length,25);assert.ok(Object.values(t).every(v=>typeof v==="string"&&v.trim()));
   assert.equal(catalogPath(lang,"/tools/awakening/"),localePrefix(lang)+"/tools/awakening/");
   assert.equal(languageDestination({lang,path:"/tools/awakening/"}),localePrefix(lang)+"/tools/awakening/");
  }
  const page=readFileSync("src/components/AwakeningPlannerPage.astro","utf8");
  for(const token of ["data-budget","data-level","data-over","encodeAwakeningPlan","decodeAwakeningPlan","AWAKENING_ITEM_BONUS_CAPS"])assert.ok(page.includes(token));
  assert.ok(!page.includes(".innerHTML"));
+});
+
+test("player screenshot example: all four category allocations and unused balances",()=>{
+ const p={version:1,budgets:[54,36,32,27],levels:{AWK_E_BLUE:53,AWK_MINDAMAGE:1,AWK_MAXDAMAGE:1,AWK_MAGICATTACK_PER:8,AWK_AC:5,AWK_MAGICDE_PER:3,AWK_BOMBDE_PER:2,AWK_RECOVERY_PER:6}};
+ const a=summarizeAwakeningPlan(p);
+ assert.deepEqual(a.tabs.map(t=>t.spent),[53,34,25,24]);
+ assert.deepEqual(a.tabs.map(t=>t.remaining),[1,2,7,3]);
+ assert.equal(a.valid,true);
 });
