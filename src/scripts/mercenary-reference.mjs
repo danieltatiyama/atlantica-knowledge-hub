@@ -1,3 +1,5 @@
+import {joinSkillContext,comboReferences,mountComboReference,OVERVIEW_FIELDS} from "./skill-context.mjs";
+import {contextField,contextValue,contextText} from "../i18n/skill-context-ui.mjs";
 import {joinProgression,mountSkillProgression} from "./skill-progression.mjs";
 import {progressionField,progressionText} from "../i18n/skill-progression-ui.mjs";
 const directory="/data/client-mercenaries/";
@@ -66,11 +68,12 @@ export async function mountReference(root){
   const profileHref=id=>prefix+"/mercenaries/database/?char="+encodeURIComponent(id);
   const skillHref=id=>prefix+"/mercenaries/skills/?skill="+encodeURIComponent(id);
   try{
-    const [m,s,baseModes,lookup,extra]=await Promise.all([load("mercenaries"),load("skills"),section==="skills"?load("modes"):Promise.resolve(null),load("item-names"),section==="skills"?load("mode-progression"):Promise.resolve(null)]);
-    const v=baseModes?joinProgression(baseModes,extra):null;
+    const [m,s,baseModes,lookup,extra,context]=await Promise.all([load("mercenaries"),load("skills"),section==="skills"?load("modes"):Promise.resolve(null),load("item-names"),section==="skills"?load("mode-progression"):Promise.resolve(null),section==="skills"?load("skill-context"):Promise.resolve(null)]);
+    const v=baseModes?joinSkillContext(joinProgression(baseModes,extra),context):null;
     need(lookup.scope===m.scope&&lookup.snapshotId===1&&Array.isArray(lookup.rows),"Invalid item name lookup");
     itemNames=new Map(lookup.rows.filter(r=>r[2]==="named"&&typeof r[1]==="string").map(r=>[r[0],r[1]]));
     const {profiles,skillList}=validateReference(m,s,v);
+    const combos=context?comboReferences(context,skillList):[];
     scope.textContent=m.scope==="arthur-pilot-grade-9"?t.pilot:t.expanded;
     const records=section==="database"?profiles:skillList, key=section==="database"?"char":"skillIndex";
     const url=new URL(location.href),requested=url.searchParams.get(section==="database"?"char":"skill");
@@ -113,6 +116,7 @@ export async function mountReference(root){
     function renderSkill(p){
       heading(p.name);paragraph("SkillIndex "+p.skillIndex+" · MagicCode "+p.magicCode+" · "+p.magicKind);
       renderModes(p);
+      mountComboReference(result,combos,p,root.dataset.lang,skillHref);
       heading(t.books);paragraph(t.bookNotice);
       if(p.books.length)table(result,[t.items,"SkillLimit","Class","ItemTypeBook.ndt"],p.books.map(b=>[item(b[0]),b[1],b[2].join(", "),b[3]]));else paragraph(t.missing);
       heading(t.relatedProfiles);
@@ -137,14 +141,15 @@ export async function mountReference(root){
       if(!available.size){paragraph(t.missing);return;}
       const matrix=buildModeMatrix(v,p.magicKind,Number(grade.value));
       const section=element("div",null,"ref-mode-matrix");
-      const fmt=field=>progressionField(field,root.dataset.lang,t);
-      const rows=matrix.fields.filter(({field,values},i)=>i<8||["MagicType","MaxBookSkillLevel","MaxTotalSkillLevel","MotionProbability","MotionProbabilityInc*10"].includes(field)||values.flat().some(v=>v!=="0"&&v!==""&&v!=="NULL")).map(({field,values})=>[fmt(field),...values.map((values,i)=>{
+      const fmt=field=>contextField(field,root.dataset.lang)??progressionField(field,root.dataset.lang,t);
+      const overviewRank=field=>OVERVIEW_FIELDS.includes(field)?OVERVIEW_FIELDS.indexOf(field):OVERVIEW_FIELDS.length;
+      const rows=matrix.fields.filter(({field,values},i)=>i<8||OVERVIEW_FIELDS.includes(field)||values.flat().some(v=>v!=="0"&&v!==""&&v!=="NULL"&&v!=="FALSE")||field==="SelfMagicGrade"&&matrix.fields.find(f=>f.field==="SelfMagicKind")?.values.flat().some(v=>v!=="NULL"&&v!=="")).sort((a,b)=>overviewRank(a.field)-overviewRank(b.field)).map(({field,values})=>[fmt(field),...values.map((values,i)=>{
         if(!values.length){const n=element("span","—","ref-missing");n.title=t.missing;return n;}
         const c=matrix.columns[i];
-        const unique=[...new Set(values)];
+        const unique=[...new Set(values.map(value=>contextValue(field,value,root.dataset.lang)))];
         if(!c.conflict)return unique.join(" / ");
         const cell=element("span",null,"ref-conflict-cell");
-        values.forEach((value,j)=>{const line=element("span",String(value)+" · #"+c.lines[j]);cell.append(line);});
+        values.forEach((value,j)=>{const line=element("span",String(contextValue(field,value,root.dataset.lang))+" · #"+c.lines[j]);cell.append(line);});
         return cell;
       })]);
       table(section,[t.field,...matrix.columns.map(c=>c.label+(c.conflict?" ⚠":""))],rows);
@@ -153,6 +158,7 @@ export async function mountReference(root){
       const provenance=element("details");provenance.append(element("summary",t.source));
       table(provenance,[t.mode,t.source,t.field],matrix.columns.map(c=>[c.label,c.source+".ndt",c.lines.length?c.lines.map(n=>"#"+n).join(", "):t.missing]));
       section.append(element("p",progressionText(root.dataset.lang).parameterNote,"ref-source"));
+      section.append(element("p",contextText(root.dataset.lang).targetNote,"ref-source"));
       section.append(provenance);result.append(section);
       mountSkillProgression(result,v,p,Number(grade.value),root.dataset.lang,t);
 
