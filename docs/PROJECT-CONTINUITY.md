@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.84b — Encyclopedia and Burning Outpost evidence\
-**Último PR integrado:** #152, commit ac2864be67e55ca3440c3ee7fba390bb76b9fbe3; CI #316 aprovado.
+**Última etapa integrada:** Stage 20.84c — Frozen Cave and low-level aggression\
+**Último PR integrado:** #153, commit 7c42d0ffb663ebfaa7ce8335dbb3ba91cd8719f6; CI #317 aprovado.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -937,3 +937,8 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Nova leitura local de CharAttackInfo.ndt: ICEGOLEMF7 (Ice devil Golem, linha 6547), SNOWMANR3 (Snowhite Yeti, 6548), WOLFF16 (Ice devil Wolf, 6549), todos ALL, Level=200, Aggressive=6, bAgrsiveWhenBattle=1, ViewDistance=20, MoveDistance=10, AttackDistance_Min/Max=1/1, AiPoint=100. Candidatos de Frozen Cave. FIREOUTPOSTMON1–5 (linhas 6951–6955) têm Level=200, Aggressive=2, bAgrsiveWhenBattle=1, ViewDistance=12, MoveDistance=10, AttackDistance_Min/Max=2/7, AiPoint=100. EREMOS1MON1 (Flame Monster of Horror, linha 7011), confirmado agressivo anteriormente, tem Aggressive=6, bAgrsiveWhenBattle=1, ViewDistance=12 (não 20), demais parâmetros de distância iguais aos de Burning Outpost. ViewDistance não explica sozinho a diferença; Aggressive distingue esses exemplos, mas não inferir limiar universal, unidade ou alcance.
 - Distribuição dos 4351 registros MONSTER/ALL por faixa de Level (total / Aggressive=0): 1–19: 781/497; 20–39: 136/110; 40–79: 670/260; 80–139: 1409/186; 140–179: 926/294; >=180: 429/169. Níveis 1–39: 607/917 (66,2%) zerados. Registros de cliente, não população ativa nem comportamento observado; nível bruto pode ser escalado. Nenhuma mudança em dados públicos.
 - Próximo teste: observar o mesmo monstro com Aggressive positivo em dois personagens de níveis distintos, sem iniciar combate; registrar nível do main, mapa, nível exibido do monstro, distância aproximada e resultado. Buscar configuração de mapa/spawn no inventário completo do cliente. Separar aggro espontâneo de ingresso em batalha e evitar concluir que todos os valores 1–5 são passivos.
+
+### Stage 20.85a — Skill table view controls
+
+- Pausar investigação de Aggro conforme solicitado; retomar posteriormente sem concluir regra universal. Monster Information permanece candidato, não publicado.
+- Skill Database: seis modos selecionáveis (pelo menos um), mostrar todos, modo completo padrão e opção Show totals only. Manter parâmetros fixos e componentes quando total indisponível; valores ausentes, alternativas conflitantes, INT experimental, fórmulas e dados originais preservados. Zeros ocultados nos modos selecionados. Preferências modes/totals na URL; grupos recolhíveis individualmente, expandir/recolher todos e estado preservado na sessão entre skills/grades. Oito idiomas. Largura mínima ajustada ao número de modos, sticky header e posição de scroll preservados. Três testes adicionais de seleção, fallback e UI. Não implementar representação 3×3 sem confirmar geometria.

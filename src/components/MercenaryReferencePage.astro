@@ -89,6 +89,21 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 @container skill-matrix (min-width:860px){
   .reference :global(.ref-player-table-wrap){overflow:visible;max-height:none}
 }
+@container skill-matrix (min-width:756px){
+  .reference :global(.ref-player-table-wrap[data-mode-count="5"]){overflow:visible;max-height:none}
+}
+@container skill-matrix (min-width:652px){
+  .reference :global(.ref-player-table-wrap[data-mode-count="4"]){overflow:visible;max-height:none}
+}
+@container skill-matrix (min-width:548px){
+  .reference :global(.ref-player-table-wrap[data-mode-count="3"]){overflow:visible;max-height:none}
+}
+@container skill-matrix (min-width:444px){
+  .reference :global(.ref-player-table-wrap[data-mode-count="2"]){overflow:visible;max-height:none}
+}
+@container skill-matrix (min-width:340px){
+  .reference :global(.ref-player-table-wrap[data-mode-count="1"]){overflow:visible;max-height:none}
+}
 @media(max-width:450px){
   .reference :global(.ref-level-controls){grid-template-columns:100px minmax(0,1fr);gap:10px}
   .reference :global(.ref-max-level){grid-column:1 / -1;justify-self:start}
@@ -98,6 +113,18 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 .reference :global(.ref-int-controls){display:flex;align-items:end;flex-wrap:wrap;gap:16px;margin:12px 0}
 .reference :global(.ref-int-controls .ref-level-control){width:150px}
 .reference :global(.ref-cap-summary){margin:0 0 10px}
+.reference :global(.ref-player-table-wrap table){min-width:var(--ref-table-min,860px)}
+.reference :global(.ref-player-table-wrap table th:first-child){width:max(28%,200px)}
+.reference :global(.ref-player-table-wrap tr[hidden]){display:none}
+.reference :global(.ref-view-controls){border:1px solid var(--color-border);border-radius:6px;margin:14px 0;padding:12px;min-width:0}
+.reference :global(.ref-view-controls legend){font-weight:600;color:var(--color-text);padding:0 6px}
+.reference :global(.ref-view-actions),.reference :global(.ref-mode-checks){display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px}
+.reference :global(.ref-view-check){display:inline-flex;align-items:center;gap:6px;color:var(--color-text);cursor:pointer}
+.reference :global(.ref-view-check input){width:16px;height:16px;margin:0;accent-color:var(--color-accent)}
+.reference :global(.ref-view-controls .ref-source){margin:8px 0}
+.reference :global(.ref-view-actions button){padding:6px 10px}
+.reference :global(.ref-group-toggle){width:100%;display:block;text-align:left;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;padding:2px 0}
+.reference :global(.ref-group-toggle:focus-visible){outline:2px solid var(--color-accent);outline-offset:3px}
 </style>
 <script>
 import { mountReference } from "../scripts/mercenary-reference.mjs";

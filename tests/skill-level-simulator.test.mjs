@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {joinBuffStats,buildPlayerRows,validLevel,defaultSkillLevel,skillSliderMax,skillLevelCaps,selectPreviewLevel,validIntelligence,intelligenceBonusLevels,STAT_GROUPS} from '../src/scripts/skill-level-simulator.mjs';
+import {joinBuffStats,buildPlayerRows,validLevel,defaultSkillLevel,skillSliderMax,skillLevelCaps,selectPreviewLevel,validIntelligence,intelligenceBonusLevels,STAT_GROUPS,parseSkillModes,filterPlayerRows} from '../src/scripts/skill-level-simulator.mjs';
 import {joinProgression} from '../src/scripts/skill-progression.mjs';
 import {joinSkillContext} from '../src/scripts/skill-context.mjs';
 import {buildModeMatrix} from '../src/scripts/mercenary-reference.mjs';
@@ -172,4 +172,50 @@ test('Wicked Bill grade 11: six independently observed PvE HP tooltips at two IN
  }
  assert.equal(count,6);
  assert.deepEqual([9310,7893].map(intelligenceBonusLevels),[124,105]);
+});
+
+test('combat mode selection is stable, ordered and cannot remove every mode',()=>{
+ const modes=['Magic','MagicPVP','MagicPVPBattleGround','BF_Magic','BF_MagicPvP','BF_MagicPvPLeague'];
+ assert.deepEqual(parseSkillModes(null,modes),modes);
+ assert.deepEqual(parseSkillModes('bad,,',modes),modes);
+ assert.deepEqual(parseSkillModes('BF_Magic,Magic,BF_Magic,unknown',modes),['Magic','BF_Magic']);
+ const all=buildPlayerRows(matrix('MAGIC_ARTHUREX',11),data.columns,80,9950);
+ assert.deepEqual(filterPlayerRows(all,[0,1,2,3,4,5]),all);
+ const pve=filterPlayerRows(all,[0],true);
+ assert.equal(row(pve,'hp','total').values[0][0].value,-3496);
+ assert.equal(row(pve,'hp','int-total').values[0][0].value,-8248);
+ assert.ok(!row(pve,'hp','base')&&!row(pve,'hp','increment'));
+ assert.ok(pve.some(r=>r.field==='MaxTotalSkillLevel'));
+ assert.ok(!row(filterPlayerRows(all,[1],true),'hp','int-total'));
+ assert.equal(row(filterPlayerRows(all,[1],true),'hp','total').values[0][0].value,-2336);
+});
+test('totals-only preserves unresolved source alternatives and static fields',()=>{
+ const val=(value,line)=>({value,line,aboveCap:false});
+ const make=(key,kind,values)=>({key,kind,group:'combat',field:key,unit:'',values});
+ const input=[
+  make('hp','base',[[val(-20,1),val(-30,2)],[val(-5,3)]]),
+  make('hp','increment',[[val(-2,1),val(-3,2)],[val(-1,3)]]),
+  make('hp','total',[[val(-40,1),val(null,2)],[val(-15,3)]]),
+  make('fixed','base',[[val(5,1)],[val(0,3)]]),
+  make('static','raw',[[val('ALL',1)],[val('ALL',3)]])
+ ];
+ const before=JSON.stringify(input),pve=filterPlayerRows(input,[0],true);
+ assert.ok(row(pve,'hp','base')&&row(pve,'hp','increment'));
+ assert.equal(row(pve,'hp','total').values[0][1].value,null);
+ assert.ok(row(pve,'fixed','base'));
+ const pvp=filterPlayerRows(input,[1],true);
+ assert.ok(!row(pvp,'hp','base')&&!row(pvp,'hp','increment')&&!row(pvp,'fixed','base'));
+ assert.ok(row(pvp,'static','raw'));
+ assert.equal(JSON.stringify(input),before);
+});
+test('view controls have eight localized dictionaries and preserve selected modes in URL',()=>{
+ const script=readFileSync('src/scripts/mercenary-reference.mjs','utf8');
+ for(const lang of ['en','pt-br','es','fr','de','ko','ja','zh-hans']){
+  const labels=levelText(lang);
+  for(const key of ['viewOptions','totalsOnly','modeSelection','allModes','expandAll','collapseAll','totalsNote','noStats'])assert.ok(labels[key]?.trim());
+ }
+ assert.ok(script.includes('next.searchParams.set("modes",selectedModes.join(","))'));
+ assert.ok(script.includes('next.searchParams.set("totals","1")'));
+ assert.ok(script.includes('toggle.setAttribute("aria-expanded",String(!closed))'));
+ assert.ok(script.includes('gh.colSpan=1+columns.length'));
 });

@@ -89,6 +89,26 @@ export function buildPlayerRows(matrix,columns,level,intelligence=0){
  for(const field of columns.slice(4))if(!used.has(field))row('other',field,field,'raw','',(r)=>get(r,field));
  return result.sort((a,b)=>GROUP_ORDER.indexOf(a.group)-GROUP_ORDER.indexOf(b.group));
 }
+// Presentation only: preserve the source row and all conflict alternatives.
+export function parseSkillModes(raw,known){
+ const requested=new Set(typeof raw==='string'?raw.split(','):[]);
+ const selected=known.filter(k=>requested.has(k));
+ return selected.length?selected:[...known];
+}
+export function filterPlayerRows(rows,indices,totalsOnly=false){
+ const visible=rows.map(r=>({...r,values:indices.map(i=>r.values[i]??[])}))
+  .filter(r=>r.values.flat().some(v=>present(v.value)));
+ if(!totalsOnly)return visible;
+ const totals=new Map(visible.filter(r=>r.kind==='total').map(r=>[r.key,r]));
+ return visible.filter(r=>{
+  if(r.kind!=='base'&&r.kind!=='increment')return true;
+  const total=totals.get(r.key);
+  // Never hide a raw component if its corresponding total is unavailable.
+  if(!total)return true;
+  return !r.values.every((cells,i)=>cells.every(v=>
+   v.value===null||v.value===undefined||total.values[i].some(x=>x.line===v.line&&x.value!==null&&x.value!==undefined)));
+ });
+}
 export function skillLevelCaps(matrix,columns){
  const caps=field=>{
   const idx=columns.indexOf(field);

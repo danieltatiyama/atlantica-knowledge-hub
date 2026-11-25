@@ -1,4 +1,4 @@
-import {joinBuffStats,buildPlayerRows,defaultSkillLevel,skillSliderMax,skillLevelCaps,selectPreviewLevel,validLevel,validIntelligence,intelligenceBonusLevels,skillRowLabel,GROUP_ORDER} from "./skill-level-simulator.mjs";
+import {joinBuffStats,buildPlayerRows,defaultSkillLevel,skillSliderMax,skillLevelCaps,selectPreviewLevel,validLevel,validIntelligence,intelligenceBonusLevels,skillRowLabel,GROUP_ORDER,parseSkillModes,filterPlayerRows} from "./skill-level-simulator.mjs";
 import {levelText} from "../i18n/skill-level-ui.mjs";
 import {joinSkillContext,comboReferences,mountComboReference,OVERVIEW_FIELDS} from "./skill-context.mjs";
 import {contextField,contextValue,contextText} from "../i18n/skill-context-ui.mjs";
@@ -67,6 +67,8 @@ export async function mountReference(root){
   const itemHref=id=>prefix+"/items/database/?id="+encodeURIComponent(id);
   let itemNames=new Map();
   let previewLevel=null,previousCap=null,previousSkill=null,previewIntelligence=0;
+  let selectedModes=[...modeNames],totalsOnly=false;
+  const collapsedGroups=new Set();
   const item=id=>itemNames.has(String(id))?link(itemNames.get(String(id))+" (#"+id+")",itemHref(id)):String(id??"—");
   const profileHref=id=>prefix+"/mercenaries/database/?char="+encodeURIComponent(id);
   const skillHref=id=>prefix+"/mercenaries/skills/?skill="+encodeURIComponent(id);
@@ -81,6 +83,8 @@ export async function mountReference(root){
     const records=section==="database"?profiles:skillList, key=section==="database"?"char":"skillIndex";
     const url=new URL(location.href),requested=url.searchParams.get(section==="database"?"char":"skill");
     previewIntelligence=validIntelligence(url.searchParams.get("int"))??0;
+    selectedModes=parseSkillModes(url.searchParams.get("modes"),modeNames);
+    totalsOnly=url.searchParams.get("totals")==="1";
     const byId=new Map(records.map(r=>[String(r[key]),r]));
     const filters=Array.from(root.querySelectorAll("[data-profile-filter]"));
     const bookFilter=root.querySelector("[data-book-filter]");
@@ -178,22 +182,68 @@ export async function mountReference(root){
       const intWarning=element("p",ui.invalidInt,"ref-warning");intWarning.hidden=true;section.append(intWarning);
       section.append(element("p",ui.intNote,"ref-source"));
       section.append(element("p",ui.notice,"ref-source"));
+      const view=element("fieldset",null,"ref-view-controls");
+      view.append(element("legend",ui.viewOptions));
+      const viewActions=element("div",null,"ref-view-actions");
+      const totalsLabel=element("label",null,"ref-view-check"),totalsInput=element("input");
+      totalsInput.type="checkbox";totalsInput.checked=totalsOnly;
+      totalsLabel.append(totalsInput,element("span",ui.totalsOnly));viewActions.append(totalsLabel);
+      const allButton=element("button",ui.allModes,"ref-max-level"),expandButton=element("button",ui.expandAll,"ref-max-level"),collapseButton=element("button",ui.collapseAll,"ref-max-level");
+      for(const b of [allButton,expandButton,collapseButton]){b.type="button";viewActions.append(b);}
+      view.append(viewActions,element("p",ui.modeSelection,"ref-source"));
+      const checks=element("div",null,"ref-mode-checks"),modeInputs=matrix.columns.map(col=>{
+        const label=element("label",null,"ref-view-check"),input=element("input");input.type="checkbox";
+        label.append(input,element("span",col.label));checks.append(label);return input;
+      });
+      view.append(checks,element("p",ui.totalsNote,"ref-source"));section.append(view);
+      function syncView(){
+        modeInputs.forEach((input,i)=>{input.checked=selectedModes.includes(matrix.columns[i].source);input.disabled=input.checked&&selectedModes.length===1;});
+        allButton.disabled=selectedModes.length===modeNames.length;
+      }
+      function saveView(){
+        const next=new URL(location.href);
+        if(selectedModes.length===modeNames.length)next.searchParams.delete("modes");else next.searchParams.set("modes",selectedModes.join(","));
+        if(totalsOnly)next.searchParams.set("totals","1");else next.searchParams.delete("totals");
+        history.replaceState(history.state,"",next.pathname+next.search+next.hash);
+      }
       const matrixBody=element("div",null,"ref-player-matrix");section.append(matrixBody);
       const wrap=element("div",null,"ref-table-wrap ref-player-table-wrap"),tb=element("table"),head=element("thead"),hr=element("tr");
-      for(const h of [t.field,...matrix.columns.map(c=>c.label+(c.conflict?" ⚠":""))]){const th=element("th",h);th.scope="col";hr.append(th);}
+      const noStats=element("p",ui.noStats,"ref-source");noStats.hidden=true;matrixBody.append(noStats);
       head.append(hr);tb.append(head);wrap.append(tb);matrixBody.append(wrap);
+      let currentHeader="";
+      syncView();
       function renderPlayerMatrix(){
         const left=wrap.scrollLeft,top=wrap.scrollTop;
-        const rows=buildPlayerRows(matrix,v.columns,previewLevel,previewIntelligence);
+        const indices=matrix.columns.map((col,i)=>selectedModes.includes(col.source)?i:-1).filter(i=>i>=0);
+        const columns=indices.map(i=>matrix.columns[i]),headerKey=indices.join(",");
+        if(headerKey!==currentHeader){
+          hr.replaceChildren();
+          for(const h of [t.field,...columns.map(c=>c.label+(c.conflict?" ⚠":""))]){const th=element("th",h);th.scope="col";hr.append(th);}
+          wrap.dataset.modeCount=String(columns.length);
+          tb.style.setProperty("--ref-table-min",String(236+104*columns.length)+"px");
+          currentHeader=headerKey;
+        }
+        const rows=filterPlayerRows(buildPlayerRows(matrix,v.columns,previewLevel,previewIntelligence),indices,totalsOnly);
+        noStats.hidden=rows.length>0;
         for(const body of Array.from(tb.tBodies))body.remove();
         for(const group of GROUP_ORDER){
           const groupRows=rows.filter(r=>r.group===group);if(!groupRows.length)continue;
-          const body=element("tbody"),groupRow=element("tr",null,"ref-stat-group"),gh=element("th",ui[group]);gh.colSpan=7;gh.scope="rowgroup";groupRow.append(gh);body.append(groupRow);
+          const body=element("tbody"),groupRow=element("tr",null,"ref-stat-group"),gh=element("th");
+          gh.colSpan=1+columns.length;gh.scope="rowgroup";
+          const toggle=element("button",null,"ref-group-toggle");toggle.type="button";
+          function syncGroup(){
+            const closed=collapsedGroups.has(group);
+            toggle.textContent=(closed?"▸ ":"▾ ")+ui[group]+" ("+groupRows.length+")";
+            toggle.setAttribute("aria-expanded",String(!closed));
+            for(const tr of Array.from(body.rows).slice(1))tr.hidden=closed;
+          }
+          toggle.addEventListener("click",()=>{if(collapsedGroups.has(group))collapsedGroups.delete(group);else collapsedGroups.add(group);syncGroup();});
+          gh.append(toggle);groupRow.append(gh);body.append(groupRow);
           for(const r of groupRows){
             const tr=element("tr",null,(r.kind==="total"||r.kind==="int-total")?"ref-stat-total":"");
             const title=element("th",skillRowLabel(r,root.dataset.lang,fmt));title.scope="row";tr.append(title);
             r.values.forEach((values,i)=>{
-              const c=matrix.columns[i],td=element("td");
+              const c=columns[i],td=element("td");
               const format=x=>x.value===null||x.value===undefined?"—":(typeof x.value==="number"?nf.format(x.value)+r.unit:String(contextValue(r.field,x.value,root.dataset.lang)))+(x.aboveCap?" *":"");
               if(!values.length){td.textContent="—";td.className="ref-missing";}
               else if(c.conflict){td.className="ref-conflict-cell";for(const x of values)td.append(element("span",format(x)+" · #"+x.line));}
@@ -202,10 +252,19 @@ export async function mountReference(root){
             });
             body.append(tr);
           }
-          tb.append(body);
+          tb.append(body);syncGroup();
         }
         wrap.scrollLeft=left;wrap.scrollTop=top;
       }
+      totalsInput.addEventListener("change",()=>{totalsOnly=totalsInput.checked;saveView();renderPlayerMatrix();});
+      modeInputs.forEach((input,i)=>input.addEventListener("change",()=>{
+        const next=modeNames.filter((_,j)=>modeInputs[j].checked);
+        if(next.length)selectedModes=next;
+        syncView();saveView();renderPlayerMatrix();
+      }));
+      allButton.addEventListener("click",()=>{selectedModes=[...modeNames];syncView();saveView();renderPlayerMatrix();});
+      expandButton.addEventListener("click",()=>{collapsedGroups.clear();renderPlayerMatrix();});
+      collapseButton.addEventListener("click",()=>{for(const group of GROUP_ORDER)collapsedGroups.add(group);renderPlayerMatrix();});
       function updatePreview(n,fromSlider){
         previewLevel=n;warning.hidden=true;input.setAttribute("aria-invalid","false");
         if(fromSlider)input.value=String(n);else syncSliderRange();
