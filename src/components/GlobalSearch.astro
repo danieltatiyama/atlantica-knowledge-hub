@@ -48,6 +48,7 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
 <script type="application/json" id="wiki-search-guides" set:html={guidesJson}/>
 <script>
   import {sharedText} from "../i18n/shared-ui.mjs";
+  import {referenceText} from "../i18n/mercenary-reference-ui.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {buildWikiSearchRecords,buildMercenarySearchRecords,searchWikiRecords,isWikiSearchQuery} from "../data/wiki-unified-search.mjs";
   const dialog=document.getElementById("wiki-global-search") as HTMLDialogElement|null;
