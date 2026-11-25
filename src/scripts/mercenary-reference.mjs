@@ -1,5 +1,6 @@
 import {joinBuffStats,buildPlayerRows,defaultSkillLevel,skillSliderMax,skillLevelCaps,selectPreviewLevel,validLevel,validIntelligence,intelligenceBonusLevels,skillRowLabel,GROUP_ORDER,parseSkillModes,filterPlayerRows} from "./skill-level-simulator.mjs";
 import {levelText} from "../i18n/skill-level-ui.mjs";
+import {mountSkillComparison} from "./skill-comparison.mjs";
 import {joinSkillContext,comboReferences,mountComboReference,OVERVIEW_FIELDS} from "./skill-context.mjs";
 import {contextField,contextValue,contextText} from "../i18n/skill-context-ui.mjs";
 import {joinProgression,mountSkillProgression} from "./skill-progression.mjs";
@@ -123,7 +124,9 @@ export async function mountReference(root){
     }
     function renderSkill(p){
       heading(p.name);paragraph("SkillIndex "+p.skillIndex+" · MagicCode "+p.magicCode+" · "+p.magicKind);
+      const compareHost=element("div");result.append(compareHost);
       renderModes(p);
+      mountSkillComparison(compareHost,{data:v,skills:skillList,primary:p,initialGrade:grade.value===""?null:Number(grade.value),initialLevel:previewLevel,initialInt:previewIntelligence,modeNames,modeLabels:MODE_LABELS,matrixFor:buildModeMatrix,lang:root.dataset.lang,labels:t,prefix});
       mountComboReference(result,combos,p,root.dataset.lang,skillHref);
       heading(t.books);paragraph(t.bookNotice);
       if(p.books.length)table(result,[t.items,"SkillLimit","Class","ItemTypeBook.ndt"],p.books.map(b=>[item(b[0]),b[1],b[2].join(", "),b[3]]));else paragraph(t.missing);

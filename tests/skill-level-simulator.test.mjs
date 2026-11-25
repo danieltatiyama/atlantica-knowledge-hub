@@ -7,6 +7,8 @@ import {joinProgression} from '../src/scripts/skill-progression.mjs';
 import {joinSkillContext} from '../src/scripts/skill-context.mjs';
 import {buildModeMatrix} from '../src/scripts/mercenary-reference.mjs';
 import {levelText} from '../src/i18n/skill-level-ui.mjs';
+import {compareSkillRows,availableSkillGrades,comparisonDelta} from '../src/scripts/skill-comparison.mjs';
+import {comparisonText} from '../src/i18n/skill-comparison-ui.mjs';
 const read=n=>JSON.parse(readFileSync('public/data/client-mercenaries/'+n+'.json'));
 const base=joinSkillContext(joinProgression(read('modes'),read('mode-progression')),read('skill-context'));
 const buff=read('skill-buff-stats'),data=joinBuffStats(base,buff);
@@ -218,4 +220,47 @@ test('view controls have eight localized dictionaries and preserve selected mode
  assert.ok(script.includes('next.searchParams.set("totals","1")'));
  assert.ok(script.includes('toggle.setAttribute("aria-expanded",String(!closed))'));
  assert.ok(script.includes('gh.colSpan=1+columns.length'));
+});
+
+test('skill comparison uses independent grade, level, INT and one selected mode',()=>{
+ const side=(kind,grade,level,intelligence,mode=0)=>({matrix:{columns:[matrix(kind,grade).columns[mode]]},level,intelligence});
+ const result=compareSkillRows(side('MAGIC_ARTHUREX',11,80,9950),side('MAGIC_BETTING',11,62,9310),data.columns);
+ assert.deepEqual(row(result,'hp','total').values.map(c=>c[0].value),[-3496,-3186]);
+ assert.deepEqual(row(result,'hp','int-total').values.map(c=>c[0].value),[-8248,-8146]);
+ assert.equal(comparisonDelta(row(result,'hp','int-total')),102);
+ assert.ok(!row(result,'hp','base'));
+ const same=compareSkillRows(side('MAGIC_ARTHUREX',11,1,0),side('MAGIC_ARTHUREX',11,80,9950),data.columns,{totalsOnly:false});
+ assert.deepEqual(row(same,'hp','base').values.map(c=>c[0].value),[-652,-652]);
+ assert.deepEqual(row(same,'hp','int-total').values.map(c=>c[0].value),[-652,-8248]);
+ const pvp=compareSkillRows(side('MAGIC_ARTHUREX',11,80,9950,1),side('MAGIC_ARTHUREX',11,80,0,1),data.columns);
+ assert.ok(!row(pvp,'hp','int-total'));
+ assert.deepEqual(availableSkillGrades(data,'MAGIC_BETTING'),[0,1,2,3,4,5,6,7,8,9,10,11]);
+});
+test('comparison distinguishes explicit zero from missing and keeps unresolved alternatives',()=>{
+ const side=(kind,grade,level,mode=0)=>({matrix:{columns:[matrix(kind,grade).columns[mode]]},level,intelligence:0});
+ const missing={matrix:{columns:[{source:'Magic',rows:[],conflict:false,lines:[]}]},level:80,intelligence:0};
+ const result=compareSkillRows(side('MAGIC_ARTHUREX',11,80),missing,data.columns);
+ assert.deepEqual(row(result,'hp','total').values[1],[]);
+ assert.equal(comparisonDelta(row(result,'hp','total')),null);
+ const cols=data.columns,record=Array(cols.length).fill('0');record[2]=1;
+ const other=[...record];other[2]=2;other[cols.indexOf('EndowedAmount_HP')]='10';other[cols.indexOf('EndowedAmountInc_HP')]='2';
+ const fixture=r=>({matrix:{columns:[{source:'Magic',rows:[r]}]},level:2,intelligence:0});
+ const zero=compareSkillRows(fixture(record),fixture(other),cols);
+ assert.deepEqual(row(zero,'hp','total').values.map(c=>c[0].value),[0,12]);
+ assert.equal(comparisonDelta(row(zero,'hp','total')),12);
+ const conflict=compareSkillRows(side('MAGIC_ARTHURBLACK',9,20,2),side('MAGIC_ARTHUREX',11,20,2),cols);
+ assert.deepEqual(row(conflict,'hp','total').values[0].map(x=>x.line),[244,245,246]);
+ assert.equal(comparisonDelta(row(conflict,'hp','total'),[true,false]),null);
+ const modifier=[...other];modifier[cols.indexOf('EndowedAmount_Immune')]='10';modifier[cols.indexOf('EndowedAmount_ImmuneIncRaw')]='1';
+ const unresolved=compareSkillRows(fixture(record),fixture(modifier),cols);
+ assert.ok(row(unresolved,'modifier','base')&&row(unresolved,'modifier','increment'));
+ assert.equal(comparisonDelta(row(unresolved,'modifier','total')),null);
+});
+test('comparison labels cover eight locales and comparison is opt-in within skill page',()=>{
+ for(const lang of ['en','pt-br','es','fr','de','ko','ja','zh-hans'])assert.ok(Object.values(comparisonText(lang)).every(v=>v.trim()));
+ const script=readFileSync('src/scripts/skill-comparison.mjs','utf8');
+ assert.ok(script.includes("detail.open=byId.has(params.get('compareSkillB'))"));
+ assert.ok(script.includes("compareGrade"));
+ assert.ok(script.includes("compareInt"));
+ assert.ok(script.includes("compareMode"));
 });

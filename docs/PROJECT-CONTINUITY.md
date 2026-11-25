@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.84c — Frozen Cave and low-level aggression\
-**Último PR integrado:** #153, commit 7c42d0ffb663ebfaa7ce8335dbb3ba91cd8719f6; CI #317 aprovado.
+**Última etapa integrada:** Stage 20.85a — Skill table view controls\
+**Último PR integrado:** #154, commit a819843f7f825e9948b56b7e6e93c4e9b97da7b0; CI #318 aprovado, deployment a confirmar.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -942,3 +942,8 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 
 - Pausar investigação de Aggro conforme solicitado; retomar posteriormente sem concluir regra universal. Monster Information permanece candidato, não publicado.
 - Skill Database: seis modos selecionáveis (pelo menos um), mostrar todos, modo completo padrão e opção Show totals only. Manter parâmetros fixos e componentes quando total indisponível; valores ausentes, alternativas conflitantes, INT experimental, fórmulas e dados originais preservados. Zeros ocultados nos modos selecionados. Preferências modes/totals na URL; grupos recolhíveis individualmente, expandir/recolher todos e estado preservado na sessão entre skills/grades. Oito idiomas. Largura mínima ajustada ao número de modos, sticky header e posição de scroll preservados. Três testes adicionais de seleção, fallback e UI. Não implementar representação 3×3 sem confirmar geometria.
+
+### Stage 20.85b — Skill comparison
+
+- Painel opcional na página Skill Database, duas skills pesquisáveis inclusive a mesma identidade com configurações diferentes, grade/nível/INT independentes, um modo de combate comum, totais por padrão ou visão detalhada. URLs compareSkillA/B, compareGradeA/B, compareLevelA/B, compareIntA/B, compareMode e compareTotals. A inicial usa skill selecionada; B vazio até seleção. Links individuais, limites de livros/charms, proveniência, oito idiomas.
+- Motor compartilhado com opção retainZero apenas para comparação, distinguindo zero explícito de ausência. Não esconder componentes quando total indisponível; preservar conflitos por linha, não inferir valor ausente nem fallback entre modos. Diferença assinada B−A somente para valores numéricos únicos, sem conflito ou projeção acima do limite, não ranking. INT experimental só PvE. Nenhuma mudança nas fórmulas ou dados publicados. Três testes adicionais no CI existente.
