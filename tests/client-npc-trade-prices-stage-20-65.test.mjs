@@ -141,7 +141,7 @@ test("crafting calculator keeps NPC prices opt-in, separate from stored manual s
   'delete priceOrigins[leaf.itemId]',
   'attachNPCPriceHint(priceCell,leaf.itemId,input)',
   'buildCraftingWorkbook({plan,names,prices,priceOrigins',
-  'pt?"Usar":"Use"',
+  'craftingText(lang,"Use","Usar")',
  ])assert.ok(src.includes(part),part);
  assert.ok(!src.includes('prices={...clientNPCPriceMap}'),
   "NPC references must not become automatic prices without user action");
