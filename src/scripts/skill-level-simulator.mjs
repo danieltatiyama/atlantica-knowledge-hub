@@ -52,11 +52,17 @@ const num=v=>typeof v==='number'&&Number.isFinite(v)?v:typeof v==='string'&&/^[+
 const present=v=>v!==null&&v!==undefined&&v!==''&&v!=='NULL'&&v!=='FALSE'&&(num(v)===null||num(v)!==0);
 const precision=v=>Number(v.toFixed(8));
 export function validLevel(raw){return typeof raw==='string'&&/^\d+$/.test(raw)&&Number(raw)>=1&&Number(raw)<=1000?Number(raw):null;}
-export function buildPlayerRows(matrix,columns,level){
+export function validIntelligence(raw){return typeof raw==='string'&&/^\d+$/.test(raw)&&Number(raw)<=1000000?Number(raw):null;}
+export function intelligenceBonusLevels(intelligence){
+ if(!Number.isSafeInteger(intelligence)||intelligence<0||intelligence>1000000)throw Error('Invalid intelligence');
+ return Math.floor(intelligence/75);
+}
+export function buildPlayerRows(matrix,columns,level,intelligence=0){
+ const bonus=intelligenceBonusLevels(intelligence);
  if(!Number.isSafeInteger(level)||level<1||level>1000)throw Error('Invalid level');
  const get=(r,f)=>r[columns.indexOf(f)],result=[],used=new Set(HIDDEN_FIELDS);
  function row(group,key,field,kind,unit,compute){
-  const values=matrix.columns.map(c=>c.rows.map(r=>({value:compute(r,c.source),line:r[2],aboveCap:kind==='total'&&num(get(r,'MaxTotalSkillLevel'))>0&&level>num(get(r,'MaxTotalSkillLevel'))})));
+  const values=matrix.columns.map(c=>c.rows.map(r=>({value:compute(r,c.source),line:r[2],aboveCap:(kind==='total'||kind==='int-total')&&num(get(r,'MaxTotalSkillLevel'))>0&&level>num(get(r,'MaxTotalSkillLevel'))})));
   if(values.flat().some(v=>present(v.value)))result.push({group,key,field,kind,unit,values});
  }
  for(const s of STAT_GROUPS){
@@ -71,14 +77,31 @@ export function buildPlayerRows(matrix,columns,level){
    if(b===null||i===null||(s.key==='modifier'&&mode==='Magic'&&i!==0))return null;
    return precision(b+i*(level-1));
   });
+  // Only Normal/PvE tooltips were observed. Keep other modes unprojected.
+  if(s.key==='hp'&&bonus>0&&matrix.columns.some(c=>c.source==='Magic'&&c.rows.some(r=>present(get(r,s.inc))))){
+   row(s.group,s.key,s.base,'int-total','',(r,mode)=>{
+    const b=base(r),i=inc(r,mode);
+    return mode==='Magic'&&b!==null&&i!==null?precision(b+i*(level-1+bonus)):null;
+   });
+  }
  }
  for(const [group,fields] of Object.entries(rawFields))for(const field of fields){used.add(field);row(group,field,field,'raw','',(r)=>get(r,field));}
  for(const field of columns.slice(4))if(!used.has(field))row('other',field,field,'raw','',(r)=>get(r,field));
  return result.sort((a,b)=>GROUP_ORDER.indexOf(a.group)-GROUP_ORDER.indexOf(b.group));
 }
+export function skillLevelCaps(matrix,columns){
+ const caps=field=>{
+  const idx=columns.indexOf(field);
+  return [...new Set(matrix.columns.flatMap(c=>c.rows.map(r=>num(r[idx])??0)).filter(n=>Number.isSafeInteger(n)&&n>0&&n<=1000))].sort((a,b)=>a-b);
+ };
+ return {book:caps('MaxBookSkillLevel'),total:caps('MaxTotalSkillLevel')};
+}
 export function defaultSkillLevel(matrix,columns){
- const idx=columns.indexOf('MaxTotalSkillLevel');
- return Math.max(1,...matrix.columns.flatMap(c=>c.rows.map(r=>num(r[idx])??0)).filter(n=>Number.isSafeInteger(n)&&n<=1000));
+ return Math.max(1,...skillLevelCaps(matrix,columns).total);
+}
+export function selectPreviewLevel(previous,previousCap,newCap,requested,changedSkill){
+ if(previous===null)return requested??newCap;
+ return changedSkill||previous===previousCap?newCap:previous;
 }
 // Keep the normal slider range tied to the selected grade, but include a
 // deliberately typed above-cap preview without silently clipping it.
@@ -88,6 +111,7 @@ export function skillSliderMax(matrix,columns,level){
 }
 export function skillRowLabel(row,lang,fallback){
  const pt=lang==='pt-br',s=STAT_GROUPS.find(s=>s.key===row.key);
+ if(row.kind==='int-total')return pt?'HP — Total com INT (experimental)':'HP — Total with INT (experimental)';
  if(!s)return ({bTakeMP:pt?'MP Drain (parâmetro bruto)':'MP Drain (raw parameter)',ActivePower:'AP Cost',CoolTime:pt?'Recarga':'Cooldown'})[row.field]??fallback(row.field);
  if(s.key==='proc')return {base:'Proc Base %',increment:'Proc Chance Increase / Level',total:'Proc Chance Total %'}[row.kind];
  if(s.key==='scaling')return {base:'Base Atk Scaling (%)',increment:'Atk % Scaling Per Level',total:'Atk Scaling Total (%)'}[row.kind];

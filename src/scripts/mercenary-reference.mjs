@@ -1,4 +1,4 @@
-import {joinBuffStats,buildPlayerRows,defaultSkillLevel,skillSliderMax,validLevel,skillRowLabel,GROUP_ORDER} from "./skill-level-simulator.mjs";
+import {joinBuffStats,buildPlayerRows,defaultSkillLevel,skillSliderMax,skillLevelCaps,selectPreviewLevel,validLevel,validIntelligence,intelligenceBonusLevels,skillRowLabel,GROUP_ORDER} from "./skill-level-simulator.mjs";
 import {levelText} from "../i18n/skill-level-ui.mjs";
 import {joinSkillContext,comboReferences,mountComboReference,OVERVIEW_FIELDS} from "./skill-context.mjs";
 import {contextField,contextValue,contextText} from "../i18n/skill-context-ui.mjs";
@@ -66,7 +66,7 @@ export async function mountReference(root){
   const paragraph=(value,cls)=>result.append(element("p",value,cls));
   const itemHref=id=>prefix+"/items/database/?id="+encodeURIComponent(id);
   let itemNames=new Map();
-  let previewLevel=null;
+  let previewLevel=null,previousCap=null,previousSkill=null,previewIntelligence=0;
   const item=id=>itemNames.has(String(id))?link(itemNames.get(String(id))+" (#"+id+")",itemHref(id)):String(id??"—");
   const profileHref=id=>prefix+"/mercenaries/database/?char="+encodeURIComponent(id);
   const skillHref=id=>prefix+"/mercenaries/skills/?skill="+encodeURIComponent(id);
@@ -80,6 +80,7 @@ export async function mountReference(root){
     scope.textContent=m.scope==="arthur-pilot-grade-9"?t.pilot:t.expanded;
     const records=section==="database"?profiles:skillList, key=section==="database"?"char":"skillIndex";
     const url=new URL(location.href),requested=url.searchParams.get(section==="database"?"char":"skill");
+    previewIntelligence=validIntelligence(url.searchParams.get("int"))??0;
     const byId=new Map(records.map(r=>[String(r[key]),r]));
     const filters=Array.from(root.querySelectorAll("[data-profile-filter]"));
     const bookFilter=root.querySelector("[data-book-filter]");
@@ -138,9 +139,11 @@ export async function mountReference(root){
     function renderModes(p){
       heading(t.mode);
       const available=new Set();for(const mode of modeNames)for(const r of v.modes[mode])if(r[0]===p.magicKind)available.add(r[1]);
-      const previous=grade.value||url.searchParams.get("grade")||"";
+      const changedSkill=previousSkill!==null&&previousSkill!==p.magicKind;
+      const previous=changedSkill?"":grade.value||(!previousSkill?url.searchParams.get("grade"):"")||"";
       grade.replaceChildren(...[...available].sort((a,b)=>a-b).map(x=>option(x,x)));
       if(available.has(Number(previous))&&previous!=="")grade.value=previous;
+      else if(available.size)grade.value=String(Math.max(...available));
       if(!available.size){paragraph(t.missing);return;}
       const matrix=buildModeMatrix(v,p.magicKind,Number(grade.value));
       const section=element("div",null,"ref-mode-matrix");
@@ -149,7 +152,9 @@ export async function mountReference(root){
       const nf=new Intl.NumberFormat(root.dataset.lang,{maximumFractionDigits:4});
       const label=element("label",ui.level,"ref-level-control"),input=element("input");
       input.type="text";input.inputMode="numeric";input.autocomplete="off";
-      previewLevel=previewLevel??validLevel(url.searchParams.get("level"))??defaultSkillLevel(matrix,v.columns);
+      const cap=defaultSkillLevel(matrix,v.columns),caps=skillLevelCaps(matrix,v.columns);
+      previewLevel=selectPreviewLevel(previewLevel,previousCap,cap,validLevel(url.searchParams.get("level")),changedSkill);
+      previousCap=cap;previousSkill=p.magicKind;
       input.value=String(previewLevel);label.append(input);
       const levelControls=element("div",null,"ref-level-controls");
       const rangeControl=element("div",null,"ref-level-range"),slider=element("input");
@@ -161,8 +166,17 @@ export async function mountReference(root){
         slider.value=String(previewLevel);slider.disabled=Number(slider.max)===1;
         upper.textContent=slider.max;
       }
-      syncSliderRange();levelControls.append(label,rangeControl);section.append(levelControls);
+      syncSliderRange();
+      const maxButton=element("button",ui.maxLevel,"ref-max-level");maxButton.type="button";maxButton.disabled=!caps.total.length;
+      levelControls.append(label,rangeControl,maxButton);section.append(levelControls);
+      const capLabel=element("p",ui.books+": "+(caps.book.join(" / ")||"—")+" · "+ui.charms+": "+(caps.total.join(" / ")||"—"),"ref-source ref-cap-summary");section.append(capLabel);
       const warning=element("p",ui.invalid,"ref-warning");warning.hidden=true;section.append(warning);
+      const intControls=element("div",null,"ref-int-controls"),intLabel=element("label",ui.intelligence,"ref-level-control"),intInput=element("input");
+      intInput.type="text";intInput.inputMode="numeric";intInput.autocomplete="off";intInput.value=String(previewIntelligence);intLabel.append(intInput);
+      const bonusLabel=element("span",null,"ref-source");function updateBonus(){bonusLabel.textContent=ui.bonusLevels+": +"+nf.format(intelligenceBonusLevels(previewIntelligence));}
+      updateBonus();intControls.append(intLabel,bonusLabel);section.append(intControls);
+      const intWarning=element("p",ui.invalidInt,"ref-warning");intWarning.hidden=true;section.append(intWarning);
+      section.append(element("p",ui.intNote,"ref-source"));
       section.append(element("p",ui.notice,"ref-source"));
       const matrixBody=element("div",null,"ref-player-matrix");section.append(matrixBody);
       const wrap=element("div",null,"ref-table-wrap ref-player-table-wrap"),tb=element("table"),head=element("thead"),hr=element("tr");
@@ -170,13 +184,13 @@ export async function mountReference(root){
       head.append(hr);tb.append(head);wrap.append(tb);matrixBody.append(wrap);
       function renderPlayerMatrix(){
         const left=wrap.scrollLeft,top=wrap.scrollTop;
-        const rows=buildPlayerRows(matrix,v.columns,previewLevel);
+        const rows=buildPlayerRows(matrix,v.columns,previewLevel,previewIntelligence);
         for(const body of Array.from(tb.tBodies))body.remove();
         for(const group of GROUP_ORDER){
           const groupRows=rows.filter(r=>r.group===group);if(!groupRows.length)continue;
           const body=element("tbody"),groupRow=element("tr",null,"ref-stat-group"),gh=element("th",ui[group]);gh.colSpan=7;gh.scope="rowgroup";groupRow.append(gh);body.append(groupRow);
           for(const r of groupRows){
-            const tr=element("tr",null,r.kind==="total"?"ref-stat-total":"");
+            const tr=element("tr",null,(r.kind==="total"||r.kind==="int-total")?"ref-stat-total":"");
             const title=element("th",skillRowLabel(r,root.dataset.lang,fmt));title.scope="row";tr.append(title);
             r.values.forEach((values,i)=>{
               const c=matrix.columns[i],td=element("td");
@@ -203,6 +217,14 @@ export async function mountReference(root){
         if(n!==null)updatePreview(n,false);
       });
       slider.addEventListener("input",()=>{const n=validLevel(slider.value);if(n!==null)updatePreview(n,true);});
+      maxButton.addEventListener("click",()=>{input.value=String(cap);updatePreview(cap,false);});
+      intInput.addEventListener("input",()=>{
+        const n=validIntelligence(intInput.value);intWarning.hidden=n!==null;intInput.setAttribute("aria-invalid",String(n===null));
+        if(n===null)return;
+        previewIntelligence=n;updateBonus();renderPlayerMatrix();
+        const next=new URL(location.href);if(n)next.searchParams.set("int",String(n));else next.searchParams.delete("int");
+        history.replaceState(history.state,"",next.pathname+next.search+next.hash);
+      });
       renderPlayerMatrix();
       if(matrix.columns.some(c=>c.conflict))section.append(element("p",t.conflict,"ref-warning"));
       const provenance=element("details");provenance.append(element("summary",t.source));
@@ -219,7 +241,7 @@ export async function mountReference(root){
       if(section==="database")renderMerc(p);else renderSkill(p);
       const next=new URL(location.href);next.searchParams.set(section==="database"?"char":"skill",String(p[key]));
       if(secondary){if(secondary.value)next.searchParams.set("compare",secondary.value);else next.searchParams.delete("compare");}
-      if(grade){if(grade.value)next.searchParams.set("grade",grade.value);else next.searchParams.delete("grade");if(previewLevel!==null)next.searchParams.set("level",String(previewLevel));}
+      if(grade){if(grade.value)next.searchParams.set("grade",grade.value);else next.searchParams.delete("grade");if(previewLevel!==null)next.searchParams.set("level",String(previewLevel));if(previewIntelligence)next.searchParams.set("int",String(previewIntelligence));else next.searchParams.delete("int");}
       history.replaceState(history.state,"",next.pathname+next.search+next.hash);
     }
     search.addEventListener("input",()=>{fill(search.value);render();});
