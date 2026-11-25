@@ -1,3 +1,4 @@
+import {matchesWikiNameAlias} from "./wiki-name-aliases.mjs";
 import {catalogPath,isLocale} from "../i18n/locales.mjs";
 /**
  * Player-facing catalog of client NPC price references.
@@ -31,7 +32,7 @@ export function parseClientMarketPriceCatalog(source){
  return items;
 }
 export function filterClientMarketCatalog(items,{
- query="",category="all",evidence="all",sort="name",offset=0,limit=50,
+ query="",category="all",evidence="all",sort="name",offset=0,limit=50,lang="en",
 }={}){
  if(!Array.isArray(items)||!Number.isInteger(offset)||offset<0||
   !Number.isInteger(limit)||limit<1||limit>421)
@@ -42,6 +43,7 @@ export function filterClientMarketCatalog(items,{
   (evidence==="all"||item.comparisonClass===evidence)&&
   (!needle||item.itemId.includes(needle)||
    item.name.toLocaleLowerCase().includes(needle)||
+   matchesWikiNameAlias("item",item.itemId,item.name,lang,needle)||
    item.category.toLocaleLowerCase().includes(needle)));
  const textSort=(a,b)=>a.name.localeCompare(b.name,"en",{numeric:true})||
   Number(a.itemId)-Number(b.itemId);
