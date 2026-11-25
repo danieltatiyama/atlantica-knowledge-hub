@@ -138,7 +138,7 @@ test("calculator exposes Excel export and consumption table inside both locale v
   'id="craft-export-tree"','buildCraftingWorkbook({plan,names,prices',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   '.xlsx"',
-  'pt?"Divisão do consumo":"Consumption breakdown"',
+  'craftingText(lang,"Consumption breakdown","Divisão do consumo")',
   'row.unitsPerParentBatch',
   'row.parentBatches',
   'class="craft-data-table craft-schedule-table"',
