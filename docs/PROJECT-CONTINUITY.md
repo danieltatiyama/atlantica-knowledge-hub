@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.84a — Monster Information / aggro investigation\
-**Último PR integrado:** #151, commit a2728470b356530901577b3175627a30e4397414; CI #315 aprovado.
+**Última etapa integrada:** Stage 20.84b — Encyclopedia and Burning Outpost evidence\
+**Último PR integrado:** #152, commit ac2864be67e55ca3440c3ee7fba390bb76b9fbe3; CI #316 aprovado.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -930,3 +930,10 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Identidades dos três prints, na ordem: UNICORNF1, UNICORNF2, HELSOLDIERF1, HELSOLDIERM1, EVILTREEM1, EVILTREEF1, TURTLER2, ELFFAIRYR1, ELFFAIRYM1, ELFFAIRYB1, HORNETF1, HORNETF2, SPIDERR1, SPIDERR2, SPIDERB1; WOLFF1, WOLFF2, BEARF1, BEARF2, DEERF1, DEERF3, FOXF1, FOXF2, FOXF4, BEEBABYF1, BEEBABYM1, GOLEMF1, GOLEMF2, GOLEMM1, ANTSOLF1; CRYSTALGUARDF2, ELIB1, DRACB1, KUFUKINGB1, MCOMB1, WILDBOARF1, CHIMPANZEEF1, PARRAKEETF1, FRILLEDLIZARDF1, SEAHORSER1, SEAHORSER2, SEAGUARDF1, SEAGUARDF2, CRABSOLDIERF1, CRABSOLDIERF2.
 - Burning Outpost: jogador relata que os monstros da região não parecem mais dar aggro. Relato de região, não teste controlado de cada Kind. FIREOUTPOSTMON1–5 (Outpost, Basilisk / Lionman / Blazing Lizard / Gorilla / Brown Horse), nível 200, todos ALL, Aggressive=2 e bAgrsiveWhenBattle=1. Apenas FIREOUTPOSTMON1 presente em CharMonsterInfo. FIREEREMOSMON1–3 (Wasteland, Basilisk / Devil / Rakshasa) também 2/1 e ausentes na tabela. EREMOS1MON1–9 6/1 e presentes; EREMOS1MON10 0/0 e ausente. Não transformar Aggressive>0 em comportamento garantido; possíveis fatores de mapa, servidor ou condições do jogador ainda não confirmados.
 - Próximo: identificar quais condições alteram aggro, testar exemplos 0/1/2/6 com nível do main e mapa registrados, buscar fonte de configuração de spawn/mapa; manter dado bruto e relato separados. Para UI, presença no índice de Monster Information como evidência de cliente, ausência como não encontrado, confirmação in-game separada. Nenhum dado público ou UI alterado.
+
+### Stage 20.84c — Frozen Cave and low-level aggression
+
+- Relato do jogador (25/11/2026): todos os monstros de Frozen Cave são agressivos; maioria dos monstros de level baixo não é agressiva. Relatos regionais/gerais, não testes individuais controlados. Referência histórica de localização: https://www.youtube.com/watch?v=mx0dVSyDlVc (Yeti e Wolf de nível 200); vínculo completo mapa/spawn ainda não confirmado.
+- Nova leitura local de CharAttackInfo.ndt: ICEGOLEMF7 (Ice devil Golem, linha 6547), SNOWMANR3 (Snowhite Yeti, 6548), WOLFF16 (Ice devil Wolf, 6549), todos ALL, Level=200, Aggressive=6, bAgrsiveWhenBattle=1, ViewDistance=20, MoveDistance=10, AttackDistance_Min/Max=1/1, AiPoint=100. Candidatos de Frozen Cave. FIREOUTPOSTMON1–5 (linhas 6951–6955) têm Level=200, Aggressive=2, bAgrsiveWhenBattle=1, ViewDistance=12, MoveDistance=10, AttackDistance_Min/Max=2/7, AiPoint=100. EREMOS1MON1 (Flame Monster of Horror, linha 7011), confirmado agressivo anteriormente, tem Aggressive=6, bAgrsiveWhenBattle=1, ViewDistance=12 (não 20), demais parâmetros de distância iguais aos de Burning Outpost. ViewDistance não explica sozinho a diferença; Aggressive distingue esses exemplos, mas não inferir limiar universal, unidade ou alcance.
+- Distribuição dos 4351 registros MONSTER/ALL por faixa de Level (total / Aggressive=0): 1–19: 781/497; 20–39: 136/110; 40–79: 670/260; 80–139: 1409/186; 140–179: 926/294; >=180: 429/169. Níveis 1–39: 607/917 (66,2%) zerados. Registros de cliente, não população ativa nem comportamento observado; nível bruto pode ser escalado. Nenhuma mudança em dados públicos.
+- Próximo teste: observar o mesmo monstro com Aggressive positivo em dois personagens de níveis distintos, sem iniciar combate; registrar nível do main, mapa, nível exibido do monstro, distância aproximada e resultado. Buscar configuração de mapa/spawn no inventário completo do cliente. Separar aggro espontâneo de ingresso em batalha e evitar concluir que todos os valores 1–5 são passivos.
