@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { localePrefix, localizedPaths } from "../i18n/locales.mjs";
+import { referenceText } from "../i18n/mercenary-reference-ui.mjs";
+interface Props {lang:string; section:"database"|"skills"}
+const {lang,section}=Astro.props;
+const t=referenceText(lang);
+const prefix=localePrefix(lang);
+const root=prefix+"/mercenaries/";
+const title=t[section];
+---
+<BaseLayout title={title+" | Atlantica Knowledge Hub"} description={t.noFormula} lang={lang} alternatePaths={localizedPaths("/mercenaries/"+section+"/")}>
+  <main class="reference" data-reference data-section={section} data-lang={lang} data-labels={JSON.stringify(t)} data-prefix={prefix}>
+    <nav><a href={root}>{t.database}</a> / {title}</nav>
+    <h1>{title}</h1>
+    <p>{t.intro}</p>
+    <p class="notice">{t.noFormula} {t.notVerified}</p>
+    <p data-scope aria-live="polite">{t.loading}</p>
+    <nav class="tabs">
+      <a href={root+"database/"} aria-current={section==="database"?"page":undefined}>{t.database}</a>
+      <a href={root+"skills/"} aria-current={section==="skills"?"page":undefined}>{t.skills}</a>
+    </nav>
+    <div class="controls" hidden data-controls>
+      <label>{t.search}<input type="search" data-search autocomplete="off"/></label>
+      <label>{t.select}<select data-primary></select></label>
+      {section==="database" ? <label>{t.compare}<select data-secondary></select></label> : <label>{t.grade}<select data-grade></select></label>}
+    </div>
+    <section data-result aria-live="polite"></section>
+    <noscript>{t.error}</noscript>
+  </main>
+</BaseLayout>
+<style>
+.reference{width:min(var(--content-width),94%);margin:auto;padding:26px 0 80px}
+.reference h1{font-size:clamp(2rem,4vw,3rem);margin:.7rem 0}
+.reference a{color:var(--color-accent)}
+.notice{border-left:3px solid var(--color-bronze);padding:12px 16px;color:var(--color-text-muted);background:var(--color-surface)}
+.tabs{display:flex;gap:16px;margin:20px 0;flex-wrap:wrap}
+.tabs a{padding:10px 14px;border:1px solid var(--color-border);border-radius:5px}
+.tabs a[aria-current]{background:var(--color-surface);font-weight:bold}
+.controls:not([hidden]){display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:12px;margin:24px 0}
+label{display:grid;gap:6px;color:var(--color-text-muted)}
+input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border);border-radius:5px}
+.reference :global(.ref-table-wrap){overflow-x:auto;margin:12px 0 24px}
+.reference :global(table){width:100%;border-collapse:collapse;background:var(--color-surface)}
+.reference :global(th),.reference :global(td){padding:9px 12px;text-align:left;border-bottom:1px solid var(--color-border);vertical-align:top;overflow-wrap:anywhere}
+.reference :global(th){color:var(--color-text-muted);font-weight:600}
+.reference :global(.ref-warning){border-left:3px solid var(--color-bronze);padding:8px 12px;font-weight:600}
+.reference :global(.ref-source){font-size:.85rem;color:var(--color-text-muted)}
+.reference :global(h2){margin:24px 0 8px;font-size:1.4rem}
+.reference :global(h3){margin:18px 0 8px;font-size:1.1rem}
+</style>
+<script>
+import { mountReference } from "../scripts/mercenary-reference.mjs";
+document.querySelectorAll<HTMLElement>("[data-reference]").forEach(mountReference);
+</script>
