@@ -4,6 +4,7 @@ import {LOCALE_IDS} from "../i18n/locales.mjs";
 import {materialAliasRows} from "./wiki-name-aliases-materials.mjs";
 import {consumableAliasRows} from "./wiki-name-aliases-consumables.mjs";
 import {equipmentAliasRows} from "./wiki-name-aliases-equipment.mjs";
+import {creatureAliasRows} from "./wiki-name-aliases-creatures.mjs";
 export const nameAliasRows=[
   [
     "item",
@@ -259,7 +260,8 @@ export const nameAliasRows=[
   ],
   ...materialAliasRows,
   ...consumableAliasRows,
-  ...equipmentAliasRows
+  ...equipmentAliasRows,
+  ...creatureAliasRows
 ];
 const aliases=new Map(nameAliasRows.map(row=>[row[0]+":"+row[1],row]));
 export function wikiNameAlias(kind,id,sourceName,lang){
