@@ -109,3 +109,38 @@ test('INT floor / 75 reproduces all 13 visible Arthur observations, with unchang
  for(const v of ['-1','1.5','1e2','','1000001'])assert.equal(validIntelligence(v),null);
  assert.equal(validIntelligence('0'),0);
 });
+
+test('Merlin grade 11: 14 independently observed PvE HP tooltips at three INT values',()=>{
+ const samples=[
+  ['MAGIC_MERDARK',61,5049,-571,-47,[-15188,null,-11992]],
+  ['MAGIC_MERDESTROY',2,5073,1460,30,[9020,7670,6980]],
+  ['MAGIC_MERAPPOINT',60,5037,828,15,[5478,4803,4458]],
+  ['MAGIC_MERGUARD',62,5097,300,15,[4980,4305,3960]],
+  ['MAGIC_MERDARKEX',78,5061,-128,-12,[-4064,-3524,-3248]]
+ ];
+ let count=0;
+ for(const [kind,level,line,base,inc,observed] of samples){
+  const m=matrix(kind,11),plain=buildPlayerRows(m,data.columns,level);
+  assert.equal(row(plain,'hp','base').values[0][0].value,base);
+  assert.equal(row(plain,'hp','increment').values[0][0].value,inc);
+  assert.equal(row(plain,'hp','total').values[0][0].line,line);
+  for(const [i,int] of [18854,15507,13725].entries()){
+   if(observed[i]===null)continue;
+   const projected=buildPlayerRows(m,data.columns,level,int);
+   const hp=row(projected,'hp','int-total');
+   assert.equal(hp.values[0][0].value,observed[i]);
+   assert.equal(hp.values[0][0].line,line);
+   assert.ok(hp.values.slice(1).every(mode=>mode.every(x=>x.value===null)));
+   assert.deepEqual(projected.filter(r=>r.kind!=='int-total'),plain);
+   count++;
+  }
+ }
+ assert.equal(count,14);
+ assert.deepEqual([18854,15507,13725].map(intelligenceBonusLevels),[251,206,183]);
+ assert.equal(intelligenceBonusLevels(13724),182);
+ assert.equal(intelligenceBonusLevels(13725),183);
+ // Gwendolen's Touch has two separate source identities; the healing sample
+ // is MAGIC_MERDESTROY (1118), never the zero-HP alternate (1119).
+ const alternate=buildPlayerRows(matrix('MAGIC_MERDESTROY2',11),data.columns,2,18854);
+ assert.ok(!row(alternate,'hp','int-total'));
+});
