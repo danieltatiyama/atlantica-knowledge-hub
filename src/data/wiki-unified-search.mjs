@@ -43,6 +43,16 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
   }
   return records;
 }
+export function buildMercenarySearchRecords(index,lang="en"){
+  if(index?.schemaVersion!==1||!Array.isArray(index.rows)||index.scope!=="expanded-reference-candidate")throw Error("Unexpected mercenary reference index");
+  const seen=new Set();return index.rows.map(row=>{
+    const [kind,id,title,detail]=row;
+    if(!["mercenary","skill"].includes(kind)||typeof title!=="string"||!title.trim()||typeof detail!=="string"||
+      (kind==="skill"?!validId(id):!/^[A-Za-z0-9_]+$/.test(id))||seen.has(kind+":"+id))throw Error("Invalid reference search identity");
+    seen.add(kind+":"+id);
+    return {kind,id,title,detail,href:catalogPath(lang,kind==="mercenary"?"/mercenaries/database/":"/mercenaries/skills/")+"?"+(kind==="mercenary"?"char":"skill")+"="+encodeURIComponent(id)};
+  });
+}
 export function searchWikiRecords(records,query,{kind="all",limit=30}={}){
   const needle=foldSearch(query);
   if(!isWikiSearchQuery(query))return [];
@@ -51,12 +61,13 @@ export function searchWikiRecords(records,query,{kind="all",limit=30}={}){
   const matches=[];
   for(const record of records){
     if(kind!=="all"&&record.kind!==kind)continue;
-    const title=foldSearch(record.title),id=String(record.id??"");
+    const title=foldSearch(record.title),id=foldSearch(record.id);
     const detail=foldSearch(record.detail),alias=foldSearch(record.nameAlias);
     let score=-1;
     if(single){if(alias===needle)score=95;else if(title===needle)score=100;}
     else if(id===needle)score=110;
     else if(title===needle)score=100;
+    else if(id.startsWith(needle))score=85;
     else if(title.startsWith(needle))score=82;
     else if(title.includes(needle))score=68;
     else if(words.every(word=>title.includes(word)))score=55;

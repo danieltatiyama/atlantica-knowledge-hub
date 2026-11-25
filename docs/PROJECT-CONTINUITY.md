@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.82f6 — reconciliação VNA (PR #137)  
-**Último PR integrado:** [#137](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/137), Stage 20.82f6; workflow Validate Pull Request aprovado. Conferir deploy Cloudflare.
+**Última etapa integrada:** Stage 20.83a — piloto de referência de mercenários e habilidades (PR #138)  
+**Último PR integrado:** [#138](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/138), Stage 20.83a; Validate Pull Request e Editorial content build check aprovados. Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -813,3 +813,14 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Piloto Arthur: 17 perfis, 5 SkillIndexes, 31 registros de livros ALL (a contagem de 28 anterior era somente heurística de nome), 14 arestas explícitas, 32 registros de grade 9 em seis tabelas. Não incluir aresta fictícia ARTHUR7 → ramos. Preservar os três registros conflitantes Dark Legacy na MagicPVPBattleGround. Valores originais selecionados por nome de campo, sem cálculos ou fallback. Dados em public/data/client-mercenaries/{mercenaries,skills,modes}.json; os três blobs coincidem byte a byte com a geração local (SHA-256 fixados em teste).
 - Novas rotas /mercenaries/database/ e /mercenaries/skills/ nos oito idiomas, separadas de artigos editoriais aprovados; pesquisa, seleção de evolução, comparação de atributos, requisitos, família de evolução, slots configurados, livros por classe, links para catálogo de itens, seleção de grade armazenada, seis tabelas brutas com alerta de conflitos. Layout existente, seis temas, nomes ingleses e chaves de campos preservados. Não implica disponibilidade no servidor ou lista completa de habilidades. Não há calculadoras de atributos finais nesta etapa.
 - Próximo: revisar o piloto, promover os três arquivos da projeção ampliada após validação dos hashes e da cobertura. Ambiente de geração local não alcança GitHub por rede e a API de conteúdo não recebe caminho de arquivo local: pacote de importação está preparado; transferência dos arquivos grandes exige uso do checkout local ou outro meio autorizado. Não reenviar arquivos brutos do jogo. Não declarar deploy até verificação.
+
+
+### Stage 20.83b — Expansão integral dos catálogos de referência
+
+- PR #138 integrado após correção da lista de rotas nos testes e aprovação dos dois workflows. A projeção ampliada foi transferida e os blobs Git conferidos byte a byte com a geração local: mercenaries e6b5d00e0f0fda239bf9dc777838d77df2218902, skills a36e26ab61fd8b06f6824cc0c77e8096b28fffab, modes d438f49dad0bc297c885a9881f88c45a4a8c5174. SHA-256 exatos fixados nos testes.
+- Cobertura: 947 perfis, 936 evoluções, 11 apenas metadata; 122 BaseGrade, 816 arestas explícitas, 90 requisitos de Awakening, 1.336 identidades de skills, 1.783 livros ALL, 42.602 linhas de modos, 48 chaves conflitantes. Seleção de oito campos brutos por grade; não publicar descrições longas, arquivos originais, correções presumidas ou fórmulas. Ausência de livro não é ausência de habilidade.
+- Lookup derivado dos seis shards de item snapshot 1: 1.827 ItemIDs de materiais, Awakening e livros, todos com nome inglês reconciliado. A pesquisa global passa a indexar 2.283 registros de mercenário/habilidade com links por ID, categorias próprias, sem aliases inventados. Filtros Rank/JobType/WpnType/BaseGrade, comparação, links de compartilhamento e carregamento de modos somente na página de habilidades. Manter metadados de JobType divergentes visíveis. Todos os oito locales; chaves de campos e nomes oficiais preservados.
+- Próximos candidatos: integração com auditoria global e aliases revisados; planificadores de Awakening e especialização apenas com regras verificadas; para cálculos finais obter amostras in-game (nível, evolução, atributos sem bônus, skill level, modo e resultado). Não publicar valores de servidor inferidos. Decoder e candidatos privados não entram no Git.
+
+
+- Continuação da Stage 20.83b: falha inicial do teste de busca global por BLACKARTHUR5 corrigida ao normalizar o ID textual, sem alterar identidade nem href. Incluídos filtro de presença de livros, links reversos de habilidades para os perfis das classes permitidas e aviso de que um perfil não equivale necessariamente a um mercenário recrutável. Testes adicionais: 122 famílias, 95 classes na união, 320 habilidades com livros, 1.783 ItemIDs distintos, 26 habilidades sem linhas na tabela Magic, Dark Legacy somente cinco perfis da classe CLS1_BLACKARTHUR. Validação local independente dos três JSON completos confirmou hashes e contagens. PR #140 redundante, substituído pelo #139, que contém os dados completos. Nenhum novo upload necessário para esta publicação.

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {foldSearch,buildWikiSearchRecords,searchWikiRecords}
+import {foldSearch,buildWikiSearchRecords,buildMercenarySearchRecords,searchWikiRecords}
   from "../src/data/wiki-unified-search.mjs";
 
 const shard=(rows)=>({schemaVersion:"1.0",snapshotId:1,rows});
@@ -60,4 +60,16 @@ test("shared header and home render the search entry; links target supported ID 
   assert.ok(ui.includes('monsterPaths.length!==3'));
   assert.ok(ui.includes('textContent=item.title'));
   assert.ok(!ui.includes(".innerHTML"));
+});
+
+test("mercenary and skill searches link to exact localized reference identities",()=>{
+ const data=JSON.parse(readFileSync("public/data/client-mercenaries/search-index.json","utf8"));
+ for(const lang of ["en","pt-br","fr","de","es","ko","zh-hans","ja"]){
+  const records=buildMercenarySearchRecords(data,lang);
+  const prefix=lang==="en"?"":"/"+lang;
+  assert.equal(records.length,2283);
+  assert.equal(searchWikiRecords(records,"Dark Legacy",{kind:"skill"})[0].href,prefix+"/mercenaries/skills/?skill=995");
+  assert.equal(searchWikiRecords(records,"BLACKARTHUR5",{kind:"mercenary"})[0].href,prefix+"/mercenaries/database/?char=BLACKARTHUR5");
+ }
+ assert.throws(()=>buildMercenarySearchRecords({...data,rows:[data.rows[0],data.rows[0]]}),/Invalid/);
 });
