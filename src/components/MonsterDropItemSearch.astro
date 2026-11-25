@@ -1,4 +1,6 @@
 ---
+import {wikiNameAlias,foldNameAlias} from "../data/wiki-name-aliases.mjs";
+import {aliasText} from "../i18n/name-alias-ui.mjs";
 import {monsterText} from "../i18n/monster-ui.mjs";
 import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
@@ -21,7 +23,7 @@ const {lang}=Astro.props;
     </div>
   </div>
   <div class="finder-filters">
-    <label for="drop-item-query">{monsterText(lang,"loot","Original item name or ID")}
+    <label for="drop-item-query">{aliasText(lang,"English name, Wiki translation or ID")}
       <input id="drop-item-query" type="search" autocomplete="off" disabled
         placeholder={monsterText(lang,"loot","E.g. Ruby, 5335, Equipment Box")}/>
     </label>
@@ -60,6 +62,8 @@ const {lang}=Astro.props;
   <p class="finder-note">{monsterText(lang,"loot","Drops are filtered by the level bracket matching each client creature. The combined percentage is an estimate, NOT verified live-server odds. Original values remain in View source.")}</p>
 </section>
 <script>
+  import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {monsterText} from "../i18n/monster-ui.mjs";
   import {localePrefix,localeTag} from "../i18n/locales.mjs";
   import {formatCandidateClientRate} from "../data/client-drop-rate-hypothesis.mjs";
@@ -107,6 +111,8 @@ const {lang}=Astro.props;
         const button=create("button",undefined,"finder-item-name") as HTMLButtonElement;
         button.type="button";
         button.append(create("strong",name),create("small","ItemID #"+id));
+        const alias=wikiNameAlias("item",id,name,lang);
+        if(alias)button.append(create("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
         button.addEventListener("click",()=>void showItem(id,true));
         row.append(button);
         row.append(create("span",nf.format(direct)+" · "+nf.format(directCreatures)+" "+
@@ -126,7 +132,7 @@ const {lang}=Astro.props;
       const q=query.value.trim().toLocaleLowerCase();
       const m=mode.value;
       filtered=all.filter(row=>
-        (!q||row[0].includes(q)||row[1].toLocaleLowerCase().includes(q))&&
+        (!q||row[0].includes(q)||row[1].toLocaleLowerCase().includes(q)||matchesWikiNameAlias("item",row[0],row[1],lang,q))&&
         (!m||(m==="direct"?row[2]>0:row[3]>0)));
       page=0;renderItems();
     }
@@ -179,6 +185,8 @@ const {lang}=Astro.props;
           link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
           first.append(link);
           if(name)first.append(" (#"+charId+")");
+          const alias=wikiNameAlias("monster",charId,name,lang);
+          if(alias)first.append(create("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
           tr.append(first);
           const pct=type==="direct"?Number(entry[3])/100:
             estimatedTwoStagePercent(entry[5],entry[6]);
@@ -221,6 +229,8 @@ const {lang}=Astro.props;
       if(!row)return;
       selected=itemId;result.hidden=false;
       resultName.textContent=row[1]+" · #"+itemId;
+      const alias=wikiNameAlias("item",itemId,row[1],lang);
+      if(alias)resultName.textContent+=" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias;
       resultBody.replaceChildren(create("p",monsterText(lang,"loot","Loading original source rows…"),"finder-evidence-note"));
       if(push)history.pushState({}, "",nextUrl(itemId));
       try{
