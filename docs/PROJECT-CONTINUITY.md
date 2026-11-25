@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83k — Merlin INT evidence\
-**Último PR integrado:** #149, commit 6dbf4bf3342ff9168de738e62983acf3e09610a5; CI #313 aprovado, deployment a confirmar.
+**Última etapa integrada:** Stage 20.83l — Wicked Bill INT evidence\
+**Último PR integrado:** #150, commit 3968fd6d751389e78f2742ae2465242d82960873; CI #314 aprovado, deployment a confirmar.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -901,3 +901,23 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Duelist's Instinct (1289, MAGIC_INSTINCET, linha 9066), nível 80, HP base -1227, inc -49, observado -11174/-10243, MP 614, scaling -292,7%; cap 80.
 - Betting tooltip mostra Ranged Damage 35%; interpretação específica de WeaponImmune_ATB e EndowedAmount_Immune/ImmuneInc ainda não confirmada. End of the Wasteland tooltip descreve ativação dependente do número de balas; não generalizar Proc Chance Total a probabilidade efetiva. Nenhuma alteração nessas regras.
 - Testes verificam HP, linha, MP, scaling, caps, preservação dos demais campos e modos; avisos nos oito idiomas atualizados, dados e motor de cálculo intactos.
+
+
+### Stage 20.84a — Monster Information / aggro investigation
+
+- Reanálise local dos arquivos decodificados fornecidos pelo jogador; nenhum decoder ou arquivo bruto publicado. CharAttackInfo.ndt (inventário: 19/11/2026) contém Char, Nation, Aggressive, bAgrsiveWhenBattle, AiPoint, Atb; CharMonsterInfo.ndt (17/05/2025) contém Kind, MonsterIndex, PartyNum, Type. Join exato Kind = Char; nomes por NameTextNum → TextMgr_CharInfo_ENG. Não juntar por nome traduzido ou ID numérico de outro namespace.
+- 4.351 Char distintos com Atb contendo token MONSTER e Nation=ALL, dos quais 2.705 presentes em CharMonsterInfo e 1.646 ausentes. CharMonsterInfo: 2.729 linhas, 2.726 Kind distintos (21 fora do conjunto MONSTER/ALL); duplicados HUMANSNAKEB1, AKPRISONERF3, AKFLYMANF1. Preservar múltiplas linhas e registros regionais.
+- SHA-256 dos TXT decodificados locais: CharAttackInfo a242b853d71a0142c9f860217e5062f09a81672a18cea60691da5bc800923eeb; CharMonsterInfo 06aabee4d791c72e9fb55b622f3a2b28b6f59c8a130772898ecfd0e50afefd22; TextMgr_CharInfo_ENG f4116128114c4357ed0f764094fc0fb469f5f01b883b98197684e70071143d9d.
+- Evidência do jogador (25/11/2026); ALL, linhas físicas dos TXT:
+
+| Char / Nome | CharAttackInfo linha | Aggressive | bAgrsiveWhenBattle | CharMonsterInfo linha / índice | Monster Information in-game | Aggro espontâneo in-game |
+|---|---:|---:|---:|---|---|---|
+| AKPRISONERF1 / Mad Prisoner | 3784 | 0 | 1 | 2044 / 2243 | Sim | Desconhecido |
+| AKPRISONERF4 / Awakened Prisoner | 3793 | 0 | 1 | Ausente | Não | Desconhecido |
+| PYRAMID1 / Cursed Sphinx | 6038 | 4 | 1 | Ausente | Não | Desconhecido |
+| EREMOS1MON1 / Flame Monster of Horror | 7011 | 6 | 1 | 2723 / 2986 | Sim | Sim |
+| EREMOS1MON10 / Apocalyptic Dragon | 7210 | 0 | 0 | Ausente | Desconhecido | Desconhecido |
+
+- Hipótese Monster Information = presença no CharMonsterInfo tem 4/4 observações concordantes (2 positivas, 2 negativas). Ausência em arquivo mais antigo não prova indisponibilidade atual. Não generalizar como confirmação individual para todos os monstros.
+- Aggressive tem 1.516 zeros e 2.835 positivos (máximo 30) em MONSTER/ALL. bAgrsiveWhenBattle possui valores 0, 1 **e 2**; não tratar como booleano. Pares (Aggressive zero/positivo, bAgrsiveWhenBattle): zero/0 731, zero/1 783, zero/2 2, positivo/0 448, positivo/1 2356, positivo/2 31. Um positivo de aggro confirmado; zero ainda não testado. Não inferir unidade, distância, entrada em batalhas, efeito de AiPoint ou significado do valor 2.
+- Próximo teste prioritário: um monstro de Aggressive=0 conhecido como não agressivo (ex.: Mad Prisoner), e, separadamente, observar se entra em combate próximo apesar de não iniciar combate. Testar positivo com bAgrsiveWhenBattle=0 e valor 2 posteriormente. Manter observação direta separada de parâmetros do cliente. Sem alteração de UI ou dados públicos nesta etapa.
