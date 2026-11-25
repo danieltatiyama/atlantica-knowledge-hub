@@ -23,8 +23,15 @@ const title=t[section];
     <div class="controls" hidden data-controls>
       <label>{t.search}<input type="search" data-search autocomplete="off"/></label>
       <label>{t.select}<select data-primary></select></label>
-      {section==="database" ? <label>{t.compare}<select data-secondary></select></label> : <label>{t.grade}<select data-grade></select></label>}
+      {section==="database" ? <>
+        <label>{t.compare}<select data-secondary></select></label>
+        <label>Rank<select data-profile-filter="Rank"></select></label>
+        <label>JobType<select data-profile-filter="jobType"></select></label>
+        <label>WpnType<select data-profile-filter="weaponType"></select></label>
+        <label>{t.family}<select data-profile-filter="baseGrade"></select></label>
+      </> : <label>{t.grade}<select data-grade></select></label>}
     </div>
+    <p data-count aria-live="polite"></p>
     <section data-result aria-live="polite"></section>
     <noscript>{t.error}</noscript>
   </main>

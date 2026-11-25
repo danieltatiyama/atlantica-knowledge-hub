@@ -1,5 +1,6 @@
 ---
 import {sharedText} from "../i18n/shared-ui.mjs";
+import {referenceText} from "../i18n/mercenary-reference-ui.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
 import {getCollection} from "astro:content";
 import type { Lang } from "../i18n/ui";
@@ -22,7 +23,7 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
       <button type="submit" class="wiki-search-close" aria-label={sharedText(lang,"Close search")}>×</button>
     </form>
   </div>
-  <label for="wiki-search-query">{sharedText(lang,"Item, monster or guide name or ID")}</label>
+  <label for="wiki-search-query">{referenceText(lang).search}</label>
   <input type="search" id="wiki-search-query" autocomplete="off"
     placeholder={sharedText(lang,"e.g. Silver Thread, Huge Crocodile, 7080")}
     aria-controls="wiki-search-results" />
@@ -33,6 +34,8 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
       <option value="item">{sharedText(lang,"Items")}</option>
       <option value="monster">{sharedText(lang,"Monsters")}</option>
       <option value="guide">{sharedText(lang,"Guides")}</option>
+      <option value="mercenary">{referenceText(lang).database}</option>
+      <option value="skill">{referenceText(lang).skills}</option>
     </select>
   </div>
   <p id="wiki-search-status" role="status" aria-live="polite">
@@ -46,7 +49,7 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
 <script>
   import {sharedText} from "../i18n/shared-ui.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
-  import {buildWikiSearchRecords,searchWikiRecords,isWikiSearchQuery} from "../data/wiki-unified-search.mjs";
+  import {buildWikiSearchRecords,buildMercenarySearchRecords,searchWikiRecords,isWikiSearchQuery} from "../data/wiki-unified-search.mjs";
   const dialog=document.getElementById("wiki-global-search") as HTMLDialogElement|null;
   const query=document.getElementById("wiki-search-query") as HTMLInputElement|null;
   const kind=document.getElementById("wiki-search-kind") as HTMLSelectElement|null;
@@ -66,9 +69,10 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
         if(!response.ok)throw Error("Search index unavailable");
         return response.json();
       };
-      const [items,monsters]=await Promise.all([
+      const [items,monsters,referenceIndex]=await Promise.all([
         fetchJSON("/data/client-items/manifest.json"),
         fetchJSON("/data/client-monsters/manifest.json"),
+        fetchJSON("/data/client-mercenaries/search-index.json"),
       ]);
       if(items?.snapshotId!==1||items.totalIds!==23586||
           monsters?.snapshotId!==1||monsters.catalogMonsterIds!==4351||
@@ -85,9 +89,11 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
       ]);
       const guideTag=document.getElementById("wiki-search-guides");
       const guides=guideTag?JSON.parse(guideTag.textContent||"[]"):[];
-      const data=buildWikiSearchRecords(itemShards,monsterShards,guides,lang);
+      const data=[...buildWikiSearchRecords(itemShards,monsterShards,guides,lang),...buildMercenarySearchRecords(referenceIndex,lang)];
       if(data.filter((row:RecordRow)=>row.kind==="item").length!==22702||
-         data.filter((row:RecordRow)=>row.kind==="monster").length!==4351)
+         data.filter((row:RecordRow)=>row.kind==="monster").length!==4351||
+         data.filter((row:RecordRow)=>row.kind==="mercenary").length!==947||
+         data.filter((row:RecordRow)=>row.kind==="skill").length!==1336)
         throw Error("Incomplete search source records");
       records=data;
       return data;
@@ -95,7 +101,8 @@ const guidesJson=JSON.stringify(guides).replace(/</g,"\\u003c");
     try{return await loading;}finally{loading=null;}
   }
   const label=(item:RecordRow)=>item.kind==="item"?(sharedText(lang,"Item")):
-    item.kind==="monster"?(sharedText(lang,"Monster")):(sharedText(lang,"Guide"));
+    item.kind==="monster"?(sharedText(lang,"Monster")):
+    item.kind==="mercenary"?referenceText(lang).database:item.kind==="skill"?referenceText(lang).skills:sharedText(lang,"Guide");
   function draw(rows:RecordRow[]){
     if(!results)return;
     results.replaceChildren();

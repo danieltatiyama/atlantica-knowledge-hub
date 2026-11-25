@@ -43,6 +43,16 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
   }
   return records;
 }
+export function buildMercenarySearchRecords(index,lang="en"){
+  if(index?.schemaVersion!==1||!Array.isArray(index.rows)||index.scope!=="expanded-reference-candidate")throw Error("Unexpected mercenary reference index");
+  const seen=new Set();return index.rows.map(row=>{
+    const [kind,id,title,detail]=row;
+    if(!["mercenary","skill"].includes(kind)||typeof title!=="string"||!title.trim()||typeof detail!=="string"||
+      (kind==="skill"?!validId(id):!/^[A-Za-z0-9_]+$/.test(id))||seen.has(kind+":"+id))throw Error("Invalid reference search identity");
+    seen.add(kind+":"+id);
+    return {kind,id,title,detail,href:catalogPath(lang,kind==="mercenary"?"/mercenaries/database/":"/mercenaries/skills/")+"?"+(kind==="mercenary"?"char":"skill")+"="+encodeURIComponent(id)};
+  });
+}
 export function searchWikiRecords(records,query,{kind="all",limit=30}={}){
   const needle=foldSearch(query);
   if(!isWikiSearchQuery(query))return [];
