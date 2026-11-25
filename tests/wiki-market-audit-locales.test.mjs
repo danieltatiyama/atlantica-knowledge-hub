@@ -23,7 +23,7 @@ test("market and audit messages are translated, with preserved counts and source
  for(const lang of NEW_GUIDE_LOCALES)assert.ok(marketAuditText(lang,report).includes("128/128"));
 });
 test("every tool has an explicit route for every locale",()=>{
- assert.equal(LOCALIZED_TOOL_PATHS.length,6);
+ assert.deepEqual(new Set(LOCALIZED_TOOL_PATHS),new Set(["/tools/","/tools/nation-dungeons/","/tools/crafting/","/tools/market-prices/","/tools/market-prices/research/","/tools/data-quality/","/tools/awakening/"]));
  for(const lang of LOCALE_IDS)for(const path of LOCALIZED_TOOL_PATHS){
   assert.equal(catalogPath(lang,path),localePrefix(lang)+path);
   assert.equal(languageDestination({lang,path:"/pt-br"+path}),localePrefix(lang)+path);

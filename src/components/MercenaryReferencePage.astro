@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { localePrefix, localizedPaths } from "../i18n/locales.mjs";
+import { awakeningText } from "../i18n/awakening-ui.mjs";
 import { referenceText } from "../i18n/mercenary-reference-ui.mjs";
 interface Props {lang:string; section:"database"|"skills"}
 const {lang,section}=Astro.props;
@@ -20,6 +21,7 @@ const title=t[section];
     <nav class="tabs">
       <a href={root+"database/"} aria-current={section==="database"?"page":undefined}>{t.database}</a>
       <a href={root+"skills/"} aria-current={section==="skills"?"page":undefined}>{t.skills}</a>
+          <a href={prefix+"/tools/awakening/"}>{awakeningText(lang).title}</a>
     </nav>
     <div class="controls" hidden data-controls>
       <label>{t.search}<input type="search" data-search autocomplete="off"/></label>
