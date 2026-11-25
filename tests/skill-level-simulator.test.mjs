@@ -144,3 +144,32 @@ test('Merlin grade 11: 14 independently observed PvE HP tooltips at three INT va
  const alternate=buildPlayerRows(matrix('MAGIC_MERDESTROY2',11),data.columns,2,18854);
  assert.ok(!row(alternate,'hp','int-total'));
 });
+
+test('Wicked Bill grade 11: six independently observed PvE HP tooltips at two INT values',()=>{
+ const samples=[
+  ['MAGIC_BETTING',62,9102,-746,-40,[-8146,-7386],850,-41.06,110],
+  ['MAGIC_DEATHCOIN',62,9090,-630,-54,[-10620,-9594],850,-222.58,110],
+  ['MAGIC_INSTINCET',80,9066,-1227,-49,[-11174,-10243],614,-292.7,80]
+ ];
+ let count=0;
+ for(const [kind,level,line,base,inc,observed,mp,scaling,cap] of samples){
+  const m=matrix(kind,11),plain=buildPlayerRows(m,data.columns,level);
+  assert.equal(row(plain,'hp','base').values[0][0].value,base);
+  assert.equal(row(plain,'hp','increment').values[0][0].value,inc);
+  assert.equal(row(plain,'hp','total').values[0][0].line,line);
+  assert.equal(row(plain,'mpcost','total').values[0][0].value,mp);
+  assert.equal(row(plain,'scaling','total').values[0][0].value,scaling);
+  assert.equal(defaultSkillLevel(m,data.columns),cap);
+  for(const [i,int] of [9310,7893].entries()){
+   const projected=buildPlayerRows(m,data.columns,level,int);
+   const hp=row(projected,'hp','int-total');
+   assert.equal(hp.values[0][0].value,observed[i]);
+   assert.equal(hp.values[0][0].line,line);
+   assert.ok(hp.values.slice(1).every(mode=>mode.every(x=>x.value===null)));
+   assert.deepEqual(projected.filter(r=>r.kind!=='int-total'),plain);
+   count++;
+  }
+ }
+ assert.equal(count,6);
+ assert.deepEqual([9310,7893].map(intelligenceBonusLevels),[124,105]);
+});

@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83j — Intelligence and skill caps\
-**Último PR integrado:** #148, commit 2a093f20142bb59a537b1d685264010ef9f7cc08; CI #312 aprovado, deployment a confirmar.
+**Última etapa integrada:** Stage 20.83k — Merlin INT evidence\
+**Último PR integrado:** #149, commit 6dbf4bf3342ff9168de738e62983acf3e09610a5; CI #313 aprovado, deployment a confirmar.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -892,3 +892,12 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Omniscient Sanctuary (1121, MAGIC_MERGUARD, line 5097), level 62, base 300, inc 15, observed 4980/4305/3960.
 - Dark Destiny (1131, MAGIC_MERDARKEX, line 5061), level 78, base -128, inc -12, observed -4064/-3524/-3248.
 - Regression test checks exact source line, base, increment, observed values and preservation of all other effects/modes. UI notes updated in eight locales; no formula or source-data changes. Exact threshold and divisor remain empirical.
+
+### Stage 20.83l — Wicked Bill INT evidence
+
+- Tooltips enviados pelo jogador em 25/11/2026, Wicked Bill [T Lv.2]; grade 11 reconciliado com Magic.ndt, HP/MP/scaling. INT 9310/7893, níveis adicionais 124/105. Seis novas observações exatas, 33 no total (Arthur, Merlin, Wicked Bill; 13 habilidades, 8 valores de INT). Fórmula inalterada e ainda restrita à projeção experimental PvE Normal, não ao dano final.
+- Betting (1292, MAGIC_BETTING, linha 9102), nível 62, HP base -746, inc -40, observado -8146/-7386, MP 850, scaling -41,06% (tooltip -41,1%); cap 110 incluindo charms.
+- End of the Wasteland (1291, MAGIC_DEATHCOIN, linha 9090), nível 62, HP base -630, inc -54, observado -10620/-9594, MP 850, scaling -222,58% (tooltip -222,6%); cap 110.
+- Duelist's Instinct (1289, MAGIC_INSTINCET, linha 9066), nível 80, HP base -1227, inc -49, observado -11174/-10243, MP 614, scaling -292,7%; cap 80.
+- Betting tooltip mostra Ranged Damage 35%; interpretação específica de WeaponImmune_ATB e EndowedAmount_Immune/ImmuneInc ainda não confirmada. End of the Wasteland tooltip descreve ativação dependente do número de balas; não generalizar Proc Chance Total a probabilidade efetiva. Nenhuma alteração nessas regras.
+- Testes verificam HP, linha, MP, scaling, caps, preservação dos demais campos e modos; avisos nos oito idiomas atualizados, dados e motor de cálculo intactos.
