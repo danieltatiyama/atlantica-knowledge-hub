@@ -168,6 +168,404 @@ export function createStoredZip(files){
   let at=0;for(const part of chunks){result.set(part,at);at+=part.length;}
   return result;
 }
+const extraLanguageLabels={
+  "fr": {
+    "tree": "Arbre de fabrication",
+    "schedule": "Ordre de fabrication",
+    "shopping": "Liste d’achat",
+    "leftovers": "Excédents",
+    "treeHeaders": [
+      "Niveau",
+      "Item ID",
+      "Objet",
+      "Recette parente",
+      "Consommé dans la branche",
+      "Consommation totale",
+      "À fabriquer",
+      "Excédent",
+      "Par lot",
+      "Total des lots",
+      "Opérations",
+      "Répartition des opérations",
+      "Par lot parent",
+      "Lots parents",
+      "Répartition de la consommation",
+      "Mode",
+      "Partagé"
+    ],
+    "scheduleHeaders": [
+      "Item ID",
+      "Produit fabriqué",
+      "Requis",
+      "À produire",
+      "Par lot",
+      "Lots",
+      "Opérations",
+      "Limite par opération",
+      "Répartition des opérations",
+      "Excédent"
+    ],
+    "shoppingHeaders": [
+      "Item ID",
+      "Matériau",
+      "Quantité",
+      "Prix unitaire (modifiable)",
+      "Coût estimé",
+      "Source"
+    ],
+    "leftoverHeaders": [
+      "Item ID",
+      "Produit",
+      "Unités excédentaires"
+    ],
+    "noExcess": "Aucun excédent de lot",
+    "notice": "Recettes candidates issues du client. Les limites comprennent les règles confirmées par le joueur. Recettes du serveur non vérifiées.",
+    "editNote": "Les prix unitaires sont modifiables ; Excel recalcule les coûts estimés. Les prix vides restent indéterminés.",
+    "crafted": "Fabriquer",
+    "buy": "Acheter",
+    "base": "Base",
+    "unresolved": "Non résolu",
+    "yes": "Oui",
+    "no": "Non",
+    "requested": "Demandé",
+    "operations": "Opérations",
+    "batches": "Lots",
+    "questions": "questions de recette ou de lot non résolues",
+    "npc": "Référence NPC du client (marché non vérifié)",
+    "player": "Prix saisi par le joueur",
+    "unpriced": "Sans prix"
+  },
+  "de": {
+    "tree": "Herstellungsbaum",
+    "schedule": "Herstellungsablauf",
+    "shopping": "Einkaufsliste",
+    "leftovers": "Überschüsse",
+    "treeHeaders": [
+      "Ebene",
+      "Item ID",
+      "Gegenstand",
+      "Übergeordnetes Rezept",
+      "Verbrauch im Zweig",
+      "Gesamtverbrauch",
+      "Herzustellen",
+      "Überschuss",
+      "Pro Batch",
+      "Gesamtbatches",
+      "Vorgänge",
+      "Vorgangsaufteilung",
+      "Pro Elternbatch",
+      "Elternbatches",
+      "Verbrauchsaufteilung",
+      "Modus",
+      "Gemeinsam"
+    ],
+    "scheduleHeaders": [
+      "Item ID",
+      "Hergestelltes Produkt",
+      "Benötigt",
+      "Zu produzieren",
+      "Pro Batch",
+      "Batches",
+      "Vorgänge",
+      "Limit pro Vorgang",
+      "Vorgangsaufteilung",
+      "Überschuss"
+    ],
+    "shoppingHeaders": [
+      "Item ID",
+      "Material",
+      "Menge",
+      "Stückpreis (bearbeitbar)",
+      "Geschätzte Kosten",
+      "Quelle"
+    ],
+    "leftoverHeaders": [
+      "Item ID",
+      "Produkt",
+      "Überschusseinheiten"
+    ],
+    "noExcess": "Keine Batchüberschüsse",
+    "notice": "Rezeptkandidaten aus Clientdaten. Limits enthalten spielerbestätigte Regeln. Live-Server-Rezepte sind nicht verifiziert.",
+    "editNote": "Stückpreise sind bearbeitbar; Excel berechnet geschätzte Kosten neu. Leere Preise bleiben offen.",
+    "crafted": "Herstellen",
+    "buy": "Kaufen",
+    "base": "Basis",
+    "unresolved": "Ungeklärt",
+    "yes": "Ja",
+    "no": "Nein",
+    "requested": "Angefordert",
+    "operations": "Vorgänge",
+    "batches": "Batches",
+    "questions": "ungeklärte Rezept-/Batchfragen",
+    "npc": "Client-NPC-Referenz (Markt ungeprüft)",
+    "player": "Vom Spieler eingegebener Preis",
+    "unpriced": "Ohne Preis"
+  },
+  "es": {
+    "tree": "Árbol de fabricación",
+    "schedule": "Programa de fabricación",
+    "shopping": "Lista de compras",
+    "leftovers": "Sobrantes",
+    "treeHeaders": [
+      "Nivel",
+      "Item ID",
+      "Objeto",
+      "Receta superior",
+      "Consumo de rama",
+      "Consumo total",
+      "A fabricar",
+      "Excedente",
+      "Por lote",
+      "Total de lotes",
+      "Operaciones",
+      "Desglose de operaciones",
+      "Por lote superior",
+      "Lotes superiores",
+      "Desglose de consumo",
+      "Modo",
+      "Compartido"
+    ],
+    "scheduleHeaders": [
+      "Item ID",
+      "Producto fabricado",
+      "Necesario",
+      "A producir",
+      "Por lote",
+      "Lotes",
+      "Operaciones",
+      "Límite por operación",
+      "Desglose de operaciones",
+      "Excedente"
+    ],
+    "shoppingHeaders": [
+      "Item ID",
+      "Material",
+      "Cantidad",
+      "Precio unitario (editable)",
+      "Coste estimado",
+      "Fuente"
+    ],
+    "leftoverHeaders": [
+      "Item ID",
+      "Producto",
+      "Unidades excedentes"
+    ],
+    "noExcess": "Sin sobrantes de lote",
+    "notice": "Recetas candidatas del cliente. Los límites incluyen reglas confirmadas por el jugador. Recetas del servidor no verificadas.",
+    "editNote": "Los precios unitarios son editables; Excel recalcula los costes estimados. Los precios vacíos quedan pendientes.",
+    "crafted": "Fabricar",
+    "buy": "Comprar",
+    "base": "Base",
+    "unresolved": "Sin resolver",
+    "yes": "Sí",
+    "no": "No",
+    "requested": "Solicitado",
+    "operations": "Operaciones",
+    "batches": "Lotes",
+    "questions": "cuestiones de receta o lote sin resolver",
+    "npc": "Referencia NPC del cliente (mercado no verificado)",
+    "player": "Precio introducido por el jugador",
+    "unpriced": "Sin precio"
+  },
+  "ko": {
+    "tree": "제작 트리",
+    "schedule": "제작 일정",
+    "shopping": "구매 목록",
+    "leftovers": "잔여량",
+    "treeHeaders": [
+      "단계",
+      "Item ID",
+      "아이템",
+      "상위 제작법",
+      "분기 소비량",
+      "총 소비량",
+      "제작량",
+      "초과량",
+      "배치당",
+      "총 배치 수",
+      "작업 수",
+      "작업별 생산량",
+      "상위 배치당",
+      "상위 배치 수",
+      "소비량 내역",
+      "유형",
+      "공유"
+    ],
+    "scheduleHeaders": [
+      "Item ID",
+      "제작품",
+      "필요량",
+      "생산량",
+      "배치당",
+      "배치 수",
+      "작업 수",
+      "작업당 한도",
+      "작업별 생산량",
+      "초과량"
+    ],
+    "shoppingHeaders": [
+      "Item ID",
+      "재료",
+      "수량",
+      "단가 (편집 가능)",
+      "예상 비용",
+      "출처"
+    ],
+    "leftoverHeaders": [
+      "Item ID",
+      "생산품",
+      "초과 수량"
+    ],
+    "noExcess": "배치 잔여량 없음",
+    "notice": "클라이언트 제작법 후보입니다. 한도에는 플레이어 확인 규칙이 포함됩니다. 실제 서버 제작법은 검증되지 않았습니다.",
+    "editNote": "단가를 수정하면 Excel에서 예상 비용을 다시 계산합니다. 빈 가격은 미입력 상태로 유지됩니다.",
+    "crafted": "제작",
+    "buy": "구매",
+    "base": "기본",
+    "unresolved": "미확인",
+    "yes": "예",
+    "no": "아니요",
+    "requested": "요청량",
+    "operations": "작업 수",
+    "batches": "배치 수",
+    "questions": "미확인 제작법/배치 항목",
+    "npc": "클라이언트 NPC 참고값 (시장 미검증)",
+    "player": "플레이어 입력 가격",
+    "unpriced": "가격 미입력"
+  },
+  "zh-hans": {
+    "tree": "制作树",
+    "schedule": "制作安排",
+    "shopping": "购物清单",
+    "leftovers": "剩余量",
+    "treeHeaders": [
+      "层级",
+      "Item ID",
+      "物品",
+      "上级配方",
+      "分支消耗",
+      "总消耗",
+      "待制作",
+      "多余",
+      "每批",
+      "总批数",
+      "操作次数",
+      "操作拆分",
+      "每上级批次",
+      "上级批数",
+      "消耗拆分",
+      "模式",
+      "共享"
+    ],
+    "scheduleHeaders": [
+      "Item ID",
+      "制作产品",
+      "所需",
+      "待产出",
+      "每批",
+      "批数",
+      "操作次数",
+      "单次上限",
+      "操作拆分",
+      "多余"
+    ],
+    "shoppingHeaders": [
+      "Item ID",
+      "材料",
+      "数量",
+      "单价（可编辑）",
+      "估算成本",
+      "来源"
+    ],
+    "leftoverHeaders": [
+      "Item ID",
+      "产品",
+      "多余数量"
+    ],
+    "noExcess": "无批次剩余",
+    "notice": "客户端候选配方。上限包含玩家确认的规则。正式服务器配方未经验证。",
+    "editNote": "可编辑单价；Excel 将重新计算估算成本。空白价格保持未定价。",
+    "crafted": "制作",
+    "buy": "购买",
+    "base": "基础",
+    "unresolved": "未解决",
+    "yes": "是",
+    "no": "否",
+    "requested": "需求量",
+    "operations": "操作次数",
+    "batches": "批数",
+    "questions": "未解决的配方/批量问题",
+    "npc": "客户端 NPC 参考价（市场未验证）",
+    "player": "玩家输入价格",
+    "unpriced": "未定价"
+  },
+  "ja": {
+    "tree": "製造ツリー",
+    "schedule": "製造手順",
+    "shopping": "買い物リスト",
+    "leftovers": "余剰",
+    "treeHeaders": [
+      "階層",
+      "Item ID",
+      "アイテム",
+      "親レシピ",
+      "分岐消費数",
+      "総消費数",
+      "製造数",
+      "余剰",
+      "バッチあたり",
+      "総バッチ数",
+      "操作数",
+      "操作内訳",
+      "親バッチあたり",
+      "親バッチ数",
+      "消費内訳",
+      "モード",
+      "共有"
+    ],
+    "scheduleHeaders": [
+      "Item ID",
+      "製造品",
+      "必要数",
+      "生産数",
+      "バッチあたり",
+      "バッチ数",
+      "操作数",
+      "操作上限",
+      "操作内訳",
+      "余剰"
+    ],
+    "shoppingHeaders": [
+      "Item ID",
+      "素材",
+      "数量",
+      "単価（編集可能）",
+      "推定費用",
+      "出典"
+    ],
+    "leftoverHeaders": [
+      "Item ID",
+      "生産品",
+      "余剰数"
+    ],
+    "noExcess": "バッチ余剰なし",
+    "notice": "クライアント由来の候補レシピです。上限にはプレイヤー確認済みルールが含まれます。実サーバーのレシピは未確認です。",
+    "editNote": "単価を編集するとExcelが推定費用を再計算します。空欄の価格は未設定のままです。",
+    "crafted": "製造",
+    "buy": "購入",
+    "base": "基本",
+    "unresolved": "未解決",
+    "yes": "はい",
+    "no": "いいえ",
+    "requested": "要求数",
+    "operations": "操作数",
+    "batches": "バッチ数",
+    "questions": "未解決のレシピ・バッチ項目",
+    "npc": "クライアントNPC参考価格（市場未確認）",
+    "player": "プレイヤー入力価格",
+    "unpriced": "価格未設定"
+  }
+};
 const languageLabels={
   en:{
     tree:"Crafting Tree",schedule:"Craft Schedule",shopping:"Shopping List",leftovers:"Leftovers",
@@ -207,14 +605,14 @@ export function buildCraftingWorkbook({plan,names={},prices={},priceOrigins={},l
   if(!plan||!Array.isArray(plan.tree)||!Array.isArray(plan.steps)||
     !Array.isArray(plan.leaves)||!Array.isArray(plan.leftoverRows))
     throw new TypeError("A calculated crafting plan is required for export");
-  const L=locale==="pt"||locale==="pt-br"?languageLabels.pt:languageLabels.en;
+  const L=locale==="pt"||locale==="pt-br"?languageLabels.pt:extraLanguageLabels[locale]??languageLabels.en;
   const getName=id=>safeName(names[id],id);
   const target=getName(plan.targetItemId);
   const summary=target+" (#"+plan.targetItemId+") | "+
-    "Requested: "+plan.requested+" | Operations: "+plan.totalOperations+
-    " | Batches: "+plan.totalBatches;
+    (L.requested??"Requested")+": "+plan.requested+" | "+(L.operations??"Operations")+": "+plan.totalOperations+
+    " | "+(L.batches??"Batches")+": "+plan.totalBatches;
   const sourceNote=L.notice+(plan.issues?.length?
-    " | "+plan.issues.length+" unresolved recipe/batch questions.":"");
+    " | "+plan.issues.length+" "+(L.questions??"unresolved recipe/batch questions")+".":"");
   const treeRows=plan.tree.map(row=>{
     const parent=row.parentItemId?getName(row.parentItemId)+" (#"+row.parentItemId+")":"—";
     const consumption=row.parentItemId?(row.consumptionGroups??[]).map(group=>
@@ -253,10 +651,10 @@ export function buildCraftingWorkbook({plan,names={},prices={},priceOrigins={},l
       txt(priceOrigins[row.itemId]==="client-npc-catalog"
         ?(locale==="pt"||locale==="pt-br"
           ?"Referência NPC do cliente (Market não verificado)"
-          :"Client NPC reference (Market unverified)")
+          :L.npc??"Client NPC reference (Market unverified)")
         :price
-          ?(locale==="pt"||locale==="pt-br"?"Preço informado pelo usuário":"Player-entered price")
-          :(locale==="pt"||locale==="pt-br"?"Sem preço":"Unpriced")),
+          ?(locale==="pt"||locale==="pt-br"?"Preço informado pelo usuário":L.player??"Player-entered price")
+          :(locale==="pt"||locale==="pt-br"?"Sem preço":L.unpriced??"Unpriced")),
     ];
   });
   const leftovers=plan.leftoverRows.length
