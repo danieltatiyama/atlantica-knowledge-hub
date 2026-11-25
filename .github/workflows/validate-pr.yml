@@ -163,7 +163,7 @@ jobs:
         run: node --test tests/client-skill-books.test.mjs
 
       - name: Validate mercenary reference catalog
-        run: node --test tests/mercenary-reference.test.mjs
+        run: node --test tests/mercenary-reference.test.mjs tests/awakening-planner.test.mjs
 
       - name: Smoke test offline translation request export
         run: |

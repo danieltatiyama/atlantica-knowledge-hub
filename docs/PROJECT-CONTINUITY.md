@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83a — piloto de referência de mercenários e habilidades (PR #138)  
-**Último PR integrado:** [#138](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/138), Stage 20.83a; Validate Pull Request e Editorial content build check aprovados. Conferir deploy Cloudflare.
+**Última etapa integrada:** Stage 20.83b — catálogos ampliados (PR #139)  
+**Último PR integrado:** [#139](https://github.com/danieltatiyama/atlantica-knowledge-hub/pull/139), Stage 20.83b; CI aprovado. Conferir deploy Cloudflare.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -824,3 +824,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 
 
 - Continuação da Stage 20.83b: falha inicial do teste de busca global por BLACKARTHUR5 corrigida ao normalizar o ID textual, sem alterar identidade nem href. Incluídos filtro de presença de livros, links reversos de habilidades para os perfis das classes permitidas e aviso de que um perfil não equivale necessariamente a um mercenário recrutável. Testes adicionais: 122 famílias, 95 classes na união, 320 habilidades com livros, 1.783 ItemIDs distintos, 26 habilidades sem linhas na tabela Magic, Dark Legacy somente cinco perfis da classe CLS1_BLACKARTHUR. Validação local independente dos três JSON completos confirmou hashes e contagens. PR #140 redundante, substituído pelo #139, que contém os dados completos. Nenhum novo upload necessário para esta publicação.
+
+
+### Stage 20.83c — Awakening Planner (orçamento manual)
+
+- PR #139 integrado após CI aprovado, main e17ea3dd4c3cc2ca03b09b242f611492e40adab2. Catálogos ampliados, busca global, links bidirecionais, filtros e oito idiomas. Deploy ainda não conferido.
+- Rota /tools/awakening/ nos oito idiomas, ligada ao hub Tools e aos catálogos de mercenários. AWKLevelSkill.ndt linhas 27–58: 32 chaves únicas, grupos 9/9/9/5, nomes ingleses recuperados de TextMgr_Magic_ENG, níveis máximos 100/50/25 com custo por nível 1/2/4 respectivamente. Capacidade matemática por grupo 900/900/900/500. AWKLevelSkillSpend.ndt linha 17: limites de pontos adicionais por itens 650/650/650/250; não são orçamento total. Reset ItemID 21559 quantidade 10, referência bruta, sem regra de consumo inferida.
+- Orçamento informado separadamente pelo jogador; níveis inteiros 0–máximo, pontos gastos = nível × NewSkillPoint, sobras e excesso por categoria, URL compartilhável com validação, limpar plano. Não presume aquisição/transferência de pontos, fórmula dos atributos, orçamento por nível nem efeitos finais. Sem valores de bônus calculados e sem publicação de descrições integrais, decoder ou arquivos originais. Testes de identidade, custos, capacidade, validação, round-trip e localização em CI.
+- Próximas etapas: Main Talent Planner com orçamento por nível/grupo informado pelo jogador enquanto regras de aquisição atuais não forem confirmadas; comparação de modos; validação de fórmulas. A evidência histórica de talentos do Wikidot/Fandom não é confirmação de mecânica vigente. Para calculadoras finais, solicitar capturas do jogo mostrando pontos, níveis e benefícios efetivos em mais de um nível de habilidade/awakening. Não inventar progressão.

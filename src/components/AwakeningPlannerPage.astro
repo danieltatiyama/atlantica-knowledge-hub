@@ -1,0 +1,113 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {localePrefix,localizedPaths,catalogPath} from "../i18n/locales.mjs";
+import {referenceText} from "../i18n/mercenary-reference-ui.mjs";
+import {toolText} from "../i18n/tools-ui.mjs";
+import {awakeningText} from "../i18n/awakening-ui.mjs";
+import {AWAKENING_ROWS,AWAKENING_TABS,AWAKENING_ITEM_BONUS_CAPS,AWAKENING_RESET,AWAKENING_SOURCE_DATE} from "../data/awakening-source.mjs";
+interface Props { lang:string }
+const {lang}=Astro.props;
+const t=awakeningText(lang);
+const tabLabels=[t.default,t.attack,t.defense,t.support];
+const prefix=localePrefix(lang);
+---
+<BaseLayout lang={lang} title={t.title+" | Atlantica Knowledge Hub"} description={t.intro} alternatePaths={localizedPaths("/tools/awakening/")}>
+  <main class="awakening" data-awakening data-labels={JSON.stringify(t)} data-lang={lang}>
+    <nav><a href={catalogPath(lang,"/tools/")}>← {toolText(lang,"Tools","Ferramentas")}</a> · <a href={catalogPath(lang,"/mercenaries/database/")}>{referenceText(lang).database}</a></nav>
+    <p class="eyebrow">ATLANTICA GLOBAL / NA</p>
+    <h1>{t.title}</h1>
+    <p>{t.intro}</p><p class="notice">{t.notice}</p>
+    <div class="totals" aria-live="polite">
+      <div>{t.budget}: <strong data-total-budget>0</strong></div>
+      <div>{t.spent}: <strong data-total-spent>0</strong></div>
+      <div>{t.remaining}: <strong data-total-remaining>0</strong></div>
+    </div>
+    <p class="warning" data-over hidden>{t.over}</p>
+    <div class="actions">
+      <button type="button" data-share>{t.share}</button>
+      <button type="button" data-reset>{t.reset}</button>
+      <span role="status" data-message></span>
+    </div>
+    {AWAKENING_TABS.map((tab,i)=><section class="tab" data-tab={i}>
+      <h2>{tabLabels[i]} <small lang="en">({tab})</small></h2>
+      <div class="tab-meta">
+        <label>{t.budget}<input type="number" min="0" max="100000" step="1" value="0" data-budget={i}/></label>
+        <div>{t.spent}<strong data-spent={i}>0</strong></div>
+        <div>{t.remaining}<strong data-remaining={i}>0</strong></div>
+        <div>{t.capacity}<strong>{AWAKENING_ROWS.filter(r=>r[1]===i).reduce((n,r)=>n+Number(r[3])*Number(r[4]),0)}</strong></div>
+        <div>{t.bonus}<strong>{AWAKENING_ITEM_BONUS_CAPS[i]}</strong></div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>{t.skill}</th><th>{t.level}</th><th>{t.maximum}</th><th>{t.cost}</th><th>{t.spent}</th></tr></thead>
+        <tbody>{AWAKENING_ROWS.filter(r=>r[1]===i).map(([id,,name,max,cost,line])=><tr>
+          <th scope="row"><span lang="en">{name}</span><small>{id} · #{line}</small></th>
+          <td><input type="number" min="0" max={max} step="1" value="0" data-level={id} aria-label={t.level+" – "+name}/></td>
+          <td>{max}</td><td>{cost}</td><td data-row-spent={id}>0</td>
+        </tr>)}</tbody>
+      </table></div>
+    </section>)}
+    <section class="source">
+      <h2>{t.resetReference}</h2><p><a href={prefix+"/items/database/?id="+AWAKENING_RESET.itemId}>Item #{AWAKENING_RESET.itemId}</a> × {AWAKENING_RESET.quantity}</p><p>{t.resetNotice}</p>
+      <h2>{t.source}</h2><p>AWKLevelSkill.ndt #27–58 · AWKLevelSkillSpend.ndt #{AWAKENING_RESET.sourceLine} · TextMgr_Magic_ENG.ntx · {AWAKENING_SOURCE_DATE}</p>
+    </section>
+  </main>
+</BaseLayout>
+<style>
+.awakening{width:min(var(--content-width),94%);margin:auto;padding:24px 0 80px}
+.awakening a{color:var(--color-accent)}
+.eyebrow{color:var(--color-accent);letter-spacing:.12em;font-size:.8rem}
+h1{font-size:clamp(2rem,4vw,3rem)}
+.notice,.warning{border-left:3px solid var(--color-bronze);padding:12px;background:var(--color-surface)}
+.warning{font-weight:600}
+.totals,.actions,.tab-meta{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:18px 0}
+.totals>div,.tab-meta>div,.tab-meta>label{padding:12px;border:1px solid var(--color-border);background:var(--color-surface);border-radius:5px}
+.tab-meta>div,.tab-meta>label{display:grid;gap:5px}
+.tab{margin:22px 0;padding:16px;border:1px solid var(--color-border);border-radius:6px}
+.tab h2{margin:0 0 10px}.tab h2 small{font-size:.8rem;color:var(--color-text-muted)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px;border-bottom:1px solid var(--color-border)}
+th small{display:block;font-weight:normal;color:var(--color-text-muted);font-size:.75rem;overflow-wrap:anywhere}
+input,button{font:inherit;color:var(--color-text);background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:8px}
+input{width:90px;max-width:100%}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid var(--color-accent)}
+.source{font-size:.9rem;color:var(--color-text-muted);overflow-wrap:anywhere}
+</style>
+<script>
+import {AWAKENING_ROWS} from "../data/awakening-source.mjs";
+import {emptyAwakeningPlan,validateAwakeningPlan,summarizeAwakeningPlan,encodeAwakeningPlan,decodeAwakeningPlan} from "../data/awakening-planner.mjs";
+for(const root of document.querySelectorAll<HTMLElement>("[data-awakening]")){
+  const t=JSON.parse(root.dataset.labels??"{}");
+  const nf=new Intl.NumberFormat(root.dataset.lang);
+  const $=(selector:string)=>root.querySelector<HTMLElement>(selector)!;
+  const budgets=[...root.querySelectorAll<HTMLInputElement>("[data-budget]")];
+  const levels=[...root.querySelectorAll<HTMLInputElement>("[data-level]")];
+  let plan=emptyAwakeningPlan();
+  const url=new URL(location.href),raw=url.searchParams.get("awakening");
+  if(raw){try{plan=decodeAwakeningPlan(raw);}catch{$("[data-message]").textContent=t.badLink;}}
+  function fill(){
+    budgets.forEach((el,i)=>el.value=String(plan.budgets[i]));
+    levels.forEach(el=>el.value=String(plan.levels[el.dataset.level!]??0));
+  }
+  function render(){
+    const summary=summarizeAwakeningPlan(plan);
+    $("[data-total-budget]").textContent=nf.format(summary.budget);
+    $("[data-total-spent]").textContent=nf.format(summary.spent);
+    $("[data-total-remaining]").textContent=nf.format(summary.budget-summary.spent);
+    $("[data-over]").hidden=summary.valid;
+    summary.tabs.forEach((tab,i)=>{
+      $( '[data-spent="'+i+'"]').textContent=nf.format(tab.spent);
+      $( '[data-remaining="'+i+'"]').textContent=nf.format(tab.remaining);
+    });
+    for(const [id,,, ,cost] of AWAKENING_ROWS)$('[data-row-spent="'+id+'"]').textContent=nf.format((plan.levels[id]??0)*Number(cost));
+    const next=new URL(location.href);next.searchParams.set("awakening",encodeAwakeningPlan(plan));history.replaceState(history.state,"",next.pathname+next.search+next.hash);
+  }
+  function change(){
+    const next={version:1,budgets:budgets.map(el=>el.valueAsNumber),levels:Object.fromEntries(levels.map(el=>[el.dataset.level!,el.valueAsNumber]))};
+    try{plan=validateAwakeningPlan(next);render();}catch{fill();render();}
+  }
+  for(const el of [...budgets,...levels])el.addEventListener("change",change);
+  $("[data-reset]").addEventListener("click",()=>{plan=emptyAwakeningPlan();fill();render();$("[data-message]").textContent="";});
+  $("[data-share]").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(location.href);$("[data-message]").textContent=t.copied;}catch{$("[data-message]").textContent=t.copyError;}});
+  fill();render();
+}
+</script>
