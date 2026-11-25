@@ -137,9 +137,9 @@ test("tree is an aligned data table with eight depth levels and accessible colla
   'name.scope="row"',
   'craft-tree-depth-',
   'maxOutputPerOperation',
-  'pt?"Por batch":"Per batch"',
-  'pt?"Total necessário":"Total needed"',
-  'pt?"Divisão das operações":"Operation breakdown"',
+  'craftingText(lang,"Per batch","Por batch")',
+  'craftingText(lang,"Total needed","Total necessário")',
+  'craftingText(lang,"Operation breakdown","Divisão das operações")',
  ])assert.ok(page.includes(token),token);
  for(let i=0;i<8;i++)
   assert.ok(page.includes(".craft-tree-depth-"+i+"{--craft-level:"),"Depth "+i);

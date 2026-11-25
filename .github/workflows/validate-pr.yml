@@ -154,7 +154,7 @@ jobs:
         run: node --test tests/wiki-article-image-lightbox.test.mjs
 
       - name: Validate eight guide locales and language routing
-        run: node --test tests/wiki-eight-locales.test.mjs tests/wiki-shared-localization.test.mjs tests/wiki-localized-catalogs.test.mjs tests/wiki-item-database-locales.test.mjs tests/wiki-monster-locales.test.mjs tests/wiki-equipment-profile-locales.test.mjs tests/wiki-complementary-locales.test.mjs tests/wiki-calendar-tools-locales.test.mjs
+        run: node --test tests/wiki-eight-locales.test.mjs tests/wiki-shared-localization.test.mjs tests/wiki-localized-catalogs.test.mjs tests/wiki-item-database-locales.test.mjs tests/wiki-monster-locales.test.mjs tests/wiki-equipment-profile-locales.test.mjs tests/wiki-complementary-locales.test.mjs tests/wiki-calendar-tools-locales.test.mjs tests/wiki-crafting-locales.test.mjs
 
       - name: Validate guide translation pipeline without external API
         run: node --test tests/guide-translation-pipeline.test.mjs tests/guide-editorial-status.test.mjs
