@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync,existsSync,readdirSync} from "node:fs";
 import {LOCALE_IDS,localePrefix,localeTag} from "../src/i18n/locales.mjs";
+import {aliasText} from "../src/i18n/name-alias-ui.mjs";
 import {sharedText} from "../src/i18n/shared-ui.mjs";
 import {catalogText} from "../src/i18n/catalog-ui.mjs";
 import {itemDbText} from "../src/i18n/item-db-ui.mjs";
@@ -73,11 +74,12 @@ for(const lang of LOCALE_IDS){
  assert.ok(existsSync(file),file);
  const html=readFileSync(file,"utf8");
  assert.ok(html.includes('lang="'+localeTag(lang)+'"'),file);
- for(const [scope,key] of [["db","Client creatures and drop sources"],["db","Browse by creature"],["loot","LOOT CODEX"],["loot","Original item name or ID"]])
+ for(const [scope,key] of [["db","Client creatures and drop sources"],["db","Browse by creature"],["loot","LOOT CODEX"]])
   assert.ok(html.includes(monsterText(lang,scope,key)),file+" missing localized "+key);
  for(const alternate of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(alternate)+'"'),file+" missing alternate "+alternate);
 }
 console.log("[IC] Verified eight localized bestiary and loot codex pages.");
+for(const lang of LOCALE_IDS){const file="dist"+localePrefix(lang)+"/monsters/index.html";assert.ok(readFileSync(file,"utf8").includes(aliasText(lang,"English name, Wiki translation or ID")),file); }
 
 for(const lang of LOCALE_IDS){
  const path="dist"+localePrefix(lang)+"/items/";

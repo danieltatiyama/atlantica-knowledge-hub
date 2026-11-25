@@ -1,4 +1,6 @@
 ---
+import {wikiNameAlias,foldNameAlias} from "../data/wiki-name-aliases.mjs";
+import {aliasText} from "../i18n/name-alias-ui.mjs";
 import {monsterText} from "../i18n/monster-ui.mjs";
 import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
@@ -42,7 +44,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         </div>
       </div>
       <div class="filters">
-        <label>{monsterText(lang,"db","Original name or CharID")}
+        <label>{aliasText(lang,"English name, Wiki translation or ID")}
           <input id="creature-query" type="search" autocomplete="off"
             placeholder={monsterText(lang,"db","Search by name or ID")} disabled/>
         </label>
@@ -100,6 +102,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   </main>
 </BaseLayout>
 <script>
+  import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
+  import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {monsterText} from "../i18n/monster-ui.mjs";
   import {localePrefix,localeTag} from "../i18n/locales.mjs";
   import {formatLevelResolvedPercent,resolveClientCreatureDrops} from "../data/client-monster-drop-resolver.mjs";
@@ -175,6 +179,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
           e.preventDefault();void openCreature(id,true);
         });
         firstCell.append(a);
+        const alias=wikiNameAlias("monster",id,name,lang);
+        if(alias)firstCell.append(node("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias,"client-source-id"));
         cell(tr,id);cell(tr,raw(rawKind));cell(tr,raw(rawLevel));
         const possible=possibleByCreature.get(id);
         cell(tr,possible?nf.format(possible[0]):"—");
@@ -191,7 +197,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       const minimum=rawMin!==""?Number(rawMin):null;
       const links=lootMode.value;
       visible=all.filter(r=>
-        (!q||r[0].includes(q)||(r[1]??"").toLocaleLowerCase().includes(q))&&
+        (!q||r[0].includes(q)||(r[1]??"").toLocaleLowerCase().includes(q)||matchesWikiNameAlias("monster",r[0],r[1],lang,q))&&
         (!k||r[3]===k)&&
         (minimum===null||(r[2]!==null&&Number.isFinite(Number(r[2]))&&Number(r[2])>=minimum))&&
         (!links||(links==="with"?(possibleByCreature.get(r[0])?.[0]??0)>0:
@@ -224,6 +230,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       for(const source of entries){
         const tr=node("tr"),first=node("td");
         first.append(itemLink(source.itemId,source.name));
+        const alias=wikiNameAlias("item",source.itemId,source.name,lang);
+        if(alias)first.append(node("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias,"client-source-id"));
         first.append(node("small","Item ID "+source.itemId,"client-source-id"));
         tr.append(first);
         const percent=node("td",undefined,"client-rate");
@@ -267,6 +275,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       detailName.textContent=entity[1]??("CharID "+id);
       detailMeta.textContent=(monsterText(lang,"db","Recorded source kind"))+": "+raw(entity[3])+
         " · "+(monsterText(lang,"db","Identity"))+": "+entity[4];
+      const alias=wikiNameAlias("monster",id,entity[1],lang);
+      if(alias)detailMeta.textContent+=" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias;
       factId.textContent=id;
       factLevel.textContent=raw(entity[2]);
       factDirect.textContent="—";
