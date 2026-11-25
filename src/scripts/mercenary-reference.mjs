@@ -1,5 +1,13 @@
 const directory="/data/client-mercenaries/";
 const modeNames=["Magic","MagicPVP","MagicPVPBattleGround","BF_Magic","BF_MagicPvP","BF_MagicPvPLeague"];
+export const MODE_LABELS=["PvE / Normal","PvP / FL","PvP / Colosseum","TBS","TBS PvP","TBS League"];
+export function buildModeMatrix(data,magicKind,grade){
+  const columns=modeNames.map((source,i)=>{
+    const rows=data.modes[source].filter(r=>r[0]===magicKind&&r[1]===grade);
+    return {source,label:MODE_LABELS[i],lines:rows.map(r=>r[2]),conflict:rows.some(r=>r[3]===1),rows};
+  });
+  return {columns,fields:data.columns.slice(4).map((field,i)=>({field,values:columns.map(c=>c.rows.map(r=>r[i+4]))}))};
+}
 const stats=["Grade","Str","Dex","Vit","Intl","MinDmg","MaxDmg","AC","MagicDef","CriticalRate"];
 const asObjects=d=>d.rows.map(r=>Object.fromEntries(d.columns.map((k,i)=>[k,r[i]])));
 function need(ok,msg){if(!ok)throw new Error(msg);}
@@ -101,6 +109,7 @@ export async function mountReference(root){
     }
     function renderSkill(p){
       heading(p.name);paragraph("SkillIndex "+p.skillIndex+" · MagicCode "+p.magicCode+" · "+p.magicKind);
+      renderModes(p);
       heading(t.books);paragraph(t.bookNotice);
       if(p.books.length)table(result,[t.items,"SkillLimit","Class","ItemTypeBook.ndt"],p.books.map(b=>[item(b[0]),b[1],b[2].join(", "),b[3]]));else paragraph(t.missing);
       heading(t.relatedProfiles);
@@ -114,21 +123,34 @@ export async function mountReference(root){
           return [cls,cell];
         }));
       }else paragraph(t.missing);
+      paragraph(t.source+": SkillInfoIndex.ndt · MagicIndex.ndt · TextMgr_Magic_ENG.ntx #"+p.nameTextId,"ref-source");
+    }
+    function renderModes(p){
       heading(t.mode);
       const available=new Set();for(const mode of modeNames)for(const r of v.modes[mode])if(r[0]===p.magicKind)available.add(r[1]);
       const previous=grade.value||url.searchParams.get("grade")||"";
       grade.replaceChildren(...[...available].sort((a,b)=>a-b).map(x=>option(x,x)));
       if(available.has(Number(previous))&&previous!=="")grade.value=previous;
       if(!available.size){paragraph(t.missing);return;}
-      const g=Number(grade.value);
-      for(const mode of modeNames){
-        heading(mode+".ndt","h3");
-        const rows=v.modes[mode].filter(r=>r[0]===p.magicKind&&r[1]===g);
-        if(!rows.length){paragraph(t.missing);continue;}
-        if(rows.some(r=>r[3]===1))paragraph(t.conflict,"ref-warning");
-        table(result,[t.raw,...rows.map(r=>t.source+" #"+r[2])],v.columns.slice(4).map((f,i)=>[f,...rows.map(r=>r[i+4])]));
-      }
-      paragraph(t.source+": SkillInfoIndex.ndt · MagicIndex.ndt · TextMgr_Magic_ENG.ntx #"+p.nameTextId,"ref-source");
+      const matrix=buildModeMatrix(v,p.magicKind,Number(grade.value));
+      const section=element("div",null,"ref-mode-matrix");
+      const fmt=field=>t["field_"+field]??field;
+      const rows=matrix.fields.map(({field,values})=>[fmt(field),...values.map((values,i)=>{
+        if(!values.length){const n=element("span","—","ref-missing");n.title=t.missing;return n;}
+        const c=matrix.columns[i];
+        const unique=[...new Set(values)];
+        if(!c.conflict)return unique.join(" / ");
+        const cell=element("span",null,"ref-conflict-cell");
+        values.forEach((value,j)=>{const line=element("span",String(value)+" · #"+c.lines[j]);cell.append(line);});
+        return cell;
+      })]);
+      table(section,[t.field,...matrix.columns.map(c=>c.label+(c.conflict?" ⚠":""))],rows);
+      if(matrix.columns.some(c=>c.conflict))section.append(element("p",t.conflict,"ref-warning"));
+      section.append(element("p",t.modeLegend,"ref-source"));
+      const provenance=element("details");provenance.append(element("summary",t.source));
+      table(provenance,[t.mode,t.source,t.field],matrix.columns.map(c=>[c.label,c.source+".ndt",c.lines.length?c.lines.map(n=>"#"+n).join(", "):t.missing]));
+      section.append(provenance);result.append(section);
+
     }
     function render(){
       result.replaceChildren();

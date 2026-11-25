@@ -61,6 +61,13 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 .reference :global(.ref-source){font-size:.85rem;color:var(--color-text-muted)}
 .reference :global(h2){margin:24px 0 8px;font-size:1.4rem}
 .reference :global(h3){margin:18px 0 8px;font-size:1.1rem}
+.reference :global(.ref-mode-matrix table){min-width:860px;table-layout:fixed;font-variant-numeric:tabular-nums}
+.reference :global(.ref-mode-matrix table th:first-child),.reference :global(.ref-mode-matrix table td:first-child){width:28%;position:sticky;left:0;background:var(--color-surface);z-index:1}
+.reference :global(.ref-mode-matrix table th:not(:first-child)),.reference :global(.ref-mode-matrix table td:not(:first-child)){text-align:right}
+.reference :global(.ref-conflict-cell){display:grid;gap:4px}
+.reference :global(.ref-missing){color:var(--color-text-muted)}
+.reference :global(.ref-mode-matrix details){margin:12px 0 22px}
+.reference :global(.ref-mode-matrix summary){cursor:pointer;color:var(--color-accent)}
 </style>
 <script>
 import { mountReference } from "../scripts/mercenary-reference.mjs";
