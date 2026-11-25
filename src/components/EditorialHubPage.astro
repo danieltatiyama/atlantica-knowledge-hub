@@ -1,7 +1,7 @@
 ---
 import {referenceText} from "../i18n/mercenary-reference-ui.mjs";
 import {catalogText} from "../i18n/catalog-ui.mjs";
-import {localePrefix,legacyLocale,localizedPaths,localeTag} from "../i18n/locales.mjs";
+import {localePrefix,legacyLocale,localizedPaths,localeTag,catalogPath} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
@@ -54,8 +54,8 @@ const noneLabel = catalogText(lang,"No results match the filter.");
       {fallback && records.length>0 && <p class="caution">{catalogText(lang,"English articles are shown until reviewed translations are available.")}</p>}
     </header>
     {!isEvents && <nav class="reference-links" aria-label={referenceText(lang).intro}>
-      <a href={localePrefix(lang)+"/mercenaries/database/"}>{referenceText(lang).database}</a>
-      <a href={localePrefix(lang)+"/mercenaries/skills/"}>{referenceText(lang).skills}</a>
+      <a href={catalogPath(lang,"/mercenaries/database/")}>{referenceText(lang).database}</a>
+      <a href={catalogPath(lang,"/mercenaries/skills/")}>{referenceText(lang).skills}</a>
       <p class="caution">{referenceText(lang).notVerified}</p>
     </nav>}
     <section aria-label={heading} class="catalog">
