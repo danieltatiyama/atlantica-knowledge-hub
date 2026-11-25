@@ -1,3 +1,4 @@
+import {catalogPath} from "../i18n/locales.mjs";
 /**
  * Player-facing catalog of client NPC price references.
  * Price values and provenance are data from the installed client, not live-server facts.
@@ -55,5 +56,5 @@ export function filterClientMarketCatalog(items,{
 }
 export function clientItemDetailUrl(itemId,lang="en"){
  if(!validId(itemId))throw Error("Invalid client ItemID link");
- return (lang==="pt-br"?"/pt-br":"")+"/items/database/?id="+encodeURIComponent(itemId);
+ return catalogPath(lang,"/items/database/")+"?id="+encodeURIComponent(itemId);
 }
