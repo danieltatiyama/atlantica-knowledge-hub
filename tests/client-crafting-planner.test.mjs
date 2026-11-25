@@ -68,5 +68,5 @@ test("crafting calculator is linked from tools and individual item profiles",()=
  assert.ok(page.includes("activeGraph=await loadGraph(id)"));
  assert.ok(page.includes("strictTargetBatch:true"));
  assert.ok(item.includes('"/tools/crafting/?id="+item.id'));
- assert.ok(full.includes('planner.href=prefix+"/tools/crafting/?id="+encodeURIComponent(id)'));
+ assert.ok(full.includes('planner.href=localePrefix(lang)+"/tools/crafting/?id="+encodeURIComponent(id)'));
 });
