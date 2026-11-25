@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {joinBuffStats,buildPlayerRows,validLevel,defaultSkillLevel,skillSliderMax,STAT_GROUPS} from '../src/scripts/skill-level-simulator.mjs';
+import {joinBuffStats,buildPlayerRows,validLevel,defaultSkillLevel,skillSliderMax,skillLevelCaps,selectPreviewLevel,validIntelligence,intelligenceBonusLevels,STAT_GROUPS} from '../src/scripts/skill-level-simulator.mjs';
 import {joinProgression} from '../src/scripts/skill-progression.mjs';
 import {joinSkillContext} from '../src/scripts/skill-context.mjs';
 import {buildModeMatrix} from '../src/scripts/mercenary-reference.mjs';
@@ -71,4 +71,41 @@ test('skill table controls stay synchronized and sticky header is scoped to the 
  assert.ok(style.includes('@container skill-matrix (min-width:860px)'));
  assert.ok(style.includes('.ref-player-table-wrap thead th'));
  assert.ok(style.includes('tbody + tbody .ref-stat-group th'));
+});
+
+test('Betting cap distinguishes books and charms in all six modes, by grade',()=>{
+ for(const [grade,book,total] of [[0,60,90],[5,70,100],[7,80,110],[11,80,110]]){
+  const m=matrix('MAGIC_BETTING',grade);assert.equal(m.columns.filter(c=>c.rows.length).length,6);
+  assert.deepEqual(skillLevelCaps(m,data.columns),{book:[book],total:[total]});
+  assert.equal(skillSliderMax(m,data.columns,80),Math.max(80,total));
+ }
+ assert.equal(selectPreviewLevel(null,null,110,80,false),80);
+ assert.equal(selectPreviewLevel(80,80,110,null,true),110);
+ assert.equal(selectPreviewLevel(90,90,110,null,false),110);
+ assert.equal(selectPreviewLevel(50,90,110,null,false),50);
+});
+test('INT floor / 75 reproduces all 13 visible Arthur observations, with unchanged other stats',()=>{
+ const samples=[
+ ['MAGIC_ARTHUREX',80,[-8248,-7672,-6664]],
+ ['MAGIC_ARTHURSH',36,[1767,1655,1459]],
+ ['MAGIC_ARTHURCOMMON',80,[46745,43225,null]],
+ ['MAGIC_ARTHURBLACK',40,[-8587,-7835,-6519]],
+ ['MAGIC_ARTHURORDER',20,[-3748,-3380,null]]
+ ];
+ let count=0;
+ for(const [kind,lv,expected] of samples){
+  const m=matrix(kind,11),plain=buildPlayerRows(m,data.columns,lv);
+  assert.ok(!row(plain,'hp','int-total'));
+  for(const [i,int] of [9950,8739,6669].entries()){
+   const projected=buildPlayerRows(m,data.columns,lv,int),hp=row(projected,'hp','int-total');
+   if(expected[i]!==null){assert.equal(hp.values[0][0].value,expected[i]);count++;}
+   for(const mode of hp.values.slice(1))assert.ok(mode.every(x=>x.value===null));
+   assert.deepEqual(projected.filter(r=>r.kind!=='int-total'),plain);
+  }
+ }
+ assert.equal(count,13);
+ assert.deepEqual([9950,8739,6669].map(intelligenceBonusLevels),[132,116,88]);
+ assert.equal(intelligenceBonusLevels(9899),131);assert.equal(intelligenceBonusLevels(9900),132);
+ for(const v of ['-1','1.5','1e2','','1000001'])assert.equal(validIntelligence(v),null);
+ assert.equal(validIntelligence('0'),0);
 });

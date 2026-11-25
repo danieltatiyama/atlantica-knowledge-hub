@@ -68,7 +68,7 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 .reference :global(.ref-missing){color:var(--color-text-muted)}
 .reference :global(.ref-mode-matrix details){margin:12px 0 22px}
 .reference :global(.ref-mode-matrix summary){cursor:pointer;color:var(--color-accent)}
-.reference :global(.ref-level-controls){display:grid;grid-template-columns:minmax(90px,150px) minmax(0,360px);align-items:end;gap:16px;margin:12px 0}
+.reference :global(.ref-level-controls){display:grid;grid-template-columns:minmax(90px,150px) minmax(0,360px) auto;align-items:end;gap:16px;max-width:680px;margin:12px 0}
 .reference :global(.ref-level-control){display:grid;gap:5px;color:var(--color-text-muted)}
 .reference :global(.ref-level-range){min-width:0;display:grid;gap:2px;padding-bottom:2px}
 .reference :global(.ref-level-range input){width:100%;min-width:0;accent-color:var(--color-accent);cursor:pointer;margin:0;height:25px}
@@ -91,7 +91,13 @@ input,select{font:inherit;min-width:0;width:100%;padding:10px;background:var(--c
 }
 @media(max-width:450px){
   .reference :global(.ref-level-controls){grid-template-columns:100px minmax(0,1fr);gap:10px}
+  .reference :global(.ref-max-level){grid-column:1 / -1;justify-self:start}
 }
+.reference :global(.ref-max-level){font:inherit;white-space:nowrap;color:var(--color-accent);background:var(--color-surface);border:1px solid var(--color-border);border-radius:5px;padding:9px 12px;cursor:pointer}
+.reference :global(.ref-max-level:disabled){opacity:.5;cursor:default}
+.reference :global(.ref-int-controls){display:flex;align-items:end;flex-wrap:wrap;gap:16px;margin:12px 0}
+.reference :global(.ref-int-controls .ref-level-control){width:150px}
+.reference :global(.ref-cap-summary){margin:0 0 10px}
 </style>
 <script>
 import { mountReference } from "../scripts/mercenary-reference.mjs";

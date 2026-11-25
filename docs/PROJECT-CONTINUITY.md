@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.83h — Skill Level Simulator\
-**Último PR integrado:** #146, commit 59cba2ab8a3cdbac043659f6fa7be940bc21e53c; CI aprovado e nova tabela confirmada em produção pelo jogador.
+**Última etapa integrada:** Stage 20.83i — Skill table navigation\
+**Último PR integrado:** #147, commit 7a59359ed087c6943d9fa73a8844e1134299555f; CI aprovado, slider e espaçamento confirmados em produção por print.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -877,3 +877,8 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Slider de nível ao lado do campo textual, sincronização em ambos os sentidos e URL preservada. Limite inicial conforme maior MaxTotalSkillLevel do grade selecionado; simulação acima do limite digitada expande o slider, sem eliminar avisos anteriores. Faixa de entrada permanece 1–1000.
 - Espaço visual de 8px entre grupos, cabeçalho sticky no scroll da página quando a largura disponível comporta a matriz de 860px; em telas estreitas, scroll interno horizontal/vertical com cabeçalho fixo. Primeira coluna permanece congelada. Apenas tabela de habilidades alterada.
 - Cabeçalho e contêiner permanecem montados ao recalcular níveis; preservar posição do scroll. Dois testes adicionais de faixa e contrato de interface, sem alteração de dados ou fórmulas.
+
+### Stage 20.83j — Intelligence and skill caps
+
+- Três valores de INT (9950/8739/6669) e 13 tooltips do Arthur grade 11 reproduzidos exatamente por HP = base + incremento × (nível − 1 + floor(INT/75)). Terceira amostra: Dark Legacy -6519, Excalibur -6664, Guardian Sheath +1459. King's Command e Blessing of Avalon sem HP visível na terceira amostra. Fórmula experimental, extrapolação para outras skills, apenas PvE Normal; preservar HP sem INT, demais modos/atributos intactos. Campo opcional INT, zero desativa, URL int.
+- Betting (1292): seis modos com MaxBookSkillLevel/MaxTotalSkillLevel 60/90 grades 0–4, 70/100 grades 5–6, 80/110 grades 7–11. Dados existentes corretos; causa do relato de 80 no slider não reproduzida. Exibir ambos os limites, botão Max Level, maior grade disponível como padrão quando não houver seleção; ao trocar skill usar máximo do novo grade, ao trocar grade mantendo nível manual preservar valor salvo se estava no cap anterior. Nenhuma alteração de dados, sem supor máximo igual para todas as skills.
