@@ -25,6 +25,13 @@ export function validateReference(merc,skills,modes){
   if(modes)need(modeNames.every(k=>Array.isArray(modes.modes[k])&&modes.modes[k].every(r=>r.length===modes.columns.length&&magic.has(r[0])&&Number.isInteger(r[1])&&[0,1].includes(r[3]))),"Invalid mode row");
   return {profiles,skillList};
 }
+export function classRelatedProfiles(profiles,skill){
+  const classes=new Set(skill.books.flatMap(b=>b[2]));
+  return profiles.filter(p=>classes.has(p.classToken));
+}
+export function hasBookReference(record,filter){
+  return !filter||(filter==="yes"?record.books?.length>0:record.books?.length===0);
+}
 function element(tag,value,cls){
   const e=document.createElement(tag); if(value!==null&&value!==undefined)e.textContent=String(value);if(cls)e.className=cls;return e;
 }
@@ -58,11 +65,12 @@ export async function mountReference(root){
     const url=new URL(location.href),requested=url.searchParams.get(section==="database"?"char":"skill");
     const byId=new Map(records.map(r=>[String(r[key]),r]));
     const filters=Array.from(root.querySelectorAll("[data-profile-filter]"));
+    const bookFilter=root.querySelector("[data-book-filter]");
     for(const filter of filters){const key=filter.dataset.profileFilter;const values=[...new Set(profiles.map(r=>r[key]).filter(v=>v!==null&&v!==undefined&&v!==""))].sort();filter.replaceChildren(option("",t.all),...values.map(v=>option(v,v)));}
     const label=r=>r.name+" · "+r[key]+(section==="database"?" · G"+r.Grade:"");
     function fill(query="",preferred=primary.value){
       const q=query.trim().toLowerCase();
-      const matches=records.filter(r=>(label(r)+" "+(r.classToken??r.magicKind??"")+" "+(r.baseGrade??"")).toLowerCase().includes(q)&&filters.every(f=>!f.value||String(r[f.dataset.profileFilter])===f.value));
+      const matches=records.filter(r=>(label(r)+" "+(r.classToken??r.magicKind??"")+" "+(r.baseGrade??"")).toLowerCase().includes(q)&&filters.every(f=>!f.value||String(r[f.dataset.profileFilter])===f.value)&&hasBookReference(r,bookFilter?.value));
       primary.replaceChildren(...matches.map(r=>option(r[key],label(r))));
       if(count)count.textContent=String(matches.length)+" / "+records.length;
       if(Array.from(primary.options).some(o=>o.value===preferred))primary.value=preferred;
@@ -74,11 +82,11 @@ export async function mountReference(root){
     function renderMerc(p){
       const other=secondary&&byId.get(secondary.value);
       heading(p.name);paragraph(p.char+" · "+p.classToken+" · "+(p.Rank??"—"));
-      table(result,["Field",p.name,...(other?[other.name]:[])],["Rank","jobType","metadataJobType","weaponType","baseGrade"].map(k=>[k,p[k],...(other?[other[k]]:[])]));
+      table(result,[t.field,p.name,...(other?[other.name]:[])],["Rank","jobType","metadataJobType","weaponType","baseGrade"].map(k=>[k,p[k],...(other?[other[k]]:[])]));
       heading(t.raw);
       table(result,[t.raw,p.name,...(other?[other.name]:[])],stats.map(k=>[k,p[k],...(other?[other[k]]:[])]));
       heading(t.requirements);
-      table(result,["Field",p.name,...(other?[other.name]:[])],["NeedLevel","CrystalUnique","CrystalNum","AtlasUnique","AtlasNum"].map(k=>[k,k.endsWith("Unique")?item(p[k]):p[k],...(other?[k.endsWith("Unique")?item(other[k]):other[k]]:[])]));
+      table(result,[t.field,p.name,...(other?[other.name]:[])],["NeedLevel","CrystalUnique","CrystalNum","AtlasUnique","AtlasNum"].map(k=>[k,k.endsWith("Unique")?item(p[k]):p[k],...(other?[k.endsWith("Unique")?item(other[k]):other[k]]:[])]));
       heading(t.awakening);
       if(p.awakening)table(result,["NeedLevel","NeedItemUnique","NeedNum"],[[p.awakening[0],item(p.awakening[1]),p.awakening[2]]]);else paragraph(t.missing);
       heading(t.family);
@@ -95,6 +103,17 @@ export async function mountReference(root){
       heading(p.name);paragraph("SkillIndex "+p.skillIndex+" · MagicCode "+p.magicCode+" · "+p.magicKind);
       heading(t.books);paragraph(t.bookNotice);
       if(p.books.length)table(result,[t.items,"SkillLimit","Class","ItemTypeBook.ndt"],p.books.map(b=>[item(b[0]),b[1],b[2].join(", "),b[3]]));else paragraph(t.missing);
+      heading(t.relatedProfiles);
+      const eligible=classRelatedProfiles(profiles,p);
+      if(eligible.length){
+        const groups=new Map();
+        for(const profile of eligible){const group=groups.get(profile.classToken)??[];group.push(profile);groups.set(profile.classToken,group);}
+        table(result,["Class",t.relatedProfiles],[...groups].map(([cls,group])=>{
+          const cell=element("span");
+          group.sort((a,b)=>a.Grade-b.Grade||a.char.localeCompare(b.char)).forEach((p,i)=>{if(i)cell.append(document.createTextNode(" · "));cell.append(displayProfile(p.char));});
+          return [cls,cell];
+        }));
+      }else paragraph(t.missing);
       heading(t.mode);
       const available=new Set();for(const mode of modeNames)for(const r of v.modes[mode])if(r[0]===p.magicKind)available.add(r[1]);
       const previous=grade.value||url.searchParams.get("grade")||"";
@@ -123,6 +142,7 @@ export async function mountReference(root){
     }
     search.addEventListener("input",()=>{fill(search.value);render();});
     for(const filter of filters)filter.addEventListener("change",()=>{fill(search.value);render();});
+    bookFilter?.addEventListener("change",()=>{fill(search.value);render();});
     primary.addEventListener("change",render);secondary?.addEventListener("change",render);grade?.addEventListener("change",render);
     controls.hidden=false;render();
   }catch(err){scope.textContent=t.error;result.replaceChildren();controls.hidden=true;console.error("Reference catalog:",err);}
