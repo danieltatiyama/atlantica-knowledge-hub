@@ -16,6 +16,8 @@ export function buildModeMatrix(data,magicKind,grade){
   return {columns,fields:data.columns.slice(4).map((field,i)=>({field,values:columns.map(c=>c.rows.map(r=>r[i+4]))}))};
 }
 const stats=["Grade","Str","Dex","Vit","Intl","MinDmg","MaxDmg","AC","MagicDef","CriticalRate"];
+const pvpFields=["PvPDamageRate","PvPDamageRevision","PvPDamageStatus","PvPBaseLife","PvPLifeStatus","PvPDefBaseRate"];
+const pvpBGFields=["PvPBGDamageRate","PvPBGDamageRevision","PvPBGDamageStatus","PvPBGBaseLife","PvPBGLifeStatus","PvPBGDefBaseRate"];
 const asObjects=d=>d.rows.map(r=>Object.fromEntries(d.columns.map((k,i)=>[k,r[i]])));
 function need(ok,msg){if(!ok)throw new Error(msg);}
 async function load(file){
@@ -33,6 +35,8 @@ export function validateReference(merc,skills,modes){
     need(new Set(d.rows.map(r=>r[0])).size===d.rows.length,"Duplicate identity");
   }
   const profiles=asObjects(merc), skillList=asObjects(skills);
+  const hasPvp=merc.columns.includes("PvPBaseLife");
+  if(hasPvp){need([...pvpFields,...pvpBGFields].every(k=>merc.columns.includes(k)),"Incomplete PvP field schema");need(profiles.every(p=>[...pvpFields,...pvpBGFields].every(k=>Number.isSafeInteger(p[k])&&p[k]>=0)),"Invalid PvP field value");}
   const ids=new Set(profiles.map(r=>r.char));
   need(merc.edges.every(e=>e.length===2&&e.every(k=>ids.has(k))),"Unknown evolution edge");
   const magic=new Set(skillList.map(r=>r.magicKind));
@@ -130,6 +134,13 @@ export async function mountReference(root){
       table(result,[t.field,p.name,...(other?[other.name]:[])],["Rank","jobType","metadataJobType","weaponType","baseGrade"].map(k=>[k,p[k],...(other?[other[k]]:[])]));
       heading(t.raw);
       table(result,[t.raw,p.name,...(other?[other.name]:[])],stats.map(k=>[k,p[k],...(other?[other[k]]:[])]));
+      if(m.columns.includes("PvPBaseLife")){
+        heading(t.pvp);paragraph(t.pvpNotice,"ref-source");
+        const pvpRows=fields=>fields.map(k=>[t["pvp_"+k]??k,p[k],...(other?[other[k]]:[])]);
+        table(result,[t.pvp,p.name,...(other?[other.name]:[])],pvpRows(pvpFields));
+        heading(t.pvpBG,"h3");table(result,[t.pvpBG,p.name,...(other?[other.name]:[])],pvpRows(pvpBGFields));
+        paragraph(t.source+": CharAttackInfo.ndt · PvP fields","ref-source");
+      }
       heading(t.requirements);
       table(result,[t.field,p.name,...(other?[other.name]:[])],["NeedLevel","CrystalUnique","CrystalNum","AtlasUnique","AtlasNum"].map(k=>[k,k.endsWith("Unique")?item(p[k]):p[k],...(other?[k.endsWith("Unique")?item(other[k]):other[k]]:[])]));
       heading(t.awakening);
