@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.85d — Mercenary PvP reference fields  
-**Última integração funcional:** Stage 20.85d; PR e CI serão registrados após integração.
+**Última etapa integrada:** Stage 20.85c — Evolution family upgrade materials (#156)  
+**Última integração funcional:** PR #156; squash commit e CI #320 aprovados. Stage 20.85d aguarda CI e integração.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -956,7 +956,7 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 
 - Em 26/11/2026, PR #156 integrado à main (squash, CI #320 aprovado). PRs #142 e #106 fechados sem merge por estarem superados: a matriz de modos e seus testes já estão na main; a arquitetura de oito idiomas e os guias VIP foram integrados pelos PRs #107–110. Validação visual em produção e confirmação dos custos in-game continuam pendentes.
 
-### Stage 20.85d — Mercenary PvP reference fields
+### Stage 20.85d — Mercenary PvP reference fields (PR #158)
 
 - Added raw PvP and PvPBG fields from the user's decoded CharAttackInfo.ndt.txt to all 947 expanded mercenary profiles by exact Char key. Coverage is 947/947, unique one-to-one matches; no source files or decoder published.
 - The mercenary detail page displays separate PvP and PvPBG tables. Values remain raw client fields; their scale and live server use are unverified. Eight locales label the fields and explain this limitation. No formulas or gameplay conclusions are encoded.
