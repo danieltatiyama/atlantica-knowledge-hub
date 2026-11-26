@@ -4,8 +4,8 @@
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.85a — Skill table view controls\
-**Último PR integrado:** #154, commit a819843f7f825e9948b56b7e6e93c4e9b97da7b0; CI #318 aprovado, deployment a confirmar.
+**Última etapa integrada:** Stage 20.85b — Skill comparison\
+**Último PR integrado:** #155, commit 318b97852484d7251a7b922ea2430f6a10aab682; CI #319 aprovado, deployment a confirmar.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
@@ -947,3 +947,9 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 
 - Painel opcional na página Skill Database, duas skills pesquisáveis inclusive a mesma identidade com configurações diferentes, grade/nível/INT independentes, um modo de combate comum, totais por padrão ou visão detalhada. URLs compareSkillA/B, compareGradeA/B, compareLevelA/B, compareIntA/B, compareMode e compareTotals. A inicial usa skill selecionada; B vazio até seleção. Links individuais, limites de livros/charms, proveniência, oito idiomas.
 - Motor compartilhado com opção retainZero apenas para comparação, distinguindo zero explícito de ausência. Não esconder componentes quando total indisponível; preservar conflitos por linha, não inferir valor ausente nem fallback entre modos. Diferença assinada B−A somente para valores numéricos únicos, sem conflito ou projeção acima do limite, não ranking. INT experimental só PvE. Nenhuma mudança nas fórmulas ou dados publicados. Três testes adicionais no CI existente.
+
+### Stage 20.85c — Evolution family upgrade materials
+
+- Usuário pediu adiar mecânicas dependentes de testes e pular Formation Builder; priorizar dados de evolução e custos já extraídos. Fonte OneLevelSolInfo_ENG.vna, candidato privado reconciliado e snapshot publicado mercenaries.json + item-names.json. CrystalUnique/CrystalNum e AtlasUnique/AtlasNum pertencem ao Char de origem da aresta NextGrade. Crosscheck histórico: https://atlantica-online.wikidot.com/class%3Aswordsman e https://atlantica-online.wikidot.com/class%3Aknight-merc (50/100 custos dos grades iniciais); https://atlantica.fandom.com/wiki/Spelltower_Siege_Patch explica Atlas como substituição. Não afirmar disponibilidade atual no servidor.
+- 816 arestas explícitas, 816 origens distintas, todas com dois pares positivos. AtlasUnique=21559 (Atlas Ore) em 721, 21560 (Atlas Ore Fragment) em 73, 11045 (Unknown Transcendence Stone) em 10; 12 pares id/quantidade idênticos (não duplicar). SWORDMAN1→2 50 Ashen Crystal OU 1 Atlas Ore Fragment; SWORDMAN2→3 100/1; SWORDMAN10→11 2 Gyebaek: Condensed Transcendence Power OU 2 Unknown Transcendence Stone. MERLIN10→11 2 Merlin: Condensed Power of Transcendence (mesmo par alternativo), MERLIN11→12 4; MERLIN12 sem aresta não atribuir 6 como upgrade confirmado. ARTHUR7 sem aresta explícita para especialização; não inferir custo por grade/nome. Nove arestas GBTAIWHEGONG cruzam famílias, preservar links. Não usar NeedLevel como nível mínimo de upgrade (sem semântica confirmada).
+- Evolution Family ganha colunas Upgrade material e Alternative (Atlas / other), quantidades formatadas, links de itens e perfis, aviso de origem em oito idiomas. Preservar tabela Requirements (raw) e todos os dados/arestas. Teste de cobertura de 816 custos e distribuição dos alternativos; nenhum custo cumulativo nem combinação obrigatória inferida.

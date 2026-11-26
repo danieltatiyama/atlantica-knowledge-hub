@@ -47,6 +47,28 @@ export function classRelatedProfiles(profiles,skill){
 export function hasBookReference(record,filter){
   return !filter||(filter==="yes"?record.books?.length>0:record.books?.length===0);
 }
+// Costs are stored on the current character, not the destination.
+export function evolutionFamilyRows(profiles,edges,selected){
+ const byId=new Map(profiles.map(p=>[p.char,p])),incoming=new Map(),outgoing=new Map();
+ for(const [from,to] of edges){
+  if(!incoming.has(to))incoming.set(to,[]);
+  if(!outgoing.has(from))outgoing.set(from,[]);
+  incoming.get(to).push(from);outgoing.get(from).push(to);
+ }
+ const material=(id,quantity)=>{
+  if(!/^[1-9]\d*$/.test(String(id))||!/^\d+$/.test(String(quantity))||!Number.isSafeInteger(Number(quantity))||Number(quantity)<=0)return null;
+  return {id:String(id),quantity:Number(quantity)};
+ };
+ return profiles.filter(p=>selected.baseGrade&&p.baseGrade===selected.baseGrade)
+  .sort((a,b)=>a.Grade-b.Grade||a.char.localeCompare(b.char)).map(p=>{
+   const next=(outgoing.get(p.char)??[]).filter(k=>byId.has(k));
+   const previous=(incoming.get(p.char)??[]).filter(k=>byId.has(k));
+   const standard=next.length?material(p.CrystalUnique,p.CrystalNum):null;
+   const configuredAlternative=next.length?material(p.AtlasUnique,p.AtlasNum):null;
+   const sameMaterial=Boolean(standard&&configuredAlternative&&standard.id===configuredAlternative.id&&standard.quantity===configuredAlternative.quantity);
+   return {profile:p,previous,next,standard,alternative:sameMaterial?null:configuredAlternative,sameMaterial};
+  });
+}
 function element(tag,value,cls){
   const e=document.createElement(tag); if(value!==null&&value!==undefined)e.textContent=String(value);if(cls)e.className=cls;return e;
 }
@@ -113,8 +135,29 @@ export async function mountReference(root){
       heading(t.awakening);
       if(p.awakening)table(result,["NeedLevel","NeedItemUnique","NeedNum"],[[p.awakening[0],item(p.awakening[1]),p.awakening[2]]]);else paragraph(t.missing);
       heading(t.family);
-      const family=profiles.filter(x=>p.baseGrade&&x.baseGrade===p.baseGrade).sort((a,b)=>a.Grade-b.Grade||a.char.localeCompare(b.char));
-      if(family.length)table(result,[t.grade,t.select,t.before,t.after],family.map(x=>[x.Grade,displayProfile(x.char),m.edges.filter(e=>e[1]===x.char).map(e=>e[0]).join(", ")||"—",m.edges.filter(e=>e[0]===x.char).map(e=>e[1]).join(", ")||"—"]));else paragraph(t.missing);
+      const family=evolutionFamilyRows(profiles,m.edges,p);
+      if(family.length){
+        paragraph(t.evolutionCostNote,"ref-source");
+        const nf=new Intl.NumberFormat(root.dataset.lang);
+        const links=ids=>{
+          if(!ids.length)return "—";
+          const cell=element("span");
+          ids.forEach((id,i)=>{if(i)cell.append(document.createTextNode(" · "));cell.append(displayProfile(id));});
+          return cell;
+        };
+        const cost=material=>{
+          if(!material)return "—";
+          const cell=element("span");
+          cell.append(document.createTextNode(nf.format(material.quantity)+" × "),item(material.id));
+          return cell;
+        };
+        table(result,[t.grade,t.select,t.before,t.after,t.upgradeMaterial,t.alternativeMaterial],family.map(x=>[
+          x.profile.Grade,displayProfile(x.profile.char),links(x.previous),links(x.next),
+          x.next.length?cost(x.standard):t.noExplicitUpgrade,
+          x.sameMaterial?t.sameUpgradeMaterial:cost(x.alternative)
+        ]));
+        paragraph(t.source+": OneLevelSolInfo_ENG.vna","ref-source");
+      }else paragraph(t.missing);
       heading(t.configured);
       if(p.configuredMagic?.length)table(result,["Magic_Kind","Skill"],p.configuredMagic);else paragraph(t.missing);
       heading(t.books);paragraph(t.bookNotice);
