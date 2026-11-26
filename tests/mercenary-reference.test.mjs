@@ -16,7 +16,7 @@ test('source-safe reference schema and pinned pilot',()=>{
  }else{
   assert.equal(m.scope,'expanded-reference-candidate');assert.equal(profiles.length,947);assert.equal(skillList.length,1336);assert.equal(m.edges.length,816);
   assert.equal(Object.values(v.modes).flat().length,42602);
-  const pins={mercenaries:'69ea9e0ca8de22852bdcab29184fa2a619a841f0940e6df0383e6233df7a5421',skills:'8bc9c76e03afaa7f8d6fc0f85efd3dbc7fd623965b8fc2b243e62a5d95fb3488',modes:'c2eaf8f3f2291986996f245c12aed9116d5d7acd3d8814e37c522a37c472b361'};
+  const pins={skills:'8bc9c76e03afaa7f8d6fc0f85efd3dbc7fd623965b8fc2b243e62a5d95fb3488',modes:'c2eaf8f3f2291986996f245c12aed9116d5d7acd3d8814e37c522a37c472b361'};
   for(const [k,h] of Object.entries(pins))assert.equal(createHash('sha256').update(read(k)).digest('hex'),h);
   assert.equal(skillList.reduce((n,s)=>n+s.books.length,0),1783);
   assert.equal(Object.values(v.modes).reduce((n,rows)=>n+new Set(rows.filter(r=>r[3]===1).map(r=>r[0]+'|'+r[1])).size,0),48);
@@ -28,6 +28,11 @@ test('source-safe reference schema and pinned pilot',()=>{
   const normalKeys=new Set(v.modes.Magic.map(r=>r[0]));
   assert.equal(skillList.filter(p=>!normalKeys.has(p.magicKind)).length,26);
   assert.equal(validateReference(m,s,null).profiles.length,947);
+  const pvpFields=['PvPDamageRate','PvPDamageRevision','PvPDamageStatus','PvPBaseLife','PvPLifeStatus','PvPDefBaseRate','PvPBGDamageRate','PvPBGDamageRevision','PvPBGDamageStatus','PvPBGBaseLife','PvPBGLifeStatus','PvPBGDefBaseRate'];
+  assert.ok(pvpFields.every(k=>m.columns.includes(k)));
+  assert.equal(profiles.filter(p=>pvpFields.every(k=>Number.isSafeInteger(p[k]))).length,947);
+  const pvpSample=profiles.find(p=>p.char==='ETERNITY10');
+  assert.deepEqual(pvpFields.map(k=>pvpSample[k]),[288,703,650,4200,900,70,243,394,650,2828,650,43]);
  }
  const dark=skillList.find(r=>r.skillIndex===995);
  assert.ok(dark.books.every(b=>b[2].includes('CLS1_BLACKARTHUR')&&!b[2].includes('CLS1_WHITEARTHUR')));
@@ -109,5 +114,5 @@ test('evolution family costs use the outgoing source grade, preserve alternative
  assert.equal(records.filter(r=>r.alternative?.id==='21559').length,721);
  assert.equal(records.filter(r=>r.alternative?.id==='21560').length,73);
  assert.equal(records.filter(r=>r.alternative?.id==='11045').length,10);
- for(const lang of LOCALE_IDS)for(const key of ['upgradeMaterial','alternativeMaterial','noExplicitUpgrade','sameUpgradeMaterial','evolutionCostNote'])assert.ok(referenceText(lang)[key]);
+ for(const lang of LOCALE_IDS)for(const key of ['upgradeMaterial','alternativeMaterial','noExplicitUpgrade','sameUpgradeMaterial','evolutionCostNote','pvp','pvpBG','pvpNotice','pvp_PvPDefBaseRate'])assert.ok(referenceText(lang)[key]);
 });
