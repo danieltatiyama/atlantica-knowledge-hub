@@ -32,7 +32,7 @@ test('source-safe reference schema and pinned pilot',()=>{
   assert.ok(pvpFields.every(k=>m.columns.includes(k)));
   assert.equal(profiles.filter(p=>pvpFields.every(k=>Number.isSafeInteger(p[k]))).length,947);
   const pvpSample=profiles.find(p=>p.char==='ETERNITY10');
-  assert.deepEqual(pvpFields.map(k=>pvpSample[k]),[288,703,650,4200,900,70,243,394,650,2828,650,43]);
+  assert.deepEqual(pvpFields.map(k=>pvpSample[k]),[288,703,650,4200,900,70,243,394,650,2828,650,52]);
  }
  const dark=skillList.find(r=>r.skillIndex===995);
  assert.ok(dark.books.every(b=>b[2].includes('CLS1_BLACKARTHUR')&&!b[2].includes('CLS1_WHITEARTHUR')));
