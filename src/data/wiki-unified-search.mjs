@@ -22,7 +22,7 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
       seenItems.add(row[0]);
       if(row[6]!=="named"||!row[1])continue;
       records.push({kind:"item",id:row[0],title:row[1],
-        nameAlias:wikiNameAlias("item",row[0],row[1],lang),detail:String(row[2]??""),href:catalogPath(lang,"/items/database/")+"?id="+encodeURIComponent(row[0])});
+        nameAlias:wikiNameAlias("item",row[0],row[1],lang),detail:String(row[2]??""),href:catalogPath(lang,"/items/profile/")+"?id="+encodeURIComponent(row[0])});
     }
   }
   for(const shard of monsterShards){

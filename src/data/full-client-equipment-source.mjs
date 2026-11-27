@@ -104,7 +104,7 @@ export function getClientEquipmentSourceById(id){
 export function getSourceItemLink(id,prefix=""){
   return isClientEquipmentSourceId(id)
     ?prefix+"/items/"+encodeURIComponent(String(id))+"/"
-    :prefix+"/items/database/?id="+encodeURIComponent(String(id));
+    :prefix+"/items/profile/?id="+encodeURIComponent(String(id));
 }
 export function getClientEquipmentSourceProfile(id){
   const item=getClientEquipmentSourceById(id);

@@ -982,3 +982,10 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Numeric shards preserve all values, zero and null, source physical line and source SHA-256; reproducible exporter takes a decoded input path. Core attributes, PvP/PvPBG, optional additional parameters; eight locale headings and notes. No total HP, effective combat attributes or aggro behavior inferred from raw rates. No decoder or full game file published.
 - 89 Level values differ between numeric and original drop snapshots. Profile shows a discrepancy note; drop level/bracket resolver and immutable original loot snapshots remain unchanged. Attributes are not substituted into the drop resolver.
 - Evolution totals PR #163 merged f8d52f5896be85a19086633ebdcd8adf94997360, CI #329; line-break follow-up #164 merged 93d4340473c15e8648f0b21b022af7c923c35022, CI #330.
+
+### Stage 20.87 — Dedicated item profiles and monster archive ordering
+
+- Item details now open at `/items/profile/?id=15005`, with eight locale routes and the existing source detail renderer (attributes, crafting, ingredients, backlinks, possible monster drops, original records). Catalog and profile modes share the implementation; profile mode hides listing/filter/coverage panels and avoids rendering catalog rows. Direct item links and internal ingredient links open dedicated profiles. Legacy `/items/database/?id=` redirects preserve locale and hash; reviewed equipment articles remain available.
+- Language switching preserves IDs and anchors on item and monster profile routes. Profile breadcrumbs and Close return to the appropriate catalog.
+- Monster archive opens with creature search; overview is a native closed disclosure below it, followed by item-source search. Overview text, data and source notes remain available on expansion. Mob profiles hide the overview and source finder.
+- Previous monster profile stage #165 merged c9b7149437280a2a29aa2062caeba68aef5fd58a; CI #332 passed.

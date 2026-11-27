@@ -58,5 +58,5 @@ export function filterClientMarketCatalog(items,{
 }
 export function clientItemDetailUrl(itemId,lang="en"){
  if(!validId(itemId))throw Error("Invalid client ItemID link");
- return catalogPath(isLocale(lang)?lang:"en","/items/database/")+"?id="+encodeURIComponent(itemId);
+ return catalogPath(isLocale(lang)?lang:"en","/items/profile/")+"?id="+encodeURIComponent(itemId);
 }

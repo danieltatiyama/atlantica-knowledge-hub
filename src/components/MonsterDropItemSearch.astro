@@ -238,7 +238,7 @@ const {lang}=Astro.props;
         if(selected!==itemId)return;
         const fragment=document.createDocumentFragment();
         const itemLink=create("a",monsterText(lang,"loot","Open full item profile")) as HTMLAnchorElement;
-        itemLink.href=prefix+"/items/database/?id="+encodeURIComponent(itemId);
+        itemLink.href=prefix+"/items/profile/?id="+encodeURIComponent(itemId);
         fragment.append(itemLink);
         if(source){
           const direct=source.direct??[],group=source.group??[];

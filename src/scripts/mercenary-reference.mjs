@@ -102,7 +102,7 @@ export async function mountReference(root){
   const primary=root.querySelector("[data-primary]"),secondary=root.querySelector("[data-secondary]"),search=root.querySelector("[data-search]"),grade=root.querySelector("[data-grade]");
   const heading=(name,level="h2")=>result.append(element(level,name));
   const paragraph=(value,cls)=>result.append(element("p",value,cls));
-  const itemHref=id=>prefix+"/items/database/?id="+encodeURIComponent(id);
+  const itemHref=id=>prefix+"/items/profile/?id="+encodeURIComponent(id);
   let itemNames=new Map();
   let previewLevel=null,previousCap=null,previousSkill=null,previewIntelligence=0;
   let selectedModes=[...modeNames],totalsOnly=false;

@@ -26,7 +26,7 @@ test("global search ranks exact IDs and names above partials",()=>{
 });
 test("Portuguese routes, accent folding and missing monster names are handled",()=>{
   const records=buildWikiSearchRecords([items],[monsters],guides,"pt-br");
-  assert.ok(records.some(r=>r.href==="/pt-br/items/database/?id=7080"));
+  assert.ok(records.some(r=>r.href==="/pt-br/items/profile/?id=7080"));
   assert.ok(records.some(r=>r.href==="/pt-br/monsters/profile/?id=999"));
   assert.equal(foldSearch("  CríaTÚra  "),"criatura");
   assert.equal(searchWikiRecords(records,"CharID 999")[0].id,"999");
@@ -34,7 +34,7 @@ test("Portuguese routes, accent folding and missing monster names are handled",(
 test("item and monster search use localized routes",()=>{
   for(const lang of ["fr","de","es","ko","zh-hans","ja"]){
     const records=buildWikiSearchRecords([items],[monsters],guides,lang);
-    assert.equal(searchWikiRecords(records,"7080")[0].href,"/"+lang+"/items/database/?id=7080");
+    assert.equal(searchWikiRecords(records,"7080")[0].href,"/"+lang+"/items/profile/?id=7080");
     assert.equal(searchWikiRecords(records,"289")[0].href,"/"+lang+"/monsters/profile/?id=289");
   }
 });

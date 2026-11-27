@@ -255,7 +255,7 @@ const prefix=localePrefix(lang);
   };
   const itemLink=(id:string,title:string)=>{
    const a=el("a",title) as HTMLAnchorElement;
-   a.href=prefix+"/items/database/?id="+encodeURIComponent(id);
+   a.href=prefix+"/items/profile/?id="+encodeURIComponent(id);
    const alias=wikiNameAlias("item",id,title,lang);
    if(alias)a.append(el("small"," · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
    return a;
