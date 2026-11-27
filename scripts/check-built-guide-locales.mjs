@@ -11,6 +11,13 @@ import {marketAuditText} from "../src/i18n/market-audit-ui.mjs";
 import {craftingText} from "../src/i18n/crafting-ui.mjs";
 import {toolText} from "../src/i18n/tools-ui.mjs";
 import {equipmentText} from "../src/i18n/equipment-ui.mjs";
+import {mapText} from "../src/i18n/maps-ui.mjs";
+for(const lang of LOCALE_IDS){
+ const file="dist"+localePrefix(lang)+"/maps/index.html",html=readFileSync(file,"utf8");
+ for(const key of ["find","query","noMonsters","notice"])assert.ok(html.includes(mapText(lang,key)),file+" missing map label "+key);
+ for(const alternate of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(alternate)+'"'),file+" missing map alternate "+alternate);
+ assert.ok(html.includes('data-lang="'+lang+'"'),file);
+}
 for(const lang of LOCALE_IDS){
  for(const path of ["/","/guides/"]){
   const file="dist"+localePrefix(lang)+path+"index.html";

@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {mapText} from '../i18n/maps-ui.mjs';
+import {localizedPaths} from '../i18n/locales.mjs';
+import type {Lang} from '../i18n/ui';
+interface Props {lang:Lang;}
+const {lang}=Astro.props;
+---
+<BaseLayout lang={lang} title={mapText(lang,'maps')+' | Atlantica Knowledge Hub'}
+ description={mapText(lang,'notice')} alternatePaths={localizedPaths('/maps/')}>
+ <main id="map-catalog" class="map-catalog" data-lang={lang}>
+  <h1>{mapText(lang,'find')}</h1>
+  <div class="map-filters">
+   <label>{mapText(lang,'query')}<input id="map-query" type="search" autocomplete="off" disabled/></label>
+   <label>{mapText(lang,'mode')}<select id="map-mode" disabled><option value="">{mapText(lang,'all')}</option></select></label>
+  </div>
+  <p id="map-status" role="status">{mapText(lang,'loading')}</p>
+  <button id="map-retry" type="button" hidden>{mapText(lang,'retry')}</button>
+  <section id="map-selection" hidden aria-labelledby="map-heading">
+   <a id="map-browse" href="./">← {mapText(lang,'browse')}</a>
+   <div class="map-filters">
+    <label>{mapText(lang,'location')}<select id="map-area"></select></label>
+    <label>{mapText(lang,'section')}<select id="map-section"></select></label>
+   </div>
+   <h2 id="map-heading" tabindex="-1"></h2>
+   <p id="map-entry" class="map-muted"></p>
+   <div class="map-content">
+    <div id="map-image" class="map-image"></div>
+    <section aria-labelledby="map-monsters-heading">
+     <h3 id="map-monsters-heading">{mapText(lang,'monsters')}</h3>
+     <p id="map-monsters-empty" class="map-muted" hidden>{mapText(lang,'noMonsters')}</p>
+     <div class="map-table-scroll"><table id="map-monsters-table">
+      <thead><tr><th scope="col">{mapText(lang,'name')}</th><th scope="col">{mapText(lang,'level')}</th></tr></thead>
+      <tbody id="map-monsters"></tbody>
+     </table></div>
+    </section>
+   </div>
+  </section>
+  <details id="map-results" open>
+   <summary>{mapText(lang,'browse')}</summary>
+   <div class="map-table-scroll"><table>
+    <thead><tr><th scope="col">{mapText(lang,'location')}</th><th scope="col">{mapText(lang,'mode')}</th><th scope="col">{mapText(lang,'sections')}</th><th scope="col">{mapText(lang,'monsters')}</th></tr></thead>
+    <tbody id="map-rows"></tbody>
+   </table></div>
+  </details>
+  <p class="map-muted">{mapText(lang,'notice')}</p>
+  <details class="map-source"><summary>{mapText(lang,'source')}</summary>
+   <p>HuntMapInfo.vna · MapInfo.ndt · NPCGroupInfo.dat · TextMgr_Map_ENG.ntx · TextMgr_Gate_ENG.ntx</p>
+   <a href="/data/client-maps/evidence.json">JSON</a>
+  </details>
+  <noscript><p>{mapText(lang,'error')}</p><a href="/data/client-maps/catalog.json">JSON</a></noscript>
+ </main>
+</BaseLayout>
+<script>
+ import {initMapCatalog} from '../lib/map-catalog';
+ void initMapCatalog();
+</script>
+<style is:global>
+ .map-catalog{max-width:1200px;margin:0 auto;padding:2rem 1.25rem;color:var(--color-text)}
+ .map-catalog h1{font-size:2.6rem;margin:0 0 1.25rem;color:var(--color-accent)}
+ .map-catalog h2{margin:1.25rem 0 .4rem;color:var(--color-accent)}
+ .map-catalog h3{margin-top:0;color:var(--color-accent)}
+ .map-catalog .map-filters{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin:1.25rem 0}
+ .map-catalog label{display:grid;gap:.4rem;color:var(--color-text-muted)}
+ .map-catalog input,.map-catalog select{width:100%;min-width:0;padding:.7rem;border:1px solid var(--color-border);border-radius:5px;background:var(--theme-input,var(--color-surface));color:var(--color-text);font:inherit}
+ .map-catalog #map-selection,.map-catalog #map-results{padding:1.25rem;border:1px solid var(--color-border);border-radius:6px;background:var(--color-surface);margin:1.25rem 0}
+ .map-catalog summary{cursor:pointer;color:var(--color-accent);font-weight:600}
+ .map-catalog .map-content{display:grid;grid-template-columns:minmax(220px,1fr) minmax(280px,1fr);gap:1.5rem;margin-top:1rem;align-items:start}
+ .map-catalog .map-image{min-height:12rem;display:grid;place-items:center;border:1px solid var(--color-border);border-radius:5px;padding:.5rem}
+ .map-catalog .map-image img{display:block;width:auto;max-width:100%;height:auto;max-height:560px}
+ .map-catalog .map-muted{color:var(--color-text-muted);font-size:.95rem}
+ .map-catalog .map-table-scroll{overflow-x:auto}
+ .map-catalog table{border-collapse:collapse;width:100%;margin:.75rem 0}
+ .map-catalog th,.map-catalog td{padding:.6rem .7rem;text-align:left;border-bottom:1px solid var(--color-border)}
+ .map-catalog th{color:var(--color-accent);background:var(--theme-highlight,var(--color-background))}
+ .map-catalog tr:hover{background:var(--theme-hover,var(--color-background))}
+ .map-catalog .map-source{margin-top:1.5rem;overflow-wrap:anywhere}
+ .map-catalog [hidden]{display:none!important}
+ .map-catalog :focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}
+ @media(max-width:700px){.map-catalog .map-content,.map-catalog .map-filters{grid-template-columns:1fr}.map-catalog #map-selection,.map-catalog #map-results{padding:.8rem}.map-catalog h1{font-size:2rem}}
+</style>
