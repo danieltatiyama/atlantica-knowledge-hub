@@ -55,7 +55,7 @@ test("bestiary UX links items, source drops, recipes and creature detail using e
   assert.ok(finder.includes("source.direct"));
   assert.ok(finder.includes("source.group"));
   assert.ok(finder.includes('url.searchParams.set("item",itemId)'));
-  assert.ok(finder.includes('"/monsters/?id="'));
+  assert.ok(finder.includes('"/monsters/profile/?id="'));
   assert.ok(finder.includes("showItem(selected,false)"));
   assert.ok(finder.includes('type="search"'));
   assert.ok(finder.includes("sourceRows.slice(shown,shown+50)"),

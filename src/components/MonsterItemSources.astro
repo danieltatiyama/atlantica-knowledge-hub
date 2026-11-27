@@ -96,7 +96,7 @@ const {lang,itemId}=Astro.props;
             if(!/^[1-9]\d{0,12}$/.test(String(charId)))continue;
             const tr=node("tr"),creatureCell=node("td");
             const link=node("a",name??("CharID #"+charId)) as HTMLAnchorElement;
-            link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
+            link.href=prefix+"/monsters/profile/?id="+encodeURIComponent(charId);
             creatureCell.append(link);
             creatureCell.append(node("small"," #"+charId));
             const alias=wikiNameAlias("monster",charId,name,lang);

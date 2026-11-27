@@ -974,3 +974,11 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Standard totals use standard costs. Alternative totals use distinct configured alternatives or the standard cost when both configured options are identical; missing alternatives are excluded. Columns are separate choices, not additive.
 - XUANZANG family screenshot example: 600 Giant Soul Crystal + 1,850 Giant Soul Jewel; alternative 2,090 Atlas Ore. Eight locale labels and notes; regression covers grouped IDs, shared options, absence and branching source rows.
 - Stage 20.85e note rendering fix was merged in PR #162, commit 50e67db7d2660542bdd6d2b7727fa68557878c52; CI #328 passed.
+
+### Stage 20.86 — Dedicated monster profiles and numerical attributes
+
+- Dedicated localized pages at `/monsters/profile/?id=570` (and seven locale variants) reuse the bestiary detail renderer without showing the archive/listing. Catalog links, reverse drops and unified search open profiles. Legacy `/monsters/?id=` links redirect with locale/hash preserved; back link returns to catalog.
+- Added 81 numeric fields from the user-provided decoded CharAttackInfo.ndt.txt, filtered to Nation=ALL and exact MONSTER Atb token. Join exact Char against catalog kind: 4350/4351 unique matches. ID 7160 (KNID_AKONGJUDGE1) has no matching row; no guessed identity or values.
+- Numeric shards preserve all values, zero and null, source physical line and source SHA-256; reproducible exporter takes a decoded input path. Core attributes, PvP/PvPBG, optional additional parameters; eight locale headings and notes. No total HP, effective combat attributes or aggro behavior inferred from raw rates. No decoder or full game file published.
+- 89 Level values differ between numeric and original drop snapshots. Profile shows a discrepancy note; drop level/bracket resolver and immutable original loot snapshots remain unchanged. Attributes are not substituted into the drop resolver.
+- Evolution totals PR #163 merged f8d52f5896be85a19086633ebdcd8adf94997360, CI #329; line-break follow-up #164 merged 93d4340473c15e8648f0b21b022af7c923c35022, CI #330.
