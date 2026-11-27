@@ -182,7 +182,7 @@ const {lang}=Astro.props;
           const [charId,name]=entry;
           const tr=create("tr");
           const first=create("td"),link=create("a",name??("CharID #"+charId)) as HTMLAnchorElement;
-          link.href=prefix+"/monsters/?id="+encodeURIComponent(charId);
+          link.href=prefix+"/monsters/profile/?id="+encodeURIComponent(charId);
           first.append(link);
           if(name)first.append(" (#"+charId+")");
           const alias=wikiNameAlias("monster",charId,name,lang);

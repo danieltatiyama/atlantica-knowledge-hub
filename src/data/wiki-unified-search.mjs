@@ -32,7 +32,7 @@ export function buildWikiSearchRecords(itemShards,monsterShards,guides=[],lang="
       if(!validId(row?.[0])||seenMonsters.has(row[0]))throw Error("Duplicate/invalid CharID");
       seenMonsters.add(row[0]);
       records.push({kind:"monster",id:row[0],title:row[1]||("CharID "+row[0]),
-        nameAlias:wikiNameAlias("monster",row[0],row[1],lang),detail:"Level "+String(row[2]??"—"),href:catalogPath(lang,"/monsters/")+"?id="+encodeURIComponent(row[0])});
+        nameAlias:wikiNameAlias("monster",row[0],row[1],lang),detail:"Level "+String(row[2]??"—"),href:catalogPath(lang,"/monsters/profile/")+"?id="+encodeURIComponent(row[0])});
     }
   }
   for(const row of guides){

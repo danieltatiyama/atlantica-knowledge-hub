@@ -6,18 +6,18 @@ import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import MonsterDropItemSearch from "./MonsterDropItemSearch.astro";
-interface Props{lang:Lang;}
-const {lang}=Astro.props;
+interface Props{lang:Lang; profile?:boolean;}
+const {lang,profile=false}=Astro.props;
 const prefix=localePrefix(lang);
 const nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
 const title=monsterText(lang,"db","Client creatures and drop sources");
 ---
 <BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
   description={monsterText(lang,"db","Source-based creature catalog with original direct and grouped item drop references.")}
-  alternatePaths={localizedPaths("/monsters/")}>
-  <main class="creature-db" id="creature-db" data-lang={lang} data-wiki-nav-root="true">
-    <nav class="breadcrumb"><a href={prefix+"/"}>{monsterText(lang,"db","← Home")}</a></nav>
-    <header class="bestiary-header">
+  alternatePaths={localizedPaths(profile?"/monsters/profile/":"/monsters/")}>
+  <main class="creature-db" id="creature-db" data-lang={lang} data-profile={String(profile)} data-wiki-nav-root="true">
+    <nav class="breadcrumb"><a href={prefix+(profile?"/monsters/":"/")}>{profile?monsterText(lang,"db","Browse by creature"):monsterText(lang,"db","← Home")}</a></nav>
+    <header class="bestiary-header" hidden={profile}>
       <div class="bestiary-heading">
         <div class="bestiary-crest" aria-hidden="true"><span>✥</span></div>
         <div>
@@ -34,8 +34,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       <p class="bestiary-description">{monsterText(lang,"db","Not every client record represents a fightable monster. Client files do not establish current live-server availability.")}</p>
       <p class="warning">{monsterText(lang,"db","Possible drops are filtered by the original client level bracket. Estimated grouped rates combine two raw fields, but are NOT verified live-server probabilities.")}</p>
     </header>
-    <MonsterDropItemSearch lang={lang}/>
-    <section class="browse" aria-label={monsterText(lang,"db","Search creatures")}>
+    {!profile && <MonsterDropItemSearch lang={lang}/>}
+    <section class="browse" hidden={profile} aria-label={monsterText(lang,"db","Search creatures")}>
       <div class="bestiary-section-head">
         <span class="section-ornament" aria-hidden="true">✦</span>
         <div>
@@ -66,7 +66,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
           </select>
         </label>
       </div>
-      <p class="subtle" id="creature-status" role="status">{monsterText(lang,"db","Checking whether the original creature and loot records have been published…")}</p>
+
       <div class="creature-table-scroll" id="creature-list" hidden>
         <table>
           <thead><tr>
@@ -85,9 +85,10 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         <button id="creature-next" type="button" disabled>{monsterText(lang,"db","Next")}</button>
       </div>
     </section>
+      <p class="subtle" id="creature-status" role="status">{monsterText(lang,"db","Checking whether the original creature and loot records have been published…")}</p>
     <section id="creature-detail" class="creature-detail" hidden>
       <div class="detail-header">
-        <h2 id="creature-detail-name"></h2>
+        {profile?<h1 id="creature-detail-name"></h1>:<h2 id="creature-detail-name"></h2>}
         <button type="button" id="creature-close">{monsterText(lang,"db","Close")}</button>
       </div>
       <p id="creature-detail-meta" class="subtle"></p>
@@ -102,6 +103,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   </main>
 </BaseLayout>
 <script>
+  import {monsterStatsText,monsterLevelNote} from "../i18n/monster-stats-ui.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {monsterText} from "../i18n/monster-ui.mjs";
@@ -110,6 +112,9 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   const root=document.querySelector<HTMLElement>("#creature-db");
   if(root){
     const lang=root.dataset.lang??"en",prefix=localePrefix(lang);
+    const profile=root.dataset.profile==="true";
+    const legacyId=new URL(location.href).searchParams.get("id");
+    if(!profile && legacyId && /^[1-9]\d{0,12}$/.test(legacyId))location.replace(prefix+"/monsters/profile/?id="+encodeURIComponent(legacyId)+location.hash);
     const $=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
     const query=$<HTMLInputElement>("creature-query");
     const kind=$<HTMLSelectElement>("creature-kind");
@@ -173,11 +178,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       for(const [id,name,rawLevel,rawKind] of visible.slice(first,first+perPage)){
         const tr=node("tr") as HTMLTableRowElement;
         const firstCell=cell(tr,""),a=node("a",name??("CharID "+id)) as HTMLAnchorElement;
-        a.href="?id="+encodeURIComponent(id);
-        a.addEventListener("click",e=>{
-          if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
-          e.preventDefault();void openCreature(id,true);
-        });
+        a.href=prefix+"/monsters/profile/?id="+encodeURIComponent(id);
         firstCell.append(a);
         const alias=wikiNameAlias("monster",id,name,lang);
         if(alias)firstCell.append(node("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias,"client-source-id"));
@@ -267,12 +268,14 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
     }
     let shownId="";
     async function openCreature(id:string,navigate:boolean){
-      if(!/^[1-9]\d{0,12}$/.test(id))return;
+      if(!/^[1-9]\d{0,12}$/.test(id)){status.textContent=monsterStatsText(lang,"missing");return;}
       const entity=all.find(r=>r[0]===id);
-      if(!entity)return;
+      if(!entity){status.textContent=monsterStatsText(lang,"missing");return;}
       shownId=id;
       detail.hidden=false;
+      if(profile)status.textContent="";
       detailName.textContent=entity[1]??("CharID "+id);
+      if(profile)document.title=detailName.textContent+" | Atlantica Knowledge Hub";
       detailMeta.textContent=(monsterText(lang,"db","Recorded source kind"))+": "+raw(entity[3])+
         " · "+(monsterText(lang,"db","Identity"))+": "+entity[4];
       const alias=wikiNameAlias("monster",id,entity[1],lang);
@@ -293,6 +296,31 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         const body=document.createDocumentFragment();
         const intro=node("p",monsterText(lang,"db","Extracted client source evidence. Active monster identity and item drop chances have not been verified on the server."),"subtle");
         body.append(intro);
+        const statsSection=node("section",undefined,"community-drop-section");
+        statsSection.append(node("h3",monsterStatsText(lang,"attributes")));
+        body.append(statsSection);
+        try{
+          const response=await fetch("/data/client-monster-stats/"+String(Math.floor(Number(id)/1000)).padStart(2,"0")+".json");
+          if(!response.ok)throw Error("Missing stats");
+          const stats=await response.json(),record=stats.items?.[id];
+          if(stats.schemaVersion!==1||!Array.isArray(stats.columns))throw Error("Invalid stats schema");
+          if(!record)statsSection.append(node("p",monsterStatsText(lang,"missing"),"subtle"));
+          else{
+            if(record.kind!==entity[3]||!Array.isArray(record.values)||record.values.length!==stats.columns.length)throw Error("Stats identity mismatch");
+            statsSection.append(node("p",monsterStatsText(lang,"notice"),"subtle"));
+            if(record.values[stats.columns.indexOf("Level")]!==Number(entity[2]))statsSection.append(node("p",monsterLevelNote(lang),"wiki-source-warning"));
+            const core=new Set(["Level","Grade","Str","Dex","Vit","Intl","MinDmg","MaxDmg","AC","MagicDef","CriticalRate","Exp","HPRate","MPRate","MinActivePower","MaxActivePower","IncActivePowerRate","CharBasicEV"]);
+            const groups=[stats.columns.filter(k=>core.has(k)),stats.columns.filter(k=>k.startsWith("PvP")),stats.columns.filter(k=>!core.has(k)&&!k.startsWith("PvP"))];
+            groups.forEach((keys,index)=>{
+              const target=index===2?node("details",undefined,"source-band-details"):node("section");
+              target.append(node(index===2?"summary":"h4",monsterStatsText(lang,["core","pvp","other"][index])));
+              target.append(table([monsterStatsText(lang,"field"),monsterStatsText(lang,"value")],keys.map(k=>[k,record.values[stats.columns.indexOf(k)]])));
+              statsSection.append(target);
+            });
+            statsSection.append(node("p","CharAttackInfo.ndt · #"+record.line,"subtle"));
+          }
+        }catch{statsSection.append(node("p",monsterStatsText(lang,"missing"),"subtle"));}
+
         const original=character?.items?.[id]?.original??[];
         const miner=character?.items?.[id]?.miner??[];
         const rawLoot=loot?.items?.[id]??{direct:[],groups:[]};
@@ -375,12 +403,13 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         body.append(audit);
         if(shownId!==id)return;
         detailBody.replaceChildren(body);
-        detail.scrollIntoView({behavior:"smooth",block:"start"});
+        if(!profile)detail.scrollIntoView({behavior:"smooth",block:"start"});
       }catch{
         if(shownId===id)detailBody.replaceChildren(node("p",monsterText(lang,"db","Original creature records could not be loaded or validated."),"subtle"));
       }
     }
     close.addEventListener("click",()=>{
+      if(profile){location.assign(prefix+"/monsters/");return;}
       shownId="";detail.hidden=true;history.pushState({}, "",location.pathname);
     });
     window.addEventListener("popstate",()=>{
@@ -431,9 +460,9 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         }
         query.disabled=false;kind.disabled=false;level.disabled=false;
         lootMode.disabled=false;
-        visible=all;list.hidden=false;pageNav.hidden=false;render();
+        visible=all;list.hidden=profile;pageNav.hidden=profile;if(!profile)render();
         const selected=new URL(location.href).searchParams.get("id");
-        if(selected)void openCreature(selected,false);
+        if(profile){if(selected)void openCreature(selected,false);else status.textContent=monsterStatsText(lang,"missing");}
       }catch{
         status.textContent=monsterText(lang,"db","Original creature sources were missing or failed structural validation.");
       }
@@ -450,6 +479,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
     margin:0 auto;
     padding:12px 0 65px;
   }
+  #creature-db [hidden]{display:none!important}
   #creature-db .breadcrumb{margin:3px 0 11px}
   #creature-db .breadcrumb a{color:var(--color-accent);font-size:.86rem}
   #creature-db a{color:#e5c586}

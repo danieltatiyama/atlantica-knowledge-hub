@@ -43,7 +43,7 @@ test("every item profile and explorer attaches level-matched direct/group eviden
   assert.ok(all.includes("level-resolved-client-monster-loot"));
   assert.ok(widget.includes("RawRate"));
   assert.ok(widget.includes("item-sources/"));
-  assert.ok(widget.includes("/monsters/?id="));
+  assert.ok(widget.includes("/monsters/profile/?id="));
   assert.ok(widget.includes("manifest.json"));
   assert.ok(!widget.includes(".innerHTML"));
 });
