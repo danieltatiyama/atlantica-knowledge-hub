@@ -177,7 +177,7 @@ export async function mountReference(root){
         const totals=evolutionMaterialTotals(family);
         const totalCost=materials=>{
           const cell=element("strong");
-          materials.forEach((material,i)=>{if(i)cell.append(document.createTextNode(" + "));cell.append(cost(material));});
+          materials.forEach((material,i)=>{if(i)cell.append(element("br"));cell.append(cost(material));});
           return materials.length?cell:"—";
         };
         table(result,[t.grade,t.select,t.before,t.after,t.upgradeMaterial,t.alternativeMaterial],[...family.map(x=>[
