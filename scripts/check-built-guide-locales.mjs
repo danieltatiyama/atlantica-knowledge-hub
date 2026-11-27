@@ -61,10 +61,16 @@ for(const lang of LOCALE_IDS){
  assert.ok(existsSync(file),file);
  const html=readFileSync(file,"utf8");
  assert.ok(html.includes('lang="'+localeTag(lang)+'"'),file);
- for(const key of ["Full client item database","Search items","Identity status","Original client numeric attributes","Compare equipment source attributes","ITEM INFORMATION"])
+ for(const key of ["Full client item database","Search items","Identity status","Additional filters","Compare equipment source attributes","ITEM INFORMATION"])
   assert.ok(html.includes(itemDbText(lang,key)),file+" missing translated key "+key);
  assert.ok(html.includes('href="'+prefix+'/items/"'),file+" localized catalog breadcrumb");
  assert.ok(html.includes('data-lang="'+lang+'"'),file+" client locale");
+ for(const cls of ["stats-workbench","catalog-info"]){
+  const tag=html.match(new RegExp('<details[^>]*class="'+cls+'"[^>]*>'))?.[0];
+  assert.ok(tag,file+" missing disclosure "+cls);
+  assert.ok(!/\bopen(?:[\s=>])/.test(tag),file+" disclosure must start collapsed: "+cls);
+ }
+
  for(const alternate of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(alternate)+'"'),file+" missing alternate "+alternate);
 }
 console.log("[IC] Verified eight localized full item database pages.");
