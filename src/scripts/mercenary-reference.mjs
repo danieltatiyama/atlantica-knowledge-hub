@@ -73,6 +73,17 @@ export function evolutionFamilyRows(profiles,edges,selected){
    return {profile:p,previous,next,standard,alternative:sameMaterial?null:configuredAlternative,sameMaterial};
   });
 }
+export function evolutionMaterialTotals(rows){
+ const standard=new Map(),alternative=new Map();
+ const add=(map,material)=>{if(material)map.set(material.id,(map.get(material.id)??0)+material.quantity);};
+ for(const row of rows){
+  if(!row.next.length)continue;
+  add(standard,row.standard);
+  add(alternative,row.sameMaterial?row.standard:row.alternative);
+ }
+ const list=map=>[...map].map(([id,quantity])=>({id,quantity}));
+ return {standard:list(standard),alternative:list(alternative)};
+}
 function element(tag,value,cls){
   const e=document.createElement(tag); if(value!==null&&value!==undefined)e.textContent=String(value);if(cls)e.className=cls;return e;
 }
@@ -163,11 +174,18 @@ export async function mountReference(root){
           cell.append(document.createTextNode(nf.format(material.quantity)+" × "),item(material.id));
           return cell;
         };
-        table(result,[t.grade,t.select,t.before,t.after,t.upgradeMaterial,t.alternativeMaterial],family.map(x=>[
+        const totals=evolutionMaterialTotals(family);
+        const totalCost=materials=>{
+          const cell=element("strong");
+          materials.forEach((material,i)=>{if(i)cell.append(document.createTextNode(" + "));cell.append(cost(material));});
+          return materials.length?cell:"—";
+        };
+        table(result,[t.grade,t.select,t.before,t.after,t.upgradeMaterial,t.alternativeMaterial],[...family.map(x=>[
           x.profile.Grade,displayProfile(x.profile.char),links(x.previous),links(x.next),
           x.next.length?cost(x.standard):t.noExplicitUpgrade,
           x.sameMaterial?t.sameUpgradeMaterial:cost(x.alternative)
-        ]));
+        ]),[t.materialTotal,"—","—","—",totalCost(totals.standard),totalCost(totals.alternative)]]);
+        paragraph(t.materialTotalNote,"ref-source");
         paragraph(t.source+": OneLevelSolInfo_ENG.vna","ref-source");
       }else paragraph(t.missing);
       heading(t.configured);

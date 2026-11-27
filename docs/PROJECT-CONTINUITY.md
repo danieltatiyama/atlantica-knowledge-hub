@@ -967,3 +967,10 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Four comparisons from the in-game Book show displayed M. Def exactly 200 above raw CharAttackInfo MagicDef: Eternity [Hero Lv.6] 250→450, Dark King Arthur [T Lv.2] 50→250, Sae [Hero VI] 155→355, Spartacus [Hero VI] 10→210. Values are from Book profiles and do not include the player's equipment or account bonuses.
 - The mercenary page keeps raw data unchanged, marks the field `MagicDef*`, and explains the four observed comparisons in all eight locales. Other profiles remain unverified; the note does not claim the same adjustment applies to combat stats.
 - Regression asserts source values for the four records and complete translated note coverage.
+
+### Stage 20.85f — Evolution material totals
+
+- Evolution family table includes a total row grouped by item ID for both upgrade columns, with item links and localized quantities. Sum each listed source grade once; exclude rows without explicit next grade. The displayed family may contain branches and is not presented as one cumulative path.
+- Standard totals use standard costs. Alternative totals use distinct configured alternatives or the standard cost when both configured options are identical; missing alternatives are excluded. Columns are separate choices, not additive.
+- XUANZANG family screenshot example: 600 Giant Soul Crystal + 1,850 Giant Soul Jewel; alternative 2,090 Atlas Ore. Eight locale labels and notes; regression covers grouped IDs, shared options, absence and branching source rows.
+- Stage 20.85e note rendering fix was merged in PR #162, commit 50e67db7d2660542bdd6d2b7727fa68557878c52; CI #328 passed.
