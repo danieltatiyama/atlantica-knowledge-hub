@@ -104,6 +104,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   </main>
 </BaseLayout>
 <script>
+  import {prependItemIcon} from "../lib/client-item-icons";
   import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
   import {mainLevelBandRange,usesMainLevelBands} from "../data/monster-level-policy.mjs";
   import {monsterStatsText,monsterLevelNote} from "../i18n/monster-stats-ui.mjs";
@@ -153,6 +154,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
     const itemLink=(id:string,name:string|null)=>{
       const a=node("a",name??("Item #"+id)) as HTMLAnchorElement;
       a.href=prefix+"/items/profile/?id="+encodeURIComponent(id);
+      prependItemIcon(a,id);
       return a;
     };
     let manifest:any=null,all:any[]=[],visible:any[]=[],page=0;

@@ -171,6 +171,9 @@ jobs:
           test -s "$RUNNER_TEMP/translation-requests-smoke/summary.md"
           node --input-type=module -e 'import {readFileSync} from "node:fs"; const status=JSON.parse(readFileSync(process.argv[1],"utf8")); if(!Array.isArray(status.entries)||status.entries.length===0)throw Error("Missing translation status entries"); console.log("[IC] Translation status entries:",status.entries.length);' "$RUNNER_TEMP/translation-requests-smoke/status.json"
 
+      - name: Validate client item icon mappings and sprite integrity
+        run: node --test tests/client-item-icons.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 

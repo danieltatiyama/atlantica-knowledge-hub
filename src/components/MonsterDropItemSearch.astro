@@ -62,6 +62,7 @@ const {lang}=Astro.props;
   <p class="finder-note">{monsterText(lang,"loot","Drops are filtered by the level bracket matching each client creature. The combined percentage is an estimate, NOT verified live-server odds. Original values remain in View source.")}</p>
 </section>
 <script>
+  import {prependItemIcon} from "../lib/client-item-icons";
   import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
   import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
@@ -112,7 +113,8 @@ const {lang}=Astro.props;
         const row=create("div",undefined,"finder-entry");
         const button=create("button",undefined,"finder-item-name") as HTMLButtonElement;
         button.type="button";
-        button.append(create("strong",name),create("small","ItemID #"+id));
+        const nameLabel=create("strong",name);prependItemIcon(nameLabel,id);
+        button.append(nameLabel,create("small","ItemID #"+id));
         const alias=wikiNameAlias("item",id,name,lang);
         if(alias)button.append(create("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
         button.addEventListener("click",()=>void showItem(id,true));
