@@ -133,7 +133,8 @@ export async function mountReference(root){
       heading(p.name);paragraph(p.char+" · "+p.classToken+" · "+(p.Rank??"—"));
       table(result,[t.field,p.name,...(other?[other.name]:[])],["Rank","jobType","metadataJobType","weaponType","baseGrade"].map(k=>[k,p[k],...(other?[other[k]]:[])]));
       heading(t.raw);
-      table(result,[t.raw,p.name,...(other?[other.name]:[])],stats.map(k=>[k,p[k],...(other?[other[k]]:[])]));
+      table(result,[t.raw,p.name,...(other?[other.name]:[])],stats.map(k=>[k==="MagicDef"?(t.magicDefLabel??"MagicDef*"):k,p[k],...(other?[other[k]]:[])]));
+      paragraph(result,t.magicDefNote,"ref-source");
       if(m.columns.includes("PvPBaseLife")){
         heading(t.pvp);paragraph(t.pvpNotice,"ref-source");
         const pvpRows=fields=>fields.map(k=>[t["pvp_"+k]??k,p[k],...(other?[other[k]]:[])]);
