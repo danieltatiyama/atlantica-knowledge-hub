@@ -1,11 +1,11 @@
 # Atlantica Online Knowledge Hub — Contexto para Continuidade
 
-**Última atualização:** 26/11/2026  
+**Última atualização:** 27/11/2026  
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
 **Branch principal:** `main`  
-**Última etapa integrada:** Stage 20.85d — Mercenary PvP reference fields (#158)  
-**Última integração funcional:** PR #158; squash commit `cc9346265905fabf102a9468235b252d83388e14`, CI #324 aprovado.
+**Última etapa integrada:** Stage 20.85e — Book MagicDef display note (#160)  
+**Última integração funcional:** PR #160; squash commit `ca0a5a5136a882fd7d29b69945d7a5f2f18eaf7d`, CI #326 aprovado.
 
 > Este documento registra um estado conhecido do projeto, não substitui a consulta à versão mais recente do repositório. Em novas conversas, verificar a `main`, os PRs e os testes antes de iniciar mudanças.
 
