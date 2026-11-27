@@ -126,7 +126,7 @@ test("operation groups preserve total output without materializing enormous oper
 test("tree is an aligned data table with eight depth levels and accessible collapse buttons",()=>{
  const page=readFileSync("src/components/CraftingPlannerPage.astro","utf8");
  for(const token of [
-  '<table class="craft-tree-table">',
+  '<table class="craft-tree-table" data-sort="none">',
   '<tbody id="craft-tree-rows">',
   'id="craft-tree-expand"','id="craft-tree-collapse"',
   'function updateCraftTreeVisibility()',

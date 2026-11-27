@@ -53,7 +53,7 @@ const prefix=localePrefix(lang);
      <thead><tr>
       <th>{marketAuditText(lang,"Item","Item")}</th><th>{marketAuditText(lang,"Category","Categoria")}</th>
       <th>{marketAuditText(lang,"Unit price (Gold)","Preço por unidade (Gold)")}</th>
-      <th>{marketAuditText(lang,"Evidence","Evidência")}</th><th>{marketAuditText(lang,"Details","Detalhes")}</th>
+      <th data-sort="none">{marketAuditText(lang,"Evidence","Evidência")}</th><th data-sort="none">{marketAuditText(lang,"Details","Detalhes")}</th>
      </tr></thead>
      <tbody id="mpc-rows"></tbody>
     </table>
@@ -75,6 +75,7 @@ const prefix=localePrefix(lang);
  </main>
 </BaseLayout>
 <script>
+  import {onTableSort,getTableSort,clearTableSort} from "../lib/table-sorting";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
  import {marketAuditText} from "../i18n/market-audit-ui.mjs";
@@ -110,6 +111,7 @@ const prefix=localePrefix(lang);
    const filter={
     lang,query:search.value,category:category.value,evidence:evidence.value,
     sort:sort.value,offset:page*pageSize,limit:pageSize,
+    columnSort:getTableSort(tableBody.closest('table')!),
    };
    let found=filterClientMarketCatalog(catalog,filter);
    if(page&&page*pageSize>=found.total){
@@ -143,6 +145,8 @@ const prefix=localePrefix(lang);
    range.textContent=start+"–"+end+" / "+found.total;
    prev.disabled=page===0;next.disabled=end>=found.total;
   }
+  onTableSort(tableBody.closest('table')!,()=>{page=0;draw();});
+  sort.addEventListener('change',()=>clearTableSort(tableBody.closest('table')!));
   for(const input of [search,category,evidence,sort]){
    input.addEventListener(input===search?"input":"change",()=>{page=0;draw();});
   }

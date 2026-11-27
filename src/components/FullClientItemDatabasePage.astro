@@ -70,7 +70,7 @@ const title=itemDbText(lang,"Full client item database");
         <table aria-label={itemDbText(lang,"All client item IDs")}>
           <thead><tr><th>ID</th><th>{itemDbText(lang,"Official English name / status")}</th>
             <th>{itemDbText(lang,"Source category")}</th><th>{itemDbText(lang,"Raw level")}</th>
-            <th>{itemDbText(lang,"Raw grade")}</th><th>{itemDbText(lang,"Sources")}</th><th>{itemDbText(lang,"Compare")}</th></tr></thead>
+            <th>{itemDbText(lang,"Raw grade")}</th><th>{itemDbText(lang,"Sources")}</th><th data-sort="none">{itemDbText(lang,"Compare")}</th></tr></thead>
           <tbody id="db-results"></tbody>
         </table>
       </div>
@@ -126,6 +126,7 @@ const title=itemDbText(lang,"Full client item database");
   </main>
 </BaseLayout>
 <script>
+  import {onTableSort,sortTableData,clearTableSort} from "../lib/table-sorting";
   import {prependItemIcon} from "../lib/client-item-icons";
   import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
   import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
@@ -334,7 +335,7 @@ const title=itemDbText(lang,"Full client item database");
           section.remove();
           return;
         }
-        const sources=[
+        let sources=[
           ...(entry.direct??[]).map((r:any[])=>({row:r,kind:"direct" as const,
             pct:Number(r[3])/100,min:r[5],max:r[6]})),
           ...(entry.group??[]).map((r:any[])=>({row:r,kind:"group" as const,
@@ -351,6 +352,7 @@ const title=itemDbText(lang,"Full client item database");
         ])h.append(node("th",label));
         head.append(h);
         const table=node("table");table.append(head,body);
+        h.lastElementChild?.setAttribute('data-sort','none');
         const wrapper=node("div",undefined,"stat-table-scroll");wrapper.append(table);
         section.append(wrapper);
         const more=node("button",itemDbText(lang,"Show 100 more")) as HTMLButtonElement;
@@ -389,6 +391,10 @@ const title=itemDbText(lang,"Full client item database");
             number.format(cursor)+" / "+number.format(sources.length);
           if(cursor===sources.length)more.remove();
         };
+        onTableSort(table as HTMLTableElement,()=>{
+          sources=sortTableData(table as HTMLTableElement,sources,(source,column)=>column===0?source.row[1]:column===1?source.pct:String(source.min)+'–'+String(source.max));
+          cursor=0;body.replaceChildren();if(sources.length>100)section.append(more);nextChunk();
+        });
         if(sources.length>100){more.addEventListener("click",nextChunk);section.append(more);}
         nextChunk();
       }catch{
@@ -484,6 +490,7 @@ const title=itemDbText(lang,"Full client item database");
         const section=node("section",undefined,"numeric-group");
         section.append(node("h4",groupNames[group]));
         const table=node("table",undefined,"numeric-source-table") as HTMLTableElement;
+        table.dataset.sortLocale='en';
         const head=node("thead"),heading=node("tr");
         for(const label of [itemDbText(lang,"Original field"),itemDbText(lang,"Raw value(s)"),
           itemDbText(lang,"Coverage and status")])heading.append(node("th",label));
@@ -647,6 +654,9 @@ const title=itemDbText(lang,"Full client item database");
       }
     }
     function renderPage(){
+      visible=sortTableData(results.closest('table')!,visible,(row,column)=>{
+        const value=row[column];return [0,3,5].includes(column)?(value===null?null:Number(value)):value;
+      });
       results.replaceChildren();
       const start=currentPage*perPage;
       for(const row of visible.slice(start,start+perPage)){
@@ -982,7 +992,8 @@ const title=itemDbText(lang,"Full client item database");
     query.addEventListener("input",applyFilters);
     category.addEventListener("change",applyFilters);
     identity.addEventListener("change",applyFilters);
-    sort.addEventListener("change",applyFilters);
+    onTableSort(results.closest('table')!,()=>{currentPage=0;renderPage();});
+    sort.addEventListener("change",()=>{clearTableSort(results.closest('table')!);applyFilters();});
     equipmentOnly.addEventListener("change",applyFilters);
     statField.addEventListener("change",applyFilters);
     statMin.addEventListener("input",applyFilters);

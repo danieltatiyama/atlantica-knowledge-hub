@@ -89,11 +89,11 @@ function element(tag,value,cls){
 }
 function link(label,href){const a=element("a",label);a.href=href;return a;}
 function option(value,label){const o=element("option",label);o.value=String(value);return o;}
-function table(parent,headers,rows){
+function table(parent,headers,rows,{fixedLast=false}={}){
   const wrap=element("div",null,"ref-table-wrap"),tb=element("table"),head=element("thead"),tr=element("tr");
   for(const h of headers){const th=element("th",h);th.scope="col";tr.append(th);}
   head.append(tr);tb.append(head);const body=element("tbody");
-  for(const row of rows){const r=element("tr");for(const cell of row){const td=element("td");if(cell instanceof Node)td.append(cell);else td.textContent=cell===null||cell===undefined?"—":String(cell);r.append(td);}body.append(r);}
+  for(const [index,row] of rows.entries()){const r=element("tr");if(fixedLast&&index===rows.length-1)r.dataset.sortFixed='true';for(const cell of row){const td=element("td");if(cell instanceof Node)td.append(cell);else{td.textContent=cell===null||cell===undefined?"—":String(cell);if(typeof cell==='number')td.dataset.sortValue=String(cell);}r.append(td);}body.append(r);}
   tb.append(body);wrap.append(tb);parent.append(wrap);
 }
 export async function mountReference(root){
@@ -171,6 +171,7 @@ export async function mountReference(root){
         const cost=material=>{
           if(!material)return "—";
           const cell=element("span");
+          cell.dataset.sortValue=String(material.quantity);
           cell.append(document.createTextNode(nf.format(material.quantity)+" × "),item(material.id));
           return cell;
         };
@@ -184,7 +185,7 @@ export async function mountReference(root){
           x.profile.Grade,displayProfile(x.profile.char),links(x.previous),links(x.next),
           x.next.length?cost(x.standard):t.noExplicitUpgrade,
           x.sameMaterial?t.sameUpgradeMaterial:cost(x.alternative)
-        ]),[t.materialTotal,"—","—","—",totalCost(totals.standard),totalCost(totals.alternative)]]);
+        ]),[t.materialTotal,"—","—","—",totalCost(totals.standard),totalCost(totals.alternative)]],{fixedLast:true});
         paragraph(t.materialTotalNote,"ref-source");
         paragraph(t.source+": OneLevelSolInfo_ENG.vna","ref-source");
       }else paragraph(t.missing);
@@ -284,6 +285,7 @@ export async function mountReference(root){
       }
       const matrixBody=element("div",null,"ref-player-matrix");section.append(matrixBody);
       const wrap=element("div",null,"ref-table-wrap ref-player-table-wrap"),tb=element("table"),head=element("thead"),hr=element("tr");
+      tb.dataset.sort='none';
       const noStats=element("p",ui.noStats,"ref-source");noStats.hidden=true;matrixBody.append(noStats);
       head.append(hr);tb.append(head);wrap.append(tb);matrixBody.append(wrap);
       let currentHeader="";

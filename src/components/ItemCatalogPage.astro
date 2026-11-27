@@ -150,8 +150,8 @@ const description = catalogText(lang,"Explore 2,462 equipment-like source IDs: 5
                 <td><code>{item.id}</code></td>
                 <td>{item.sourceIndex.category}</td>
                 <td>{item.sourceIndex.rawLevel??"—"}</td>
-                <td>{attackRange(item.sourceIndex)}</td>
-                <td>{fmt(item.sourceIndex.physicalAC)}</td>
+                <td data-sort-value={item.sourceIndex.maxDamage??""}>{attackRange(item.sourceIndex)}</td>
+                <td data-sort-value={item.sourceIndex.physicalAC??""}>{fmt(item.sourceIndex.physicalAC)}</td>
                 <td>{item.boxReferences.length}</td>
                 {APPROVED_EQUIPMENT_METADATA_COUNT > 0 &&
                   <td>{getCuratedEquipmentMetadata(item.id)
@@ -168,6 +168,7 @@ const description = catalogText(lang,"Explore 2,462 equipment-like source IDs: 5
   </main>
 </BaseLayout>
 <script>
+  import {clearTableSort} from "../lib/table-sorting";
   import {matchesAliasText} from "../data/wiki-name-aliases.mjs";
   const search=document.querySelector<HTMLInputElement>("#item-search");
   const category=document.querySelector<HTMLSelectElement>("#item-category");
@@ -217,7 +218,7 @@ const description = catalogText(lang,"Explore 2,462 equipment-like source IDs: 5
   category?.addEventListener("change",filterItems);
   evidence?.addEventListener("change",filterItems);
   minLevel?.addEventListener("input",filterItems);
-  sort?.addEventListener("change",filterItems);
+  sort?.addEventListener("change",()=>{if(tbody)clearTableSort(tbody.closest('table')!);filterItems();});
 </script>
 <style>
   .container{width:min(var(--content-width),92%);margin:0 auto;padding-bottom:80px}

@@ -177,6 +177,9 @@ jobs:
       - name: Validate maps, sections and bidirectional monster locations
         run: node --test tests/client-maps.test.mjs
 
+      - name: Validate shared table sorting and full-catalog pagination
+        run: node --test tests/wiki-table-sorting.test.mjs
+
       - name: Validate Astro build
         run: npm run build
 

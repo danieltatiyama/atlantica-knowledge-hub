@@ -104,6 +104,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   </main>
 </BaseLayout>
 <script>
+  import {onTableSort,sortTableData} from "../lib/table-sorting";
   import {populateMonsterLocations} from "../lib/client-maps";
   import {mapText} from "../i18n/maps-ui.mjs";
   import {prependItemIcon} from "../lib/client-item-icons";
@@ -180,6 +181,13 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       return manifest.files[group]?.includes(filename)?filename:null;
     }
     function render(){
+      visible=sortTableData(rowsEl.closest('table')!,visible,(row,column)=>{
+        if(column===0)return row[1];
+        if(column===1)return Number(row[0]);
+        if(column===2)return row[3];
+        if(column===3)return row[2]===null?null:Number(row[2]);
+        return possibleByCreature.get(row[0])?.[0]??null;
+      });
       rowsEl.replaceChildren();
       const first=page*perPage;
       for(const [id,name,rawLevel,rawKind] of visible.slice(first,first+perPage)){
@@ -216,6 +224,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
     function table(columns:string[],records:(string|number|null)[][]){
       const wrap=node("div",undefined,"creature-table-scroll");
       const tbl=node("table"),thead=node("thead"),h=node("tr"),tbody=node("tbody");
+      tbl.dataset.sortLocale='en';
       for(const name of columns)h.append(node("th",name));
       thead.append(h);tbl.append(thead);
       for(const cells of records){
@@ -444,6 +453,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       if(id)void openCreature(id,false);
       else{shownId="";detail.hidden=true;}
     });
+    onTableSort(rowsEl.closest('table')!,()=>{page=0;render();});
     prev.addEventListener("click",()=>{if(page>0){page--;render();}});
     next.addEventListener("click",()=>{if((page+1)*perPage<visible.length){page++;render();}});
     query.addEventListener("input",applyFilters);

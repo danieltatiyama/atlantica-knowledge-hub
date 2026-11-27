@@ -116,7 +116,7 @@ const usableBatch=craftBatch.batchSize!==null&&craftBatch.maxBatchesPerOperation
           </div>)}</dl>
         </div>)}</div>
         <details class="raw-source"><summary>{equipmentText(lang,"Original raw numeric records and source row IDs","Registros numéricos originais e IDs de origem")}</summary>
-          <div class="table-scroll"><table>
+          <div class="table-scroll"><table data-sort-locale="en">
             <thead><tr><th>{equipmentText(lang,"Source row","Registro")}</th><th>{equipmentText(lang,"Field","Campo")}</th><th>{equipmentText(lang,"Raw value","Valor")}</th></tr></thead>
             <tbody>{longSourceRows.flatMap(row=>row.values.map(([key,value])=><tr>
               <td>#{row.sourceRow}</td><td>{key}</td><td>{value}</td>

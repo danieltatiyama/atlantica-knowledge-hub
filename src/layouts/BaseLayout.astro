@@ -15,6 +15,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingWikiNavigator from "../components/FloatingWikiNavigator.astro";
 import ArticleImageLightbox from "../components/ArticleImageLightbox.astro";
+import TableSorting from "../components/TableSorting.astro";
 import { LOCALE_IDS, localeTag } from "../i18n/locales.mjs";
 import type { Lang } from "../i18n/ui";
 
@@ -123,6 +124,7 @@ const alternateLinks = Object.entries(alternatePaths ?? {})
 
     <FloatingWikiNavigator lang={uiLang} />
     <ArticleImageLightbox lang={uiLang} />
+    <TableSorting />
 
     <Footer />
   </body>
