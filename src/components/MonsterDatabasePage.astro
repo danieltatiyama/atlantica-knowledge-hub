@@ -17,24 +17,6 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   alternatePaths={localizedPaths(profile?"/monsters/profile/":"/monsters/")}>
   <main class="creature-db" id="creature-db" data-lang={lang} data-profile={String(profile)} data-wiki-nav-root="true">
     <nav class="breadcrumb"><a href={prefix+(profile?"/monsters/":"/")}>{profile?monsterText(lang,"db","Browse by creature"):monsterText(lang,"db","← Home")}</a></nav>
-    <header class="bestiary-header" hidden={profile}>
-      <div class="bestiary-heading">
-        <div class="bestiary-crest" aria-hidden="true"><span>✥</span></div>
-        <div>
-          <p class="eyebrow">ATLANTICA GLOBAL / NA · {monsterText(lang,"db","CLIENT BESTIARY")}</p>
-          <h1>{title}</h1>
-          <p class="bestiary-description">{monsterText(lang,"db","Discover creatures, items and original game-client loot relationships.")}</p>
-        </div>
-      </div>
-      <div class="bestiary-stats" aria-label={monsterText(lang,"db","Source database coverage")}>
-        <div><strong>{nf.format(4351)}</strong><span>{monsterText(lang,"db","Character IDs")}</span></div>
-        <div><strong>{nf.format(9959)}</strong><span>{monsterText(lang,"db","Direct source drops")}</span></div>
-        <div><strong>822</strong><span>{monsterText(lang,"db","Items with level-matched drops")}</span></div>
-      </div>
-      <p class="bestiary-description">{monsterText(lang,"db","Not every client record represents a fightable monster. Client files do not establish current live-server availability.")}</p>
-      <p class="warning">{monsterText(lang,"db","Possible drops are filtered by the original client level bracket. Estimated grouped rates combine two raw fields, but are NOT verified live-server probabilities.")}</p>
-    </header>
-    {!profile && <MonsterDropItemSearch lang={lang}/>}
     <section class="browse" hidden={profile} aria-label={monsterText(lang,"db","Search creatures")}>
       <div class="bestiary-section-head">
         <span class="section-ornament" aria-hidden="true">✦</span>
@@ -86,6 +68,25 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       </div>
     </section>
       <p class="subtle" id="creature-status" role="status">{monsterText(lang,"db","Checking whether the original creature and loot records have been published…")}</p>
+    <details class="bestiary-header" hidden={profile} data-wiki-nav-native="true">
+      <summary>{title}</summary>
+      <div class="bestiary-heading">
+        <div class="bestiary-crest" aria-hidden="true"><span>✥</span></div>
+        <div>
+          <p class="eyebrow">ATLANTICA GLOBAL / NA · {monsterText(lang,"db","CLIENT BESTIARY")}</p>
+          <h1>{title}</h1>
+          <p class="bestiary-description">{monsterText(lang,"db","Discover creatures, items and original game-client loot relationships.")}</p>
+        </div>
+      </div>
+      <div class="bestiary-stats" aria-label={monsterText(lang,"db","Source database coverage")}>
+        <div><strong>{nf.format(4351)}</strong><span>{monsterText(lang,"db","Character IDs")}</span></div>
+        <div><strong>{nf.format(9959)}</strong><span>{monsterText(lang,"db","Direct source drops")}</span></div>
+        <div><strong>822</strong><span>{monsterText(lang,"db","Items with level-matched drops")}</span></div>
+      </div>
+      <p class="bestiary-description">{monsterText(lang,"db","Not every client record represents a fightable monster. Client files do not establish current live-server availability.")}</p>
+      <p class="warning">{monsterText(lang,"db","Possible drops are filtered by the original client level bracket. Estimated grouped rates combine two raw fields, but are NOT verified live-server probabilities.")}</p>
+    </details>
+    {!profile && <MonsterDropItemSearch lang={lang}/>}
     <section id="creature-detail" class="creature-detail" hidden>
       <div class="detail-header">
         {profile?<h1 id="creature-detail-name"></h1>:<h2 id="creature-detail-name"></h2>}
@@ -149,7 +150,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
     };
     const itemLink=(id:string,name:string|null)=>{
       const a=node("a",name??("Item #"+id)) as HTMLAnchorElement;
-      a.href=prefix+"/items/database/?id="+encodeURIComponent(id);
+      a.href=prefix+"/items/profile/?id="+encodeURIComponent(id);
       return a;
     };
     let manifest:any=null,all:any[]=[],visible:any[]=[],page=0;
@@ -487,6 +488,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   #creature-db input:focus-visible,#creature-db select:focus-visible{
     outline:2px solid #e4b964;outline-offset:2px;
   }
+  #creature-db .bestiary-header>summary{cursor:pointer;color:var(--color-accent);font-weight:600}
   #creature-db .bestiary-header{
     position:relative;
     overflow:hidden;

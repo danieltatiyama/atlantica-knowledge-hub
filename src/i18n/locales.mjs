@@ -9,13 +9,13 @@ export const localeTag = lang => ({"pt-br":"pt-BR","zh-hans":"zh-Hans"}[lang] ??
 export const localePrefix = lang => lang==="en"?"":"/"+lang;
 export const isLocale = lang => LOCALE_IDS.includes(lang);
 export const legacyLocale = lang => lang==="pt-br"?"pt-br":"en";
-export const LOCALIZED_CATALOG_PATHS = ["/items/","/events/","/mercenaries/","/mercenaries/database/","/mercenaries/skills/","/items/database/","/monsters/","/monsters/profile/"];
+export const LOCALIZED_CATALOG_PATHS = ["/items/","/events/","/mercenaries/","/mercenaries/database/","/mercenaries/skills/","/items/database/","/monsters/","/monsters/profile/","/items/profile/"];
 export const LOCALIZED_COMPLEMENTARY_PATHS = ["/items/boxes/","/items/legendary/","/items/legendary/dell-artes-ambition/"];
 export const LOCALIZED_TOOL_PATHS = ["/tools/","/tools/nation-dungeons/","/tools/crafting/","/tools/market-prices/","/tools/market-prices/research/","/tools/data-quality/","/tools/awakening/","/tools/talents/"];
 export const catalogPath = (lang,path) => localePrefix((LOCALIZED_CATALOG_PATHS.includes(path)||LOCALIZED_COMPLEMENTARY_PATHS.includes(path)||LOCALIZED_TOOL_PATHS.includes(path))?lang:legacyLocale(lang))+path;
 // Preserve dedicated reviewed articles; additional source-only IDs use the localized data explorer.
 export const equipmentProfilePath=(lang,id,reviewed)=>NEW_GUIDE_LOCALES.includes(lang)&&!reviewed
- ?catalogPath(lang,"/items/database/")+"?id="+encodeURIComponent(id)
+ ?catalogPath(lang,"/items/profile/")+"?id="+encodeURIComponent(id)
  :localePrefix(lang)+"/items/"+encodeURIComponent(id)+"/";
 export const guidePath = (lang,slug="") => localePrefix(lang)+"/guides/"+(slug?slug+"/":"");
 export const localizedPaths = path => Object.fromEntries(LOCALE_IDS.map(lang=>[lang,localePrefix(lang)+path]));

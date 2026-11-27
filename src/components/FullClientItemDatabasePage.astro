@@ -4,8 +4,8 @@ import {itemDbText} from "../i18n/item-db-ui.mjs";
 import {localePrefix,localizedPaths,localeTag,legacyLocale} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 import BaseLayout from "../layouts/BaseLayout.astro";
-interface Props {lang:Lang;}
-const {lang}=Astro.props;
+interface Props {lang:Lang; profile?:boolean;}
+const {lang,profile=false}=Astro.props;
 const prefix=localePrefix(lang);
 const fallback=legacyLocale(lang)!==lang;
 const nf=new Intl.NumberFormat(lang==="en"?"en-US":localeTag(lang));
@@ -13,10 +13,10 @@ const title=itemDbText(lang,"Full client item database");
 ---
 <BaseLayout lang={lang} title={title+" | Atlantica Knowledge Hub"}
   description={itemDbText(lang,"Searchable source index of 23,586 original Atlantica Global game-client item IDs.")}
-  alternatePaths={localizedPaths("/items/database/")}>
-  <main class="container" id="full-client-db" data-lang={lang} data-wiki-nav-root="true">
-    <nav class="breadcrumb"><a href={prefix+"/items/"}>{itemDbText(lang,"← Equipment catalog")}</a></nav>
-    <header>
+  alternatePaths={localizedPaths(profile?"/items/profile/":"/items/database/")}>
+  <main class="container" id="full-client-db" data-lang={lang} data-profile={String(profile)} data-wiki-nav-root="true">
+    <nav class="breadcrumb"><a href={prefix+(profile?"/items/database/":"/items/")}>{profile?itemDbText(lang,"Full client item database"):itemDbText(lang,"← Equipment catalog")}</a></nav>
+    <header hidden={profile}>
       <p class="eyebrow">GLOBAL / NA · MINER SNAPSHOT 1</p>
       <h1>{title}</h1>
       <p class="intro">{itemDbText(lang,"Search an item by name or ID to see its attributes, crafting materials, recipes that use it, and possible acquisition sources.")}</p>
@@ -29,14 +29,14 @@ const title=itemDbText(lang,"Full client item database");
       <p class="caution">{itemDbText(lang,"Names, levels, grades and materials are client-extracted fields, not proof of live-server existence, availability, acquisition or craftability. One English name can belong to different item IDs. Identity collisions remain unnamed.")}</p>
     </header>
 
-    <section class="coverage" aria-label={itemDbText(lang,"Coverage")}>
+    <section class="coverage" hidden={profile} aria-label={itemDbText(lang,"Coverage")}>
       <div><strong>{nf.format(23586)}</strong><small>{itemDbText(lang,"Source IDs")}</small></div>
       <div><strong>{nf.format(22702)}</strong><small>{itemDbText(lang,"Named IDs")}</small></div>
       <div><strong>{nf.format(884)}</strong><small>{itemDbText(lang,"Unresolved IDs")}</small></div>
       <div><strong>{nf.format(27281)}</strong><small>{itemDbText(lang,"Source records")}</small></div>
     </section>
 
-    <section class="search-panel" aria-label={itemDbText(lang,"Search items")}>
+    <section class="search-panel" hidden={profile} aria-label={itemDbText(lang,"Search items")}>
       <h2 class="search-title">{itemDbText(lang,"Find items")}</h2>
       <div class="search-grid">
         <label>{aliasText(lang,"English name, Wiki translation or ID")}
@@ -86,7 +86,7 @@ const title=itemDbText(lang,"Full client item database");
         <p class="subtle" id="db-stat-status" role="status">{itemDbText(lang,"Numeric shards have not been loaded.")}</p>
       </section>
       {fallback && <p class="subtle">{itemDbText(lang,"CSV export uses the original English or Portuguese column format.")}</p>}
-      <p class="load-status" id="db-status" role="status">{itemDbText(lang,"Loading client index…")}</p>
+
       <div class="table-wrap">
         <table aria-label={itemDbText(lang,"All client item IDs")}>
           <thead><tr><th>ID</th><th>{itemDbText(lang,"Official English name / status")}</th>
@@ -113,10 +113,11 @@ const title=itemDbText(lang,"Full client item database");
       <noscript>{itemDbText(lang,"Enable JavaScript to search the client index. The original 551 item pages remain available from the equipment catalog.")}</noscript>
     </section>
 
+      <p class="load-status" id="db-status" role="status">{itemDbText(lang,"Loading client index…")}</p>
     <section class="detail" id="db-detail" hidden aria-live="polite">
       <div class="detail-header"><div>
         <p class="eyebrow">{itemDbText(lang,"ITEM INFORMATION")}</p>
-        <h2 id="db-detail-name"></h2>
+        {profile?<h1 id="db-detail-name"></h1>:<h2 id="db-detail-name"></h2>}
         <p id="db-detail-meta"></p>
       </div><button type="button" id="db-detail-close">{itemDbText(lang,"Close")}</button></div>
       <p id="db-detail-notice" class="detail-note"></p>
@@ -143,6 +144,9 @@ const title=itemDbText(lang,"Full client item database");
   const root=document.querySelector<HTMLElement>("#full-client-db");
   if(root){
     const lang=root.dataset.lang??"en";
+    const profile=root.dataset.profile==="true";
+    const legacyId=new URL(location.href).searchParams.get("id");
+    if(!profile && legacyId && /^\d{1,12}$/.test(legacyId))location.replace(localePrefix(lang)+"/items/profile/?id="+encodeURIComponent(legacyId)+location.hash);
     const pt=lang==="pt-br",prefix=localePrefix(legacyLocale(lang));
     const $=<T extends HTMLElement>(id:string)=>root.querySelector<T>("#"+id)!;
     const query=$<HTMLInputElement>("db-query"),category=$<HTMLSelectElement>("db-category");
@@ -349,7 +353,7 @@ const title=itemDbText(lang,"Full client item database");
             if(!/^[1-9]\d*$/.test(String(charId)))continue;
             const tr=node("tr"),first=node("td");
             const link=node("a",name??("CharID #"+charId)) as HTMLAnchorElement;
-            link.href=localePrefix(lang)+"/monsters/?id="+encodeURIComponent(charId);
+            link.href=localePrefix(lang)+"/monsters/profile/?id="+encodeURIComponent(charId);
             first.append(link);tr.append(first);
             tr.append(node("td",formatLevelResolvedPercent(source.pct,lang)));
             tr.append(node("td",String(source.min)+"–"+String(source.max)));
@@ -543,11 +547,7 @@ const title=itemDbText(lang,"Full client item database");
     }
     function linkItem(id:string,title:string){
       const a=node("a",title) as HTMLAnchorElement;
-      a.href="?id="+encodeURIComponent(id);
-      a.addEventListener("click",event=>{
-        if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-        event.preventDefault();void openItem(id,true);
-      });
+      a.href=localePrefix(lang)+"/items/profile/?id="+encodeURIComponent(id);
       return a;
     }
     function updateComparisonSelection(){
@@ -870,7 +870,8 @@ const title=itemDbText(lang,"Full client item database");
       parent.append(section);
     }
     async function openItem(id:string,navigate:boolean){
-      if(!/^\d{1,12}$/.test(id))return;
+      if(!/^\d{1,12}$/.test(id)){status.textContent=itemDbText(lang,"ID {id} not found",{id});return;}
+      if(profile)status.textContent="";
       const row=namedRows.get(id);
       if(!row){
         detail.hidden=false;details.replaceChildren();
@@ -881,6 +882,7 @@ const title=itemDbText(lang,"Full client item database");
       }
       detail.hidden=false;details.replaceChildren();
       detailName.textContent=row[1]??`Item ID ${id}`;
+      if(profile)document.title=detailName.textContent+" | Atlantica Knowledge Hub";
       detailMeta.textContent=`ID ${id} · ${row[2]??"—"} · ${itemDbText(lang,"sources")}: ${row[5]}`;
       const alias=row[6]==="named"?wikiNameAlias("item",id,row[1],lang):null;
       if(alias)detailMeta.textContent+=" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias;
@@ -896,7 +898,7 @@ const title=itemDbText(lang,"Full client item database");
         a.href=row[8]===1?equipmentProfilePath(lang,id,true):prefix+"/items/"+id+"/";
         a.hreflang=localeTag(row[8]===1?lang:legacyLocale(lang));p.append(a);details.append(p);}
       if(row[6]!=="named"){
-        details.append(node("p",label(row[6]),"subtle"));detail.scrollIntoView({behavior:"smooth",block:"start"});return;
+        details.append(node("p",label(row[6]),"subtle"));if(!profile)detail.scrollIntoView({behavior:"smooth",block:"start"});return;
       }
       details.append(node("p",itemDbText(lang,"Loading original source records…"),"subtle"));
       try{
@@ -959,9 +961,10 @@ const title=itemDbText(lang,"Full client item database");
       }catch{
         details.replaceChildren(node("p",itemDbText(lang,"Could not load the client source shard for this ID."),"subtle"));
       }
-      detail.scrollIntoView({behavior:"smooth",block:"start"});
+      if(!profile)detail.scrollIntoView({behavior:"smooth",block:"start"});
     }
     close.addEventListener("click",()=>{
+      if(profile){location.assign(localePrefix(lang)+"/items/database/");return;}
       detail.hidden=true;details.replaceChildren();history.pushState({},"",location.pathname);
     });
     window.addEventListener("popstate",()=>{
@@ -1021,9 +1024,9 @@ const title=itemDbText(lang,"Full client item database");
           const opt=node("option",fieldTitle(key)+" ("+key+")") as HTMLOptionElement;
           opt.value=key;statField.append(opt);
         }
-        applyFilters();
+        if(!profile)applyFilters();
         const deepLink=new URL(location.href).searchParams.get("id");
-        if(deepLink)void openItem(deepLink,false);
+        if(profile){if(deepLink)void openItem(deepLink,false);else status.textContent=itemDbText(lang,"ID {id} not found",{id:"—"});}
       }catch{
         status.textContent=itemDbText(lang,"Could not load or verify the full client index. Check the published source data.");
       }
@@ -1031,6 +1034,7 @@ const title=itemDbText(lang,"Full client item database");
   }
 </script>
 <style>
+  #full-client-db [hidden]{display:none!important}
   .container{width:min(var(--content-width),94%);margin:0 auto;padding-bottom:90px}
   .breadcrumb{padding:22px 0}.breadcrumb a,.detail a{color:var(--color-accent)}
   header{margin-bottom:24px}h1{font-size:clamp(2rem,4vw,3.1rem);margin:8px 0 16px}

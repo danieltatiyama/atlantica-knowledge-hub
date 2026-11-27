@@ -78,10 +78,10 @@ test("search, category filters, historical vs reported filters and sorting all w
 });
 
 test("item links use the supported database ItemID deep-link in both locales",()=>{
- assert.equal(clientItemDetailUrl("7070","en"),"/items/database/?id=7070");
- assert.equal(clientItemDetailUrl("2002","pt-br"),"/pt-br/items/database/?id=2002");
- for(const lang of ["fr","de","es","ko","zh-hans","ja"])assert.equal(clientItemDetailUrl("7070",lang),"/"+lang+"/items/database/?id=7070");
- assert.equal(clientItemDetailUrl("7070","unknown"),"/items/database/?id=7070");
+ assert.equal(clientItemDetailUrl("7070","en"),"/items/profile/?id=7070");
+ assert.equal(clientItemDetailUrl("2002","pt-br"),"/pt-br/items/profile/?id=2002");
+ for(const lang of ["fr","de","es","ko","zh-hans","ja"])assert.equal(clientItemDetailUrl("7070",lang),"/"+lang+"/items/profile/?id=7070");
+ assert.equal(clientItemDetailUrl("7070","unknown"),"/items/profile/?id=7070");
  assert.throws(()=>clientItemDetailUrl("abc"));
  const itemPage=read("src/components/FullClientItemDatabasePage.astro");
  assert.ok(itemPage.includes('new URL(location.href).searchParams.get("id")'));

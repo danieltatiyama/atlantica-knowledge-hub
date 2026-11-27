@@ -40,7 +40,7 @@ test("aliases are supplementary and preserve English title, ID ranking and local
  const result=searchWikiRecords(records,"linha de prata")[0];
  assert.equal(result.id,"7080");assert.equal(result.title,"Silver Thread");
  assert.equal(result.nameAlias,"Linha de prata");
- assert.equal(result.href,"/pt-br/items/database/?id=7080");
+ assert.equal(result.href,"/pt-br/items/profile/?id=7080");
  assert.equal(searchWikiRecords(records,"7080")[0].id,"7080");
  assert.equal(searchWikiRecords(records,"Silver Thread")[0].id,"7080");
  assert.equal(searchWikiRecords(records,"crocodilo gigante")[0].id,"289");

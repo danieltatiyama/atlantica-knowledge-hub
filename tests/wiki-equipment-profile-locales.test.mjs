@@ -27,7 +27,7 @@ test("all equipment-specific messages and shared UI references are present",()=>
 test("all equipment IDs have a localized destination without proliferating source-only static files",()=>{
  for(const lang of LOCALE_IDS){
   assert.equal(equipmentProfilePath(lang,"1",true),localePrefix(lang)+"/items/1/");
-  const expected=NEW_GUIDE_LOCALES.includes(lang)?localePrefix(lang)+"/items/database/?id=5100":localePrefix(lang)+"/items/5100/";
+  const expected=NEW_GUIDE_LOCALES.includes(lang)?localePrefix(lang)+"/items/profile/?id=5100":localePrefix(lang)+"/items/5100/";
   assert.equal(equipmentProfilePath(lang,"5100",false),expected);
   assert.equal(languageDestination({lang,path:"/items/5100/"}),expected);
   assert.equal(languageDestination({lang,path:"/items/1/",itemAlternates:localizedPaths("/items/1/")}),localePrefix(lang)+"/items/1/");

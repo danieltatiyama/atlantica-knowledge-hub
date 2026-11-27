@@ -42,7 +42,7 @@ test("the original 551 names stay exact and are routed to original reviewed page
   assert.equal(getOriginalClientItemIdentity("437").nameEn,"Immortal Bow");
   assert.equal(getOriginalClientItemIdentity("3890").status,"collision");
   assert.equal(getOriginalClientItemIdentity("3890").nameEn,null);
-  assert.equal(getSourceItemLink("5100"),"/items/database/?id=5100");
+  assert.equal(getSourceItemLink("5100"),"/items/profile/?id=5100");
 });
 
 test("every 1911 new source profile has original ItemType source definitions",()=>{

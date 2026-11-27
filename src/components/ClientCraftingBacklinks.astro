@@ -61,7 +61,7 @@ const prefix=localePrefix(lang);
             !Number.isSafeInteger(quantity)||quantity<1||!Array.isArray(records))
             throw Error("Malformed reverse recipe evidence");
           const tr=document.createElement("tr"),link=document.createElement("a");
-          link.textContent=name;link.href=prefix+"/items/database/?id="+encodeURIComponent(productId);
+          link.textContent=name;link.href=prefix+"/items/profile/?id="+encodeURIComponent(productId);
           const alias=wikiNameAlias("item",productId,name,lang);
           if(alias){const extra=document.createElement("small");extra.textContent=" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias;link.append(extra);}
           const itemTd=document.createElement("td");itemTd.append(link);

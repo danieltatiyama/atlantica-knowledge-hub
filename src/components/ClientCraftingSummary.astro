@@ -73,7 +73,7 @@ const fmtRaw=value=>value===null?"—":/^[0-9]{1,15}$/.test(value)
             <th>{equipmentText(lang,"ID","ID")}</th><th>{equipmentText(lang,"Quantity","Quantidade")}</th></tr></thead>
           <tbody>{recipe.materials.map(material=><tr>
             <td>
-              <a href={prefix+"/items/database/?id="+encodeURIComponent(material.itemId)}>{material.nameEn??(equipmentText(lang,"Unverified name","Nome não validado"))}</a>
+              <a href={prefix+"/items/profile/?id="+encodeURIComponent(material.itemId)}>{material.nameEn??(equipmentText(lang,"Unverified name","Nome não validado"))}</a>
               {wikiNameAlias("item",material.itemId,material.nameEn,lang)&&<small>{aliasText(lang,"Wiki translation (unofficial)")}: {wikiNameAlias("item",material.itemId,material.nameEn,lang)}</small>}
               <small class="recipe-obtain-link"><a href={prefix+"/monsters/?item="+encodeURIComponent(material.itemId)}>{equipmentText(lang,"Find original monster drops","Consultar drops do cliente")}</a></small>
             </td>

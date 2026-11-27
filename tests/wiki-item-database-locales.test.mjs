@@ -39,7 +39,7 @@ test("dynamic templates support word order and retain raw numbers and IDs",()=>{
  assert.equal(formatLevelResolvedPercent(null,"ja"),"—");
 });
 test("localized database preserves client source values, detail navigation and CSV format",()=>{
- for(const marker of ["manifest.totalIds!==23586","manifest.namedIds!==22702","matchesRawStat(indexedStats.get(row[0]),field,min,max)","summarizeCraftBatch(data.s,{equipment})","buildClientRecipeViews(data.s)","estimatedTwoStagePercent(r[5],r[6])","exportFilteredClientCsv(visible","pt,field:statField.value","a.href=\"?id=\"+encodeURIComponent(id)","prefix=localePrefix(legacyLocale(lang))","fmtRaw(row[3])","compareSourceStats(summaries,key)"])
+ for(const marker of ["manifest.totalIds!==23586","manifest.namedIds!==22702","matchesRawStat(indexedStats.get(row[0]),field,min,max)","summarizeCraftBatch(data.s,{equipment})","buildClientRecipeViews(data.s)","estimatedTwoStagePercent(r[5],r[6])","exportFilteredClientCsv(visible","pt,field:statField.value","a.href=localePrefix(lang)+\"/items/profile/?id=\"+encodeURIComponent(id)","prefix=localePrefix(legacyLocale(lang))","fmtRaw(row[3])","compareSourceStats(summaries,key)"])
   assert.ok(page.includes(marker),marker);
  const header=readFileSync("src/components/Header.astro","utf8");
  assert.ok(header.includes("isMonsterCatalog || isItemDatabase"));
