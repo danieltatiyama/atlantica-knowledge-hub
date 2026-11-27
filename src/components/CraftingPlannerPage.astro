@@ -66,7 +66,7 @@ const prefix=localePrefix(lang);
     </div>
     <p class="craft-muted">{craftingText(lang,"Colors distinguish levels. Operation breakdown shows output per operation; consumption breakdown shows ingredients used by each parent operation. Shared totals are counted once.","Cores diferenciam os níveis. A divisão de operações mostra a produção por operação; a divisão de consumo mostra quanto cada operação da receita pai gasta. Totais compartilhados não são duplicados.")}</p>
     <div id="craft-tree" class="craft-tree" role="region" tabindex="0" aria-label={craftingText(lang,"Crafting table with horizontal scrolling and column snapping","Tabela de fabricação, com rolagem horizontal e encaixe por coluna")}>
-     <table class="craft-tree-table">
+     <table class="craft-tree-table" data-sort="none">
       <thead><tr>
        <th scope="col">{craftingText(lang,"Item / Recipe","Item / Receita")}</th>
        <th scope="col">{craftingText(lang,"Branch need","Neste ramo")}</th>

@@ -1,5 +1,6 @@
 import {matchesWikiNameAlias} from "./wiki-name-aliases.mjs";
 import {catalogPath,isLocale} from "../i18n/locales.mjs";
+import {sortRecords} from "./table-sort.mjs";
 /**
  * Player-facing catalog of client NPC price references.
  * Price values and provenance are data from the installed client, not live-server facts.
@@ -32,7 +33,7 @@ export function parseClientMarketPriceCatalog(source){
  return items;
 }
 export function filterClientMarketCatalog(items,{
- query="",category="all",evidence="all",sort="name",offset=0,limit=50,lang="en",
+ query="",category="all",evidence="all",sort="name",offset=0,limit=50,lang="en",columnSort=null,
 }={}){
  if(!Array.isArray(items)||!Number.isInteger(offset)||offset<0||
   !Number.isInteger(limit)||limit<1||limit>421)
@@ -54,7 +55,10 @@ export function filterClientMarketCatalog(items,{
  filtered.sort((a,b)=>sort==="price-asc"?compareNumber(a,b)||textSort(a,b):
   sort==="price-desc"?compareNumber(b,a)||textSort(a,b):
   sort==="id"?Number(a.itemId)-Number(b.itemId):textSort(a,b));
- return {total:filtered.length,rows:filtered.slice(offset,offset+limit)};
+ const ordered=columnSort?sortRecords(filtered,item=>columnSort.column===0?item.name:
+  columnSort.column===1?item.category:columnSort.column===2?BigInt(item.referenceGold):item.comparisonClass,
+  {...columnSort,locale:lang}):filtered;
+ return {total:ordered.length,rows:ordered.slice(offset,offset+limit)};
 }
 export function clientItemDetailUrl(itemId,lang="en"){
  if(!validId(itemId))throw Error("Invalid client ItemID link");

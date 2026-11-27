@@ -18,7 +18,7 @@ const {lang,data}=Astro.props;
   {data.sourceRows.map((row,i)=><details class="client-record" open={data.sourceRows.length===1}>
     <summary>{equipmentText(lang,"Source row","Registro de origem")} #{row.sourceRowNumber}
       <small> · {Object.keys(row.fieldsRaw).length} {equipmentText(lang,"fields","campos")}</small></summary>
-    <div class="source-table"><table>
+    <div class="source-table"><table data-sort-locale="en">
       <thead><tr><th>{equipmentText(lang,"Client file field","Campo do arquivo")}</th><th>{equipmentText(lang,"Raw value","Valor bruto")}</th></tr></thead>
       <tbody>{Object.entries(row.fieldsRaw).map(([field,value])=><tr>
         <th scope="row"><code>{field}</code></th>

@@ -1,5 +1,12 @@
 # Atlantica Online Knowledge Hub — Contexto para Continuidade
 
+### Stage 20.93 — Shared sortable tables (PR candidate)
+
+- Shared BaseLayout component adds accessible click/keyboard ascending and descending controls to flat tables, including asynchronously rendered tables and article tables. Eight locale labels/announcements, natural text ordering, exact numeric comparison, locale-aware punctuation, zero preserved, missing values last. Original values/formulas remain intact.
+- Full item database, bestiary and Market sort the entire filtered dataset before pagination. Lazy source/drop tables sort all loaded source records before batches; filters and next pages retain header order. Existing sort dropdowns reset the header choice. Maps, recipes, profiles and other flat tables use shared DOM sorting.
+- Craft tree, nation calendar and grouped skill-mode matrices retain their structure; spanning-body tables are not reordered. Evolution totals remain fixed. Details, aliases and decorative text are excluded from sort keys where applicable. Import module `../lib/table-sorting` supports managed datasets with `onTableSort` and `sortTableData`.
+- Map PR #172 already merged at b4da9ec709a1bbad202bfaaeb5344dde75535ff9; Astro and Workers checks succeeded. Browser QA of sorting passed on built static pages (maps, 23,586-item pagination, bestiary filters and pt-BR dynamic percentages). Details: `docs/TABLE-SORTING-STAGE-20-93.md`.
+
 ### Stage 20.92 — Map catalog and monster locations (PR candidate)
 
 - Added `/maps/` in eight locales with location/section selectors, official English names, monster/name/ID search, type filtering, recorded entry levels, four reviewed images and links to monster profiles. Profiles link back to recorded maps through the same dataset; selected map/area/query survive language changes and browser navigation.

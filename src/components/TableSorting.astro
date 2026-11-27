@@ -1,0 +1,12 @@
+<script>
+ import {initTableSorting} from '../lib/table-sorting';
+ initTableSorting();
+</script>
+<style is:global>
+ th > .wiki-sort-button{display:inline-flex!important;align-items:center;gap:.45em;border:0!important;background:transparent!important;color:inherit!important;font:inherit!important;font-weight:inherit!important;text-align:inherit;padding:0!important;cursor:pointer;min-height:1.75rem;box-shadow:none!important}
+ th > .wiki-sort-button:hover{text-decoration:underline}
+ th > .wiki-sort-button:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}
+ .wiki-sort-indicator{font-size:.7em;opacity:.75;flex-shrink:0}
+ th[aria-sort] .wiki-sort-indicator{opacity:1}
+ .wiki-sort-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+</style>

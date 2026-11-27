@@ -155,6 +155,7 @@ function populateSkillComparison(detail,{data,skills,primary,initialGrade,initia
   const headers=[labels.field,...states.map((st,i)=>st.skill.name+' · G'+st.grade+' · Lv '+st.level+(conflicts[i]?' ⚠':'')),ui.difference];
   for(const h of headers){const th=el('th',h);th.scope='col';hr.append(th);}
   thead.append(hr);table.append(thead);
+  table.dataset.sort='none';
   const fmt=field=>contextField(field,lang)??progressionField(field,lang,labels);
   const format=(r,x)=>!available(x.value)?'—':(typeof x.value==='number'?nf.format(x.value)+r.unit:String(contextValue(r.field,x.value,lang)))+(x.aboveCap?' *':'');
   for(const group of GROUP_ORDER){

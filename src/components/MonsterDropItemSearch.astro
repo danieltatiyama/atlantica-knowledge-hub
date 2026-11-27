@@ -62,6 +62,7 @@ const {lang}=Astro.props;
   <p class="finder-note">{monsterText(lang,"loot","Drops are filtered by the level bracket matching each client creature. The combined percentage is an estimate, NOT verified live-server odds. Original values remain in View source.")}</p>
 </section>
 <script>
+  import {onTableSort,sortTableData} from "../lib/table-sorting";
   import {prependItemIcon} from "../lib/client-item-icons";
   import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
   import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
@@ -173,6 +174,7 @@ const {lang}=Astro.props;
       const headers=[monsterText(lang,"loot","Creature"),monsterText(lang,"loot","Estimated rate"),
         monsterText(lang,"loot","Amount"),monsterText(lang,"loot","Source")];
       headers.forEach(label=>headRow.append(create("th",label)));
+      headRow.lastElementChild?.setAttribute('data-sort','none');
       head.append(headRow);
       const tbody=create("tbody");table.append(head,tbody);wrapper.append(table);
       section.append(wrapper);
@@ -221,6 +223,14 @@ const {lang}=Astro.props;
           nf.format(shown)+" / "+nf.format(sourceRows.length);
         if(shown>=sourceRows.length)button.remove();
       };
+      onTableSort(table as HTMLTableElement,()=>{
+        sourceRows=sortTableData(table as HTMLTableElement,sourceRows,(value,column)=>{
+          const row=value as any[];
+          return column===0?row[1]:column===1?(type==='direct'?Number(row[3])/100:estimatedTwoStagePercent(row[5],row[6])):
+            type==='direct'?String(row[5])+'–'+String(row[6]):String(row[9])+'–'+String(row[10]);
+        });
+        shown=0;tbody.replaceChildren();if(sourceRows.length>50)section.append(button);show();
+      });
       if(sourceRows.length>50){
         button.addEventListener("click",show);
         section.append(button);

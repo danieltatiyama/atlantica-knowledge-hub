@@ -43,7 +43,7 @@ const prefix=localePrefix(lang);
     <span class="gap">{toolText(lang,"Nonexistent hour (DST)","Hora inexistente (DST)")}</span>
    </div>
    <p class="nd-grid-caption">{toolText(lang,"Each cell is one hour in the selected timezone. Green = dungeon ready; red = cooldown. Markers indicate scheduled runs.","Cada célula representa uma hora no fuso escolhido. Verde = dungeon disponível; vermelho = cooldown. Símbolos indicam runs cadastradas.")}</p>
-   <div class="nd-table-wrap" role="region" tabindex="0" aria-label={toolText(lang,"Scrollable dungeon calendar grid","Grade do calendário com rolagem")}><table id="nd-grid" aria-label={toolText(lang,"Hourly availability","Disponibilidade por hora")}></table></div>
+   <div class="nd-table-wrap" role="region" tabindex="0" aria-label={toolText(lang,"Scrollable dungeon calendar grid","Grade do calendário com rolagem")}><table id="nd-grid" data-sort="none" aria-label={toolText(lang,"Hourly availability","Disponibilidade por hora")}></table></div>
    <p class="nd-hint">{toolText(lang,"Readiness is estimated from registered runs. A run during cooldown is marked as conflicting and does not restart the timer. Repeated clocks at DST fallback use the first occurrence.","O calendário indica disponibilidade calculada a partir das runs registradas. Uma run em cooldown é marcada como conflito e não reinicia o timer. Horas repetidas no fim do horário de verão usam a primeira ocorrência.")}</p>
   </section>
   <div class="nd-edit-grid">

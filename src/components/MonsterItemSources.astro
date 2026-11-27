@@ -33,6 +33,7 @@ const {lang,itemId}=Astro.props;
   </p>
 </section>
 <script>
+  import {onTableSort,sortTableData} from "../lib/table-sorting";
   import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
   import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
@@ -82,7 +83,7 @@ const {lang,itemId}=Astro.props;
           state.textContent=monsterText(lang,"source","No drop matches the recorded level bracket. This does not prove it cannot drop on the server.");
           return;
         }
-        const sources=[
+        let sources=[
           ...(entry.direct??[]).map((r:any[])=>({row:r,kind:"direct" as const,
             pct:Number(r[3])/100,min:r[5],max:r[6]})),
           ...(entry.group??[]).map((r:any[])=>({row:r,kind:"group" as const,
@@ -131,6 +132,12 @@ const {lang,itemId}=Astro.props;
             shown+" / "+sources.length;
           if(shown===sources.length)more.remove();
         };
+        const sourceTable=tbody.closest('table')!;
+        sourceTable.tHead?.rows[0].cells[3].setAttribute('data-sort','none');
+        onTableSort(sourceTable,()=>{
+          sources=sortTableData(sourceTable,sources,(source,column)=>column===0?source.row[1]:column===1?source.pct:String(source.min)+'–'+String(source.max));
+          shown=0;tbody.replaceChildren();if(sources.length>75)container.append(more);render();
+        });
         if(sources.length>75){
           more.addEventListener("click",render);
           container.append(more);
