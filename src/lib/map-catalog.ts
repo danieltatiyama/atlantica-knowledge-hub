@@ -1,3 +1,6 @@
+import {loadMapImageLibrary} from './map-image-library';
+import {sectionMapImage} from '../data/map-images.mjs';
+import {mapImageText} from '../i18n/map-images-ui.mjs';
 import {loadClientMaps} from './client-maps';
 import {mapText,mapModeText} from '../i18n/maps-ui.mjs';
 import {localePrefix,localeTag} from '../i18n/locales.mjs';
@@ -15,7 +18,8 @@ export async function initMapCatalog(){
  const results=el<HTMLDetailsElement>('map-results'),retry=el<HTMLButtonElement>('map-retry');
  const make=(tag:string,text?:string)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
  const option=(value:number|string,text:string)=>{const o=document.createElement('option');o.value=String(value);o.textContent=text;return o;};
- let data:any;
+ let data:any,imageLibrary:any;
+ const libraryPromise=loadMapImageLibrary().catch(()=>null);
  try{data=await loadClientMaps();}catch{status.textContent=t('error');retry.hidden=false;retry.onclick=()=>location.reload();return;}
  query.disabled=mode.disabled=false;
  for(const m of [...new Set<string>(data.areas.map((a:any)=>a.mode))].sort())mode.append(option(m,mapModeText(lang,m)));
@@ -56,6 +60,17 @@ export async function initMapCatalog(){
   const image=el('map-image');image.replaceChildren();
   if(map.image){const img=document.createElement('img');img.src=map.image.src;img.width=map.image.width;img.height=map.image.height;img.alt=name;img.decoding='async';image.append(img);}
   else image.append(make('p',t('imageMissing')));
+  const drawImage=()=>{
+   const asset=sectionMapImage(imageLibrary,map);if(asset){
+    image.replaceChildren();const a=document.createElement('a'),img=document.createElement('img');
+    a.href=asset.src;a.target='_blank';a.rel='noopener';a.setAttribute('aria-label',mapImageText(lang,'open')+': '+name);
+    img.onerror=()=>{if(!img.isConnected)return;const note=el('map-image-note');note.hidden=false;note.textContent=mapImageText(lang,'error');};
+    img.src=asset.src;img.width=asset.width;img.height=asset.height;img.alt=name;img.decoding='async';a.append(img);image.append(a);
+   }
+   const note=el('map-image-note');note.hidden=!asset;note.textContent=asset?mapImageText(lang,asset.association==='reviewed'?'reviewed':'sectionNote'):'';
+   const variants=el<HTMLAnchorElement>('map-image-variants');variants.hidden=!(imageLibrary?.mapCandidates?.[map.id]?.length);variants.href=prefix+'/maps/images/?map='+map.id;
+  };drawImage();
+  void libraryPromise.then(library=>{imageLibrary=library;if(new URL(location.href).searchParams.get('id')!==String(map.id))return;drawImage();if(!library&&!map.image){image.replaceChildren(make('p',mapImageText(lang,'error')));const retry=make('button',t('retry')) as HTMLButtonElement;retry.type='button';retry.onclick=()=>location.reload();image.append(retry);}});
   const body=el('map-monsters');body.replaceChildren();
   const list=map.monsters.map((id:number)=>({id,...data.monsters[id]})).sort((a:any,b:any)=>a.name.localeCompare(b.name,'en'));
   for(const m of list){

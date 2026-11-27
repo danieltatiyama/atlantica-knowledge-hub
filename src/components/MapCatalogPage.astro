@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {mapImageText} from '../i18n/map-images-ui.mjs';
+import {localePrefix} from '../i18n/locales.mjs';
 import {mapText} from '../i18n/maps-ui.mjs';
 import {localizedPaths} from '../i18n/locales.mjs';
 import type {Lang} from '../i18n/ui';
@@ -10,6 +12,7 @@ const {lang}=Astro.props;
  description={mapText(lang,'notice')} alternatePaths={localizedPaths('/maps/')}>
  <main id="map-catalog" class="map-catalog" data-lang={lang}>
   <h1>{mapText(lang,'find')}</h1>
+  <p><a href={localePrefix(lang)+'/maps/images/'}>{mapImageText(lang,'library')} →</a></p>
   <div class="map-filters">
    <label>{mapText(lang,'query')}<input id="map-query" type="search" autocomplete="off" disabled/></label>
    <label>{mapText(lang,'mode')}<select id="map-mode" disabled><option value="">{mapText(lang,'all')}</option></select></label>
@@ -25,7 +28,7 @@ const {lang}=Astro.props;
    <h2 id="map-heading" tabindex="-1"></h2>
    <p id="map-entry" class="map-muted"></p>
    <div class="map-content">
-    <div id="map-image" class="map-image"></div>
+    <div><div id="map-image" class="map-image"></div><p id="map-image-note" class="map-muted" hidden></p><a id="map-image-variants" href={localePrefix(lang)+'/maps/images/'} hidden>{mapImageText(lang,'variants')} →</a></div>
     <section aria-labelledby="map-monsters-heading">
      <h3 id="map-monsters-heading">{mapText(lang,'monsters')}</h3>
      <p id="map-monsters-empty" class="map-muted" hidden>{mapText(lang,'noMonsters')}</p>
