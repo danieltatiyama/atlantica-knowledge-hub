@@ -16,28 +16,8 @@ const title=itemDbText(lang,"Full client item database");
   alternatePaths={localizedPaths(profile?"/items/profile/":"/items/database/")}>
   <main class="container" id="full-client-db" data-lang={lang} data-profile={String(profile)} data-wiki-nav-root="true">
     <nav class="breadcrumb"><a href={prefix+(profile?"/items/database/":"/items/")}>{profile?itemDbText(lang,"Full client item database"):itemDbText(lang,"← Equipment catalog")}</a></nav>
-    <header hidden={profile}>
-      <p class="eyebrow">GLOBAL / NA · MINER SNAPSHOT 1</p>
-      <h1>{title}</h1>
-      <p class="intro">{itemDbText(lang,"Search an item by name or ID to see its attributes, crafting materials, recipes that use it, and possible acquisition sources.")}</p>
-      <details class="reader-guide">
-        <summary>{itemDbText(lang,"How to read the item information")}</summary>
-        <p>{itemDbText(lang,"Useful player information comes first. Technical definitions are available under Original client records at the bottom of each item page. Open any ingredient to see its own page or find its possible monster drops.")}</p>
-        <p>{itemDbText(lang,"Percentages are client-based estimates, not verified probabilities. Missing recipes or drops do not prove they are unavailable in-game.")}</p>
-      </details>
-      <p class="caution">{aliasText(lang,"English client names are preserved. Some items and monsters have optional AI-assisted Wiki translations for search; these are not official regional names.")}</p>
-      <p class="caution">{itemDbText(lang,"Names, levels, grades and materials are client-extracted fields, not proof of live-server existence, availability, acquisition or craftability. One English name can belong to different item IDs. Identity collisions remain unnamed.")}</p>
-    </header>
-
-    <section class="coverage" hidden={profile} aria-label={itemDbText(lang,"Coverage")}>
-      <div><strong>{nf.format(23586)}</strong><small>{itemDbText(lang,"Source IDs")}</small></div>
-      <div><strong>{nf.format(22702)}</strong><small>{itemDbText(lang,"Named IDs")}</small></div>
-      <div><strong>{nf.format(884)}</strong><small>{itemDbText(lang,"Unresolved IDs")}</small></div>
-      <div><strong>{nf.format(27281)}</strong><small>{itemDbText(lang,"Source records")}</small></div>
-    </section>
-
     <section class="search-panel" hidden={profile} aria-label={itemDbText(lang,"Search items")}>
-      <h2 class="search-title">{itemDbText(lang,"Find items")}</h2>
+      <h1 class="search-title">{itemDbText(lang,"Find items")}</h1>
       <div class="search-grid">
         <label>{aliasText(lang,"English name, Wiki translation or ID")}
           <input type="search" id="db-query" autocomplete="off" placeholder={itemDbText(lang,"e.g. Spirit Sword, Immortal Bow, 24120")}/>
@@ -66,9 +46,8 @@ const title=itemDbText(lang,"Full client item database");
         <span>{itemDbText(lang,"Show only equipment-like source categories (not confirmed equip/enhancement eligibility)")}</span>
       </label>
 
-      <section class="stats-workbench" aria-label={itemDbText(lang,"Filter original numeric attributes")}>
-        <h2>{itemDbText(lang,"Original client numeric attributes")}</h2>
-        <p class="subtle">{itemDbText(lang,"Optional filter across 7,560 IDs with Items.csv fields. Numeric shards load only after choosing a field. Inclusive bounds use raw +0 values, never enhancement multipliers. Missing or conflicting fields do not match; partial source values are identified in item details.")}</p>
+      <details class="stats-workbench" data-wiki-nav-native="true" aria-label={itemDbText(lang,"Additional filters")}>
+        <summary>{itemDbText(lang,"Additional filters")}</summary>
         <div class="stats-grid">
           <label>{itemDbText(lang,"Numeric field")}
             <select id="db-stat-field">
@@ -83,8 +62,8 @@ const title=itemDbText(lang,"Full client item database");
           </label>
           <button type="button" id="db-export" disabled>{itemDbText(lang,"Export filtered CSV")}</button>
         </div>
-        <p class="subtle" id="db-stat-status" role="status">{itemDbText(lang,"Numeric shards have not been loaded.")}</p>
-      </section>
+        <p class="subtle" id="db-stat-status" role="status"></p>
+      </details>
       {fallback && <p class="subtle">{itemDbText(lang,"CSV export uses the original English or Portuguese column format.")}</p>}
 
       <div class="table-wrap">
@@ -113,6 +92,27 @@ const title=itemDbText(lang,"Full client item database");
       <noscript>{itemDbText(lang,"Enable JavaScript to search the client index. The original 551 item pages remain available from the equipment catalog.")}</noscript>
     </section>
 
+<details class="catalog-info" hidden={profile} data-wiki-nav-native="true">
+      <summary>{itemDbText(lang,"Coverage")}</summary>
+    <header hidden={profile}>
+      <p class="eyebrow">GLOBAL / NA · MINER SNAPSHOT 1</p>
+      <h1>{title}</h1>
+      <p class="intro">{itemDbText(lang,"Search an item by name or ID to see its attributes, crafting materials, recipes that use it, and possible acquisition sources.")}</p>
+      <details class="reader-guide">
+        <summary>{itemDbText(lang,"How to read the item information")}</summary>
+        <p>{itemDbText(lang,"Useful player information comes first. Technical definitions are available under Original client records at the bottom of each item page. Open any ingredient to see its own page or find its possible monster drops.")}</p>
+        <p>{itemDbText(lang,"Percentages are client-based estimates, not verified probabilities. Missing recipes or drops do not prove they are unavailable in-game.")}</p>
+      </details>
+    </header>
+
+    <section class="coverage" hidden={profile} aria-label={itemDbText(lang,"Coverage")}>
+      <div><strong>{nf.format(23586)}</strong><small>{itemDbText(lang,"Source IDs")}</small></div>
+      <div><strong>{nf.format(22702)}</strong><small>{itemDbText(lang,"Named IDs")}</small></div>
+      <div><strong>{nf.format(884)}</strong><small>{itemDbText(lang,"Unresolved IDs")}</small></div>
+      <div><strong>{nf.format(27281)}</strong><small>{itemDbText(lang,"Source records")}</small></div>
+    </section>
+
+    </details>
       <p class="load-status" id="db-status" role="status">{itemDbText(lang,"Loading client index…")}</p>
     <section class="detail" id="db-detail" hidden aria-live="polite">
       <div class="detail-header"><div>
@@ -462,7 +462,7 @@ const title=itemDbText(lang,"Full client item database");
             throw Error("Partial or duplicate numeric client data");
           indexedStats=built;
           allStatsReady=true;
-          statStatus.textContent=itemDbText(lang,"{count} numeric source IDs loaded. Raw values; conflicts preserved.",{count:number.format(built.size)});
+          statStatus.textContent="";
           return built;
         })().catch(err=>{
           allStatsPromise=null;
@@ -1052,7 +1052,7 @@ const title=itemDbText(lang,"Full client item database");
   .coverage strong{font-size:1.55rem;color:var(--color-gold-light);font-variant-numeric:tabular-nums}
   .coverage small{color:var(--color-text-muted)}
   .search-panel{border-top:1px solid var(--color-border);padding-top:25px}
-  .search-title{font-size:1.3rem;color:var(--color-gold-light);margin:0 0 13px}
+  .search-title{font-size:2.6rem;color:var(--color-gold-light);margin:0 0 13px}
   .search-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px;margin-bottom:16px}
   label{display:grid;gap:7px;font-size:.87rem;color:var(--color-gold-light)}
   input,select{width:100%;border:1px solid var(--color-border);background:var(--color-surface);
@@ -1061,6 +1061,10 @@ const title=itemDbText(lang,"Full client item database");
   .equipment-toggle input{width:auto;cursor:pointer}
   .stats-workbench,.compare-workbench{margin:18px 0 22px;padding:16px;
     border:1px solid var(--color-border);border-radius:6px;background:var(--color-surface)}
+  .catalog-info{margin:22px 0;border:1px solid var(--color-border);border-radius:6px;padding:16px}
+  .catalog-info>summary,.stats-workbench>summary{cursor:pointer;color:var(--color-gold-light);font-weight:600;font-size:1.17rem}
+  .stats-workbench[open]>summary,.catalog-info[open]>summary{margin-bottom:16px}
+  #db-stat-status:empty{display:none}
   .stats-workbench h2,.compare-workbench h2{font-size:1.17rem;margin:0 0 8px;
     color:var(--color-gold-light)}
   .stats-workbench .subtle,.compare-workbench .subtle{font-size:.87rem;margin:8px 0 15px}

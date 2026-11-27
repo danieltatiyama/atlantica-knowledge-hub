@@ -3,6 +3,7 @@ import {itemDbRowsA} from "./item-db-ui-a.mjs";
 import {itemDbRowsB} from "./item-db-ui-b.mjs";
 
 const extraRows=[
+  ["Additional filters","Filtros adicionais","Filtres supplémentaires","Zusätzliche Filter","Filtros adicionales","추가 필터","更多筛选","追加フィルター"],
   [
     "{count} numeric source IDs loaded. Raw values; conflicts preserved.",
     "{count} IDs com atributos carregados. Valores brutos; conflitos preservados.",

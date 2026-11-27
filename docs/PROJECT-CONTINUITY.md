@@ -1004,3 +1004,9 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Item content starts with historical enhancement table when source values and item category permit it, followed by base item overview and raw attribute tables. Crafting and optional acquisition/recipe usage follow; historical model notes remain with the enhancement table. Removed the Items.csv numeric heading and introductory paragraph from the rendered raw-attribute groups, preserving all field values, zero/conflict/coverage status and original row inspection.
 - Used in crafting and monster source sections stay hidden while loading and are removed when no matches exist. Matching sections become visible; load errors remain distinct from verified absence. Section navigation excludes absent targets after both lookups finish. Existing ID race checks prevent an earlier request replacing a newer selection.
 - PR #168 applied global, page-limited styles to runtime numeric/enhancement tables, merged 3415c6e04c91fd4cad0e37f460575ac1f418e589; CI #336 passed.
+
+### Stage 20.90 — Item catalog search-first layout
+
+- Catalog opens with Find items as its main visible heading, doubled from 1.3rem to 2.6rem. Header/reader guide and Source IDs coverage are below the search area in a closed native disclosure. Dedicated item profiles remain in profile mode.
+- Removed the client-name/AI translation banner and general client provenance banner requested by the user. Numeric filtering is a closed native disclosure labeled Additional filters / Filtros adicionais in eight locales. Removed its long 7560-ID explanation and successful-load count; filtering, raw values, export and explicit loading errors remain operational.
+- Item content-priority PR #169 merged 9ace8bcd6cb57293ac89e0a58fc00117171ff835; CI #337 approved.
