@@ -477,7 +477,7 @@ const title=itemDbText(lang,"Full client item database");
         if(!fields.length)continue;
         const section=node("section",undefined,"numeric-group");
         section.append(node("h4",groupNames[group]));
-        const table=node("table") as HTMLTableElement;
+        const table=node("table",undefined,"numeric-source-table") as HTMLTableElement;
         const head=node("thead"),heading=node("tr");
         for(const label of [itemDbText(lang,"Original field"),itemDbText(lang,"Raw value(s)"),
           itemDbText(lang,"Coverage and status")])heading.append(node("th",label));
@@ -529,7 +529,7 @@ const title=itemDbText(lang,"Full client item database");
       const heading=node("h3",itemDbText(lang,"Enhancement +0 to +10 — historical model"));
       parent.append(heading);
       parent.append(node("p",itemDbText(lang,"MODEL ONLY. +0 = raw Items.csv client data; +1..+10 = historical factors for attack, physical AC and base stats only. Magic Defense, EV and MoveSpeed remain FIXED. Upgrade eligibility is not proven. No Legendary grade is inferred."),"detail-note"));
-      const table=node("table") as HTMLTableElement;
+      const table=node("table",undefined,"enhancement-table") as HTMLTableElement;
       const head=node("thead"),headRow=node("tr");
       headRow.append(node("th",itemDbText(lang,"Grade")));
       for(const key of cols){
@@ -1314,4 +1314,57 @@ const title=itemDbText(lang,"Full client item database");
     font-size:.88rem;
   }
   #full-client-db .reader-guide p{margin:9px 0;line-height:1.6;font-size:.86rem}
+</style>
+
+<style is:global>
+  /* JS-created elements do not receive Astro's scoped style attribute. */
+  #full-client-db .stat-table-scroll{
+    overflow-x:auto;margin:14px 0 22px;
+    border:1px solid var(--color-border);border-radius:5px;
+    scrollbar-color:var(--color-bronze) var(--color-surface);
+  }
+  #full-client-db .stat-table-scroll table{
+    width:100%;min-width:720px;border-collapse:collapse;
+    font-size:.9rem;line-height:1.5;
+    background:var(--color-surface);
+  }
+  #full-client-db .stat-table-scroll :is(th,td){
+    padding:11px 14px;border-bottom:1px solid var(--color-border);
+    text-align:left;vertical-align:top;
+  }
+  #full-client-db .stat-table-scroll thead th{
+    background:color-mix(in srgb,var(--color-surface) 88%,var(--color-accent));
+    color:var(--color-text);font-weight:600;white-space:nowrap;
+  }
+  #full-client-db .stat-table-scroll td{
+    color:var(--color-text);font-variant-numeric:tabular-nums;
+  }
+  #full-client-db .stat-table-scroll tbody tr:nth-child(even){
+    background:color-mix(in srgb,var(--color-surface) 94%,var(--color-text));
+  }
+  #full-client-db .stat-table-scroll tbody tr:is(:hover,:focus-within){
+    background:color-mix(in srgb,var(--color-surface) 89%,var(--color-accent));
+  }
+  #full-client-db .stat-table-scroll tbody tr:last-child td{border-bottom:0}
+  #full-client-db .stat-table-scroll a{color:var(--color-accent)}
+  #full-client-db .numeric-group{margin:22px 0}
+  #full-client-db .numeric-group h4{margin:0 0 10px;color:var(--color-text)}
+  #full-client-db .stat-table-scroll .numeric-source-table{min-width:520px}
+  #full-client-db .numeric-source-table :is(th,td):nth-child(2){
+    text-align:right;white-space:nowrap;width:22%;
+  }
+  #full-client-db .numeric-source-table td:nth-child(2){font-weight:600}
+  #full-client-db .numeric-source-table td:last-child{color:var(--color-text-muted)}
+  #full-client-db .enhancement-table :is(th,td):not(:first-child):not(:last-child){
+    text-align:right;white-space:nowrap;
+  }
+  #full-client-db .enhancement-table td:first-child{
+    font-weight:600;white-space:nowrap;color:var(--color-accent);
+  }
+  #full-client-db .numeric-conflict{
+    outline:1px solid var(--color-bronze);outline-offset:-1px;
+  }
+  @media(max-width:620px){
+    #full-client-db .stat-table-scroll :is(th,td){padding:9px 11px}
+  }
 </style>
