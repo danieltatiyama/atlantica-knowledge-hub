@@ -66,7 +66,8 @@ test("all UI disclosure messages are available and raw data stays separate",()=>
  for(const name of ["GlobalSearch","FullClientItemDatabasePage"]){
   const s=readFileSync("src/components/"+name+".astro","utf8");
   assert.ok(s.includes('aliasText(lang,"Wiki translation (unofficial)")'));
-  assert.ok(s.includes("these are not official regional names."));
+  if(name==="GlobalSearch")assert.ok(s.includes("these are not official regional names."));
+  else assert.ok(!s.includes("these are not official regional names."));
  }
 });
 
