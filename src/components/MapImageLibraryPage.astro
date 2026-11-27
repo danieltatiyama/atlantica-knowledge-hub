@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import {mapImageText} from '../i18n/map-images-ui.mjs';
+import {mapText} from '../i18n/maps-ui.mjs';
+import {localePrefix,localizedPaths} from '../i18n/locales.mjs';
+import type {Lang} from '../i18n/ui';
+interface Props {lang:Lang;}
+const {lang}=Astro.props,t=(key:string)=>mapImageText(lang,key);
+---
+<BaseLayout lang={lang} title={t('library')+' | Atlantica Knowledge Hub'} description={t('intro')} alternatePaths={localizedPaths('/maps/images/')}>
+ <main id="map-image-library" class="image-library" data-lang={lang}>
+  <a href={localePrefix(lang)+'/maps/'}>← {mapText(lang,'browse')}</a>
+  <h1>{t('library')}</h1><p>{t('intro')}</p>
+  <div class="image-filters">
+   <label>{t('search')}<input id="image-query" type="search" disabled autocomplete="off"/></label>
+   <label>{t('scope')}<select id="image-scope" disabled><option value="">{t('all')}</option><option value="NMap">NMap</option><option value="NBattleMap">NBattleMap</option></select></label>
+   <label>{t('sort')}<select id="image-sort" disabled><option value="name">{t('byName')}</option><option value="size">{t('bySize')}</option><option value="dimensions">{t('byDimensions')}</option></select></label>
+  </div>
+  <p><a id="image-all" href={localePrefix(lang)+'/maps/images/'} hidden>{t('library')} →</a></p>
+  <p id="image-status" role="status">{t('loading')}</p><button id="image-retry" type="button" hidden>{t('retry')}</button>
+  <div id="image-grid" class="image-grid"></div>
+  <nav class="image-pagination" aria-label={t('results')}><button id="image-prev" type="button" disabled>{t('previous')}</button><button id="image-next" type="button" disabled>{t('next')}</button></nav>
+  <p class="image-note">{t('candidateNote')}</p>
+  <details><summary>{mapText(lang,'source')}</summary><p>660 → 659 · {t('unique')}: 567 · {t('origins')}: 659</p><p>{t('failed')}</p><a href="/data/client-maps/images.json">JSON</a></details>
+  <dialog id="image-viewer" aria-labelledby="image-title">
+   <button id="image-close" type="button">{t('close')}</button><h2 id="image-title"></h2>
+   <img id="image-full" alt=""/><p id="image-size"></p><a id="image-original" target="_blank" rel="noopener">{t('original')} ↗</a>
+   <h3>{t('origins')}</h3><ul id="image-origins"></ul>
+   <section id="image-map-links"><h3>{t('candidates')}</h3><p>{t('candidateNote')}</p><ul id="image-links"></ul></section>
+  </dialog>
+  <noscript><a href="/data/client-maps/images.json">JSON</a></noscript>
+ </main>
+</BaseLayout>
+<script>import {initMapImageLibrary} from '../lib/map-image-library';void initMapImageLibrary();</script>
+<style is:global>
+ .image-library{max-width:1250px;margin:auto;padding:2rem 1.25rem;color:var(--color-text)}
+ .image-library h1{font-size:2.6rem;color:var(--color-accent);margin:.8rem 0}
+ .image-library h2,.image-library h3{color:var(--color-accent)}
+ .image-filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:1rem;margin:1.5rem 0}
+ .image-filters label{display:grid;gap:.4rem}
+ .image-library input,.image-library select,.image-library button{font:inherit;color:var(--color-text);background:var(--theme-input,var(--color-surface));border:1px solid var(--color-border);border-radius:5px;padding:.65rem;min-width:0}
+ .image-library button{cursor:pointer}.image-library button:disabled{opacity:.5;cursor:default}
+ .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:1rem}
+ .image-library .image-card{display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:.7rem;width:100%;height:100%;text-align:left}
+ .image-card img{width:100%;height:180px;object-fit:contain;background:var(--color-background)}
+ .image-card strong,.image-card span,.image-card small{display:block;width:100%;overflow-wrap:anywhere}
+ .image-card strong{color:var(--color-accent)}.image-card span,.image-note{color:var(--color-text-muted);font-size:.9rem}
+ .image-pagination{display:flex;justify-content:center;gap:1rem;margin:1.5rem 0}
+ .image-library dialog{background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border);border-radius:8px;max-width:850px;width:calc(100% - 2rem);max-height:90vh;padding:1.5rem;overflow:auto;overflow-wrap:anywhere}
+ .image-library dialog::backdrop{background:#000b}.image-library #image-close{float:right}
+ .image-library #image-full{display:block;max-width:100%;height:auto;margin:1rem auto;max-height:60vh;object-fit:contain}
+ .image-library :focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}
+ .image-library [hidden]{display:none!important}
+ @media(max-width:650px){.image-filters{grid-template-columns:1fr}.image-library h1{font-size:2rem}.image-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.image-card img{height:145px}}
+</style>
