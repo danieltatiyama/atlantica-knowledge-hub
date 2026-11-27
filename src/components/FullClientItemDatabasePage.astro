@@ -256,6 +256,7 @@ const title=itemDbText(lang,"Full client item database");
     }
     async function addUsedInTable(parent:HTMLElement,id:string){
       const section=node("section",undefined,"used-in-crafting");
+      section.hidden=true;
       section.id="wiki-item-used-by";
       section.append(node("h3",itemDbText(lang,"Used in crafting")));
       section.append(node("p",itemDbText(lang,"Reverse references from parsed ItemType*.ndt recipes. Client source records do not confirm availability in the current live game."),"detail-note"));
@@ -264,9 +265,10 @@ const title=itemDbText(lang,"Full client item database");
       try{
         const rows=await originalUsedIn(id);
         if(rows.length===0){
-          state.textContent=itemDbText(lang,"No usage found in structured client materials in this snapshot. This does not prove the item is never required.");
+          section.remove();
           return;
         }
+        section.hidden=false;
         state.textContent=(itemDbText(lang,"Recipe references: "))+number.format(rows.length);
         const table=node("table") as HTMLTableElement,head=node("thead"),tr=node("tr");
         for(const name of [itemDbText(lang,"Produced item"),
@@ -284,11 +286,13 @@ const title=itemDbText(lang,"Full client item database");
         table.append(body);const scroller=node("div",undefined,"stat-table-scroll");
         scroller.append(table);section.append(scroller);
       }catch{
+        section.hidden=false;
         state.textContent=itemDbText(lang,"Could not load the original source craft references.");
       }
     }
     async function addMonsterSources(parent:HTMLElement,id:string){
       const section=node("section",undefined,"monster-source-links");
+      section.hidden=true;
       section.id="wiki-item-monsters";
       section.append(node("h3",itemDbText(lang,"Which monsters may drop this item?")));
       const codex=node("a",itemDbText(lang,"Explore in the monster loot codex")) as HTMLAnchorElement;
@@ -312,7 +316,7 @@ const title=itemDbText(lang,"Full client item database");
         const bucket=Math.floor(Number(id)/1000);
         const filename="item-sources/"+String(bucket).padStart(2,"0")+".json";
         if(!meta.files.itemSources.includes(filename)){
-          state.textContent=itemDbText(lang,"No drop source found in this client snapshot.");
+          section.remove();
           return;
         }
         if(!itemMonsterSourcesCache.has(bucket)){
@@ -326,7 +330,7 @@ const title=itemDbText(lang,"Full client item database");
         }
         const entry=(await itemMonsterSourcesCache.get(bucket)!)?.[id];
         if(!entry){
-          state.textContent=itemDbText(lang,"No creature level bracket matches this item in the client data.");
+          section.remove();
           return;
         }
         const sources=[
@@ -335,6 +339,8 @@ const title=itemDbText(lang,"Full client item database");
           ...(entry.group??[]).map((r:any[])=>({row:r,kind:"group" as const,
             pct:estimatedTwoStagePercent(r[5],r[6]),min:r[9],max:r[10]})),
         ].sort((a,b)=>(b.pct??-1)-(a.pct??-1));
+        if(!sources.length){section.remove();return;}
+        section.hidden=false;
         state.textContent=(itemDbText(lang,"Level-matched possible drop sources: "))+
           number.format(sources.length);
         const body=node("tbody"),head=node("thead"),h=node("tr");
@@ -385,6 +391,7 @@ const title=itemDbText(lang,"Full client item database");
         if(sources.length>100){more.addEventListener("click",nextChunk);section.append(more);}
         nextChunk();
       }catch{
+        section.hidden=false;
         state.textContent=itemDbText(lang,"Level-matched monster drops could not be validated.");
       }
     }
@@ -470,8 +477,6 @@ const title=itemDbText(lang,"Full client item database");
       // never replaced with an assumed missing field, and conflicts are not
       // silently averaged or resolved.
       const summary=summarizeRawNumericRows(rawRows);
-      parent.append(node("h3",itemDbText(lang,"Original numeric client attributes — Items.csv")));
-      parent.append(node("p",itemDbText(lang,"Client-extracted values, not measured on the server. Zero, missing, partial coverage and conflicting source rows are different states. Conflicting fields are never treated as one canonical value."),"detail-note"));
       for(const group of ["attack","defense","attributes","other"]){
         const fields=RAW_STATS_FIELDS.filter(f=>f.group===group&&summary.fields.has(f.key));
         if(!fields.length)continue;
@@ -906,10 +911,18 @@ const title=itemDbText(lang,"Full client item database");
       }
       details.append(node("p",itemDbText(lang,"Loading original source records…"),"subtle"));
       try{
-        const data=await sourceDetails(id);
+        const [data,rawStats]=await Promise.all([sourceDetails(id),optionalNumericStats(id)]);
         // Do not let an earlier slow request overwrite a more recent selection.
         if(new URL(location.href).searchParams.get("id")!==id)return;
         details.replaceChildren();
+        if(rawStats){
+          if(equipmentCandidateCategories.has(row[2]??""))addHistoricalGradeTable(details,rawStats);
+        }
+        addItemOverview(details,row,data);
+        if(rawStats)addRawNumericSourceTable(details,rawStats);
+        else if(equipmentCandidateCategories.has(row[2]??"")&&row[8]!==1){
+          details.append(node("p",itemDbText(lang,"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values."),"subtle"));
+        }
         if(equipmentCandidateCategories.has(row[2]??"")&&row[6]==="named"){
           const p=node("p");
           const a=node("a",row[8]===1
@@ -917,25 +930,12 @@ const title=itemDbText(lang,"Full client item database");
             :(itemDbText(lang,"Open client-source equipment profile"))) as HTMLAnchorElement;
           a.href=row[8]===1?equipmentProfilePath(lang,id,true):prefix+"/items/"+id+"/";
         a.hreflang=localeTag(row[8]===1?lang:legacyLocale(lang));p.append(a);details.append(p);}
-        addItemOverview(details,row,data);
         addCraftBatchInformation(details,data,row);
         addCraftRecipeTables(details,data);
         // Reverse links are generated from every one of the 22,702 named-ID
         // source details, not just the originally reviewed 551 profiles.
-        void addUsedInTable(details,id);
-        void addMonsterSources(details,id);
-        // Original raw numeric rows are shown for every named item type.
-        // Only equipment-like source categories may use the explicitly
-        // unverified historical upgrade projection.
-        const rawStats=await optionalNumericStats(id);
+        await Promise.all([addUsedInTable(details,id),addMonsterSources(details,id)]);
         if(new URL(location.href).searchParams.get("id")!==id)return;
-        if(rawStats){
-          addRawNumericSourceTable(details,rawStats);
-          if(equipmentCandidateCategories.has(row[2]??""))
-            addHistoricalGradeTable(details,rawStats);
-        }else if(equipmentCandidateCategories.has(row[2]??"")&&row[8]!==1){
-          details.append(node("p",itemDbText(lang,"Combat attributes for this ID have not yet been imported. +0..+10 cannot be calculated safely without the original Items.csv values."),"subtle"));
-        }
         addDefinitionTable(details,data,id);
         // A consistent player-first navigation between the main kinds of
         // information, without showing raw source fields up front.
@@ -949,6 +949,7 @@ const title=itemDbText(lang,"Full client item database");
           ["wiki-item-technical",itemDbText(lang,"Raw sources")],
         ];
         for(const [target,title] of targets){
+          if(!details.querySelector("#"+target))continue;
           const link=node("a",title) as HTMLAnchorElement;
           link.href="#"+target;
           if(target==="wiki-item-technical")

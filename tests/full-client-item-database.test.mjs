@@ -163,8 +163,10 @@ test("browser only renders untrusted item names as text (no HTML injection)",()=
   assert.ok(template.includes("function addRawNumericSourceTable("));
   assert.ok(template.includes("addRawNumericSourceTable(details,rawStats)"));
   assert.ok(template.includes('if(equipmentCandidateCategories.has(row[2]??""))'));
-  assert.ok(template.indexOf("addRawNumericSourceTable(details,rawStats)") <
-    template.lastIndexOf("addHistoricalGradeTable(details,rawStats)"));
+  assert.ok(template.indexOf("addHistoricalGradeTable(details,rawStats)") <
+    template.indexOf("addItemOverview(details,row,data)"));
+  assert.ok(template.indexOf("addItemOverview(details,row,data)") <
+    template.indexOf("addRawNumericSourceTable(details,rawStats)"));
 
   assert.ok(template.includes("Math.floor"));
   assert.ok(template.includes("id=\"db-category\""));
