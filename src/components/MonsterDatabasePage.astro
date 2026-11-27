@@ -104,6 +104,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   </main>
 </BaseLayout>
 <script>
+  import {populateMonsterLocations} from "../lib/client-maps";
+  import {mapText} from "../i18n/maps-ui.mjs";
   import {prependItemIcon} from "../lib/client-item-icons";
   import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
   import {mainLevelBandRange,usesMainLevelBands} from "../data/monster-level-policy.mjs";
@@ -301,6 +303,10 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         const body=document.createDocumentFragment();
         const intro=node("p",monsterText(lang,"db","Extracted client source evidence. Active monster identity and item drop chances have not been verified on the server."),"subtle");
         body.append(intro);
+        const locationsSection=node("section",undefined,"community-drop-section");
+        locationsSection.append(node("h3",mapText(lang,"location")));
+        const locationsBody=node("div");locationsSection.append(locationsBody);body.append(locationsSection);
+        void populateMonsterLocations(locationsBody,id,lang,prefix);
         const statsSection=node("section",undefined,"community-drop-section");
         statsSection.append(node("h3",monsterStatsText(lang,"attributes")));
         body.append(statsSection);

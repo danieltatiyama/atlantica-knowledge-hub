@@ -1,5 +1,6 @@
 ---
 import {sharedText} from "../i18n/shared-ui.mjs";
+import {mapText} from "../i18n/maps-ui.mjs";
 
 import { getCollection } from "astro:content";
 import { LOCALE_IDS, LOCALE_NAMES, languageDestination, legacyLocale, localePrefix, catalogPath } from "../i18n/locales.mjs";
@@ -57,6 +58,11 @@ const navigation = [
     label: chromeText(lang,"Monsters",lang === "pt-br" ? "Monstros" : "Monsters"),
     href: monstersHref,
     active: pathname.startsWith(monstersHref),
+  },
+  {
+    label: mapText(lang,"maps"),
+    href: catalogPath(lang,"/maps/"),
+    active: pathname.startsWith(catalogPath(lang,"/maps/")),
   },
   {
     label: chromeText(lang,"Tools",lang === "pt-br" ? "Ferramentas" : "Tools"),
@@ -555,7 +561,8 @@ import {
     const isNationCalendar = /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/tools\/nation-dungeons\/$/.test(currentPath);
     const isCraftingPlanner = /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/tools\/crafting\/$/.test(currentPath);
     // Preserve category filters, selected ItemID and shared calendar plan.
-    const query = isGuideListing || isMonsterCatalog || isItemDatabase || isNationCalendar || isCraftingPlanner
+    const isMapCatalog = /^(?:\/(?:pt-br|fr|de|es|ko|zh-hans|ja))?\/maps\/$/.test(currentPath);
+    const query = isGuideListing || isMonsterCatalog || isItemDatabase || isNationCalendar || isCraftingPlanner || isMapCatalog
       ? window.location.search
       : "";
 

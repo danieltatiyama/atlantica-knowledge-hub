@@ -1,5 +1,12 @@
 # Atlantica Online Knowledge Hub — Contexto para Continuidade
 
+### Stage 20.92 — Map catalog and monster locations (PR candidate)
+
+- Added `/maps/` in eight locales with location/section selectors, official English names, monster/name/ID search, type filtering, recorded entry levels, four reviewed images and links to monster profiles. Profiles link back to recorded maps through the same dataset; selected map/area/query survive language changes and browser navigation.
+- Imported 142 groups / 580 distinct section references and 2,255 exact monster-map pairs (1,883 monsters / 365 map IDs). The union contains 677 IDs. IDs 497/498/499/3779 have no supplied MapInfo row and remain explicitly unresolved. 779 unmatched character IDs are excluded, not assumed to be NPCs. No instance/floor/map-type propagation and no monster area overlay.
+- NPCGroupInfo.dat layout inferred from 444-byte records and checked against all four screenshot sets: Hanyang 10, Grave Overground 5, Great Plaza 6, Eagle Mountain 4; Devil Tree matches four localities. All 970 referenced map-name text IDs resolve. Full coverage/live server validation is not claimed; instance data remains incomplete.
+- Source hashes, binary offsets, exclusions and image hashes in `public/data/client-maps/evidence.json`. Reproducible importer from private extraction package; no decoder/full game source published. Details and validation limitations: `docs/MAPS-STAGE-20-92.md`. Managed browser preview unavailable because the existing Astro dev command detaches; build, generated locales and automated regression checks are used.
+
 **Última atualização:** 27/11/2026  
 **Projeto:** Atlantica Online Knowledge Hub  
 **Repositório:** https://github.com/danieltatiyama/atlantica-knowledge-hub  
