@@ -25,6 +25,8 @@ test('source-safe reference schema and pinned pilot',()=>{
   assert.equal(new Set(profiles.map(p=>p.classToken)).size,95);
   assert.equal(skillList.filter(p=>p.books.length).length,320);
   assert.equal(new Set(skillList.flatMap(p=>p.books.map(b=>b[0]))).size,1783);
+  const bookMdefSamples=[['ETERNITY10',250],['BLACKARTHUR5',50],['SAE10',155],['SPARTACUS10',10]];
+  for(const [char,value] of bookMdefSamples)assert.equal(profiles.find(p=>p.char===char)?.MagicDef,value);
   const normalKeys=new Set(v.modes.Magic.map(r=>r[0]));
   assert.equal(skillList.filter(p=>!normalKeys.has(p.magicKind)).length,26);
   assert.equal(validateReference(m,s,null).profiles.length,947);
@@ -44,6 +46,7 @@ test('source-safe reference schema and pinned pilot',()=>{
 test('all eight locale labels and alternate routes are present',()=>{
  for(const lang of LOCALE_IDS){
   const labels=referenceText(lang);assert.ok(Object.values(labels).every(x=>typeof x==='string'&&x.trim()));
+  assert.equal(labels.magicDefLabel,'MagicDef*');assert.ok(labels.magicDefNote.includes('200'));
   for(const section of ['database','skills'])assert.equal(languageDestination({lang,path:'/mercenaries/'+section+'/'}),(lang==='en'?'':'/'+lang)+'/mercenaries/'+section+'/');
  }
 });

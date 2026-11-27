@@ -961,3 +961,9 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Added raw PvP and PvPBG fields from the user's decoded CharAttackInfo.ndt.txt to all 947 expanded mercenary profiles by exact Char key. Coverage is 947/947, unique one-to-one matches; no source files or decoder published.
 - The mercenary detail page displays separate PvP and PvPBG tables. Values remain raw client fields; their scale and live server use are unverified. Eight locales label the fields and explain this limitation. No formulas or gameplay conclusions are encoded.
 - Regression covers complete numeric PvP field coverage and Eternity [Hero Lv.6] source values. Visual review in production remains pending.
+
+### Stage 20.85e — Book MagicDef display note
+
+- Four comparisons from the in-game Book show displayed M. Def exactly 200 above raw CharAttackInfo MagicDef: Eternity [Hero Lv.6] 250→450, Dark King Arthur [T Lv.2] 50→250, Sae [Hero VI] 155→355, Spartacus [Hero VI] 10→210. Values are from Book profiles and do not include the player's equipment or account bonuses.
+- The mercenary page keeps raw data unchanged, marks the field `MagicDef*`, and explains the four observed comparisons in all eight locales. Other profiles remain unverified; the note does not claim the same adjustment applies to combat stats.
+- Regression asserts source values for the four records and complete translated note coverage.
