@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {validateReference,classRelatedProfiles,hasBookReference,buildModeMatrix,evolutionFamilyRows} from '../src/scripts/mercenary-reference.mjs';
+import {validateReference,classRelatedProfiles,hasBookReference,buildModeMatrix,evolutionFamilyRows,evolutionMaterialTotals} from '../src/scripts/mercenary-reference.mjs';
 import {referenceText} from '../src/i18n/mercenary-reference-ui.mjs';
 import {LOCALE_IDS,languageDestination} from '../src/i18n/locales.mjs';
 const read=name=>readFileSync('public/data/client-mercenaries/'+name+'.json');
@@ -118,4 +118,12 @@ test('evolution family costs use the outgoing source grade, preserve alternative
  assert.equal(records.filter(r=>r.alternative?.id==='21560').length,73);
  assert.equal(records.filter(r=>r.alternative?.id==='11045').length,10);
  for(const lang of LOCALE_IDS)for(const key of ['upgradeMaterial','alternativeMaterial','noExplicitUpgrade','sameUpgradeMaterial','evolutionCostNote','pvp','pvpBG','pvpNotice','pvp_PvPDefBaseRate'])assert.ok(referenceText(lang)[key]);
+});
+
+test('material totals group IDs and preserve absent, shared and branching alternatives',()=>{
+ const row=(standard,alternative,sameMaterial=false,next=['next'])=>({standard,alternative,sameMaterial,next});
+ const rows=[row({id:'crystal',quantity:200},{id:'atlas',quantity:80}),row({id:'crystal',quantity:400},{id:'atlas',quantity:160}),row({id:'jewel',quantity:50},null),row({id:'stone',quantity:2},null,true),row({id:'ignored',quantity:99},null,false,[])];
+ rows[0].next=['branchA','branchB'];
+ assert.deepEqual(evolutionMaterialTotals(rows),{standard:[{id:'crystal',quantity:600},{id:'jewel',quantity:50},{id:'stone',quantity:2}],alternative:[{id:'atlas',quantity:240},{id:'stone',quantity:2}]});
+ for(const lang of LOCALE_IDS){assert.ok(referenceText(lang).materialTotal);assert.ok(referenceText(lang).materialTotalNote);}
 });
