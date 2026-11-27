@@ -58,7 +58,7 @@ const prefix=localePrefix(lang);
     }
     const warnings=document.getElementById("quality-warnings")!;
     for(const note of data.warnings??[])warnings.append(create("li",marketAuditText(lang,String(note),({
-"The 197 unmatched group references remain unresolved and are not inferred.":"As 197 referências de grupo sem correspondência continuam inconclusivas, sem inferência.",
+"The 176 unmatched group references remain unresolved and are not inferred.":"As 176 referências de grupo sem correspondência continuam inconclusivas, sem inferência.",
 "Unindexed crafting material IDs retain original numeric references; do not guess their identities.":"IDs de materiais não indexados mantêm as referências numéricas originais; suas identidades não são presumidas.",
 "Source-consistent means internal indexes agree. It does not prove live-server drop rates, active monsters, or recipe availability.":"Consistência das fontes significa concordância entre índices internos. Não comprova taxas de drops, monstros ativos ou disponibilidade de receitas no servidor."
 } as Record<string,string>)[String(note)]??String(note))));

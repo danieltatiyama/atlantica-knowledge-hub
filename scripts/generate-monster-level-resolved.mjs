@@ -5,8 +5,9 @@
  * regenerated on every dev/build from the 53 SHA-approved original JSONs.
  *
  * Original reverse joins = 172,120 *all possible level bands*.
- * This stage resolves 23,905 matching group rows at each recorded character
- * level. The 197 references whose character level is below the first BandKey
+ * This stage resolves fixed-level rows and conditional main-level bands for confirmed adaptive creatures.
+ * Original fixed-level snapshot had 23,905 rows at each recorded character
+ * level. The 176 references whose character level is below the first BandKey
  * stay unresolved and are not falsely presented as actual drops.
  */
 import {readFileSync,writeFileSync,mkdirSync,rmSync,renameSync} from "node:fs";
@@ -113,9 +114,9 @@ export function createLevelResolvedDiscovery(clientRoot=itemRoot,monsterRoot=inp
       if(row.kind==="direct")direct++;else groupRows++;
     }
   }
-  check(direct===9959&&groupRefs===5784&&unresolved===197&&
-    groupRows===23905&&items.size===822&&creatureCounts.length===4351&&
-    creatureCounts.reduce((sum,r)=>sum+r[1],0)===33864,
+  check(direct===9959&&groupRefs===5784&&unresolved===176&&
+    groupRows===26201&&items.size===825&&creatureCounts.length===4351&&
+    creatureCounts.reduce((sum,r)=>sum+r[1],0)===36160,
     "Client band inference diverged from audited original level snapshot");
   const rows=[];
   const buckets={};
@@ -134,7 +135,8 @@ export function createLevelResolvedDiscovery(clientRoot=itemRoot,monsterRoot=inp
   const discoveryManifest={
     schemaVersion:"1.0",snapshotId:1,
     dataset:"level-resolved-client-monster-loot",
-    rule:"Choose greatest original GroupBands.BandKey <= recorded Characters level; only item rows from selected Band",
+    rule:"Fixed-level creatures: greatest BandKey <= recorded level. Confirmed main-level-scaled enemies: separate alternatives for every original band.",
+    mainLevelScaledCreatureCount:41,
     originalCharacterIDs:chars.size,
     originalDirectRows:direct,
     originalGroupRefs:groupRefs,
@@ -153,8 +155,8 @@ export function createLevelResolvedDiscovery(clientRoot=itemRoot,monsterRoot=inp
     derivedGroupReferences:groupRows,
     unmatchedLevelGroupRefs:unresolved,
     originalAllBandJoins:172120,
-    source:"audited-client-monster-loot + inferred active original BandKey by client level",
-    notice:"Level-filtered client-source candidates only. Percent estimates are inferred; do not confirm server availability or observed drop probabilities.",
+    source:"audited-client-monster-loot + fixed creature bands or conditional main-level bands",
+    notice:"Fixed-level and conditional main-level source candidates only. Percent estimates are inferred; do not confirm server availability or observed drop probabilities.",
     columns:["ItemID","EnglishName","DirectSourceRows","LevelMatchedGroupRows",
       "UniqueDirectCreatureIDs","UniqueGroupCreatureIDs"],
     rows,

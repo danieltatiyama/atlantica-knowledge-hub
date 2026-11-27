@@ -81,7 +81,7 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
       <div class="bestiary-stats" aria-label={monsterText(lang,"db","Source database coverage")}>
         <div><strong>{nf.format(4351)}</strong><span>{monsterText(lang,"db","Character IDs")}</span></div>
         <div><strong>{nf.format(9959)}</strong><span>{monsterText(lang,"db","Direct source drops")}</span></div>
-        <div><strong>822</strong><span>{monsterText(lang,"db","Items with level-matched drops")}</span></div>
+        <div><strong>825</strong><span>{monsterText(lang,"db","Items with level-matched drops")}</span></div>
       </div>
       <p class="bestiary-description">{monsterText(lang,"db","Not every client record represents a fightable monster. Client files do not establish current live-server availability.")}</p>
       <p class="warning">{monsterText(lang,"db","Possible drops are filtered by the original client level bracket. Estimated grouped rates combine two raw fields, but are NOT verified live-server probabilities.")}</p>
@@ -104,6 +104,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
   </main>
 </BaseLayout>
 <script>
+  import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
+  import {mainLevelBandRange,usesMainLevelBands} from "../data/monster-level-policy.mjs";
   import {monsterStatsText,monsterLevelNote} from "../i18n/monster-stats-ui.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
@@ -350,8 +352,22 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         directSection.append(node("h3",
           (monsterText(lang,"db","Possible monster drops"))+
           " ("+nf.format(selected.rows.length)+")"));
-        directSection.append(node("p",monsterText(lang,"db","This list uses the source bracket matching this creature's recorded level. Combined rates are game-client estimates, not verified live-server drop odds."),"subtle"));
-        if(selected.rows.length)appendItemTable(directSection,selected.rows);
+        directSection.append(node("p",selected.mainLevelScaled?scaledDropText(lang,"notice"):monsterText(lang,"db","This list uses the source bracket matching this creature's recorded level. Combined rates are game-client estimates, not verified live-server drop odds."),"subtle"));
+        if(selected.mainLevelScaled){
+          const direct=selected.rows.filter(r=>r.kind==="direct");
+          if(direct.length){directSection.append(node("h4",scaledDropText(lang,"direct")));appendItemTable(directSection,direct);}
+          const bandGroups=new Map<string,typeof selected.rows>();
+          for(const row of selected.rows.filter(r=>r.kind==="group")){
+            const key=row.groupId+"|"+row.selectedBand.band;
+            const entries=bandGroups.get(key)??[];entries.push(row);bandGroups.set(key,entries);
+          }
+          for(const entries of bandGroups.values()){
+            const first=entries[0],band=first.selectedBand.band;
+            const part=node("details",undefined,"source-band-details");part.dataset.wikiNavNative="true";
+            part.append(node("summary",scaledDropText(lang,"level")+" "+mainLevelBandRange(id,first.groupId,band)+" · Group "+first.groupId+" · Band "+band));
+            appendItemTable(part,entries);directSection.append(part);
+          }
+        }else if(selected.rows.length)appendItemTable(directSection,selected.rows);
         else directSection.append(node("p",monsterText(lang,"db","No item was resolved from this snapshot's levels and brackets. That does not establish the creature has no in-game drops."),"subtle"));
         body.append(directSection);
         if(selected.unresolved.length){
@@ -380,6 +396,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
             const group=groupData[ref[1]];
             const selectedBand=group?.bands?.filter(b=>Number(b[2])<=Number(entity[2]))
               .sort((a,b)=>Number(b[2])-Number(a[2]))[0]??null;
+            const scaled=usesMainLevelBands(entity,ref[1]);
+            if(scaled)return ["#"+ref[0],ref[1],ref[2],group.bands.map(b=>b[1]).join(" / "),group.bands.map(b=>b[2]).join(" / "),"—","—"];
             return ["#"+ref[0],ref[1],ref[2],
               selectedBand?selectedBand[1]:"—",
               selectedBand?selectedBand[2]:"—",
@@ -446,8 +464,8 @@ const title=monsterText(lang,"db","Client creatures and drop sources");
         const matchCounts=await countResp.json();
         if(matchCounts.schemaVersion!=="1.0"||matchCounts.snapshotId!==1||
           matchCounts.dataset!=="level-resolved-creature-drop-counts"||
-          matchCounts.count!==4351||matchCounts.matchedDropRows!==33864||
-          matchCounts.unresolvedRefs!==197||!Array.isArray(matchCounts.rows)||
+          matchCounts.count!==4351||matchCounts.matchedDropRows!==36160||
+          matchCounts.unresolvedRefs!==176||!Array.isArray(matchCounts.rows)||
           matchCounts.rows.length!==4351)
           throw Error("Level-resolved creature counts failed validation");
         possibleByCreature.clear();

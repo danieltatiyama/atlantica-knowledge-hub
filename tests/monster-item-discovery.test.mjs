@@ -50,8 +50,8 @@ test("bestiary UX links items, source drops, recipes and creature detail using e
   const itemDrops=read("src/components/MonsterItemSources.astro");
   const allItems=read("src/components/FullClientItemDatabasePage.astro");
   assert.ok(finder.includes("client-monster-drop-item-discovery"));
-  assert.ok(finder.includes('meta.itemIds!==822'));
-  assert.ok(finder.includes('meta.derivedGroupReferences!==23905'));
+  assert.ok(finder.includes('meta.itemIds!==825'));
+  assert.ok(finder.includes('meta.derivedGroupReferences!==26201'));
   assert.ok(finder.includes("source.direct"));
   assert.ok(finder.includes("source.group"));
   assert.ok(finder.includes('url.searchParams.set("item",itemId)'));

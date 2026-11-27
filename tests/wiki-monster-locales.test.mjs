@@ -31,7 +31,7 @@ test("original monster inference and localized item links remain intact",()=>{
  assert.ok(db.includes("resolveClientCreatureDrops(entity,rawLoot,groupData)"));
  assert.ok(db.includes('a.href=prefix+"/items/profile/?id="'));
  assert.ok(loot.includes('itemLink.href=prefix+"/items/profile/?id="'));
- assert.ok(loot.includes("meta.itemIds!==822"));
+ assert.ok(loot.includes("meta.itemIds!==825"));
  for(const s of [db,loot,sources]){
   assert.ok(s.includes("localePrefix(lang)"));
   assert.ok(s.includes("formatLevelResolvedPercent"));

@@ -23,10 +23,10 @@ test("audited reverse indexes reconcile with all 4,351 creature counts",()=>{
  assert.equal(result.status,"source-consistent");
  assert.equal(result.itemCatalog.ids,23586);
  assert.equal(result.monsters.ids,4351);
- assert.equal(result.monsters.matchedItemIds,822);
+ assert.equal(result.monsters.matchedItemIds,825);
  assert.equal(result.monsters.directRows,9959);
- assert.equal(result.monsters.levelMatchedGroupRows,23905);
- assert.equal(result.monsters.unresolvedGroupReferences,197);
+ assert.equal(result.monsters.levelMatchedGroupRows,26201);
+ assert.equal(result.monsters.unresolvedGroupReferences,176);
  assert.equal(result.checks.forwardReverseMatches,true);
  assert.equal(result.checks.hugeCrocodileReference,true);
 });

@@ -16,8 +16,8 @@ test("market and audit messages are translated, with preserved counts and source
  }
  const key="Found {count} of 421 items";
  assert.equal(marketAuditText("ko",key,"",{count:15}),"421개 중 15개 검색됨");
- const warning="The 197 unmatched group references remain unresolved and are not inferred.";
- assert.ok(marketAuditText("ja",warning).includes("197"));
+ const warning="The 176 unmatched group references remain unresolved and are not inferred.";
+ assert.ok(marketAuditText("ja",warning).includes("176"));
  assert.notEqual(marketAuditText("ja",warning),warning);
  const report="128/128 prices reported as matching the Market · source: player statement, Nov 23, 2026";
  for(const lang of NEW_GUIDE_LOCALES)assert.ok(marketAuditText(lang,report).includes("128/128"));
