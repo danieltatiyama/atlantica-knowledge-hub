@@ -91,7 +91,7 @@ for(const lang of LOCALE_IDS){
   assert.ok(html.includes(equipmentText(lang,en,pt)),path+" missing "+en);
  for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'),path+" missing alternate "+locale);
  const catalog=readFileSync(path+"index.html","utf8");
- if(NEW_GUIDE_LOCALES.includes(lang))assert.ok(catalog.includes('href="/'+lang+'/items/database/?id='),path+" source-only localized link");
+ if(NEW_GUIDE_LOCALES.includes(lang))assert.ok(catalog.includes('href="/'+lang+'/items/profile/?id='),path+" source-only localized link");
 }
 function countFiles(directory){
  return readdirSync(directory,{withFileTypes:true}).reduce((sum,entry)=>sum+(entry.isDirectory()?countFiles(directory+"/"+entry.name):1),0);
@@ -154,3 +154,10 @@ for(const lang of LOCALE_IDS){
  for(const path of ["/tools/market-prices/","/tools/data-quality/"])assert.ok(hub.includes('href="'+prefix+path+'"'),prefix+" missing "+path);
 }
 console.log("[IC] Verified eight localized market catalogs, observation workbenches and source audit pages.");
+
+for(const lang of LOCALE_IDS){
+ const html=readFileSync("dist"+localePrefix(lang)+"/items/profile/index.html","utf8");
+ assert.ok(html.includes('data-profile="true"'));
+ for(const locale of LOCALE_IDS)assert.ok(html.includes('hreflang="'+localeTag(locale)+'"'));
+}
+console.log("[IC] Verified eight dedicated item profile pages.");
