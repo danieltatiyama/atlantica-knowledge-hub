@@ -126,6 +126,8 @@ const title=itemDbText(lang,"Full client item database");
   </main>
 </BaseLayout>
 <script>
+  import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
+  import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
   import {itemDbText} from "../i18n/item-db-ui.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
@@ -303,8 +305,8 @@ const title=itemDbText(lang,"Full client item database");
         const meta=await lootSourceManifestPromise;
         if(!meta||meta.schemaVersion!=="1.0"||meta.snapshotId!==manifest?.snapshotId||
           meta.dataset!=="level-resolved-client-monster-loot"||
-          meta.levelMatchedGroupRows!==23905||
-          meta.unmatchedLevelGroupRefs!==197||
+          meta.levelMatchedGroupRows!==26201||
+          meta.unmatchedLevelGroupRefs!==176||
           !Array.isArray(meta.files?.itemSources))
           throw Error("Level-resolved client drop manifest mismatch");
         const bucket=Math.floor(Number(id)/1000);
@@ -354,7 +356,9 @@ const title=itemDbText(lang,"Full client item database");
             const tr=node("tr"),first=node("td");
             const link=node("a",name??("CharID #"+charId)) as HTMLAnchorElement;
             link.href=localePrefix(lang)+"/monsters/profile/?id="+encodeURIComponent(charId);
-            first.append(link);tr.append(first);
+            first.append(link);
+            if(source.kind==="group"){const range=mainLevelBandRange(charId,source.row[2],source.row[8]);if(range)first.append(node("small",scaledDropText(lang,"level")+" "+range+" · Band "+source.row[8]));}
+            tr.append(first);
             tr.append(node("td",formatLevelResolvedPercent(source.pct,lang)));
             tr.append(node("td",String(source.min)+"–"+String(source.max)));
             const cell=node("td"),audit=node("details");

@@ -33,6 +33,8 @@ const {lang,itemId}=Astro.props;
   </p>
 </section>
 <script>
+  import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
+  import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {monsterText} from "../i18n/monster-ui.mjs";
@@ -62,8 +64,8 @@ const {lang,itemId}=Astro.props;
         const meta=await getManifest();
         if(!meta||meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
           meta.dataset!=="level-resolved-client-monster-loot"||
-          meta.levelMatchedGroupRows!==23905||
-          meta.unmatchedLevelGroupRefs!==197||
+          meta.levelMatchedGroupRows!==26201||
+          meta.unmatchedLevelGroupRefs!==176||
           !Array.isArray(meta.files?.itemSources))
           throw Error("Level-resolved client monster source manifest missing or incompatible");
         const bucket=Math.floor(Number(id)/1000);
@@ -98,6 +100,7 @@ const {lang,itemId}=Astro.props;
             const link=node("a",name??("CharID #"+charId)) as HTMLAnchorElement;
             link.href=prefix+"/monsters/profile/?id="+encodeURIComponent(charId);
             creatureCell.append(link);
+            if(source.kind==="group"){const range=mainLevelBandRange(charId,source.row[2],source.row[8]);if(range)creatureCell.append(node("small",scaledDropText(lang,"level")+" "+range+" · Band "+source.row[8]));}
             creatureCell.append(node("small"," #"+charId));
             const alias=wikiNameAlias("monster",charId,name,lang);
             if(alias)creatureCell.append(node("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));

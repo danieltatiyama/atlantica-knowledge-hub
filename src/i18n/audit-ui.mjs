@@ -207,13 +207,13 @@ export const auditRows=[
     "監査レポートが利用できないか互換性がありません。"
   ],
   [
-    "The 197 unmatched group references remain unresolved and are not inferred.",
-    "Les 197 références de groupe sans correspondance restent non résolues, sans déduction.",
-    "Die 197 nicht passenden Gruppenreferenzen bleiben ungeklärt und werden nicht abgeleitet.",
-    "Las 197 referencias de grupo sin coincidencia permanecen sin resolver, sin inferencias.",
-    "일치하지 않는 그룹 참조 197개는 미해결 상태로 유지하며 추정하지 않습니다.",
-    "197 条不匹配组引用保持未解析，不作推断。",
-    "一致しない197件のグループ参照は未解決のままとし、推定しません。"
+    "The 176 unmatched group references remain unresolved and are not inferred.",
+    "Les 176 références de groupe sans correspondance restent non résolues, sans déduction.",
+    "Die 176 nicht passenden Gruppenreferenzen bleiben ungeklärt und werden nicht abgeleitet.",
+    "Las 176 referencias de grupo sin coincidencia permanecen sin resolver, sin inferencias.",
+    "일치하지 않는 그룹 참조 176개는 미해결 상태로 유지하며 추정하지 않습니다.",
+    "176 条不匹配组引用保持未解析，不作推断。",
+    "一致しない176件のグループ参照は未解決のままとし、推定しません。"
   ],
   [
     "Unindexed crafting material IDs retain original numeric references; do not guess their identities.",

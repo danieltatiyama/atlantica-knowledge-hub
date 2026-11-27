@@ -5,7 +5,7 @@ import {monsterText} from "../i18n/monster-ui.mjs";
 import {localePrefix,localeTag,localizedPaths} from "../i18n/locales.mjs";
 import type {Lang} from "../i18n/ui";
 /**
- * A level-filtered client-side index of the 822 ItemIDs with audited source-loot
+ * A level-filtered client-side index of the 825 ItemIDs with audited source-loot
  * references. This is source discovery, not probability estimation.
  */
 interface Props{lang:Lang;}
@@ -62,6 +62,8 @@ const {lang}=Astro.props;
   <p class="finder-note">{monsterText(lang,"loot","Drops are filtered by the level bracket matching each client creature. The combined percentage is an estimate, NOT verified live-server odds. Original values remain in View source.")}</p>
 </section>
 <script>
+  import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
+  import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {monsterText} from "../i18n/monster-ui.mjs";
@@ -184,6 +186,7 @@ const {lang}=Astro.props;
           const first=create("td"),link=create("a",name??("CharID #"+charId)) as HTMLAnchorElement;
           link.href=prefix+"/monsters/profile/?id="+encodeURIComponent(charId);
           first.append(link);
+          if(type!=="direct"){const range=mainLevelBandRange(charId,entry[2],entry[8]);if(range)first.append(create("small",scaledDropText(lang,"level")+" "+range+" · Band "+entry[8]));}
           if(name)first.append(" (#"+charId+")");
           const alias=wikiNameAlias("monster",charId,name,lang);
           if(alias)first.append(create("small",aliasText(lang,"Wiki translation (unofficial)")+": "+alias));
@@ -275,12 +278,12 @@ const {lang}=Astro.props;
         const meta=await response.json();
         if(meta.schemaVersion!=="1.0"||meta.snapshotId!==1||
           meta.dataset!=="client-monster-drop-item-discovery"||
-          meta.itemIds!==822||meta.rawDirectSourceRows!==9959||
-          meta.derivedGroupReferences!==23905||meta.unmatchedLevelGroupRefs!==197||
+          meta.itemIds!==825||meta.rawDirectSourceRows!==9959||
+          meta.derivedGroupReferences!==26201||meta.unmatchedLevelGroupRefs!==176||
           !Array.isArray(meta.rows))
           throw Error("Original drop item discovery source mismatch");
         all=meta.rows;
-        if(all.length!==822||new Set(all.map(r=>r[0])).size!==all.length)
+        if(all.length!==825||new Set(all.map(r=>r[0])).size!==all.length)
           throw Error("Original drop ItemIDs incomplete");
         query.disabled=false;mode.disabled=false;filtered=all;list.hidden=false;
         renderItems();

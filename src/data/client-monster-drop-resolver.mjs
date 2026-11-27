@@ -1,3 +1,4 @@
+import {usesMainLevelBands} from "./monster-level-policy.mjs";
 /**
  * Game-client source inference, calibrated against the in-game Huge Crocodile
  * (CharID 289 / recorded level 71) loot panel on 2026-11-23.
@@ -82,12 +83,15 @@ export function resolveClientCreatureDrops(characterRow,source,groups){
   }
   for(const ref of sourceGroups){
     const gid=ref[1],group=groups?.[gid];
-    const selection=selectClientLevelBand(group,rawLevel);
+    const selections=usesMainLevelBands(characterRow,gid)&&group?.bands
+      ?group.bands.map(b=>selectClientLevelBand(group,b[2])).filter(Boolean)
+      :[selectClientLevelBand(group,rawLevel)].filter(Boolean);
+    const selection=selections[0];
     if(!selection){
       unresolved.push({ref,reason:group?"no-matching-level-band":"missing-group"});
       continue;
     }
-    for(const drop of group.drops??[]){
+    for(const selection of selections)for(const drop of group.drops??[]){
       if(String(drop[1])!==selection.band)continue;
       rows.push({
         kind:"group",itemId:drop[2],name:drop[3],
@@ -98,7 +102,7 @@ export function resolveClientCreatureDrops(characterRow,source,groups){
       });
     }
   }
-  return {rows,unresolved,rawDirectCount:sourceDirect.length,
+  return {rows,unresolved,mainLevelScaled:sourceGroups.some(ref=>usesMainLevelBands(characterRow,ref[1])),rawDirectCount:sourceDirect.length,
     rawGroupReferenceCount:sourceGroups.length};
 }
 
@@ -114,6 +118,7 @@ export function resolvedReverseRowForDrop(charId,charName,row){
 
 export function isOriginalReverseRowActive(row,character,group){
   if(!Array.isArray(row)||row.length!==11||!character)return false;
+  if(usesMainLevelBands(character,row[2]))return Boolean(group?.bands?.some(b=>String(b[1])===String(row[8])));
   const selection=selectClientLevelBand(group,character[2]);
   return selection!==null&&row[8]===selection.band;
 }

@@ -61,11 +61,11 @@ test("estimated percentages use independent raw fields from each two-stage group
 
 test("generated reverse item sources exclude wrong level bands for every item",()=>{
   const data=createLevelResolvedDiscovery();
-  assert.equal(data.index.itemIds,822);
+  assert.equal(data.index.itemIds,825);
   assert.equal(data.manifest.originalAllBandJoins,172120);
   assert.equal(data.manifest.originalDirectRows,9959);
-  assert.equal(data.manifest.levelMatchedGroupRows,23905);
-  assert.equal(data.manifest.unmatchedLevelGroupRefs,197);
+  assert.equal(data.manifest.levelMatchedGroupRows,26201);
+  assert.equal(data.manifest.unmatchedLevelGroupRefs,176);
   assert.equal(data.manifest.originalCharacterIDs,4351);
   assert.equal(data.creatureCounts.length,4351);
   assert.equal(data.creatureCounts.find(x=>x[0]==="289")[1],6);
@@ -75,9 +75,9 @@ test("generated reverse item sources exclude wrong level bands for every item",(
   assert.ok(silver?.group.some(r=>r[0]==="289"));
   const spirit=data.items[20]["20996"];
   assert.ok(spirit?.group.some(r=>r[0]==="289"));
-  assert.equal(data.index.rows.length,822);
-  assert.equal(data.index.derivedGroupReferences,23905);
-  assert.equal(data.index.unmatchedLevelGroupRefs,197);
+  assert.equal(data.index.rows.length,825);
+  assert.equal(data.index.derivedGroupReferences,26201);
+  assert.equal(data.index.unmatchedLevelGroupRefs,176);
   assert.equal(data.manifest.files.itemSources.length,30);
 });
 
@@ -106,7 +106,7 @@ test("public UIs use level-selected sources but preserve exact raw records as op
     assert.ok(itemUI.includes("formatLevelResolvedPercent"));
     assert.ok(itemUI.includes("View source"));
   }
-  assert.ok(codex.includes("meta.itemIds!==822"));
+  assert.ok(codex.includes("meta.itemIds!==825"));
   assert.ok(!codex.includes("meta.itemIds!==893"));
   assert.ok(!monster.includes(".innerHTML"));
   assert.ok(!profile.includes(".innerHTML"));
