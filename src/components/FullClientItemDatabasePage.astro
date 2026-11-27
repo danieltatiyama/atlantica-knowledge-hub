@@ -126,6 +126,7 @@ const title=itemDbText(lang,"Full client item database");
   </main>
 </BaseLayout>
 <script>
+  import {prependItemIcon} from "../lib/client-item-icons";
   import {scaledDropText} from "../i18n/scaled-drop-ui.mjs";
   import {mainLevelBandRange} from "../data/monster-level-policy.mjs";
   import {wikiNameAlias,matchesWikiNameAlias} from "../data/wiki-name-aliases.mjs";
@@ -557,6 +558,7 @@ const title=itemDbText(lang,"Full client item database");
     function linkItem(id:string,title:string){
       const a=node("a",title) as HTMLAnchorElement;
       a.href=localePrefix(lang)+"/items/profile/?id="+encodeURIComponent(id);
+      prependItemIcon(a,id);
       return a;
     }
     function updateComparisonSelection(){
@@ -892,6 +894,7 @@ const title=itemDbText(lang,"Full client item database");
       detail.hidden=false;details.replaceChildren();
       detailName.textContent=row[1]??`Item ID ${id}`;
       if(profile)document.title=detailName.textContent+" | Atlantica Knowledge Hub";
+      if(row[6]==="named")prependItemIcon(detailName,id,64);
       detailMeta.textContent=`ID ${id} · ${row[2]??"—"} · ${itemDbText(lang,"sources")}: ${row[5]}`;
       const alias=row[6]==="named"?wikiNameAlias("item",id,row[1],lang):null;
       if(alias)detailMeta.textContent+=" · "+aliasText(lang,"Wiki translation (unofficial)")+": "+alias;
