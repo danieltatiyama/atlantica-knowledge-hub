@@ -25,7 +25,7 @@ test("catalog dictionaries have a unique label in every locale",()=>{
 test("localized listing routes preserve locale and unsupported detail paths do not pretend to be translated",()=>{
  const rootCatalogs=["/items/","/events/","/mercenaries/","/items/database/","/monsters/"];
  const nestedCatalogs=["/mercenaries/database/","/mercenaries/skills/"];
- assert.deepEqual(new Set(LOCALIZED_CATALOG_PATHS),new Set([...rootCatalogs,...nestedCatalogs]));
+ assert.deepEqual(new Set(LOCALIZED_CATALOG_PATHS),new Set([...rootCatalogs,...nestedCatalogs,"/monsters/profile/"]));
  for(const lang of LOCALE_IDS){
   for(const path of LOCALIZED_CATALOG_PATHS){
    assert.equal(catalogPath(lang,path),localePrefix(lang)+path);
@@ -34,9 +34,10 @@ test("localized listing routes preserve locale and unsupported detail paths do n
   assert.equal(catalogPath(lang,"/items/1/"),localePrefix(legacyLocale(lang))+"/items/1/");
  }
  for(const path of LOCALIZED_CATALOG_PATHS){
-  assert.ok(read("src/pages/[locale]"+path+"index.astro").includes("NEW_GUIDE_LOCALES"));
-  assert.ok(existsSync("src/pages"+path+"index.astro"));
-  assert.ok(existsSync("src/pages/pt-br"+path+"index.astro"));
+  const file=path==="/monsters/profile/"?"/monsters/profile.astro":path+"index.astro";
+  assert.ok(read("src/pages/[locale]"+file).includes("NEW_GUIDE_LOCALES"));
+  assert.ok(existsSync("src/pages"+file));
+  assert.ok(existsSync("src/pages/pt-br"+file));
  }
  for(const page of ["Header","HomePage"]){
   const source=read("src/components/"+page+".astro");
