@@ -134,6 +134,8 @@ const title=itemDbText(lang,"Full client item database");
   import {itemDbText} from "../i18n/item-db-ui.mjs";
   import {aliasText} from "../i18n/name-alias-ui.mjs";
   import {localePrefix,legacyLocale,localeTag,equipmentProfilePath} from "../i18n/locales.mjs";
+  import {atlasEnhancementCosts} from "../data/atlas-enhancement-costs.mjs";
+  import {atlasCostText} from "../i18n/atlas-cost-ui.mjs";
   import {buildHistoricalClientProjection,labelForClientField} from "../data/client-item-stat-summary.mjs";
   import {summarizeCraftBatch} from "../data/client-craft-batch.mjs";
   import {buildClientRecipeViews} from "../data/client-craft-recipe-views.mjs";
@@ -530,7 +532,9 @@ const title=itemDbText(lang,"Full client item database");
       table.append(body);const wrap=node("div",undefined,"stat-table-scroll");
       wrap.append(table);sourceRows.append(wrap);parent.append(sourceRows);
     }
-    function addHistoricalGradeTable(parent:HTMLElement,rawRows:[number,Record<string,string>][]) {
+    let enhancementColumnObserver:ResizeObserver|undefined;
+    function addHistoricalGradeTable(parent:HTMLElement,itemId:string,itemName:string,rawRows:[number,Record<string,string>][]) {
+      enhancementColumnObserver?.disconnect();
       const model=buildHistoricalClientProjection({sourceRows:rawRows.map(([sourceRowNumber,fieldsRaw])=>({
         sourceRowNumber,fieldsRaw,
       }))});
@@ -550,16 +554,47 @@ const title=itemDbText(lang,"Full client item database");
           (fixed.includes(key)?" =":baselineOnly.includes(key)?" (+0)":" ×");
         headRow.append(node("th",label));
       }
-      headRow.append(node("th",itemDbText(lang,"Basis")));head.append(headRow);table.append(head);
+      const atlasColumns=[['power','Atlas Power'],['safe','Atlas Safe'],['aoPower','AO Day Power'],['aoSafe','AO Day Safe']];
+      for(const [,key] of atlasColumns)headRow.append(node("th",atlasCostText(lang,key)));
+      headRow.append(node("th",atlasCostText(lang,"Stat basis")));head.append(headRow);table.append(head);
       const body=node("tbody");
       for(const row of model.rows){
         const tr=node("tr");tr.append(node("td","+"+row.grade));
         for(const key of cols)tr.append(node("td",String(row.values[key]??"—")));
+        const atlas=atlasEnhancementCosts(itemId,itemName,row.grade);
+        for(const [key] of atlasColumns){
+          const value=atlas?.[key],blocked=key.toLowerCase().includes('safe')?atlas?.safeBlocked:atlas?.powerBlocked;
+          const projected=atlas?.projection&&value!==null&&!(key==='aoPower'&&atlas.aoObserved);
+          const cell=node("td",blocked?atlasCostText(lang,'Unavailable'):value===null||value===undefined?'—':(projected?'≈ ':'')+number.format(value));
+          cell.dataset.atlasColumn=key;cell.dataset.sortValue=value===null||value===undefined?'':String(value);
+          if(atlas&&value!==null&&value!==undefined){
+            cell.title=atlasCostText(lang,projected?'Apocalyptic projection':key.startsWith('ao')&&atlas.aoObserved?'Observed in game at 25% discount':'Historical reference / estimate');
+            const range=key==='power'?atlas.powerRange:key==='aoPower'?atlas.aoPowerRange:null;
+            if(projected&&range)cell.title+=' · '+number.format(range[0])+'–'+number.format(range[1]);
+          }
+          tr.append(cell);
+        }
         tr.append(node("td",row.grade===0?(itemDbText(lang,"Client raw")):(itemDbText(lang,"Estimated"))));
         body.append(tr);
       }
       table.append(body);
-      const scroller=node("div",undefined,"stat-table-scroll");scroller.append(table);parent.append(scroller);
+      const scroller=node("div",undefined,"stat-table-scroll enhancement-scroll");
+      scroller.tabIndex=0;scroller.setAttribute('role','region');scroller.setAttribute('aria-label',itemDbText(lang,"Enhancement +0 to +10 — historical model"));
+      scroller.append(table);parent.append(scroller);
+      parent.append(node('p',atlasCostText(lang,'Atlas Ore per attempt from the listed grade. AO Day assumes 25% off, rounded up. Historical series costs; only supplied examples are checked in game. — means no sourced cost, including +10 → L. Atlas [E] is not included.'),'detail-note'));
+      const projection=atlasEnhancementCosts(itemId,itemName,7);
+      if(projection?.projection)parent.append(node('p',atlasCostText(lang,'≈ marks a projection, not a measured cost. Anchor: +7 Apocalyptic Leggings, 182 Atlas on AO Day; inferred base 242. Other grades use the relative Judgment curve. Other Apocalyptic items share this unverified family estimate. Power starts at +6; Safe is unavailable. Different historical curves give different projections, especially at +9.'),'detail-note'));
+      const gradeHeader=headRow.firstElementChild as HTMLElement;
+      if(gradeHeader&&'ResizeObserver' in window){
+        enhancementColumnObserver=new ResizeObserver(()=>scroller.style.setProperty('--enhancement-grade-width',Math.ceil(gradeHeader.getBoundingClientRect().width)+'px'));
+        enhancementColumnObserver.observe(gradeHeader);
+      }
+      const atlasSources=node('details'),summary=node('summary',atlasCostText(lang,'Atlas sources'));atlasSources.append(summary);
+      const reference=atlasEnhancementCosts(itemId,itemName,0);
+      const referenceUrl=reference?.source??(projection?.projection?"https://arcanicvoid.com/atlantica-online/equipment/atlas/":null);
+      if(referenceUrl){const link=node('a',atlasCostText(lang,'Historical reference / estimate')) as HTMLAnchorElement;link.href=referenceUrl;link.target='_blank';link.rel='noopener';atlasSources.append(link);}
+      if(projection?.projection)atlasSources.append(node('p','P(g) ≈ round(242 × JudgmentPower(g) / 310)'));
+      if(referenceUrl)parent.append(atlasSources);
       if(model.fixedConflicts?.length)parent.append(node("p",itemDbText(lang,"Conflicting fixed fields omitted: {fields}",{fields:model.fixedConflicts.join(", ")}),"subtle"));
     }
     function linkItem(id:string,title:string){
@@ -929,7 +964,7 @@ const title=itemDbText(lang,"Full client item database");
         if(new URL(location.href).searchParams.get("id")!==id)return;
         details.replaceChildren();
         if(rawStats){
-          if(equipmentCandidateCategories.has(row[2]??""))addHistoricalGradeTable(details,rawStats);
+          if(equipmentCandidateCategories.has(row[2]??""))addHistoricalGradeTable(details,id,row[1]??"",rawStats);
         }
         addItemOverview(details,row,data);
         if(rawStats)addRawNumericSourceTable(details,rawStats);
@@ -1374,9 +1409,25 @@ const title=itemDbText(lang,"Full client item database");
   }
   #full-client-db .numeric-source-table td:nth-child(2){font-weight:600}
   #full-client-db .numeric-source-table td:last-child{color:var(--color-text-muted)}
-  #full-client-db .enhancement-table :is(th,td):not(:first-child):not(:last-child){
-    text-align:right;white-space:nowrap;
+  #full-client-db .enhancement-scroll{
+    scroll-snap-type:x proximity;scroll-padding-inline-start:var(--enhancement-grade-width,5rem);
+    overscroll-behavior-inline:contain;
   }
+  #full-client-db .stat-table-scroll .enhancement-table{width:max-content;min-width:100%;}
+  #full-client-db .stat-table-scroll .enhancement-table :is(th,td){
+    text-align:center;white-space:nowrap;padding:9px 12px;scroll-snap-align:start;
+  }
+  #full-client-db .enhancement-table :is(th,td):first-child{
+    position:sticky;left:0;z-index:1;min-width:5rem;box-sizing:border-box;
+    background:var(--color-surface);
+  }
+  #full-client-db .enhancement-table tbody tr:nth-child(even) td:first-child{
+    background:color-mix(in srgb,var(--color-surface) 94%,var(--color-text));
+  }
+  #full-client-db .enhancement-table thead th:first-child{
+    z-index:2;background:color-mix(in srgb,var(--color-surface) 88%,var(--color-accent));
+  }
+  #full-client-db .enhancement-scroll:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px;}
   #full-client-db .enhancement-table td:first-child{
     font-weight:600;white-space:nowrap;color:var(--color-accent);
   }
