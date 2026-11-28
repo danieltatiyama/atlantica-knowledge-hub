@@ -1,0 +1,859 @@
+{
+  "schemaVersion": 1,
+  "materialId": "21559",
+  "materialName": "Atlas Ore",
+  "aoDayDiscountPercent": 25,
+  "profiles": {
+    "judgment": {
+      "power": [
+        40,
+        60,
+        80,
+        110,
+        150,
+        200,
+        250,
+        310,
+        370,
+        450
+      ],
+      "safe": [
+        55,
+        80,
+        110,
+        150,
+        200,
+        270,
+        360,
+        460,
+        580,
+        740
+      ],
+      "source": "https://arcanicvoid.com/atlantica-online/equipment/atlas/"
+    },
+    "twilight": {
+      "power": [
+        52,
+        78,
+        104,
+        146,
+        196,
+        260,
+        326,
+        404,
+        482,
+        586
+      ],
+      "safe": [
+        72,
+        104,
+        144,
+        196,
+        260,
+        352,
+        468,
+        598,
+        754,
+        962
+      ],
+      "source": "https://arcanicvoid.com/atlantica-online/equipment/atlas/"
+    },
+    "abyssal": {
+      "power": [
+        65,
+        92,
+        122,
+        174,
+        220,
+        298,
+        394,
+        492,
+        592,
+        760
+      ],
+      "safe": [
+        90,
+        140,
+        200,
+        260,
+        348,
+        440,
+        550,
+        688,
+        820,
+        1160
+      ],
+      "source": "https://arcanicvoid.com/atlantica-online/equipment/atlas/"
+    },
+    "dark-pegasus": {
+      "power": [
+        36,
+        54,
+        72,
+        99,
+        135,
+        180,
+        225,
+        279,
+        333,
+        405
+      ],
+      "safe": [
+        50,
+        72,
+        99,
+        135,
+        180,
+        243,
+        324,
+        414,
+        522,
+        666
+      ],
+      "source": "https://atlantica-online.wikidot.com/item:dark-pegasus-instrument"
+    }
+  },
+  "items": {
+    "28224": {
+      "name": "Judgment Whip",
+      "profile": "judgment",
+      "category": "Whip",
+      "level": "155"
+    },
+    "47": {
+      "name": "Judgment Sword",
+      "profile": "judgment",
+      "category": "Sword",
+      "level": "155"
+    },
+    "136": {
+      "name": "Judgment Spear",
+      "profile": "judgment",
+      "category": "Spear",
+      "level": "155"
+    },
+    "138": {
+      "name": "Dark Pegasus Lance",
+      "profile": "dark-pegasus",
+      "category": "Spear",
+      "level": "150"
+    },
+    "185": {
+      "name": "Twilight Sword",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "186": {
+      "name": "Twilight Lance",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "187": {
+      "name": "Twilight Axe",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "188": {
+      "name": "Twilight Bow",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "189": {
+      "name": "Twilight Gun",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "190": {
+      "name": "Twilight Cannon",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "191": {
+      "name": "Twilight Staff",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "192": {
+      "name": "Twilight Instrument",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "193": {
+      "name": "Twilight Power Saw",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "194": {
+      "name": "Twilight Whip",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "195": {
+      "name": "Twilight Orb",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "196": {
+      "name": "Twilight Shield",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "224": {
+      "name": "Judgment Staff",
+      "profile": "judgment",
+      "category": "Staff",
+      "level": "155"
+    },
+    "351": {
+      "name": "Abyssal Sword",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "352": {
+      "name": "Abyssal Lance",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "353": {
+      "name": "Abyssal Axe",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "354": {
+      "name": "Abyssal Bow",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "355": {
+      "name": "Abyssal Rifle",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "356": {
+      "name": "Abyssal Cannon",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "357": {
+      "name": "Abyssal Staff",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "358": {
+      "name": "Abyssal Instrument",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "359": {
+      "name": "Abyssal Power Saw",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "360": {
+      "name": "Abyssal Whip",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "361": {
+      "name": "Abyssal Fist",
+      "profile": "abyssal",
+      "category": "Weapon",
+      "level": "175"
+    },
+    "362": {
+      "name": "Abyssal Shield",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "363": {
+      "name": "Abyssal Orb",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "387": {
+      "name": "Judgment Axe",
+      "profile": "judgment",
+      "category": "Axe",
+      "level": "155"
+    },
+    "389": {
+      "name": "Dark Pegasus Axe",
+      "profile": "dark-pegasus",
+      "category": "Axe",
+      "level": "150"
+    },
+    "430": {
+      "name": "Judgment Bow",
+      "profile": "judgment",
+      "category": "Bow",
+      "level": "155"
+    },
+    "431": {
+      "name": "Dark Pegasus Bow",
+      "profile": "dark-pegasus",
+      "category": "Bow",
+      "level": "150"
+    },
+    "545": {
+      "name": "Judgment Rifle",
+      "profile": "judgment",
+      "category": "Gun",
+      "level": "155"
+    },
+    "645": {
+      "name": "Judgment Heavy Armor",
+      "profile": "judgment",
+      "category": "Armor",
+      "level": "155"
+    },
+    "646": {
+      "name": "Judgment Light Armor",
+      "profile": "judgment",
+      "category": "Armor",
+      "level": "155"
+    },
+    "647": {
+      "name": "Judgment Robe",
+      "profile": "judgment",
+      "category": "Armor",
+      "level": "155"
+    },
+    "656": {
+      "name": "Twilight Heavy Armor",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "657": {
+      "name": "Twilight Light Armor",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "658": {
+      "name": "Twilight Robe",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "1358": {
+      "name": "Judgment Power Saw",
+      "profile": "judgment",
+      "category": "Saw",
+      "level": "155"
+    },
+    "1458": {
+      "name": "Judgment Instrument",
+      "profile": "judgment",
+      "category": "Guitar",
+      "level": "155"
+    },
+    "1460": {
+      "name": "Dark Pegasus Instrument",
+      "profile": "dark-pegasus",
+      "category": "Guitar",
+      "level": "150"
+    },
+    "1531": {
+      "name": "Judgment Boots",
+      "profile": "judgment",
+      "category": "Boots",
+      "level": "155"
+    },
+    "1532": {
+      "name": "Judgment Chain Boots",
+      "profile": "judgment",
+      "category": "Boots",
+      "level": "155"
+    },
+    "1533": {
+      "name": "Judgment Shoes",
+      "profile": "judgment",
+      "category": "Boots",
+      "level": "155"
+    },
+    "1546": {
+      "name": "Twilight Boots",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "1547": {
+      "name": "Twilight Chain Boots",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "1548": {
+      "name": "Twilight Shoes",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "1831": {
+      "name": "Judgment Gauntlets",
+      "profile": "judgment",
+      "category": "Glove",
+      "level": "155"
+    },
+    "1832": {
+      "name": "Judgment Chain Gloves",
+      "profile": "judgment",
+      "category": "Glove",
+      "level": "155"
+    },
+    "1833": {
+      "name": "Judgment Gloves",
+      "profile": "judgment",
+      "category": "Glove",
+      "level": "155"
+    },
+    "1846": {
+      "name": "Twilight Gauntlets",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "1847": {
+      "name": "Twilight Chain Gauntlets",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "1848": {
+      "name": "Twilight Gloves",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "3773": {
+      "name": "Judgment Fist",
+      "profile": "judgment",
+      "category": "Weapon",
+      "level": "155"
+    },
+    "3774": {
+      "name": "Twilight Fist",
+      "profile": "twilight",
+      "category": "Weapon",
+      "level": "165"
+    },
+    "6328": {
+      "name": "Abyssal Helmet",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6329": {
+      "name": "Abyssal Heavy Armor",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6330": {
+      "name": "Abyssal Greaves",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6331": {
+      "name": "Abyssal Gauntlets",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6332": {
+      "name": "Abyssal Boots",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6338": {
+      "name": "Abyssal Chain Helm",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6339": {
+      "name": "Abyssal Light Armor",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6340": {
+      "name": "Abyssal Leggings",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6341": {
+      "name": "Abyssal Chain Gauntlets",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6342": {
+      "name": "Abyssal Chain Boots",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6348": {
+      "name": "Abyssal Hat",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6349": {
+      "name": "Abyssal Robe",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6350": {
+      "name": "Abyssal Gloves",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "6351": {
+      "name": "Abyssal Shoes",
+      "profile": "abyssal",
+      "category": "Defence",
+      "level": "175"
+    },
+    "9345": {
+      "name": "Judgment Cannon",
+      "profile": "judgment",
+      "category": "Cannon",
+      "level": "155"
+    },
+    "10197": {
+      "name": "Judgment Helmet",
+      "profile": "judgment",
+      "category": "Helmet",
+      "level": "155"
+    },
+    "10198": {
+      "name": "Judgment Chain Helmet",
+      "profile": "judgment",
+      "category": "Helmet",
+      "level": "155"
+    },
+    "10199": {
+      "name": "Judgment Hat",
+      "profile": "judgment",
+      "category": "Helmet",
+      "level": "155"
+    },
+    "10205": {
+      "name": "Twilight Helmet",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "10206": {
+      "name": "Twilight Chain Helm",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "10207": {
+      "name": "Twilight Hat",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "10397": {
+      "name": "Twilight Greaves",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "10398": {
+      "name": "Twilight Pants",
+      "profile": "twilight",
+      "category": "Defence",
+      "level": "165"
+    },
+    "10413": {
+      "name": "Judgment Greaves",
+      "profile": "judgment",
+      "category": "Pants",
+      "level": "155"
+    },
+    "10414": {
+      "name": "Judgment Leggings",
+      "profile": "judgment",
+      "category": "Pants",
+      "level": "155"
+    },
+    "11105": {
+      "name": "Judgment Orb",
+      "profile": "judgment",
+      "category": "Orb",
+      "level": "155"
+    },
+    "11249": {
+      "name": "Judgment Shield",
+      "profile": "judgment",
+      "category": "Shield",
+      "level": "155"
+    },
+    "5691": {
+      "name": "Apocalypse Sword",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5692": {
+      "name": "Apocalypse Axe",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5693": {
+      "name": "Apocalypse Bow",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5694": {
+      "name": "Apocalypse Cannon",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5695": {
+      "name": "Apocalypse Rifle",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5696": {
+      "name": "Apocalypse Chainsaw",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5697": {
+      "name": "Apocalypse Instrument",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5698": {
+      "name": "Apocalypse Spear",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5699": {
+      "name": "Apocalypse Staff",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5700": {
+      "name": "Apocalypse Whip",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5701": {
+      "name": "Apocalypse Gauntlet",
+      "profile": "apocalyptic-projection",
+      "category": "Weapon",
+      "level": "190"
+    },
+    "5702": {
+      "name": "Apocalypse Shield",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "5703": {
+      "name": "Apocalypse Orb",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18800": {
+      "name": "Apocalyptic Helmet",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18801": {
+      "name": "Apocalyptic Heavy Armor",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18802": {
+      "name": "Apocalyptic Greaves",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18803": {
+      "name": "Apocalyptic Gauntlets",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18804": {
+      "name": "Apocalyptic Boots",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18805": {
+      "name": "Apocalyptic Chain Helm",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18806": {
+      "name": "Apocalyptic Light Armor",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18807": {
+      "name": "Apocalyptic Leggings",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18808": {
+      "name": "Apocalyptic Chain Gauntlets",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18809": {
+      "name": "Apocalyptic Chain Boots",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18810": {
+      "name": "Apocalyptic Hat",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18811": {
+      "name": "Apocalyptic Robe",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18812": {
+      "name": "Apocalyptic Gloves",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    },
+    "18813": {
+      "name": "Apocalyptic Shoes",
+      "profile": "apocalyptic-projection",
+      "category": "Defence",
+      "level": "190"
+    }
+  },
+  "observations": [
+    {
+      "id": "224",
+      "grade": 0,
+      "discountPercent": 25,
+      "power": 30,
+      "safe": 42
+    },
+    {
+      "id": "187",
+      "grade": 0,
+      "discountPercent": 25,
+      "power": 39,
+      "safe": 54
+    },
+    {
+      "id": "362",
+      "grade": 0,
+      "discountPercent": 25,
+      "power": 49,
+      "safe": 68
+    },
+    {
+      "id": "387",
+      "grade": 5,
+      "discountPercent": 25,
+      "power": 150,
+      "safe": 203
+    },
+    {
+      "id": "185",
+      "grade": 5,
+      "discountPercent": 25,
+      "power": 195,
+      "safe": 264
+    },
+    {
+      "id": "389",
+      "grade": 5,
+      "discountPercent": 25,
+      "power": 135,
+      "safe": 183
+    },
+    {
+      "id": "18807",
+      "grade": 7,
+      "discountPercent": 25,
+      "power": 182,
+      "safe": null
+    }
+  ],
+  "note": "Historical cost lookup by explicit named ItemID, never by level alone. Current-grade per-attempt cost. AO Day = ceil(base * 3 / 4), consistent with 12 supplied observations. Grade +10 and unmapped items are unknown, not zero. Dark Pegasus profile is a historical weapon-family reference; Axe has only the supplied +5 AO-Day comparison.",
+  "apocalypticProjection": {
+    "anchorItemId": "18807",
+    "anchorGrade": 7,
+    "anchorAoDayPower": 182,
+    "anchorBasePower": 242,
+    "baseInference": "Only integer B satisfying ceil(3*B/4)=182 is 242; assumes the observed 25% ceil rule.",
+    "shapeProfile": "judgment",
+    "rule": "round(anchorBasePower * judgmentPower[grade] / judgmentPower[7])",
+    "allowedGrades": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "eligibilitySource": "Player confirmation: no Power below +6; no Safe at any grade.",
+    "scope": "Explicit standard level-190 Apocalypse weapons and Apocalyptic armour only. Shared-family projections from one leggings observation, not individually verified."
+  }
+}
