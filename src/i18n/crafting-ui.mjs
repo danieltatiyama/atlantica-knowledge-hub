@@ -1,6 +1,8 @@
 import {LOCALE_IDS} from "./locales.mjs";
 import {toolText,toolRows} from "./tools-ui.mjs";
 export const craftingRows=[
+["Widen tree","Élargir l’arbre","Baum verbreitern","Ampliar árbol","트리 너비 확장","加宽制作树","ツリーの幅を広げる"],
+["Restore width","Rétablir la largeur","Breite zurücksetzen","Restaurar ancho","너비 복원","恢复宽度","幅を元に戻す"],
 ["{count} empty prices filled with NPC reference (not Market-verified).","{count} prix vides remplis avec la référence NPC (marché non vérifié).","{count} leere Preise mit NPC-Referenz gefüllt (Markt ungeprüft).","{count} precios vacíos rellenados con referencia NPC (mercado no verificado).","빈 가격 {count}개를 NPC 참고값으로 채웠습니다 (시장 미검증).","已用 NPC 参考价填充 {count} 个空白价格（市场未验证）。","空欄の価格{count}件をNPC参考値で入力しました（市場未確認）。"],
 
   [

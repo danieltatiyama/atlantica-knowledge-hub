@@ -1040,3 +1040,9 @@ Sempre que uma nova funcionalidade for implementada, avaliar seu impacto nas dem
 - Eight-locale `/maps/images/` gallery: full-set search by names/folders/IDs, NMap/NBattleMap filters, ordering, pagination, native keyboard-accessible image dialog, full asset links, identical origins and candidate map links. Entry point in map catalog; section links scope gallery to that map's variants.
 - Exact NMap folder → existing MapTypeCode yields 626 sections with one unique image (including four reviewed examples) and 44 ambiguous sections with multiple distinct candidates. Preserve four reviewed images; label all additional type associations as not yet checked in game. Ambiguous sections do not choose an image. No field assignments from NBattleMap, guessed monster areas or server-availability claims. Map/monster source datasets unchanged.
 - Reproducible audited-library importer and complete asset/join/search/locale regression in tests/map-image-library.test.mjs; CI includes the new suite. See docs/MAP-IMAGE-LIBRARY-STAGE-20-94.md.
+
+
+### Stage 20.95 — Wider crafting tree
+
+- Added a Widen tree / Restore width button alongside tree export and branch controls in all eight locales. Only the crafting tree panel expands, using the viewport's client width minus 32px (never less than the normal planner width) and centered margins; the form, summary and production plan keep their original widths. Resizing the browser updates the expanded width without using scrollbar-inclusive 100vw.
+- Native keyboard-accessible toggle exposes aria-pressed and aria-controls. Existing rows, calculations, completion state, prices, collapse state, scrolling, frozen columns and snapping remain in place; toggling does not rebuild the plan. The current page starts at its standard width. No fullscreen overlay or browser fullscreen API is required.

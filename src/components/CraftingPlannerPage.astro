@@ -55,10 +55,11 @@ const prefix=localePrefix(lang);
     <div><span>{craftingText(lang,"Total operations","Operações totais")}</span><strong id="craft-summary-operations">—</strong></div>
     <div><span>{craftingText(lang,"Shopping list items","Materiais para comprar")}</span><strong id="craft-summary-materials">—</strong></div>
    </div>
-   <section class="craft-tree-panel">
+   <section id="craft-tree-panel" class="craft-tree-panel">
     <div class="craft-section-heading">
      <h3>{craftingText(lang,"Crafting tree","Árvore de receitas")}</h3>
      <div class="craft-tree-tools">
+      <button type="button" id="craft-tree-width" aria-controls="craft-tree-panel" aria-pressed="false">{craftingText(lang,"Widen tree","Ampliar largura")}</button>
       <button type="button" id="craft-export-tree" class="craft-export-button">{craftingText(lang,"Export spreadsheet (.xlsx)","Exportar planilha (.xlsx)")}</button>
       <button type="button" id="craft-tree-expand">{craftingText(lang,"Expand all","Expandir tudo")}</button>
       <button type="button" id="craft-tree-collapse">{craftingText(lang,"Collapse all","Recolher tudo")}</button>
@@ -196,6 +197,20 @@ const prefix=localePrefix(lang);
   const surplus=$("craft-surplus"),surplusSection=$("craft-surplus-section");
   const completedSection=$("craft-completed-section"),completedList=$("craft-completed-list");
   const collapsedTreePaths=new Set<string>();
+  const treePanel=$("craft-tree-panel"),widthButton=$("craft-tree-width");
+  const updateTreeWidth=()=>{
+   if(treePanel.classList.contains("craft-tree-wide"))
+    treePanel.style.setProperty("--craft-wide-width",Math.max(root.clientWidth,document.documentElement.clientWidth-32)+"px");
+  };
+  widthButton.addEventListener("click",()=>{
+   const wide=treePanel.classList.toggle("craft-tree-wide");
+   widthButton.setAttribute("aria-pressed",String(wide));
+   widthButton.textContent=wide?craftingText(lang,"Restore width","Restaurar largura"):
+    craftingText(lang,"Widen tree","Ampliar largura");
+   updateTreeWidth();
+  });
+  window.addEventListener("resize",updateTreeWidth);
+
   // Keep the snap offset aligned with the actual frozen Item / Recipe column.
   // The table can grow wider than its minimum width on large screens.
   if("ResizeObserver" in window){
@@ -1334,6 +1349,13 @@ const prefix=localePrefix(lang);
   margin:22px 0;padding:17px;
   background:var(--color-surface);
   border:1px solid var(--color-border);border-radius:6px;
+ }
+ #wiki-craft-planner .craft-tree-panel.craft-tree-wide{
+  box-sizing:border-box;width:var(--craft-wide-width);max-width:none;
+  margin-inline:calc((100% - var(--craft-wide-width))/2);
+ }
+ #wiki-craft-planner #craft-tree-width[aria-pressed="true"]{
+  border-color:var(--color-accent);
  }
  #wiki-craft-planner .craft-section-heading{
   display:flex;align-items:center;justify-content:space-between;
